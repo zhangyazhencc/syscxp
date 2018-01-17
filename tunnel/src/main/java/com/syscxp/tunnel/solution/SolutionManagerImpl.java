@@ -103,15 +103,49 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APIRecountInterfacePriceMsg) msg);
         }else if(msg instanceof APIRecountTunnelPriceMsg){
             handle((APIRecountTunnelPriceMsg) msg);
-        }else if(msg instanceof APIGetTunnelPriceMsg){
-            handle((APIGetTunnelPriceMsg) msg);
+        }else if(msg instanceof APIModifyBandwidthTunnelPriceMsg){
+            handle((APIModifyBandwidthTunnelPriceMsg) msg);
         }else if(msg instanceof APIRecountVPNPriceMsg){
             handle((APIRecountVPNPriceMsg) msg);
         } else if(msg instanceof APIGetVPNPriceMsg){
             handle((APIGetVPNPriceMsg) msg);
-        } else {
+        } else if(msg instanceof APIGetTunnelPriceMsg){
+            handle((APIGetTunnelPriceMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    /**
+     * 判断云专线的物理接口是否为共享端口
+     */
+    public boolean isShareForInterface(String interfaceUuid){
+        boolean isShare = false;
+        if(interfaceUuid == null){
+            isShare =  true;
+        }else{
+            SolutionInterfaceVO solutionInterfaceVO = dbf.findByUuid(interfaceUuid,SolutionInterfaceVO.class);
+            if(solutionInterfaceVO.getPortOfferingUuid().equals("SHARE")){
+                isShare =  true;
+            }
+        }
+
+        return isShare;
+    }
+
+    private void handle(APIGetTunnelPriceMsg msg) {
+        APIGetProductPriceReply priceReply = getTunnelPrice(msg.getProductChargeModel(), msg.getDuration(),
+                msg.getSession().getAccountUuid(),
+                msg.getEndpointAUuid(),
+                msg.getEndpointZUuid(),
+                msg.getInnerConnectedEndpointUuid(),
+                msg.getBandwidthOfferingUuid(),
+                isShareForInterface(msg.getInterfaceAUuid()),
+                isShareForInterface(msg.getInterfaceZUuid()));
+
+        APIGetTunnelPriceReply reply = new APIGetTunnelPriceReply();
+        reply.setPrice(priceReply.getOriginalPrice());
+        bus.reply(msg, reply);
     }
 
     private void handle(APIGetVPNPriceMsg msg) {
@@ -143,14 +177,14 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     }
 
-    private void handle(APIGetTunnelPriceMsg msg) {
+    private void handle(APIModifyBandwidthTunnelPriceMsg msg) {
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
 
         APIGetProductPriceReply reply = getTunnelPrice(vo, solutionVO.getAccountUuid());
 
-        APIGetTunnelPriceReply priceReply = new APIGetTunnelPriceReply();
+        APIModifyBandwidthTunnelPriceReply priceReply = new APIModifyBandwidthTunnelPriceReply();
         priceReply.setPrice(reply.getOriginalPrice());
         bus.reply(msg, priceReply);
     }
@@ -362,6 +396,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             tunnelCost = tunnelCost.subtract(faceb.getCost());
         }
 
+        vo.setShareA(msg.isShareA());
+        vo.setShareZ(msg.isShareZ());
+
         vo.setCost(tunnelCost);
         dbf.getEntityManager().persist(vo);
 
@@ -387,7 +424,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setPortOfferingUuid(msg.getPortOfferingUuid());
         vo.setName(msg.getName());
-
 
         dbf.getEntityManager().persist(vo);
 
@@ -497,23 +533,43 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     /*获取云专线的价格*/
     private APIGetProductPriceReply getTunnelPrice(SolutionTunnelVO vo, String accountUuid) {
 
+               return getTunnelPrice(vo.getProductChargeModel(),
+                    vo.getDuration(),
+                    accountUuid,
+                    vo.getEndpointVOA().getUuid(),
+                    vo.getEndpointVOZ().getUuid(),
+                    vo.getInnerConnectedEndpointUuid(),
+                    vo.getBandwidthOfferingUuid(),
+                    vo.isShareA(), vo.isShareZ());
+    }
+
+
+    private APIGetProductPriceReply getTunnelPrice(ProductChargeModel productChargeModel,
+                                                   int duration,
+                                                   String accountUuid,
+                                                   String endpointAUuid,
+                                                   String endpointZUuid,
+                                                   String innerConnectedEndpointUuid,
+                                                   String bandwidthOfferingUuid,
+                                                   boolean isShareA, boolean isShareB) {
+
         APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
-        pmsg.setProductChargeModel(vo.getProductChargeModel());
-        pmsg.setDuration(vo.getDuration());
+        pmsg.setProductChargeModel(productChargeModel);
+        pmsg.setDuration(duration);
         pmsg.setAccountUuid(accountUuid);
-        EndpointVO endpointVOA = dbf.findByUuid(vo.getEndpointVOA().getUuid(), EndpointVO.class);
-        EndpointVO endpointVOZ = dbf.findByUuid(vo.getEndpointVOZ().getUuid(),EndpointVO.class);
+        EndpointVO endpointVOA = dbf.findByUuid(endpointAUuid, EndpointVO.class);
+        EndpointVO endpointVOZ = dbf.findByUuid(endpointZUuid,EndpointVO.class);
         InnerConnectedEndpointVO innerConnectedEndpointVO = null;
-        if(vo.getInnerConnectedEndpointUuid() != null){
-            innerConnectedEndpointVO = dbf.findByUuid(vo.getInnerConnectedEndpointUuid(),InnerConnectedEndpointVO.class);
+        if(innerConnectedEndpointUuid != null){
+            innerConnectedEndpointVO = dbf.findByUuid(innerConnectedEndpointUuid,InnerConnectedEndpointVO.class);
         }
 
         if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO != null){
-            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
-                    endpointVOZ.getNodeUuid(), innerConnectedEndpointVO.getEndpointUuid()));
+            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(bandwidthOfferingUuid, isShareA, isShareB, endpointVOA,
+                    endpointVOZ, innerConnectedEndpointVO.getEndpointUuid()));
         }else if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO == null){
-            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
-                    endpointVOZ.getNodeUuid(), null));
+            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(bandwidthOfferingUuid, isShareA, isShareB, endpointVOA,
+                    endpointVOZ, null));
         }
 
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);

@@ -19,10 +19,14 @@ public class APIGetTunnelPriceMsg extends APISyncCallMessage {
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
-    @APIParam(emptyString = false,resourceType = NodeVO.class)
-    private String nodeAUuid;
-    @APIParam(emptyString = false,resourceType = NodeVO.class)
-    private String nodeZUuid;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointAUuid;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointZUuid;
+    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
+    private String interfaceAUuid;
+    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
+    private String interfaceZUuid;
     @APIParam(emptyString = false,required = false,resourceType = EndpointVO.class)
     private String innerEndpointUuid;
     @APIParam
@@ -50,20 +54,36 @@ public class APIGetTunnelPriceMsg extends APISyncCallMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getNodeAUuid() {
-        return nodeAUuid;
+    public String getEndpointAUuid() {
+        return endpointAUuid;
     }
 
-    public void setNodeAUuid(String nodeAUuid) {
-        this.nodeAUuid = nodeAUuid;
+    public void setEndpointAUuid(String endpointAUuid) {
+        this.endpointAUuid = endpointAUuid;
     }
 
-    public String getNodeZUuid() {
-        return nodeZUuid;
+    public String getEndpointZUuid() {
+        return endpointZUuid;
     }
 
-    public void setNodeZUuid(String nodeZUuid) {
-        this.nodeZUuid = nodeZUuid;
+    public void setEndpointZUuid(String endpointZUuid) {
+        this.endpointZUuid = endpointZUuid;
+    }
+
+    public String getInterfaceAUuid() {
+        return interfaceAUuid;
+    }
+
+    public void setInterfaceAUuid(String interfaceAUuid) {
+        this.interfaceAUuid = interfaceAUuid;
+    }
+
+    public String getInterfaceZUuid() {
+        return interfaceZUuid;
+    }
+
+    public void setInterfaceZUuid(String interfaceZUuid) {
+        this.interfaceZUuid = interfaceZUuid;
     }
 
     public String getInnerEndpointUuid() {

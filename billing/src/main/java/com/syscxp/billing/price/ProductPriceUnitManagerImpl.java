@@ -19,6 +19,8 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.utils.Utils;
+import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -39,19 +41,8 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private EventFacade evtf;
 
+    private static final CLogger logger = Utils.getLogger(ProductPriceUnitManagerImpl.class);
 
     @Override
     public void handleMessage(Message msg) {
@@ -81,9 +72,28 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APICreateVPNPriceMsg) msg);
         } else if (msg instanceof APIDeleteVPNPriceMsg) {
             handle((APIDeleteVPNPriceMsg) msg);
+        } else if (msg instanceof APICreateSharePortPriceMsg) {
+            handle((APICreateSharePortPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APICreateSharePortPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
+        List<ProductPriceUnitVO> list = new ArrayList<>();
+        ProductPriceUnitVO productPriceUnitVO = new ProductPriceUnitVO();
+        productPriceUnitVO.setProductCategoryUuid(productCategoryUuid);
+        productPriceUnitVO.setAreaCode(msg.getAreaCode());
+        productPriceUnitVO.setAreaName(msg.getAreaName());
+        productPriceUnitVO.setLineCode(msg.getLineCode());
+        productPriceUnitVO.setLineName(msg.getLineName());
+        list.add(createPriceUnit(productPriceUnitVO, msg.getConfigLT500MCode(), msg.getConfigLT500MName(), msg.getConfigLT500MPrice()));
+        list.add(createPriceUnit(productPriceUnitVO, msg.getConfigGT500MLT2GCode(), msg.getConfigGT500MLT2GName(), msg.getConfigGT500MLT2GPrice()));
+        list.add(createPriceUnit(productPriceUnitVO, msg.getConfigGT2GCode(), msg.getConfigGT2GName(), msg.getConfigGT2GPrice()));
+        APICreateSharePortPriceEvent event = new APICreateSharePortPriceEvent(msg.getId());
+        event.setInventories(list);
+        bus.publish(event);
     }
 
     private void handle(APIDeleteVPNPriceMsg msg) {
@@ -131,8 +141,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             String configCode = field.getName().replaceAll("\\D", "")+"M";
             try {
                 int unitPrice = (int) field.get(msg);
-                createPriceUnit(productPriceUnitVO, configCode, configCode, unitPrice);
-                list.add(productPriceUnitVO);
+                list.add(createPriceUnit(productPriceUnitVO, configCode, configCode, unitPrice));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -144,12 +153,12 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         bus.publish(event);
     }
 
-    private void createPriceUnit(ProductPriceUnitVO vo, String configCode, String configName, Integer unitPrice) {
+    private ProductPriceUnitVO createPriceUnit(ProductPriceUnitVO vo, String configCode, String configName, Integer unitPrice) {
         vo.setUuid(Platform.getUuid());
         vo.setConfigCode(configCode);
         vo.setConfigName(configName);
         vo.setUnitPrice(unitPrice);
-        dbf.persistAndRefresh(vo);
+       return dbf.persistAndRefresh(vo);
     }
 
     private void handle(APIUpdateBroadPriceMsg msg) {
@@ -176,22 +185,27 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         if (vo == null) {
             throw new IllegalArgumentException("can not find the product type or category");
         }
-        String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode,lineName ";
-        String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode) as t";
+        String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  " ;
+        String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  ";
+        if (!StringUtils.isEmpty(msg.getAreaCode()) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
+            sql += "AND areaCode = :areaCode ";
+            sql_count += "AND areaCode = :areaCode ";
+        }
+        sql+=" GROUP BY lineCode,lineName ";
+        sql_count += " GROUP BY lineCode) as t";
+
         if (msg.getCategory().equals(Category.REGION)|| msg.getCategory().equals(Category.VPN)) {
             sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode,areaName ";
             sql_count = "SELECT COUNT(*) as num FROM (SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode) as T";
         }
-
-
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
             q.setParameter("areaCode", msg.getAreaCode());
         }
         Query q_count = dbf.getEntityManager().createNativeQuery(sql_count);
         q_count.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
             q_count.setParameter("areaCode", msg.getAreaCode());
         }
         BigInteger count = (BigInteger) q_count.getSingleResult();
@@ -212,10 +226,10 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         bus.reply(msg, reply);
     }
 
-    private void setPrice(String configName, BigDecimal price, PriceData priceData) {
+    private void setPrice(String configCode, BigDecimal price, PriceData priceData) {
         Class clazz = priceData.getClass();
         try {
-            Method m = clazz.getMethod("setConfig" + configName.toUpperCase() + "Price", new Class[]{BigDecimal.class});
+            Method m = clazz.getMethod("setConfig" + configCode.toUpperCase() + "Price", new Class[]{BigDecimal.class});
             m.invoke(priceData, price);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();

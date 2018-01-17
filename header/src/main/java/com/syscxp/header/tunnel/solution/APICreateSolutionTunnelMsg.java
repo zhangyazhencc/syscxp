@@ -44,6 +44,10 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
     @APIParam(maxLength = 255)
     private String name;
 
+    @APIParam
+    private boolean isShareA;
+    @APIParam
+    private boolean isShareZ;
 
     public String getSolutionUuid() {
         return solutionUuid;
@@ -131,5 +135,21 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isShareA() {
+        return isShareA;
+    }
+
+    public void setShareA(boolean shareA) {
+        isShareA = shareA;
+    }
+
+    public boolean isShareZ() {
+        return isShareZ;
+    }
+
+    public void setShareZ(boolean shareZ) {
+        isShareZ = shareZ;
     }
 }

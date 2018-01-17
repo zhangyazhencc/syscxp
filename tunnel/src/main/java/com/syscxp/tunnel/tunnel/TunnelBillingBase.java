@@ -6,6 +6,7 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
@@ -37,7 +38,7 @@ public class TunnelBillingBase {
     private RESTFacade restf;
 
     /**
-     * 调用支付
+     * 调用支付-单个产品
      */
     public OrderInventory createOrder(APICreateOrderMsg orderMsg) {
         try {
@@ -52,6 +53,9 @@ public class TunnelBillingBase {
         return null;
     }
 
+    /**
+     * 调用支付-多产品一起支付
+     */
     public List<OrderInventory> createBuyOrder(APICreateBuyOrderMsg orderMsg) {
         try {
             APICreateBuyOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
@@ -63,6 +67,22 @@ public class TunnelBillingBase {
             logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * 调用支付-最后一公里
+     */
+    public OrderInventory createOrderForEdgeLine(APICreateBuyEdgeLineOrderMsg orderMsg) {
+        try {
+            APICreateBuyEdgeLineOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+
+            if (reply.isSuccess()) {
+                return reply.getInventory();
+            }
+        } catch (Exception e) {
+            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
+        }
+        return null;
     }
 
     /**
@@ -108,13 +128,13 @@ public class TunnelBillingBase {
     }
 
     /**
-     * 获取物理接口单价
+     * 获取物理接口单价--独享
      */
     public List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
-        unit.setCategoryCode(Category.PORT);
+        unit.setCategoryCode(Category.EXCLUSIVE);
         unit.setAreaCode("DEFAULT");
         unit.setLineCode("DEFAULT");
         unit.setConfigCode(portOfferingUuid);
@@ -125,14 +145,37 @@ public class TunnelBillingBase {
     /**
      * 获取云专线单价
      */
-    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
+    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid,
+                                                     String interfaceUuidA,
+                                                     String interfaceUuidZ,
+                                                     EndpointVO evoA,
+                                                     EndpointVO evoZ,
+                                                     String innerEndpointUuid) {
+        TunnelBase tunnelBase = new TunnelBase();
+
+        return getTunnelPriceUnit(bandwidthOfferingUuid
+                , tunnelBase.isShareForInterface(interfaceUuidA)
+                , tunnelBase.isShareForInterface(interfaceUuidZ)
+                , evoA
+                , evoZ
+                , innerEndpointUuid);
+    }
+
+    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid,
+                                                     boolean isShareInterfaceUuidA,
+                                                     boolean isShareInterfaceUuidZ,
+                                                     EndpointVO evoA,
+                                                     EndpointVO evoZ,
+                                                     String innerEndpointUuid) {
         TunnelBase tunnelBase = new TunnelBase();
 
         List<ProductPriceUnit> units = new ArrayList<>();
-        NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
-        NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
+        NodeVO nodeA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+        NodeVO nodeZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
         String zoneUuidA = tunnelBase.getZoneUuid(nodeA.getUuid());
         String zoneUuidZ = tunnelBase.getZoneUuid(nodeZ.getUuid());
+
+        //专线费用
         if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
             if (nodeA.getCountry().equals("CHINA") && nodeZ.getCountry().equals("CHINA")) {  //国内互传
                 ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeZ, zoneUuidA, zoneUuidZ);
@@ -159,9 +202,51 @@ public class TunnelBillingBase {
                 units.add(unitInner);
                 units.add(unitOuter);
             }
-
         }
+
+        //端口占用费
+        if(isShareInterfaceUuidA){
+            ProductPriceUnit unit = getTunnelPriceUintForSharePort(bandwidthOfferingUuid, nodeA, evoA);
+            units.add(unit);
+        }
+
+        if(isShareInterfaceUuidZ){
+            ProductPriceUnit unit = getTunnelPriceUintForSharePort(bandwidthOfferingUuid, nodeZ, evoZ);
+            units.add(unit);
+        }
+
         return units;
+    }
+
+    /**
+     * 获取云专线单价--共享端口占用费
+     */
+    public ProductPriceUnit getTunnelPriceUintForSharePort(String bandwidthOfferingUuid,NodeVO nodeVO,EndpointVO endpointVO){
+        ProductPriceUnit unit = new ProductPriceUnit();
+        unit.setProductTypeCode(ProductType.PORT);
+        unit.setCategoryCode(Category.SHARE);
+        unit.setAreaCode(nodeVO.getCity());
+        unit.setLineCode(endpointVO.getUuid());
+        unit.setConfigCode(getSharePortBandwidthOffering(bandwidthOfferingUuid));
+        return unit;
+    }
+
+    /**
+     * 通过专线带宽获取共享端口的带宽规格
+     */
+    public String getSharePortBandwidthOffering(String bandwidthOfferingUuid){
+        final String offeringA = "LT500M";
+        final String offeringB = "GT500LT2G";
+        final String offeringC = "GT2G";
+
+        Long bandwidth = dbf.findByUuid(bandwidthOfferingUuid, BandwidthOfferingVO.class).getBandwidth();
+        if(bandwidth < 524288000L){
+            return offeringA;
+        }else if(bandwidth > 2147483648L){
+            return offeringC;
+        }else{
+            return offeringB;
+        }
     }
 
     /**
@@ -239,9 +324,20 @@ public class TunnelBillingBase {
     }
 
     /**
+     * 获取edgeLine Description
+     */
+    public String getDescriptionForEdgeLine(EdgeLineVO vo){
+        DescriptionData data = new DescriptionData();
+        data.add(new DescriptionItem("连接点", vo.getInterfaceVO().getEndpointVO().getName()));
+        data.add(new DescriptionItem("物理接口", vo.getInterfaceVO().getName()));
+        return JSONObjectUtil.toJsonString(data);
+    }
+
+    /**
      * 获取tunnel Description
      */
     public String getDescriptionForTunnel(TunnelVO vo,Long newBandwidth) {
+        TunnelBase tunnelBase = new TunnelBase();
         DescriptionData data = new DescriptionData();
 
         TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
@@ -257,6 +353,18 @@ public class TunnelBillingBase {
 
         data.add(new DescriptionItem("连接点-A", endpointNameA));
         data.add(new DescriptionItem("连接点-Z", endpointNameZ));
+
+        if(tunnelBase.isShareForInterface(tunnelSwitchPortVOA.getInterfaceUuid())){
+            data.add(new DescriptionItem("端口-A", "共享端口"));
+        }else{
+            data.add(new DescriptionItem("端口-A", "独享端口"));
+        }
+
+        if(tunnelBase.isShareForInterface(tunnelSwitchPortVOZ.getInterfaceUuid())){
+            data.add(new DescriptionItem("端口-Z", "共享端口"));
+        }else{
+            data.add(new DescriptionItem("端口-Z", "独享端口"));
+        }
 
         Long bandwidth;
         if(newBandwidth != null){
@@ -276,7 +384,7 @@ public class TunnelBillingBase {
     /**
      * 手动创建Tunnel的订单
      */
-    public ProductInfoForOrder createBuyOrderForTunnelManual(TunnelVO vo, APICreateTunnelManualMsg msg) {
+    public ProductInfoForOrder createBuyOrderForTunnelManual(TunnelVO vo, APICreateTunnelManualMsg msg, NotifyCallBackData callBack) {
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
@@ -291,7 +399,8 @@ public class TunnelBillingBase {
         order.setAccountUuid(vo.getOwnerAccountUuid());
         order.setOpAccountUuid(msg.getSession().getAccountUuid());
         order.setDescriptionData(getDescriptionForTunnel(vo,null));
-        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
+        order.setCallBackData(RESTApiDecoder.dump(callBack));
+        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;
     }
@@ -299,7 +408,7 @@ public class TunnelBillingBase {
     /**
      * 创建Tunnel的订单
      */
-    public ProductInfoForOrder createBuyOrderForTunnel(TunnelVO vo, APICreateTunnelMsg msg) {
+    public ProductInfoForOrder createBuyOrderForTunnel(TunnelVO vo, APICreateTunnelMsg msg, NotifyCallBackData callBack) {
         EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(), EndpointVO.class);
 
@@ -312,7 +421,8 @@ public class TunnelBillingBase {
         order.setAccountUuid(vo.getOwnerAccountUuid());
         order.setOpAccountUuid(msg.getSession().getAccountUuid());
         order.setDescriptionData(getDescriptionForTunnel(vo,null));
-        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
+        order.setCallBackData(RESTApiDecoder.dump(callBack));
+        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;
     }
@@ -334,4 +444,5 @@ public class TunnelBillingBase {
 
         return order;
     }
+
 }

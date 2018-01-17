@@ -294,7 +294,7 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `switchPortUuid` varchar(32) NOT NULL COMMENT '对应交换机端口',
   `endpointUuid` varchar(32) NOT NULL COMMENT '对应连接点',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:已支付,未支付',
+  `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:未支付,Up,Down',
   `type` varchar(32) NOT NULL DEFAULT 'TRUNK' COMMENT '用途:TRUNK,ACCESS,QINQ',
   `deleted` varchar(255) DEFAULT NULL,
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
@@ -307,6 +307,26 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, ownerAccountUuid, name, switchPortUuid, endpointUuid, description, state, type, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted IS NULL;
+
+##最后一公里
+CREATE TABLE  `syscxp_tunnel`.`EdgeLineEO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `accountUuid` VARCHAR(32) NOT NULL COMMENT '分配账户',
+  `interfaceUuid` VARCHAR(32) NOT NULL COMMENT '关联物理接口',
+  `endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点',
+  `type` VARCHAR(32) NOT NULL COMMENT '类型',
+  `destinationInfo` varchar(255) NOT NULL COMMENT '终点信息',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `state` varchar(32) NOT NULL COMMENT '状况:申请中，已开通',
+  `prices` int(11) DEFAULT NULL COMMENT '价格：元/月',
+  `deleted` varchar(255) DEFAULT NULL,
+  `expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE VIEW `syscxp_tunnel`.`EdgeLineVO` AS SELECT uuid, accountUuid, interfaceUuid, endpointUuid, type, destinationInfo, description, state, prices, expireDate, lastOpDate, createDate
+                                             FROM `EdgeLineEO` WHERE deleted IS NULL;
 
 ##云专线
 CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
@@ -629,6 +649,8 @@ CREATE TABLE `SolutionTunnelVO` (
   `duration` int(11) NOT NULL COMMENT '购买时长',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
+  `isShareA` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT 'A端是否共享端口',
+  `isShareZ` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT 'Z端是否共享端口',
   `endpointUuidA` varchar(32) NOT NULL COMMENT '连接点A',
   `endpointUuidZ` varchar(32) NOT NULL COMMENT '连接点Z',
   `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',

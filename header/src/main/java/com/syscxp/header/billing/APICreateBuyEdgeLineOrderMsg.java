@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateBuyEdgeLineOrderMsg extends APISyncCallMessage {
 
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
     private int price;
 
     @APIParam

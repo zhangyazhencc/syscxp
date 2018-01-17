@@ -37,11 +37,6 @@ public class APICreateTunnelMsg extends APIMessage {
     private ProductChargeModel productChargeModel;
     @APIParam(emptyString = false,required = false)
     private String description;
-
-    @APIParam(emptyString = false,required = false,resourceType = PortOfferingVO.class)
-    private String portOfferingUuidA;
-    @APIParam(emptyString = false,required = false,resourceType = PortOfferingVO.class)
-    private String portOfferingUuidZ;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = EndpointVO.class)
     private String innerConnectedEndpointUuid;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InterfaceVO.class)
@@ -139,22 +134,6 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setEndpointZUuid(String endpointZUuid) {
         this.endpointZUuid = endpointZUuid;
-    }
-
-    public String getPortOfferingUuidA() {
-        return portOfferingUuidA;
-    }
-
-    public void setPortOfferingUuidA(String portOfferingUuidA) {
-        this.portOfferingUuidA = portOfferingUuidA;
-    }
-
-    public String getPortOfferingUuidZ() {
-        return portOfferingUuidZ;
-    }
-
-    public void setPortOfferingUuidZ(String portOfferingUuidZ) {
-        this.portOfferingUuidZ = portOfferingUuidZ;
     }
 
     public String getCrossInterfaceUuid() {
