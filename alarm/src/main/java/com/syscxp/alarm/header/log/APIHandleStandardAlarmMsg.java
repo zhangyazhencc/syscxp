@@ -1,28 +1,38 @@
 package com.syscxp.alarm.header.log;
 
-public class AlarmLogCallbackCmd {
-    private String accountUuid;
+import com.syscxp.header.alarm.AlarmConstant;
+import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIParam;
+
+@Action(services = {AlarmConstant.ACTION_SERVICE}, category = AlarmConstant.ACTION_CATEGORY_ALARM, names = "create")
+public class APIHandleStandardAlarmMsg extends APIMessage{
+
+    @APIParam(emptyString = false)
+    private String  accountUuid;
+
+    @APIParam(emptyString = false)
     private String tunnelUuid;
+
+    @APIParam(emptyString = false)
     private String regulationUuid;
+
+    @APIParam(emptyString = false)
     private String problem;
+
+    @APIParam(emptyString = false)
     private String smsContent;
+
+    @APIParam(emptyString = false)
     private String mailContent;
+
+    @APIParam(emptyString = false)
     private AlarmStatus status;
+
+    @APIParam(emptyString = false)
     private String eventId;
 
-    public static AlarmLogCallbackCmd valueOf(AlarmLogVO alarmLogVO){
-        AlarmLogCallbackCmd cmd = new AlarmLogCallbackCmd();
-        cmd.setAccountUuid(alarmLogVO.getAccountUuid());
-        cmd.setTunnelUuid(alarmLogVO.getProductUuid());
-        cmd.setRegulationUuid(alarmLogVO.getRegulationUuid());
-        cmd.setProblem(alarmLogVO.getAlarmContent());
-        cmd.setSmsContent(alarmLogVO.getAlarmContent());
-        cmd.setMailContent(alarmLogVO.getMailContent());
-        cmd.setStatus(alarmLogVO.getStatus());
-        cmd.setEventId(alarmLogVO.getEventId());
-
-        return cmd;
-    }
 
     public String getAccountUuid() {
         return accountUuid;

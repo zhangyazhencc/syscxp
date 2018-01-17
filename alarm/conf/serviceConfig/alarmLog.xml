@@ -4,6 +4,14 @@
     <interceptor>AlarmLogManager</interceptor>
 
     <message>
+        <name>com.syscxp.alarm.header.log.APIHandleStandardAlarmMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.log.APIHandleTunnelAlarmMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.alarm.header.log.APIQueryAlarmLogMsg</name>
         <serviceId>query</serviceId>
     </message>
