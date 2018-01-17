@@ -14,6 +14,8 @@ import com.syscxp.header.tunnel.switchs.SwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO_;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
+import com.syscxp.header.tunnel.tunnel.TunnelVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -789,12 +791,11 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void validate(APIDeleteInnerEndpointMsg msg) {
         //判断该互联连接点是否被跨国通道使用
         InnerConnectedEndpointVO vo = dbf.findByUuid(msg.getUuid(),InnerConnectedEndpointVO.class);
-        String endpointUuid = vo.getEndpointUuid();
+        String innerEndpointUuid = vo.getEndpointUuid();
         String connectedEndpointUuid = vo.getConnectedEndpointUuid();
-        List<String> tunnelList = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.endpointUuid,endpointUuid)
-                .select(TunnelSwitchPortVO_.tunnelUuid)
-                .groupBy(TunnelSwitchPortVO_.tunnelUuid)
+        List<String> tunnelList = Q.New(TunnelVO.class)
+                .eq(TunnelVO_.innerEndpointUuid,innerEndpointUuid)
+                .select(TunnelVO_.uuid)
                 .listValues();
 
         if(!tunnelList.isEmpty()){
