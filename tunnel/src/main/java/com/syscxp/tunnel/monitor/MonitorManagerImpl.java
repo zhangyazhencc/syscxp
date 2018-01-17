@@ -217,19 +217,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             stopControllerMonitor(tunnelVO.getUuid());
             logger.info("关闭监控-下发控制器成功：" + tunnelVO.getName());
         } catch (Exception e) {
-            logger.error("关闭监控-下发控制器失败，启动job: " + tunnelVO.getName() + " Error: " + e.getMessage());
-            TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-            monitorJob.setTunnelUuid(tunnelVO.getUuid());
-            monitorJob.setJobType(MonitorJobType.STOP);
-
-            jobf.execute("关闭监控失败-停止监控", Platform.getManagementServerId(), monitorJob);
+            // logger.error("关闭监控-下发控制器失败，启动job: " + tunnelVO.getName() + " Error: " + e.getMessage());
+            throw new RuntimeException(String.format("关闭监控-下发控制器失败！ [TunnelUuid: %s] Error: %s",tunnelVO.getName(),e.getMessage()));
+            //            TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+//            monitorJob.setTunnelUuid(tunnelVO.getUuid());
+//            monitorJob.setJobType(MonitorJobType.STOP);
+//
+//            jobf.execute("关闭监控失败-停止监控", Platform.getManagementServerId(), monitorJob);
         }
 
-        try {
-            stopAgentMonitor(tunnelVO.getUuid());
-        } catch (Exception e) {
-            logger.info("关闭监控-关闭agent失败！");
-        }
+//        try {
+//            stopAgentMonitor(tunnelVO.getUuid());
+//        } catch (Exception e) {
+//            logger.info("关闭监控-关闭agent失败！");
+//        }
 
         tunnelVO.setStatus(TunnelStatus.Connected);
         tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
