@@ -13,6 +13,8 @@ public interface JobQueueFacade {
    void execute(String queueName, String owner, Job job, Completion complete); 
    
    void deleteJobQueue(String queueName);
+
+   void removeJob(String resourceUuid,  final Class<?> jobClass);
    
    void evictOwner(String owner);
    
