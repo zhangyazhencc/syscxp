@@ -19,6 +19,8 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.utils.Utils;
+import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -39,6 +41,8 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
+
+    private static final CLogger logger = Utils.getLogger(ProductPriceUnitManagerImpl.class);
 
     @Override
     public void handleMessage(Message msg) {
@@ -181,11 +185,11 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         if (vo == null) {
             throw new IllegalArgumentException("can not find the product type or category");
         }
-        String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND " ;
-        String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND ";
-        if (!msg.getAreaCode().equalsIgnoreCase("ALL")) {
-            sql += "areaCode = :areaCode ";
-            sql_count += "areaCode = :areaCode ";
+        String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  " ;
+        String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  ";
+        if (!StringUtils.isEmpty(msg.getAreaCode()) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
+            sql += "AND areaCode = :areaCode ";
+            sql_count += "AND areaCode = :areaCode ";
         }
         sql+=" GROUP BY lineCode,lineName ";
         sql_count += " GROUP BY lineCode) as t";
@@ -194,8 +198,6 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode,areaName ";
             sql_count = "SELECT COUNT(*) as num FROM (SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode) as T";
         }
-
-
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
         if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {

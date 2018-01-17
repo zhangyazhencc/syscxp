@@ -727,6 +727,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(msg.getAccountUuid());
         vo.setInterfaceUuid(msg.getInterfaceUuid());
+        vo.setEndpointUuid(dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class).getEndpointUuid());
         vo.setType(msg.getType());
         vo.setDestinationInfo(msg.getDestinationInfo());
         vo.setDescription(msg.getDescription());
@@ -799,6 +800,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
             vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),ProductChargeModel.BY_MONTH,1));
+            vo.setState(EdgeLineState.Opened);
             vo = dbf.updateAndRefresh(vo);
 
             InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
@@ -947,7 +949,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         EdgeLineVO vo = dbf.findByUuid(msg.getUuid(), EdgeLineVO.class);
 
-        if(vo.getExpireDate() != null && !vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))){
+        if(vo.getExpireDate() ==null || (vo.getExpireDate() != null && !vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))){
             dbf.remove(vo);
 
             InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
@@ -976,12 +978,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             orderMsg.setNotifyUrl(restf.getSendCommandUrl());
             orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
             orderMsg.setStartTime(dbf.getCurrentSqlTime());
-            if (vo.getExpireDate() == null) {
-                orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
-                orderMsg.setCreateFailure(true);
-            } else {
-                orderMsg.setExpiredTime(vo.getExpireDate());
-            }
+            orderMsg.setExpiredTime(vo.getExpireDate());
+
 
             OrderInventory orderInventory = tunnelBillingBase.createOrder(orderMsg);
             if (orderInventory != null) {
@@ -2756,18 +2754,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      */
     private void handle(APIGetUnscribeEdgeLinePriceDiffMsg msg){
         EdgeLineVO vo = dbf.findByUuid(msg.getUuid(), EdgeLineVO.class);
+        APIGetUnscribeProductPriceDiffReply reply = new APIGetUnscribeProductPriceDiffReply();
 
-        APIGetUnscribeProductPriceDiffMsg upmsg = new APIGetUnscribeProductPriceDiffMsg();
-        upmsg.setAccountUuid(vo.getAccountUuid());
-        upmsg.setProductUuid(msg.getUuid());
-        if (vo.getExpireDate() == null) {
-            upmsg.setExpiredTime(dbf.getCurrentSqlTime());
-            upmsg.setCreateFailure(true);
-        } else {
+        if(vo.getExpireDate() == null){
+            reply.setReFoundMoney(BigDecimal.ZERO);
+        }else{
+            APIGetUnscribeProductPriceDiffMsg upmsg = new APIGetUnscribeProductPriceDiffMsg();
+            upmsg.setAccountUuid(vo.getAccountUuid());
+            upmsg.setProductUuid(msg.getUuid());
             upmsg.setExpiredTime(vo.getExpireDate());
+
+            reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(upmsg);
         }
 
-        APIGetUnscribeProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(upmsg);
         bus.reply(msg, new APIGetUnscribeEdgeLinePriceDiffReply(reply));
     }
 
@@ -2976,11 +2975,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         EdgeLineVO vo = dbf.findByUuid(cmd.getPorductUuid(), EdgeLineVO.class);
         vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),ProductChargeModel.BY_MONTH,1));
+        vo.setState(EdgeLineState.Opened);
         vo = dbf.updateAndRefresh(vo);
 
         InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
         interfaceVO.setState(InterfaceState.Up);
-        interfaceVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),interfaceVO.getProductChargeModel(),interfaceVO.getDuration()));
+        if(interfaceVO.getExpireDate() == null){
+            interfaceVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),interfaceVO.getProductChargeModel(),interfaceVO.getDuration()));
+        }
         dbf.updateAndRefresh(interfaceVO);
 
         //付款成功,记录生效订单

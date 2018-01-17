@@ -1,6 +1,9 @@
 package com.syscxp.header.tunnel.tunnel;
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.tunnel.endpoint.EndpointInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -11,6 +14,11 @@ import java.util.List;
  * Create by DCY on 2018/1/9
  */
 @Inventory(mappingVOClass = EdgeLineVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "endpoint", inventoryClass = EndpointInventory.class,
+                foreignKey = "endpointUuid", expandedInventoryKey = "uuid"),
+
+})
 public class EdgeLineInventory {
 
     private String uuid;
@@ -36,7 +44,7 @@ public class EdgeLineInventory {
         inv.setInterfaceName(vo.getInterfaceVO().getName());
         inv.setType(vo.getType());
         inv.setDestinationInfo(vo.getDestinationInfo());
-        inv.setEndpointUuid(vo.getInterfaceVO().getEndpointUuid());
+        inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setEndpointName(vo.getInterfaceVO().getEndpointVO().getName());
         inv.setDescription(vo.getDescription());
         inv.setState(vo.getState());

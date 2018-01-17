@@ -12,6 +12,7 @@ public class EdgeLineAO_ {
     public static volatile SingularAttribute<EdgeLineAO, String> uuid;
     public static volatile SingularAttribute<EdgeLineAO, String> accountUuid;
     public static volatile SingularAttribute<EdgeLineAO, String> interfaceUuid;
+    public static volatile SingularAttribute<EdgeLineAO, String> endpointUuid;
     public static volatile SingularAttribute<EdgeLineAO, String> type;
     public static volatile SingularAttribute<EdgeLineAO, String> destinationInfo;
     public static volatile SingularAttribute<EdgeLineAO, String> description;

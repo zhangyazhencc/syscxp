@@ -103,6 +103,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
     }
 
+    @Transactional
     private void handle(APICreateBuyEdgeLineOrderMsg msg) {
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
@@ -819,10 +820,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if (accountDiscountVO != null) {
                 productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * base));
+            BigDecimal singleOriginPrice  = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * base);
+            originalPrice = originalPrice.add(singleOriginPrice);
             BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * base).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_DOWN).setScale(2, RoundingMode.HALF_UP);
             discountPrice = discountPrice.add(currentDiscount);
-            orderPriceDiscountDetail.setOriginalPrice(originalPrice);
+            orderPriceDiscountDetail.setOriginalPrice(singleOriginPrice);
             orderPriceDiscountDetail.setDiscount(productDiscount);
             orderPriceDiscountDetail.setRealPayPrice(currentDiscount);
             orderPriceDiscountDetails.add(orderPriceDiscountDetail);
