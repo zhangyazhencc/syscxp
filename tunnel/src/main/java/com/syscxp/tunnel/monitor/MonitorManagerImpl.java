@@ -382,13 +382,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
 
         ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-        if (needRollback(response)) {
-            cmd.setRollback(true);
-            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
 
-            if (!response.isSuccess())
-                throw new RuntimeException(String.format("Failure to execute RYU start command! Error:%s"
-                        , response.getMsg()));
+        logger.info("========= response: "+ response.isRollback());
+        if (!response.isSuccess()) {
+            if (needRollback(response)) {
+                cmd.setRollback(true);
+                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            }
+
+            throw new RuntimeException(String.format("Failure to execute RYU start command [TunnelUuid: %s]! Error:%s"
+                    ,cmd.getTunnel_id(), response.getMsg()));
         }
     }
 
@@ -432,20 +435,22 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
 
         ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-        if (needRollback(response)) {
-            cmd.setRollback(true);
-            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isSuccess()) {
+            if (needRollback(response)) {
+                cmd.setRollback(true);
+                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            }
 
-            if (!response.isSuccess())
-                throw new RuntimeException(String.format("Failure to execute RYU modify command! Error:%s"
-                        , response.getMsg()));
+            throw new RuntimeException(String.format("Failure to execute RYU modify command [TunnelUuid : %s]! Error:%s"
+                    ,cmd.getTunnel_id(), response.getMsg()));
         }
+
     }
 
     public boolean needRollback(ControllerCommands.ControllerRestResponse response) {
         boolean needRollback = false;
 
-        if (response.isRollback() == null || response.isRollback())
+        if (response.isRollback() != null || response.isRollback())
             needRollback = false;
         else
             needRollback = true;
