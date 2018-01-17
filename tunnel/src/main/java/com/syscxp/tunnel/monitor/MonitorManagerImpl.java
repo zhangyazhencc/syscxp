@@ -276,7 +276,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         try {
             modifyControllerMonitor(tunnelVO.getUuid());
         } catch (Exception e) {
-            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelVO.getUuid(),originalTunnelMonitorVOS);
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelVO.getUuid(), false, originalTunnelMonitorVOS);
 
             String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
             ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
@@ -285,7 +285,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
             }
 
-            if(response.isSuccess()){
+            if (response.isSuccess()) {
                 UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
                 dbf.persistCollection(originalTunnelMonitorVOS);
 
@@ -293,7 +293,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 dbf.updateAndRefresh(tunnelVO);
 
                 throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Error: %s", e.getMessage()));
-            }else{
+            } else {
                 tunnelVO.setMonitorCidr(null);
                 tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
                 tunnelVO.setStatus(TunnelStatus.Connected);
@@ -368,7 +368,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                     .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
                     .list();
-            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, false, tunnelMonitorVOS);
 
             startControllerMonitor(cmd);
         }
@@ -420,7 +420,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     public void modifyControllerMonitor(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
-            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, false, tunnelMonitorVOS);
             modifyControllerMonitor(cmd);
         }
     }
@@ -442,10 +442,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
     }
 
-    public boolean needRollback(ControllerCommands.ControllerRestResponse response){
+    public boolean needRollback(ControllerCommands.ControllerRestResponse response) {
         boolean needRollback = false;
 
-        if(response.isRollback() == null || response.isRollback())
+        if (response.isRollback() == null || response.isRollback())
             needRollback = false;
         else
             needRollback = true;
@@ -459,7 +459,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return
      */
-    public ControllerCommands.TunnelMonitorCommand getControllerMonitorCommand(String tunnelUuid
+    public ControllerCommands.TunnelMonitorCommand getControllerMonitorCommand(String tunnelUuid, boolean rollback
             , List<TunnelMonitorVO> tunnelMonitorVOS) {
         List<ControllerCommands.TunnelMonitorMpls> mplsList = new ArrayList<>();
         List<ControllerCommands.TunnelMonitorSdn> sdnList = new ArrayList<>();
@@ -529,7 +529,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (sdnList.isEmpty() && mplsList.isEmpty())
             throw new IllegalArgumentException("failed to generate controller command!");
 
-        return ControllerCommands.TunnelMonitorCommand.valueOf(tunnelUuid, sdnList, mplsList);
+        return ControllerCommands.TunnelMonitorCommand.valueOf(tunnelUuid, rollback, sdnList, mplsList);
     }
 
     /***

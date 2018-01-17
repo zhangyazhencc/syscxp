@@ -80,7 +80,7 @@ public class TunnelValidateBase {
 
         //过期接口不让改
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
+        if (iface.getExpireDate() != null && iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
 
@@ -203,7 +203,7 @@ public class TunnelValidateBase {
     public void validate(APIUpdateInterfaceMsg msg) {
 
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
+        if (iface.getExpireDate() != null && iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
 

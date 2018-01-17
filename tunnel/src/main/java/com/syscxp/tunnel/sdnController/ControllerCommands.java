@@ -22,12 +22,13 @@ public class ControllerCommands {
          * @param mplsConfigList mpls交换机命令
          * @return 启动监控机命令
          */
-        public static TunnelMonitorCommand valueOf(String tunnel_id, List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
+        public static TunnelMonitorCommand valueOf(String tunnel_id,boolean rollback,List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
 
             TunnelMonitorCommand tunnelMonitorCmd = new TunnelMonitorCommand();
             tunnelMonitorCmd.setSdn_switches(sdnConfigList);
             tunnelMonitorCmd.setMpls_switches(mplsConfigList);
             tunnelMonitorCmd.setTunnel_id(tunnel_id);
+            tunnelMonitorCmd.setRollback(rollback);
 
             return tunnelMonitorCmd;
         }
