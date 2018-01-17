@@ -18,9 +18,9 @@ public class APIGetTunnelPriceMsg extends APISyncCallMessage {
     private String endpointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String endpointZUuid;
-    @APIParam(emptyString = false,required = false,resourceType = SolutionInterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,required = false,resourceType = SolutionInterfaceVO.class)
     private String interfaceAUuid;
-    @APIParam(emptyString = false,required = false,resourceType = SolutionInterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,required = false,resourceType = SolutionInterfaceVO.class)
     private String interfaceZUuid;
     @APIParam(emptyString = false,required = false,resourceType = InnerConnectedEndpointVO.class)
     private String innerConnectedEndpointUuid;
