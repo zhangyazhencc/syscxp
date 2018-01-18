@@ -31,6 +31,7 @@ import com.syscxp.utils.StringBind;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
+import com.syscxp.utils.path.PathUtil;
 import com.syscxp.utils.ssh.Ssh;
 import com.syscxp.utils.ssh.SshResult;
 import com.syscxp.utils.ssh.SshShell;
@@ -290,14 +291,17 @@ public class VpnHost extends HostBase implements Host {
 
                     @Override
                     public void run(final FlowTrigger trigger, Map data) {
-                        String srcPath = String.format("%s/files/vpn/%s", AnsibleConstant.ROOT_DIR, agentPackageName);
+//                        String srcPath = String.format("%s/files/vpn/%s", AnsibleConstant.ROOT_DIR, agentPackageName);
+                        String srcPath = PathUtil.findFileOnClassPath(String.format("ansible/vpn/%s", agentPackageName), true).getAbsolutePath();
                         String destPath = String.format("/var/lib/syscxp/vpn/package/%s", agentPackageName);
                         SshFileMd5Checker checker = new SshFileMd5Checker();
                         checker.setUsername(getSelf().getUsername());
                         checker.setPassword(getSelf().getPassword());
                         checker.setSshPort(getSelf().getSshPort());
                         checker.setTargetIp(getSelf().getHostIp());
-                        checker.addSrcDestPair(String.format("%s/%s", AnsibleConstant.SYSCXPLIB_ROOT, AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME),
+                        /*checker.addSrcDestPair(String.format("%s/%s", AnsibleConstant.SYSCXPLIB_ROOT, AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME),
+                                String.format("/var/lib/syscxp/vpn/package/%s", AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));*/
+                        checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH,
                                 String.format("/var/lib/syscxp/vpn/package/%s", AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
