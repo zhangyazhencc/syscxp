@@ -6,81 +6,6 @@ import java.util.List;
 
 public class TunnelAlarmCmd {
 
-    public static class TunnelAlarmLog{
-        private String accountUuid;
-        private String tunnelUuid;
-        private String regulationUuid;
-        private String problem;
-        private String smsContent;
-        private String mailContent;
-        private AlarmStatus status;
-        private String eventId;
-
-        public String getAccountUuid() {
-            return accountUuid;
-        }
-
-        public void setAccountUuid(String accountUuid) {
-            this.accountUuid = accountUuid;
-        }
-
-        public String getTunnelUuid() {
-            return tunnelUuid;
-        }
-
-        public void setTunnelUuid(String tunnelUuid) {
-            this.tunnelUuid = tunnelUuid;
-        }
-
-        public String getRegulationUuid() {
-            return regulationUuid;
-        }
-
-        public void setRegulationUuid(String regulationUuid) {
-            this.regulationUuid = regulationUuid;
-        }
-
-        public String getProblem() {
-            return problem;
-        }
-
-        public void setProblem(String problem) {
-            this.problem = problem;
-        }
-
-        public String getSmsContent() {
-            return smsContent;
-        }
-
-        public void setSmsContent(String smsContent) {
-            this.smsContent = smsContent;
-        }
-
-        public String getMailContent() {
-            return mailContent;
-        }
-
-        public void setMailContent(String mailContent) {
-            this.mailContent = mailContent;
-        }
-
-        public AlarmStatus getStatus() {
-            return status;
-        }
-
-        public void setStatus(AlarmStatus status) {
-            this.status = status;
-        }
-
-        public String getEventId() {
-            return eventId;
-        }
-
-        public void setEventId(String eventId) {
-            this.eventId = eventId;
-        }
-    }
-
     public static class TunnelInfo{
         private String tunnelUuid;
         private String tunnelName;
@@ -159,7 +84,7 @@ public class TunnelAlarmCmd {
     public static class TunnelAlarmResponse{
         private boolean success;
         private String msg;
-        private List<TunnelInfo> tunnelInfos;
+        private List<TunnelInfo> inventories;
 
         public boolean isSuccess() {
             return success;
@@ -177,12 +102,12 @@ public class TunnelAlarmCmd {
             this.msg = msg;
         }
 
-        public List<TunnelInfo> getTunnelInfos() {
-            return tunnelInfos;
+        public List<TunnelInfo> getInventories() {
+            return inventories;
         }
 
-        public void setTunnelInfos(List<TunnelInfo> tunnelInfos) {
-            this.tunnelInfos = tunnelInfos;
+        public void setInventories(List<TunnelInfo> inventories) {
+            this.inventories = inventories;
         }
     }
 }

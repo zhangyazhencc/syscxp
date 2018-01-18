@@ -1,15 +1,11 @@
 package com.syscxp.alarm.header.log;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.fastjson.annotation.JSONType;
 import com.syscxp.alarm.header.BaseVO;
 import com.syscxp.alarm.header.resourcePolicy.PolicyVO;
 import com.syscxp.alarm.header.resourcePolicy.RegulationVO;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Map;
 
@@ -31,6 +27,7 @@ public class AlarmEventVO extends BaseVO {
     private String endpoint;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private AlarmStatus status;
 
     @Column
@@ -43,21 +40,27 @@ public class AlarmEventVO extends BaseVO {
     private String currentStep;
 
     @Column
-    private String regulationId;
+    private String regulationUuid;
 
     @Column
-    private String resourceUuid;
+    private String productUuid;
 
-    private String resourceName;
+    @Transient
+    private String productName;
 
+    @Transient
     private String accountUuid;
 
+    @Transient
     private Map pushedTags;
 
+    @Transient
     private Expression expression;
 
+    @Transient
     private PolicyVO policyVO;
 
+    @Transient
     private RegulationVO regulationVO;
 
     public String getId() {
@@ -133,20 +136,12 @@ public class AlarmEventVO extends BaseVO {
         this.pushedTags = pushedTags;
     }
 
-    public String getRegulationId() {
-        return regulationId;
+    public String getRegulationUuid() {
+        return regulationUuid;
     }
 
-    public void setRegulationId(String regulationId) {
-        this.regulationId = regulationId;
-    }
-
-    public String getResourceUuid() {
-        return resourceUuid;
-    }
-
-    public void setResourceUuid(String resourceUuid) {
-        this.resourceUuid = resourceUuid;
+    public void setRegulationUuid(String regulationUuid) {
+        this.regulationUuid = regulationUuid;
     }
 
     public PolicyVO getPolicyVO() {
@@ -165,12 +160,20 @@ public class AlarmEventVO extends BaseVO {
         this.regulationVO = regulationVO;
     }
 
-    public String getResourceName() {
-        return resourceName;
+    public String getProductUuid() {
+        return productUuid;
     }
 
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public String getAccountUuid() {
