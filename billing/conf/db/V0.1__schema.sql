@@ -467,5 +467,19 @@ VALUES ('996ba83db7dd11e7be460242ac110003', 'EXCLUSIVE', 'DEFAULT', '默认', 'D
 ('8fe292e4b7dd11e7be460242ac110003', 'EXCLUSIVE', 'DEFAULT', '默认', 'DEFAULT', '默认', 'SFP_1G', '光口千兆', '1000', '2018-01-18 13:44:14', '2017-10-23 10:33:08'),
 ('30d3720cb7d211e7aae30242ac110002', 'EXCLUSIVE', 'DEFAULT', '默认', 'DEFAULT', '默认', 'SHARE', '共享端口', '0', '2018-01-18 13:44:14', '2017-10-23 09:11:44'),
 ('6d56ddc2b7dd11e7be460242ac110003', 'EXCLUSIVE', 'DEFAULT', '默认', 'DEFAULT', '默认', 'RJ45_1G', '电口千兆', '500', '2018-01-18 13:44:14', '2017-10-23 10:32:10');
+## 互联云 默认 每M带宽价格
+INSERT INTO `ProductPriceUnitVO` ( uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
+VALUES ('b1db71b17d684f6eb1759c9bdf4df4b8', 'BANDWIDTH', 'DEFAULT', '默认', 'DEFAULT', '默认', '1M', '1M', '100', '2018-01-18 14:39:47', '2018-01-12 17:41:46');
+
+## VPN 默认不分连接点规格价格
+INSERT INTO `ProductPriceUnitVO` ( uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
+VALUES ('b593934ee71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '100M', '100M', '6000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
+('b59397b7e71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '10M', '10M', '3000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
+('b5939a11e71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '200M', '200M', '7000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
+('b5939b4ce71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '20M', '20M', '4000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
+('b5939d4ee71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '2M', '2M', '1000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
+('b5939f44e71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '50M', '50M', '5000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
+('b593a440e71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '5M', '5M', '2000', '2018-01-18 13:44:14', '2017-12-22 13:05:00');
+
 
 

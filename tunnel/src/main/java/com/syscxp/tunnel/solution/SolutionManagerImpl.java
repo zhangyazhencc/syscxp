@@ -311,11 +311,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         BigDecimal vpnPrice = new BigDecimal(0);
         for(SolutionVpnVO solutionVpnVO :solutionVpnVOS){
-            vpnPrice.add(solutionVpnVO.getCost());
-            dbf.getEntityManager().remove(solutionVpnVO);
+            vpnPrice = vpnPrice.add(solutionVpnVO.getCost());
         }
 
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).subtract(vpnPrice));
+
+        dbf.removeCollection(solutionVpnVOS,SolutionVpnVO.class);
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
         dbf.getEntityManager().merge(solutionVO);
 
