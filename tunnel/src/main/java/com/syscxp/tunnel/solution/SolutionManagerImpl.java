@@ -306,7 +306,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
 
         SimpleQuery<SolutionVpnVO> query = dbf.createQuery(SolutionVpnVO.class);
-        query.add(SolutionVpnVO_.solutionUuid, SimpleQuery.Op.EQ, vo.getUuid());
+        query.add(SolutionVpnVO_.solutionTunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
         List<SolutionVpnVO> solutionVpnVOS = query.list();
 
         BigDecimal vpnPrice = new BigDecimal(0);
