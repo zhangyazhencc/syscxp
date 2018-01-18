@@ -374,27 +374,9 @@ CREATE TABLE `ProductCategoryVO` (
   UNIQUE KEY `uuid` (`code`,`productTypeCode`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
-/*Data for the table `ProductCategoryVO` */
-
 LOCK TABLES `ProductCategoryVO` WRITE;
-
-insert  into `ProductCategoryVO`(`uuid`,`code`,`name`,`productTypeCode`,`productTypeName`,`status`,`lastOpDate`,`createDate`) values ('02b70538bd4511e7a08b525400c2a7e2','PORT','端口','PORT','端口','enable','2017-10-31 19:02:22','2017-10-30 17:18:12'),('19d625bebd4611e7a08b523200c2a7e3','VPN','VPN','VPN','VPN','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('1f33d476bd4611e7a08b525400c2a7e2','BANDWIDTH','带宽','ECP','互联云','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),('29dacd2ebd4611e7a08b525400c2a7e2','DISK','数据盘','ECP','互联云','enable','2017-10-30 17:59:39','2017-10-30 15:46:12'),('3575883fbd4611e7a08b525400c2a7e2','HOST','主机','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('417add07bd4611e7a08b525400c2a7e2','ABROAD','跨国','TUNNEL','专线','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),('4c4f62e9bd4611e7a08b525400c2a7e2','CITY','同城','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('53d2e637bd4611e7a08b525400c2a7e2','LONG','长传','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('59d625bebd4611e7a08b525400c2a7e2','REGION','区域','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('8fb5502ddbef11e7b42e060400ef5315','ResourcePool','资源池','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12');
-
-insert  into `ProductCategoryVO`(`uuid`,`code`,`name`,`productTypeCode`,`productTypeName`,`status`,`lastOpDate`,`createDate`) values
-('PORT','PORT','端口','PORT','端口','enable','2017-10-31 19:02:22','2017-10-30 17:18:12'),
-('VPN','VPN','VPN','VPN','VPN','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('BANDWIDTH','BANDWIDTH','带宽','ECP','互联云','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),
-('DISK','DISK','数据盘','ECP','互联云','enable','2017-10-30 17:59:39','2017-10-30 15:46:12'),
-('HOST','HOST','主机','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('ABROAD','ABROAD','跨国','TUNNEL','专线','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),
-('CITY','CITY','同城','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('LONG','LONG','长传','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('REGION','REGION','区域','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('RESOURCEPOOL','RESOURCEPOOL','资源池','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12');
-
-
+INSERT INTO `ProductCategoryVO` VALUES ('ABROAD','ABROAD','跨国','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 09:18:12'),('BANDWIDTH','BANDWIDTH','公网带宽','ECP','互联云','enable','2018-01-18 05:21:54','2017-10-30 09:18:12'),('CITY','CITY','同城','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('DISK','DISK','数据盘','ECP','互联云','enable','2018-01-02 01:43:41','2017-10-30 07:46:12'),('EXCLUSIVE','EXCLUSIVE','独享端口','PORT','端口','enable','2018-01-10 07:59:59','2017-10-30 07:46:12'),('HOST','HOST','云服务器','ECP','互联云','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('LONG','LONG','长传','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('POOLNETWORK','POOLNETWORK','资源池网络','ECP','互联云','enable','2018-01-18 05:21:54','2018-01-02 01:42:29'),('REGION','REGION','区域','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('RESOURCEPOOL','RESOURCEPOOL','资源池','ECP','互联云','enable','2018-01-02 01:46:37','2017-10-30 07:46:12'),('SHARE','SHARE','共享端口','PORT','端口','enable','2018-01-10 08:00:28','2017-10-30 07:46:12'),('VPN','VPN','VPN','VPN','VPN','enable','2018-01-02 01:42:29','2017-10-30 07:46:12');
 UNLOCK TABLES;
-
 
 DROP TABLE IF EXISTS `ProductPriceUnitVO`;
 CREATE TABLE `ProductPriceUnitVO` (
