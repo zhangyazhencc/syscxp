@@ -8,6 +8,7 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
@@ -175,28 +176,31 @@ public class TunnelBillingBase {
         String zoneUuidA = tunnelBase.getZoneUuid(nodeA.getUuid());
         String zoneUuidZ = tunnelBase.getZoneUuid(nodeZ.getUuid());
 
+        TunnelType tunnelType = tunnelBase.getTunnelType(nodeA, nodeZ, innerEndpointUuid);
+
         //专线费用
-        if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
-            if (nodeA.getCountry().equals("CHINA") && nodeZ.getCountry().equals("CHINA")) {  //国内互传
-                ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeZ, zoneUuidA, zoneUuidZ);
-                units.add(unit);
-            } else {                          //国外到国外
-                ProductPriceUnit unit = getTunnelPriceUnitAb(bandwidthOfferingUuid, nodeA, nodeZ);
-                units.add(unit);
-            }
-        } else {                          //跨国
-            EndpointVO endpointVO = dbf.findByUuid(innerEndpointUuid, EndpointVO.class);
-            NodeVO nodeB = dbf.findByUuid(endpointVO.getNodeUuid(), NodeVO.class);
-            String zoneUuidB = tunnelBase.getZoneUuid(nodeB.getUuid());
+        if(tunnelType == TunnelType.CITY || tunnelType == TunnelType.REGION || tunnelType == TunnelType.LONG){
+            ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid, tunnelType, zoneUuidA);
+            units.add(unit);
+        }else if(tunnelType == TunnelType.ABROAD){
+            ProductPriceUnit unit = getTunnelPriceUnitAb(bandwidthOfferingUuid, nodeA, nodeZ);
+            units.add(unit);
+        }else {
+            EndpointVO innerEndpoint = dbf.findByUuid(innerEndpointUuid, EndpointVO.class);
+            NodeVO nodeB = dbf.findByUuid(innerEndpoint.getNodeUuid(), NodeVO.class);
 
             if (nodeA.getCountry().equals("CHINA")) {
-                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeB, zoneUuidA, zoneUuidB);
+                TunnelType tunnelTypeAB = tunnelBase.getTunnelType(nodeA, nodeB, null);
+
                 ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeZ);
+                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, tunnelTypeAB, zoneUuidA);
 
                 units.add(unitInner);
                 units.add(unitOuter);
             } else {
-                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeZ, nodeB, zoneUuidZ, zoneUuidB);
+                TunnelType tunnelTypeBZ = tunnelBase.getTunnelType(nodeZ, nodeB, null);
+
+                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, tunnelTypeBZ, zoneUuidZ);
                 ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeA);
 
                 units.add(unitInner);
@@ -225,7 +229,7 @@ public class TunnelBillingBase {
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
         unit.setCategoryCode(Category.SHARE);
-        unit.setAreaCode(nodeVO.getCity());
+        unit.setAreaCode(nodeVO.getUuid());
         unit.setLineCode(endpointVO.getUuid());
         unit.setConfigCode(getSharePortBandwidthOffering(bandwidthOfferingUuid));
         return unit;
@@ -250,28 +254,29 @@ public class TunnelBillingBase {
     }
 
     /**
-     * 获取云专线单价--国内互传单价
+     * 获取云专线单价--国内互传单价-同城/同区域/长传
      */
-    public ProductPriceUnit getTunnelPriceUnitCN(String bandwidthOfferingUuid, NodeVO nodeA, NodeVO nodeZ, String zoneUuidA, String zoneUuidZ) {
+    public ProductPriceUnit getTunnelPriceUnitCN(String bandwidthOfferingUuid, TunnelType tunnelType, String zoneUuid) {
         ProductPriceUnit unit = new ProductPriceUnit();
 
         Category category;
         String areaCode;
         String lineCode;
 
-        if (nodeA.getCity().equals(nodeZ.getCity())) {  //同城
+        if(tunnelType == TunnelType.CITY){
             category = Category.CITY;
             areaCode = "DEFAULT";
             lineCode = "DEFAULT";
-        } else if (zoneUuidA != null && zoneUuidZ != null && zoneUuidA.equals(zoneUuidZ)) { //同区域
+        }else if(tunnelType == TunnelType.REGION){
             category = Category.REGION;
-            areaCode = zoneUuidA;
+            areaCode = zoneUuid;
             lineCode = "DEFAULT";
-        } else {                      //长传
+        }else{
             category = Category.LONG;
             areaCode = "DEFAULT";
             lineCode = "DEFAULT";
         }
+
         unit.setProductTypeCode(ProductType.TUNNEL);
         unit.setCategoryCode(category);
         unit.setAreaCode(areaCode);

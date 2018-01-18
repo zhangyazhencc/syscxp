@@ -46,6 +46,13 @@ public class TunnelAO {
 
     @Column
     @Enumerated(EnumType.STRING)
+    private TunnelType type;
+
+    @Column
+    private String innerEndpointUuid;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private TunnelMonitorState monitorState;
 
     @Column
@@ -217,5 +224,21 @@ public class TunnelAO {
 
     public void setMonitorCidr(String monitorCidr) {
         this.monitorCidr = monitorCidr;
+    }
+
+    public TunnelType getType() {
+        return type;
+    }
+
+    public void setType(TunnelType type) {
+        this.type = type;
+    }
+
+    public String getInnerEndpointUuid() {
+        return innerEndpointUuid;
+    }
+
+    public void setInnerEndpointUuid(String innerEndpointUuid) {
+        this.innerEndpointUuid = innerEndpointUuid;
     }
 }

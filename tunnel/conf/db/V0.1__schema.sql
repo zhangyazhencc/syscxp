@@ -340,6 +340,8 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `distance` decimal(10,2) NOT NULL COMMENT '距离',
   `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:开通，未开通,未支付',
   `status` varchar(32) NOT NULL DEFAULT 'Disconnected' COMMENT '状态',
+  `type` varchar(32) NOT NULL COMMENT '专线类型',
+  `innerEndpointUuid` varchar(32) DEFAULT NULL COMMENT '互联连接点',
   `monitorState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启监控',
   `deleted` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
@@ -351,7 +353,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, type, innerEndpointUuid, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted IS NULL;
 ##带宽配置表
 CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (

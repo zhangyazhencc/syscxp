@@ -22,12 +22,13 @@ public class ControllerCommands {
          * @param mplsConfigList mpls交换机命令
          * @return 启动监控机命令
          */
-        public static TunnelMonitorCommand valueOf(String tunnel_id, List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
+        public static TunnelMonitorCommand valueOf(String tunnel_id,boolean rollback,List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
 
             TunnelMonitorCommand tunnelMonitorCmd = new TunnelMonitorCommand();
             tunnelMonitorCmd.setSdn_switches(sdnConfigList);
             tunnelMonitorCmd.setMpls_switches(mplsConfigList);
             tunnelMonitorCmd.setTunnel_id(tunnel_id);
+            tunnelMonitorCmd.setRollback(rollback);
 
             return tunnelMonitorCmd;
         }
@@ -287,8 +288,8 @@ public class ControllerCommands {
      */
     public static class ControllerTraceResponse {
         private boolean success;
-
-        private List<List<String>> results;
+        private Boolean rollback = true;
+        private List<List<String>> msg;
 
         public boolean isSuccess() {
             return success;
@@ -298,12 +299,20 @@ public class ControllerCommands {
             this.success = success;
         }
 
-        public List<List<String>> getResults() {
-            return results;
+        public Boolean getRollback() {
+            return rollback;
         }
 
-        public void setResults(List<List<String>> results) {
-            this.results = results;
+        public void setRollback(Boolean rollback) {
+            this.rollback = rollback;
+        }
+
+        public List<List<String>> getMsg() {
+            return msg;
+        }
+
+        public void setMsg(List<List<String>> msg) {
+            this.msg = msg;
         }
     }
 
