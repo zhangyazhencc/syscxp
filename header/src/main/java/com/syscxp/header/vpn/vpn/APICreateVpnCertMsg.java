@@ -10,7 +10,7 @@ import com.syscxp.header.notification.ApiNotification;
 public class APICreateVpnCertMsg extends APIVpnMessage {
     @APIParam
     private String name;
-    @APIParam
+    @APIParam(required = false, maxLength = 255)
     private String description;
 
     public String getDescription() {
