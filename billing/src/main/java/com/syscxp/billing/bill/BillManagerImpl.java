@@ -65,7 +65,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
         Map<String, MonetaryResult> map = new HashMap<>();
         if (bills != null && bills.size() > 0) {
             map = list2Map(bills);
-            List<MonetaryOrderType> monetaries = getMonetaryOrderType(msg.getSession().getAccountUuid(), startTime, endTime);
+            List<MonetaryOrderType> monetaries = getMonetaryOrderType(vo.getAccountUuid(), startTime, endTime);
             for (MonetaryOrderType monetary : monetaries) {
                 MonetaryResult result = map.get(monetary.getType().name());
                 if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.UPGRADE) {
