@@ -3,6 +3,7 @@ package com.syscxp.alarm.resourcePolicy;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.syscxp.alarm.AlarmGlobalProperty;
+import com.syscxp.alarm.AlarmUtil;
 import com.syscxp.alarm.header.log.AlarmLogVO;
 import com.syscxp.alarm.header.log.AlarmLogVO_;
 import com.syscxp.alarm.header.resourcePolicy.*;
@@ -813,7 +814,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
         RestAPIResponse raps = new RestAPIResponse();
         try {
-            raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+            raps = restf.syncJsonPost(AlarmUtil.getProductApiUrl(ProductType.TUNNEL),
                     RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
 
             reply = JSON.parseObject(raps.getResult(), APIQueryTunnelDetailForAlarmReply.class);
