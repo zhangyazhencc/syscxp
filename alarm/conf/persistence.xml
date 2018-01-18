@@ -18,6 +18,7 @@
         <class>com.syscxp.sms.header.SmsVO</class>
         <class>com.syscxp.alarm.header.log.AlarmTimeRecordVO</class>
         <class>com.syscxp.alarm.header.log.AlarmLogVO</class>
-
+        <class>com.syscxp.alarm.header.log.AlarmEventVO</class>
+        <class>com.syscxp.alarm.header.log.AlarmTemplateVO</class>
     </persistence-unit>
 </persistence>

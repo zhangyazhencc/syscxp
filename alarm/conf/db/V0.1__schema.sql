@@ -75,7 +75,6 @@ ALTER TABLE JobQueueVO ADD CONSTRAINT fkJobQueueVOManagementNodeVO FOREIGN KEY (
 
 /*Table structure for table `AlarmLogVO` */
 DROP TABLE IF EXISTS `AlarmLogVO`;
-
 CREATE TABLE `AlarmLogVO` (
   `uuid` varchar(32) NOT NULL,
   `productUuid` varchar(32) DEFAULT NULL,
@@ -87,13 +86,42 @@ CREATE TABLE `AlarmLogVO` (
   `smsContent` varchar(256) DEFAULT NULL COMMENT '短信内容',
   `mailContent` varchar(256) DEFAULT NULL COMMENT '邮件内容',
   `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
-  `alarmTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `resumeTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `alarmTime` timestamp NULL DEFAULT '0000-00-00 00:00:00',
+  `resumeTime` timestamp NULL DEFAULT '0000-00-00 00:00:00',
   `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `regulationUuid` varchar(32) DEFAULT NULL,
-  `count` int(10) DEFAULT NULL COMMENT '计数',
+  `count` int(10) DEFAULT NULL COMMENT '计数器',
   `policyUuid` varchar(256) DEFAULT NULL COMMENT '策略id',
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `AlarmEventVO`;
+CREATE TABLE `AlarmEventVO` (
+  `uuid` varchar(32) NOT NULL,
+  `id` varchar(64) NOT NULL COMMENT 'eventId',
+  `expressionUuid` varchar(32) NOT NULL COMMENT '规则ID',
+  `endpoint` varchar(64) NOT NULL COMMENT 'host',
+  `status` varchar(127) NOT NULL COMMENT '状态 OK/PROBLEM',
+  `leftValue` varchar(256) NOT NULL COMMENT '告警值',
+  `currentStep` varchar(127) NOT NULL COMMENT '当前告警次数',
+  `eventTime` timestamp NULL DEFAULT NULL COMMENT '告警时间',
+  `productUuid` varchar(32) NOT NULL COMMENT '产品ID',
+  `regulationUuid` varchar(32) NOT NULL COMMENT '策略规则ID',
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `AlarmTemplateVO`;
+CREATE TABLE `AlarmTemplateVO` (
+  `uuid` varchar(32) NOT NULL,
+  `productType` varchar(255) DEFAULT NULL COMMENT '产品类型',
+  `monitorTargetUuid` varchar(32) DEFAULT NULL COMMENT '规则ID',
+  `template` varchar(255) DEFAULT NULL COMMENT '模板',
+  `status` varchar(127) DEFAULT NULL COMMENT '报警状态',
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
