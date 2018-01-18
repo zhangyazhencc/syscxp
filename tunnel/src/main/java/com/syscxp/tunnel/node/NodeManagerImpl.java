@@ -297,7 +297,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             query.addCriteria(Criteria.where("machineRoomInfo.outer.operatorCategory").is(msg.getOperatorCategory()));
         }
         if(msg.getProvince() != null){
-            query.addCriteria(Criteria.where("province").is(msg.getProvince()));
+            String[] citys = msg.getProvince().split(",");
+            query.addCriteria(Criteria.where("province").in(Arrays.asList(msg.getProvince().split(","))));
         }
         if(msg.getRoomLevel() != null){
             query.addCriteria(Criteria.where("machineRoomInfo.outer.roomLevel").is(msg.getRoomLevel()));
