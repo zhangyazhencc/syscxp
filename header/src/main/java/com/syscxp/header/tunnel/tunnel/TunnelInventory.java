@@ -30,6 +30,8 @@ public class TunnelInventory {
     private Double distance;
     private String state;
     private String status;
+    private String type;
+    private String innerEndpointUuid;
     private String monitorState;
     private Integer duration;
     private String productChargeModel;
@@ -52,6 +54,8 @@ public class TunnelInventory {
         inv.setDistance(vo.getDistance());
         inv.setState(vo.getState().toString());
         inv.setStatus(vo.getStatus().toString());
+        inv.setType(vo.getType().toString());
+        inv.setInnerEndpointUuid(vo.getInnerEndpointUuid());
         inv.setMonitorState(vo.getMonitorState().toString());
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel().toString());
@@ -221,5 +225,21 @@ public class TunnelInventory {
 
     public void setMonitorCidr(String monitorCidr) {
         this.monitorCidr = monitorCidr;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getInnerEndpointUuid() {
+        return innerEndpointUuid;
+    }
+
+    public void setInnerEndpointUuid(String innerEndpointUuid) {
+        this.innerEndpointUuid = innerEndpointUuid;
     }
 }

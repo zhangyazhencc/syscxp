@@ -30,7 +30,7 @@ public class EdgeLineInventory {
     private String endpointUuid;
     private String endpointName;
     private String description;
-    private EdgeLineState state;
+    private String state;
     private Integer prices;
     private Timestamp expireDate;
     private Timestamp lastOpDate;
@@ -47,7 +47,7 @@ public class EdgeLineInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setEndpointName(vo.getInterfaceVO().getEndpointVO().getName());
         inv.setDescription(vo.getDescription());
-        inv.setState(vo.getState());
+        inv.setState(vo.getState().toString());
         inv.setPrices(vo.getPrices());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -111,11 +111,11 @@ public class EdgeLineInventory {
         this.description = description;
     }
 
-    public EdgeLineState getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(EdgeLineState state) {
+    public void setState(String state) {
         this.state = state;
     }
 
