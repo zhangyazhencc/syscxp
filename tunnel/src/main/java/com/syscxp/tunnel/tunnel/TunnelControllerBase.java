@@ -64,14 +64,20 @@ public class TunnelControllerBase extends AbstractTunnel {
             handle((CreateTunnelMsg) msg);
         }else if(msg instanceof DeleteTunnelMsg){
             handle((DeleteTunnelMsg) msg);
+        }else if(msg instanceof DeleteTunnelZKMsg){
+            handle((DeleteTunnelZKMsg) msg);
         }else if(msg instanceof EnabledTunnelMsg){
             handle((EnabledTunnelMsg) msg);
+        }else if(msg instanceof CreateTunnelZKMsg){
+            handle((CreateTunnelZKMsg) msg);
         }else if(msg instanceof DisabledTunnelMsg){
             handle((DisabledTunnelMsg) msg);
         }else if(msg instanceof ModifyTunnelBandwidthMsg){
             handle((ModifyTunnelBandwidthMsg) msg);
         }else if(msg instanceof ModifyTunnelPortsMsg){
             handle((ModifyTunnelPortsMsg) msg);
+        }else if(msg instanceof ModifyTunnelPortsZKMsg){
+            handle((ModifyTunnelPortsZKMsg) msg);
         }else if(msg instanceof ListTraceRouteMsg){
             handle((ListTraceRouteMsg) msg);
         }else if(msg instanceof RevertTunnelMsg){
@@ -245,6 +251,42 @@ public class TunnelControllerBase extends AbstractTunnel {
         });
     }
 
+    private void handle(DeleteTunnelZKMsg msg){
+        DeleteTunnelZKReply reply = new DeleteTunnelZKReply();
+
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.STOP_TUNNEL_ZK, msg.getCommands(), new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发删除ZK数据成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(msg.getCommands());
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发删除ZK数据失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(msg.getCommands());
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
     private void handle(EnabledTunnelMsg msg){
         EnabledTunnelReply reply = new EnabledTunnelReply();
 
@@ -284,6 +326,45 @@ public class TunnelControllerBase extends AbstractTunnel {
             @Override
             public void fail(ErrorCode errorCode) {
                 logger.info("下发启用失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(CreateTunnelZKMsg msg){
+        CreateTunnelZKReply reply = new CreateTunnelZKReply();
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.START_TUNNEL_ZK, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发保存ZK数据成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发保存ZK数据失败！");
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
@@ -404,6 +485,45 @@ public class TunnelControllerBase extends AbstractTunnel {
             @Override
             public void fail(ErrorCode errorCode) {
                 logger.info("下发更改端口失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+
+    }
+
+    private void handle(ModifyTunnelPortsZKMsg msg){
+        ModifyTunnelPortsZKReply reply = new ModifyTunnelPortsZKReply();
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_PORTS_ZK, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发更改端口ZK数据修改成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发更改端口ZK数据修改失败！");
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
