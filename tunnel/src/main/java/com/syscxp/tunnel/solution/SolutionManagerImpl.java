@@ -304,7 +304,18 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     private void handle(APIDeleteSolutionTunnelMsg msg) {
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
-        solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
+
+        SimpleQuery<SolutionVpnVO> query = dbf.createQuery(SolutionVpnVO.class);
+        query.add(SolutionVpnVO_.solutionTunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
+        List<SolutionVpnVO> solutionVpnVOS = query.list();
+
+        BigDecimal vpnPrice = new BigDecimal(0);
+        for(SolutionVpnVO solutionVpnVO :solutionVpnVOS){
+            vpnPrice.add(solutionVpnVO.getCost());
+            dbf.getEntityManager().remove(solutionVpnVO);
+        }
+
+        solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).subtract(vpnPrice));
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
         dbf.getEntityManager().merge(solutionVO);
 
@@ -328,11 +339,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     @Transactional
     private void handle(APIDeleteSolutionMsg msg) {
 
-        UpdateQuery.New(SolutionInterfaceVO.class).condAnd(SolutionInterfaceVO_.uuid,
+        UpdateQuery.New(SolutionInterfaceVO.class).condAnd(SolutionInterfaceVO_.solutionUuid,
                 SimpleQuery.Op.EQ, msg.getUuid()).delete();
-        UpdateQuery.New(SolutionTunnelVO.class).condAnd(SolutionTunnelVO_.uuid,
+        UpdateQuery.New(SolutionVpnVO.class).condAnd(SolutionVpnVO_.solutionUuid,
                 SimpleQuery.Op.EQ, msg.getUuid()).delete();
-        UpdateQuery.New(SolutionVpnVO.class).condAnd(SolutionVpnVO_.uuid,
+        UpdateQuery.New(SolutionTunnelVO.class).condAnd(SolutionTunnelVO_.solutionUuid,
                 SimpleQuery.Op.EQ, msg.getUuid()).delete();
 
         UpdateQuery.New(SolutionVO.class).condAnd(SolutionVO_.uuid,
