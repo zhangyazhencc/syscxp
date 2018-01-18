@@ -104,7 +104,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         try {
 
             ControllerCommands.ControllerTraceResponse traceResponse = restf.syncJsonPost(url, command, ControllerCommands.ControllerTraceResponse.class);
-            reply.setResults(traceResponse.getResults());
+            reply.setMsg(traceResponse.getMsg());
 
             bus.reply(msg, reply);
         } catch (Exception e) {

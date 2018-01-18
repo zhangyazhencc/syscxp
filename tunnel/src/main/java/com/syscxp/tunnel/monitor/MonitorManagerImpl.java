@@ -181,16 +181,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                try {
-                    stopControllerMonitor(tunnelVO.getUuid());
-                } catch (Exception e) {
-                    logger.error("开启监控-回滚关闭控制器监控失败，启动job: " + tunnelVO.getName() + " Error: " + e.getMessage());
-                    TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-                    monitorJob.setTunnelUuid(tunnelVO.getUuid());
-                    monitorJob.setJobType(MonitorJobType.STOP);
-
-                    jobf.execute("开启监控失败回滚-关闭监控", Platform.getManagementServerId(), monitorJob);
-                }
+                stopControllerMonitor(tunnelVO.getUuid());
 
                 trigger.rollback();
             }
@@ -213,22 +204,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     private void handle(APIStopTunnelMonitorMsg msg) {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
-        try {
-            stopControllerMonitor(tunnelVO.getUuid());
-            logger.info("关闭监控-下发控制器成功：" + tunnelVO.getName());
-        } catch (Exception e) {
-            logger.error("关闭监控-下发控制器失败，启动job: " + tunnelVO.getName() + " Error: " + e.getMessage());
-            TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-            monitorJob.setTunnelUuid(tunnelVO.getUuid());
-            monitorJob.setJobType(MonitorJobType.STOP);
 
-            jobf.execute("关闭监控失败-停止监控", Platform.getManagementServerId(), monitorJob);
-        }
-
+        stopControllerMonitor(tunnelVO.getUuid());
         try {
             stopAgentMonitor(tunnelVO.getUuid());
         } catch (Exception e) {
-            logger.info("关闭监控-关闭agent失败！");
+            logger.info(String.format("failed to stop agent monitor[tunnel: %s] Error: %s", tunnelVO.getName(), e.getMessage()));
         }
 
         tunnelVO.setStatus(TunnelStatus.Connected);
@@ -280,10 +261,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
             ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-            if (needRollback(response)) {
-                cmd.setRollback(true);
-                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-            }
 
             if (response.isSuccess()) {
                 UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
@@ -294,6 +271,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                 throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Error: %s", e.getMessage()));
             } else {
+                if (needRollback(response)) {
+                    cmd.setRollback(true);
+                    sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+                }
+
                 tunnelVO.setMonitorCidr(null);
                 tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
                 tunnelVO.setStatus(TunnelStatus.Connected);
@@ -382,13 +364,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
 
         ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-        if (needRollback(response)) {
-            cmd.setRollback(true);
-            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
 
-            if (!response.isSuccess())
-                throw new RuntimeException(String.format("Failure to execute RYU start command! Error:%s"
-                        , response.getMsg()));
+        logger.info("========= response: " + response.isRollback());
+        if (!response.isSuccess()) {
+            if (needRollback(response)) {
+                cmd.setRollback(true);
+                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            }
+
+            throw new RuntimeException(String.format("Failure to execute RYU start command [TunnelUuid: %s]! Error:%s"
+                    , cmd.getTunnel_id(), response.getMsg()));
         }
     }
 
@@ -432,20 +417,22 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
 
         ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-        if (needRollback(response)) {
-            cmd.setRollback(true);
-            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isSuccess()) {
+            if (needRollback(response)) {
+                cmd.setRollback(true);
+                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            }
 
-            if (!response.isSuccess())
-                throw new RuntimeException(String.format("Failure to execute RYU modify command! Error:%s"
-                        , response.getMsg()));
+            throw new RuntimeException(String.format("Failure to execute RYU modify command [TunnelUuid : %s]! Error:%s"
+                    , cmd.getTunnel_id(), response.getMsg()));
         }
+
     }
 
     public boolean needRollback(ControllerCommands.ControllerRestResponse response) {
         boolean needRollback = false;
 
-        if (response.isRollback() == null || response.isRollback())
+        if (response.isRollback() != null || response.isRollback())
             needRollback = false;
         else
             needRollback = true;

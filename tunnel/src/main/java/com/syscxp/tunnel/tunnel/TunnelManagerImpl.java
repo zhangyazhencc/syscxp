@@ -674,6 +674,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         @Override
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
+                                jobf.removeJob(tunnel.getUuid(), RevertTunnelControlJob.class);
+
                                 logger.info(String.format("Successfully restart tunnel[uuid:%s].", tunnel.getUuid()));
                                 trigger.next();
                             } else {
@@ -1058,10 +1060,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         boolean crossTunnel = false;        //是否存在共点专线
         Integer vsi;                        //VSI
         Integer crossVlan = null;           //共点VLAN
-        boolean abroad = false;             //是否跨国
-        if(msg.getInnerConnectedEndpointUuid() != null){
-            abroad = true;
-        }
+
+        TunnelType tunnelType = tunnelBase.getTunnelType(nvoA, nvoZ, msg.getInnerConnectedEndpointUuid());
 
         //首先判断是否存在共点专线，若存在，获取VSI和VLAN
         if (msg.getCrossTunnelUuid() != null) {
@@ -1115,6 +1115,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setDuration(msg.getDuration());
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
+        vo.setType(tunnelType);
+        vo.setInnerEndpointUuid(msg.getInnerConnectedEndpointUuid());
         vo.setExpireDate(null);
         vo.setDescription(msg.getDescription());
         vo.setProductChargeModel(msg.getProductChargeModel());
@@ -1165,7 +1167,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
-        if(abroad){     //跨国
+        if(tunnelType == TunnelType.CHINA2ABROAD){     //跨国互联
             doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,vlanA,vlanZ,switchPortVOA,switchPortVOZ,vo);
         }
 
@@ -1320,6 +1322,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
         NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
 
+        TunnelType tunnelType = tunnelBase.getTunnelType(nvoA, nvoZ, msg.getInnerConnectedEndpointUuid());
+
         TunnelVO vo = new TunnelVO();
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
@@ -1331,6 +1335,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
+        vo.setType(tunnelType);
+        vo.setInnerEndpointUuid(msg.getInnerConnectedEndpointUuid());
         vo.setExpireDate(null);
         vo.setDescription(msg.getDescription());
         vo.setProductChargeModel(msg.getProductChargeModel());
@@ -1342,8 +1348,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,msg.getaVlan(),"A");
         tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,msg.getzVlan(),"Z");
 
-        //如果跨国,将出海口设备添加至TunnelSwitchPort
-        if (msg.getInnerConnectedEndpointUuid() != null) {
+        if(tunnelType == TunnelType.CHINA2ABROAD){     //跨国互联
             doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,msg.getaVlan(),msg.getzVlan(),switchPortVOA,switchPortVOZ,vo);
         }
 
@@ -1564,6 +1569,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
                                 logger.info(String.format("Successfully update vlan of tunnel[uuid:%s].", vo.getUuid()));
+
+                                jobf.removeJob(vo.getUuid(), RevertTunnelControlJob.class);
+
                                 trigger.next();
                             } else {
                                 logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
@@ -1768,15 +1776,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         EndpointVO evoZ = dbf.findByUuid(tunnelSwitchPortZ.getEndpointUuid(),EndpointVO.class);
         String interfaceUuidZ = tunnelSwitchPortZ.getInterfaceUuid();
 
-        String innerEndpointUuid = null;
-        TunnelSwitchPortVO tunnelSwitchPortB = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "B")
-                .find();
-        if (tunnelSwitchPortB != null) {
-            innerEndpointUuid = tunnelSwitchPortB.getEndpointUuid();
-        }
-
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
         //调整次数记录表
@@ -1797,7 +1796,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductName(vo.getName());
         orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo,bandwidthOfferingVO.getBandwidth()));
         orderMsg.setCallBackData(RESTApiDecoder.dump(uc));
-        orderMsg.setUnits(tunnelBillingBase.getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), interfaceUuidA, interfaceUuidZ, evoA, evoZ, innerEndpointUuid));
+        orderMsg.setUnits(tunnelBillingBase.getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), interfaceUuidA, interfaceUuidZ, evoA, evoZ, vo.getInnerEndpointUuid()));
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -2241,6 +2240,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    jobf.removeJob(vo.getUuid(), RevertTunnelControlJob.class);
+
                     logger.info("恢复专线成功");
                 } else {
                     logger.info("下发恢复通道失败，创建任务：RevertTunnelControlJob");
@@ -2286,6 +2287,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    jobf.removeJob(vo.getUuid(), EnabledOrDisabledTunnelControlJob.class);
+
                     new TunnelBase().enabledTunnelJob(vo, "恢复专线连接");
                     completionTask.success(TunnelInventory.valueOf(dbf.reload(vo)));
                 } else {
@@ -2313,6 +2316,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    jobf.removeJob(vo.getUuid(), EnabledOrDisabledTunnelControlJob.class);
+
                     new TunnelBase().disabledTunnelJob(vo, "关闭专线连接");
                     completionTask.success(TunnelInventory.valueOf(dbf.reload(vo)));
                 } else {
@@ -2335,6 +2340,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APICreateQinqMsg msg) {
         APICreateQinqEvent evt = new APICreateQinqEvent(msg.getId());
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        String revertCommands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
 
         String uuid = Platform.getUuid();
         QinqVO qinqVO = new QinqVO();
@@ -2379,9 +2386,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
+
+                            jobf.removeJob(vo.getUuid(), RevertTunnelControlJob.class);
+
                             trigger.next();
                         } else {
                             logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
+
+                            //恢复Tunnel
+                            if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                                logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
+                                taskRevertTunnel(vo,revertCommands);
+                            }
+
                             trigger.fail(reply.getError());
                         }
                     }
@@ -2419,6 +2436,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
         TunnelVO vo = dbf.findByUuid(qinqVO.getTunnelUuid(), TunnelVO.class);
 
+        String revertCommands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
+
         FlowChain deleteQinq = FlowChainBuilder.newSimpleFlowChain();
         deleteQinq.setName(String.format("delete-tunnel-%s-innervlan", vo.getUuid()));
         deleteQinq.then(new Flow() {
@@ -2453,9 +2472,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         if (reply.isSuccess()) {
                             logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
 
+                            jobf.removeJob(vo.getUuid(), RevertTunnelControlJob.class);
+
                             trigger.next();
                         } else {
                             logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
+
+                            //恢复Tunnel
+                            if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                                logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
+                                taskRevertTunnel(vo,revertCommands);
+                            }
 
                             trigger.fail(reply.getError());
                         }
@@ -2699,19 +2726,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        String innerEndpointUuid = null;
-        TunnelSwitchPortVO tunnelSwitchPortVOB = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "B")
-                .find();
-        if (tunnelSwitchPortVOB != null) {
-            innerEndpointUuid = tunnelSwitchPortVOB.getEndpointUuid();
-        }
+
         EndpointVO endpointVOA = dbf.findByUuid(tunnelSwitchPortVOA.getEndpointUuid(), EndpointVO.class);
         EndpointVO endpointVOZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(), EndpointVO.class);
 
         APIGetModifyProductPriceDiffMsg pmsg = new APIGetModifyProductPriceDiffMsg();
-        pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), tunnelSwitchPortVOA.getInterfaceUuid(), tunnelSwitchPortVOZ.getInterfaceUuid(), endpointVOA, endpointVOZ, innerEndpointUuid));
+        pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), tunnelSwitchPortVOA.getInterfaceUuid(), tunnelSwitchPortVOZ.getInterfaceUuid(), endpointVOA, endpointVOZ, vo.getInnerEndpointUuid()));
         pmsg.setProductUuid(msg.getUuid());
         pmsg.setAccountUuid(vo.getOwnerAccountUuid());
         pmsg.setExpiredTime(dbf.findByUuid(msg.getUuid(), TunnelVO.class).getExpireDate());
@@ -2832,7 +2852,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                     .delete();
                         }
                         ListTraceRouteReply listTraceRouteReply = reply.castReply();
-                        List<List<String>> results = listTraceRouteReply.getResults();
+                        List<List<String>> results = listTraceRouteReply.getMsg();
                         for (List<String> result : results) {
                             for (String s : result) {
                                 s = s.trim().replaceAll("\\s+ms", "ms");

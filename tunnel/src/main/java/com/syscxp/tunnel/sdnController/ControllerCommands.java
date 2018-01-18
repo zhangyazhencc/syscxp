@@ -288,8 +288,8 @@ public class ControllerCommands {
      */
     public static class ControllerTraceResponse {
         private boolean success;
-
-        private List<List<String>> results;
+        private Boolean rollback = true;
+        private List<List<String>> msg;
 
         public boolean isSuccess() {
             return success;
@@ -299,12 +299,20 @@ public class ControllerCommands {
             this.success = success;
         }
 
-        public List<List<String>> getResults() {
-            return results;
+        public Boolean getRollback() {
+            return rollback;
         }
 
-        public void setResults(List<List<String>> results) {
-            this.results = results;
+        public void setRollback(Boolean rollback) {
+            this.rollback = rollback;
+        }
+
+        public List<List<String>> getMsg() {
+            return msg;
+        }
+
+        public void setMsg(List<List<String>> msg) {
+            this.msg = msg;
         }
     }
 

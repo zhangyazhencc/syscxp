@@ -5,11 +5,13 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.db.*;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.monitor.SpeedTestTunnelVO;
 import com.syscxp.header.tunnel.monitor.SpeedTestTunnelVO_;
 import com.syscxp.header.tunnel.monitor.TunnelMonitorVO;
 import com.syscxp.header.tunnel.monitor.TunnelMonitorVO_;
+import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
@@ -64,6 +66,44 @@ public class TunnelBase {
             glock.unlock();
         }
         return vsi;
+    }
+
+    /**
+     * 获取云专线类型
+     */
+    public TunnelType getTunnelType(NodeVO nodeA, NodeVO nodeZ, String innerEndpointUuid){
+
+        String zoneUuidA = getZoneUuid(nodeA.getUuid());
+        String zoneUuidZ = getZoneUuid(nodeZ.getUuid());
+
+        boolean isTransnational = false;
+        if (nodeA.getCountry().equals("CHINA") && !nodeZ.getCountry().equals("CHINA")) {
+            isTransnational = true;
+        }
+        if (!nodeA.getCountry().equals("CHINA") && nodeZ.getCountry().equals("CHINA")) {
+            isTransnational = true;
+        }
+
+        if(isTransnational){    //跨国
+            EndpointVO endpointVO = dbf.findByUuid(innerEndpointUuid, EndpointVO.class);
+            if(endpointVO.getEndpointType() == EndpointType.VIRTUAL){   //直通
+                return TunnelType.CHINA1ABROAD;
+            }else{                                                      //互联
+                return TunnelType.CHINA2ABROAD;
+            }
+        }else{                  //国内互传 或 国外到国外
+            if (nodeA.getCountry().equals("CHINA") && nodeZ.getCountry().equals("CHINA")) {  //国内互传
+                if (nodeA.getCity().equals(nodeZ.getCity())) {  //同城
+                    return TunnelType.CITY;
+                } else if (zoneUuidA != null && zoneUuidZ != null && zoneUuidA.equals(zoneUuidZ)) { //同区域
+                    return TunnelType.REGION;
+                } else {                      //长传
+                    return TunnelType.LONG;
+                }
+            } else {                                                                        //国外到国外
+                return TunnelType.ABROAD;
+            }
+        }
     }
 
     /**

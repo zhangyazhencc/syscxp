@@ -52,13 +52,13 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE  `syscxp_vpn`.`AsyncRestVO` (
-	`id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`requestData` TEXT NOT NULL,
 	`state` varchar(32) NOT NULL,
 	`result` varchar(32) DEFAULT NULL,
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
-	PRIMARY KEY  (`id`)
+	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 # Foreign keys for table JobQueueEntryVO
 
