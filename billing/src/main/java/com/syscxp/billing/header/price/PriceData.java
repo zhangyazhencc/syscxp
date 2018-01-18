@@ -19,6 +19,8 @@ public class PriceData {
     private BigDecimal config50MPrice;
     private BigDecimal config100MPrice;
     private BigDecimal config200MPrice;
+    private BigDecimal config300MPrice;
+    private BigDecimal config400MPrice;
     private BigDecimal config500MPrice;
     private BigDecimal config1GPrice;
     private BigDecimal config2GPrice;
@@ -195,5 +197,21 @@ public class PriceData {
 
     public void setConfigGT2GPrice(BigDecimal configGT2GPrice) {
         this.configGT2GPrice = configGT2GPrice;
+    }
+
+    public BigDecimal getConfig300MPrice() {
+        return config300MPrice;
+    }
+
+    public void setConfig300MPrice(BigDecimal config300MPrice) {
+        this.config300MPrice = config300MPrice;
+    }
+
+    public BigDecimal getConfig400MPrice() {
+        return config400MPrice;
+    }
+
+    public void setConfig400MPrice(BigDecimal config400MPrice) {
+        this.config400MPrice = config400MPrice;
     }
 }
