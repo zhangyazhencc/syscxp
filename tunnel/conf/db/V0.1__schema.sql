@@ -679,6 +679,8 @@ CREATE TABLE SolutionVpnVO (
   CONSTRAINT `fkSolutionVpnVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE SolutionVpnVO ADD CONSTRAINT fkSolutionVpnVOSolutionTunnelVO FOREIGN KEY (solutionTunnelUuid) REFERENCES SolutionTunnelVO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
+
 ########################################################
 
 CREATE INDEX idxTaskResourceVOcreateDate ON TaskResourceVO (lastOpDate);

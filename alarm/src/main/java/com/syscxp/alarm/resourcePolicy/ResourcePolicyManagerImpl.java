@@ -3,6 +3,7 @@ package com.syscxp.alarm.resourcePolicy;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.syscxp.alarm.AlarmGlobalProperty;
+import com.syscxp.alarm.AlarmUtil;
 import com.syscxp.alarm.header.log.AlarmLogVO;
 import com.syscxp.alarm.header.log.AlarmLogVO_;
 import com.syscxp.alarm.header.resourcePolicy.*;
@@ -36,6 +37,7 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
+import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmMsg;
@@ -180,7 +182,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         oldPolicy.setBindResources(getCount(oldPolicyUuid));
                         dbf.updateAndRefresh(oldPolicy);
                         PolicyVO newPolicy = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
-                        newPolicy.setBindResources(getCount( msg.getPolicyUuid()));
+                        newPolicy.setBindResources(getCount(msg.getPolicyUuid()));
                         dbf.updateAndRefresh(newPolicy);
 
                     } else {
@@ -190,7 +192,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         refVO.setResourceUuid(msg.getResourceUuid());
                         refVO.setProductType(newPolicyVO.getProductType());
                         dbf.persistAndRefresh(refVO);
-                        newPolicyVO.setBindResources(getCount( policyUuid));
+                        newPolicyVO.setBindResources(getCount(policyUuid));
                         dbf.updateAndRefresh(newPolicyVO);
                     }
                 } else {
@@ -201,10 +203,10 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         sb.append(resourcePolicyRefVO.getPolicyUuid());
                         dbf.remove(resourcePolicyRefVO);
                         PolicyVO newPolicyVO = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
-                        newPolicyVO.setBindResources(getCount( policyUuid));
+                        newPolicyVO.setBindResources(getCount(policyUuid));
                         dbf.updateAndRefresh(newPolicyVO);
                         PolicyVO oldPolicy = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
-                        oldPolicy.setBindResources(getCount( resourcePolicyRefVO.getPolicyUuid()));
+                        oldPolicy.setBindResources(getCount(resourcePolicyRefVO.getPolicyUuid()));
                         dbf.updateAndRefresh(oldPolicy);
                         PolicyVO newPolicy = dbf.findByUuid(sb.toString(), PolicyVO.class);
                         newPolicy.setBindResources(getCount(sb.toString()));
@@ -242,7 +244,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         dbf.remove(refVO);
 
                         PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
-                        policyVO.setBindResources(getCount( policyUuid));
+                        policyVO.setBindResources(getCount(policyUuid));
                         dbf.updateAndRefresh(policyVO);
                     }
 
@@ -257,7 +259,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         dbf.persistAndRefresh(refVO);
 
 
-                        policyVO.setBindResources(getCount( policyUuid));
+                        policyVO.setBindResources(getCount(policyUuid));
                         dbf.updateAndRefresh(policyVO);
                     }
 
@@ -381,7 +383,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 String policyUuid = resourcePolicyRefVO.getPolicyUuid();
                 dbf.remove(resourcePolicyRefVO);
                 PolicyVO policyVO = dbf.findByUuid(policyUuid, PolicyVO.class);
-                policyVO.setBindResources(getCount( policyUuid));
+                policyVO.setBindResources(getCount(policyUuid));
                 dbf.updateAndRefresh(policyVO);
 
             }
@@ -393,23 +395,10 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     }
 
-    private long getCount( String policyUuid) {
+    private long getCount(String policyUuid) {
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
         query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
         return query.count();
-    }
-
-    private String getProductUrl(ProductType productType) {
-        String productServerUrl = AlarmGlobalProperty.TUNNEL_SERVER_RUL;
-        switch (productType) {
-            case TUNNEL:
-                productServerUrl = AlarmGlobalProperty.TUNNEL_SERVER_RUL;
-                break;
-            case VPN:
-                productServerUrl = "";
-                break;
-        }
-        return productServerUrl;
     }
 
     @Transactional
@@ -825,7 +814,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
         RestAPIResponse raps = new RestAPIResponse();
         try {
-            raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+            raps = restf.syncJsonPost(AlarmUtil.getProductApiUrl(ProductType.TUNNEL),
                     RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
 
             reply = JSON.parseObject(raps.getResult(), APIQueryTunnelDetailForAlarmReply.class);
