@@ -61,7 +61,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
         Timestamp billTimestamp = vo.getBillDate();
         Timestamp startTime = new BillJob(dbf).getLastMonthFirstDay(billTimestamp);
         Timestamp endTime = new BillJob(dbf).getLastMonthLastDay(billTimestamp);
-        List<MonetaryResult> bills = getProudctTypeCount(msg.getSession().getAccountUuid(), startTime, endTime);
+        List<MonetaryResult> bills = getProudctTypeCount(vo.getAccountUuid(), startTime, endTime);
         Map<String, MonetaryResult> map = new HashMap<>();
         if (bills != null && bills.size() > 0) {
             map = list2Map(bills);
