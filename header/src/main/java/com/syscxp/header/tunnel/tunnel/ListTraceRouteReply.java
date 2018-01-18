@@ -9,13 +9,13 @@ import java.util.List;
  */
 public class ListTraceRouteReply extends MessageReply {
 
-    private List<List<String>> results;
+    private List<List<String>> msg;
 
-    public List<List<String>> getResults() {
-        return results;
+    public List<List<String>> getMsg() {
+        return msg;
     }
 
-    public void setResults(List<List<String>> results) {
-        this.results = results;
+    public void setMsg(List<List<String>> msg) {
+        this.msg = msg;
     }
 }

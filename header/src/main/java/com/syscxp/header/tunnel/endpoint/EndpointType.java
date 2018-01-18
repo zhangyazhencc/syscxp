@@ -6,5 +6,6 @@ package com.syscxp.header.tunnel.endpoint;
 public enum EndpointType {
     CLOUD,
     ACCESSIN,
-    INTERCONNECTED
+    INTERCONNECTED,
+    VIRTUAL
 }

@@ -13,6 +13,7 @@ import com.syscxp.header.billing.APIGetProductPriceReply;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
@@ -315,7 +316,10 @@ public class TunnelValidateBase {
         }
         //如果跨国,验证互联连接点和内外联交换机配置
         if (msg.getInnerConnectedEndpointUuid() != null) {
-            validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
+            EndpointVO endpointVO = dbf.findByUuid(msg.getInnerConnectedEndpointUuid(), EndpointVO.class);
+            if(endpointVO.getEndpointType() == EndpointType.INTERCONNECTED){
+                validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
+            }
         }
         //判断账户金额是否充足
         EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
@@ -420,7 +424,10 @@ public class TunnelValidateBase {
 
         //如果跨国,验证互联连接点和内外联交换机配置
         if (msg.getInnerConnectedEndpointUuid() != null) {
-            validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
+            EndpointVO endpointVO = dbf.findByUuid(msg.getInnerConnectedEndpointUuid(), EndpointVO.class);
+            if(endpointVO.getEndpointType() == EndpointType.INTERCONNECTED){
+                validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
+            }
         }
 
         //判断外部VLAN是否可用
