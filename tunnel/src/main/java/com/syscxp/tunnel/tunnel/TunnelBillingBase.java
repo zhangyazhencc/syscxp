@@ -229,7 +229,7 @@ public class TunnelBillingBase {
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
         unit.setCategoryCode(Category.SHARE);
-        unit.setAreaCode(nodeVO.getCity());
+        unit.setAreaCode(nodeVO.getUuid());
         unit.setLineCode(endpointVO.getUuid());
         unit.setConfigCode(getSharePortBandwidthOffering(bandwidthOfferingUuid));
         return unit;
