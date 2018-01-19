@@ -146,6 +146,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             tunnelAlarm(eventVO);
         else if (eventVO.getStatus() == AlarmStatus.OK)
             tunnelRecover(eventVO);
+        else
+            throw new IllegalArgumentException(String.format("unknown alarm status [%s]", eventVO.getStatus()));
     }
 
     /**
@@ -218,11 +220,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             return false;
     }
 
-    private void handleStandardAlarm(AlarmEventVO alarmEventVO) {
-        if (alarmEventVO.getStatus() == AlarmStatus.PROBLEM)
-            standardAlarm(alarmEventVO);
-        else if (alarmEventVO.getStatus() == AlarmStatus.OK)
-            standardRecover(alarmEventVO);
+    private void handleStandardAlarm(AlarmEventVO eventVO) {
+        if (eventVO.getStatus() == AlarmStatus.PROBLEM)
+            standardAlarm(eventVO);
+        else if (eventVO.getStatus() == AlarmStatus.OK)
+            standardRecover(eventVO);
+        else
+            throw new IllegalArgumentException(String.format("unknown alarm status [%s]", eventVO.getStatus()));
     }
 
     private void standardAlarm(AlarmEventVO eventVO) {
