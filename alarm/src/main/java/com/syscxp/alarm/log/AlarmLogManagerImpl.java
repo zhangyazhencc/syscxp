@@ -160,12 +160,11 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         if (existedEvent == null)
             dbf.persistAndRefresh(eventVO);
 
-        AlarmLogVO existedLog = getExistedAlarmLog(eventVO);
-        if (existedLog == null) {
+        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+        if (logVO == null) {
             processTunnelEvent(eventVO);
 
-            AlarmLogVO logVO = new AlarmLogVO();
-            generateAlarmLog(eventVO, logVO);
+            logVO = generateAlarmLog(eventVO);
             dbf.persistAndRefresh(logVO);
 
             sendMessage(logVO);
@@ -187,15 +186,15 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         } else
             dbf.persist(eventVO);
 
-        AlarmLogVO existedLog = getExistedAlarmLog(eventVO);
-        if (existedLog != null) {
+        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+        if (logVO != null) {
             if (isRecovered(eventVO)) {
                 processTunnelEvent(eventVO);
 
-                generateAlarmLog(eventVO, existedLog);
-                dbf.updateAndRefresh(existedLog);
+                logVO = generateAlarmLog(eventVO);
+                dbf.updateAndRefresh(logVO);
 
-                sendMessage(existedLog);
+                sendMessage(logVO);
             }
         }
     }
@@ -241,23 +240,25 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
      * @param eventVO
      * @return
      */
-    private AlarmLogVO generateAlarmLog(AlarmEventVO eventVO, AlarmLogVO logVO) {
+    private AlarmLogVO generateAlarmLog(AlarmEventVO eventVO) {
+        AlarmLogVO logVO = new AlarmLogVO();
         if (eventVO.getStatus() == AlarmStatus.PROBLEM) {
             logVO.setUuid(Platform.getUuid());
             logVO.setEventId(eventVO.getId());
             logVO.setAlarmTime(eventVO.getEventTime());
+            logVO.setAlarmContent(getAlarmContent(eventVO));
             logVO.setProductType(eventVO.getPolicyVO().getProductType());
             logVO.setProductUuid(eventVO.getProductUuid());
             logVO.setPolicyUuid(eventVO.getPolicyVO().getUuid());
             logVO.setRegulationUuid(eventVO.getRegulationUuid());
         } else if (eventVO.getStatus() == AlarmStatus.OK) {
+            logVO = getExistedAlarmLog(eventVO);
             logVO.setResumeTime(eventVO.getEventTime());
             logVO.setDuration((eventVO.getEventTime().getTime() - logVO.getAlarmTime().getTime()) / 1000);
         }
 
         logVO.setStatus(eventVO.getStatus());
         logVO.setAccountUuid(eventVO.getAccountUuid());
-        logVO.setAlarmContent(getAlarmContent(eventVO));
 
         String alarmMessage = getMessageContent(eventVO, eventVO.getProductName());
         logVO.setSmsContent(alarmMessage);
