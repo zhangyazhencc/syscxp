@@ -691,7 +691,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             }
                         }
                     });
-                } else {
+                } else if (isUsed && !msg.isIssue()){
+                    TunnelVO tunnel = Q.New(TunnelVO.class)
+                            .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
+                            .find();
+                    taskModifyTunnelPortsZK(tunnel.getUuid());
+                }else {
                     trigger.next();
                 }
             }
@@ -1618,7 +1623,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 强制切换云专线已有的物理接口和修改端口VLAN（仅保存）
      **/
-    @Transactional
     private void handle(APIUpdateForciblyTunnelVlanMsg msg) {
         TunnelBase tunnelBase = new TunnelBase();
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
@@ -1689,7 +1693,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
         if (updateA){
-            dbf.getEntityManager().merge(tunnelSwitchPortA);
+            dbf.updateAndRefresh(tunnelSwitchPortA);
             if(isABsame){
                 UpdateQuery.New(TunnelSwitchPortVO.class)
                         .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
@@ -1705,7 +1709,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         if (updateZ){
-            dbf.getEntityManager().merge(tunnelSwitchPortZ);
+            dbf.updateAndRefresh(tunnelSwitchPortZ);
             if(isCZsame){
                 UpdateQuery.New(TunnelSwitchPortVO.class)
                         .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
@@ -1720,6 +1724,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
+        if(updateA || updateZ){
+            taskModifyTunnelPortsZK(vo.getUuid());
+        }
 
         APIUpdateForciblyTunnelVlanEvent evt = new APIUpdateForciblyTunnelVlanEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -2074,6 +2081,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private TunnelVO doDeleteTunnelDBAfterUnsubcribeSuccess(TunnelVO vo){
+        String commands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
+
         TunnelBase tunnelBase = new TunnelBase();
         if(vo.getExpireDate() == null || vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))){
             vo.setExpireDate(dbf.getCurrentSqlTime());
@@ -2082,6 +2091,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.updateAndRefresh(vo);
 
         tunnelBase.deleteTunnelDB(vo);
+
+        taskDeleteTunnelZK(vo.getUuid(), vo.getOwnerAccountUuid(), commands);
 
         tunnelBase.deleteTunnelJob(vo, "删除专线");
 
@@ -2176,6 +2187,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
                     final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
+                    taskCreateTunnelZK(vo2.getUuid());
+
                     evt.setInventory(TunnelInventory.valueOf(vo2));
                     bus.publish(evt);
                 } else {
@@ -2252,6 +2265,29 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }
             }
         });
+    }
+
+    private void taskDeleteTunnelZK(String tunnelUuid, String accountUuid, String commands){
+        logger.info("下发删除ZK数据，创建任务：DeleteTunnelControlZKJob");
+        DeleteTunnelControlZKJob job = new DeleteTunnelControlZKJob();
+        job.setTunnelUuid(tunnelUuid);
+        job.setCommands(commands);
+        job.setAccountUuid(accountUuid);
+        jobf.execute("删除ZK数据-控制器下发", Platform.getManagementServerId(), job);
+    }
+
+    private void taskCreateTunnelZK(String tunnelUuid){
+        logger.info("下发保存ZK数据，创建任务：CreateTunnelControlZKJob");
+        CreateTunnelControlZKJob job = new CreateTunnelControlZKJob();
+        job.setTunnelUuid(tunnelUuid);
+        jobf.execute("保存ZK数据-控制器下发", Platform.getManagementServerId(), job);
+    }
+
+    private void taskModifyTunnelPortsZK(String tunnelUuid){
+        logger.info("下发修改端口ZK数据，创建任务：ModifyTunnelPortsControlZKJob");
+        ModifyTunnelPortsControlZKJob job = new ModifyTunnelPortsControlZKJob();
+        job.setTunnelUuid(tunnelUuid);
+        jobf.execute("修改端口ZK数据-控制器下发", Platform.getManagementServerId(), job);
     }
 
     private void taskDeleteTunnel(TunnelVO vo) {

@@ -112,13 +112,6 @@ public class VpnHost extends HostBase implements Host {
                     @AfterDone
                     List<Runnable> afterDone = new ArrayList<>();
 
-                    private boolean isSshPortOpen() {
-                        if (CoreGlobalProperty.UNIT_TEST_ON) {
-                            return false;
-                        }
-                        return NetworkUtils.isRemotePortOpen(self.getHostIp(), getSelf().getSshPort(), 2);
-                    }
-
                     @Override
                     public void run(FlowTrigger trigger, Map data) {
                         PingCmd cmd = new PingCmd();
@@ -148,13 +141,7 @@ public class VpnHost extends HostBase implements Host {
 
                                     trigger.next();
                                 } else {
-                                    if (isSshPortOpen()) {
-                                        LOGGER.debug(String.format("ssh port of host[uuid:%s, ip:%s] is open, ping success",
-                                                self.getUuid(), self.getHostIp()));
-                                        trigger.next();
-                                    } else {
-                                        trigger.fail(operr(ret.getError()));
-                                    }
+                                    trigger.fail(errf.stringToOperationError(ret.getError()));
                                 }
                             }
 
@@ -162,7 +149,7 @@ public class VpnHost extends HostBase implements Host {
                             public Class<PingResponse> getReturnClass() {
                                 return PingResponse.class;
                             }
-                        }, TimeUnit.SECONDS, 60);
+                        });
                     }
                 });
 

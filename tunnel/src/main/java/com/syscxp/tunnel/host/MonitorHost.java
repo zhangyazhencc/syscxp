@@ -143,13 +143,7 @@ public class MonitorHost extends HostBase implements Host {
 
                                     trigger.next();
                                 } else {
-                                    if (isSshPortOpen()) {
-                                        logger.debug(String.format("ssh port of host[uuid:%s, ip:%s] is open, ping success",
-                                                self.getUuid(), self.getHostIp()));
-                                        trigger.next();
-                                    } else {
-                                        trigger.fail(operr(ret.getError()));
-                                    }
+                                    trigger.fail(errf.stringToOperationError(ret.getError()));
                                 }
                             }
 
@@ -157,7 +151,7 @@ public class MonitorHost extends HostBase implements Host {
                             public Class<PingResponse> getReturnClass() {
                                 return PingResponse.class;
                             }
-                        }, TimeUnit.SECONDS, 60);
+                        });
                     }
                 });
 
@@ -250,6 +244,7 @@ public class MonitorHost extends HostBase implements Host {
                         }
                         runner.putArgument("pkg_monitoragent", agentPackageName);
                         runner.putArgument("tunnel_server_url",CoreGlobalProperty.TUNNEL_SERVER_URL);
+                        runner.putArgument("monitor_type", getSelf().getMonitorType());
                         runner.putArgument("transfer_rpc_ip", TunnelGlobalConfig.TRANSFER_RPC_IP.value());
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
