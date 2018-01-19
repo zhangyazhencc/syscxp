@@ -50,15 +50,11 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     @Autowired
     private ThreadFacade thf;
     @Autowired
-    private ErrorFacade errf;
-    @Autowired
     private RESTFacade restf;
     @Autowired
     private SmsService smsService;
     @Autowired
     private MailService mailService;
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     @Override
     @MessageSafe
