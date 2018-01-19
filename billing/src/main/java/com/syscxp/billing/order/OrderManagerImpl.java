@@ -547,9 +547,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         long months = Math.abs(ChronoUnit.MONTHS.between(stateTime, expiredTime));
         long days = 0;
         if (months > 0) {
-            Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
+            days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
         } else {
-            Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime));
+            days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime));
         }
 
         BigDecimal thisMonthDays = BigDecimal.valueOf(stateTime.toLocalDate().lengthOfMonth());
