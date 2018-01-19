@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -496,7 +497,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                     duration = getNotUseMonths(LocalDateTime.now(), slaLogVO.getTimeEnd().toLocalDateTime());
                 }
                 if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) < 0) {
-                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(duration.add(BigDecimal.ONE)));
+                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(getNotUseMonths(slaLogVO.getTimeStart().toLocalDateTime(),slaLogVO.getTimeEnd().toLocalDateTime())));
                     if (isUpdate) {
                         slaLogVO.setSlaPrice(priceDownTo);
                         slaLogVO.setTimeStart(slaLogVO.getTimeStart());
