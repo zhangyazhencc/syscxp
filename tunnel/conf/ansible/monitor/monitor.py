@@ -24,6 +24,7 @@ remote_user = "root"
 remote_pass = None
 remote_port = None
 monitor_section = "monitor"
+monitor_type = ""
 
 # get parameter from shell
 parser = argparse.ArgumentParser(description='Deploy monitor to host')
@@ -46,6 +47,7 @@ host_post_info.host_inventory = args.i
 host_post_info.host = host
 host_post_info.transfer_rpc_ip = transfer_rpc_ip
 host_post_info.tunnel_server_url = tunnel_server_url
+host_post_info.monitor_type = monitor_type
 host_post_info.post_url = post_url
 host_post_info.private_key = args.private_key
 host_post_info.remote_user = remote_user
@@ -148,6 +150,7 @@ if not config.has_section(monitor_section):
 config.set(monitor_section, "host_ip", host_post_info.host)
 config.set(monitor_section, "tunnel_server_url", host_post_info.tunnel_server_url)
 config.set(monitor_section, "transfer_rpc_ip", host_post_info.transfer_rpc_ip)
+config.set(monitor_section, "monitor_type", host_post_info.monitor_type)
 config.write(open(agent_conf, 'w'))
 
 # name: copy monitor conf file
@@ -156,7 +159,7 @@ copy_arg.src = agent_conf
 copy_arg.dest = "/etc/monitor/"
 copy_arg.args = "mode=755"
 copy(copy_arg, host_post_info)
-run_remote_command("mv /etc/monitor/*.conf /etc/monitor/monitoragent.conf" , host_post_info)
+run_remote_command("mv /etc/monitor/monitoragent-%s.conf /etc/monitor/monitoragent.conf" % host_post_info.host, host_post_info)
 import os
 os.remove(agent_conf)
 
