@@ -492,7 +492,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (slaLogVOS != null && slaLogVOS.size() > 0) {
             for (SLALogVO slaLogVO : slaLogVOS) {
                 LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime();
-                BigDecimal duration = getNotUseMonths(startTime.minusDays(1), slaLogVO.getTimeEnd().toLocalDateTime());
+                BigDecimal duration = getNotUseMonths(startTime, slaLogVO.getTimeEnd().toLocalDateTime());
                 if (startTime.isBefore(LocalDateTime.now())) {
                     duration = getNotUseMonths(LocalDateTime.now().minusDays(1), slaLogVO.getTimeEnd().toLocalDateTime());
                 }
