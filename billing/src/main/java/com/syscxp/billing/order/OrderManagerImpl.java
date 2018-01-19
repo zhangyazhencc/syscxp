@@ -551,7 +551,6 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } else {
             days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime));
         }
-
         BigDecimal thisMonthDays = BigDecimal.valueOf(stateTime.toLocalDate().lengthOfMonth());
         return BigDecimal.valueOf(months).add(BigDecimal.valueOf(days).divide(thisMonthDays, 4, RoundingMode.HALF_UP)).setScale(2, RoundingMode.HALF_UP);
     }
