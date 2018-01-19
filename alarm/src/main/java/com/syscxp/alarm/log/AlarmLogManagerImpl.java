@@ -370,7 +370,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             }
         }
         if (tunnelInfo == null)
-            throw new RuntimeException(String.format("failed to process tunnel! [TunnelUuid: %s]"
+            throw new RuntimeException(String.format("failed to process tunnel event! [TunnelUuid: %s]"
                     , eventVO.getProductUuid()));
 
         eventVO.setProductName(tunnelInfo.getTunnelName());
