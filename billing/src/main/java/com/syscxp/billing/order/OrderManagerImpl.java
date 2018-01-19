@@ -335,7 +335,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
         BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
 
-        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO));
+        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,true));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
@@ -426,7 +426,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } else { //downgrade
             BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
             orderVo.setType(OrderType.DOWNGRADE);
-            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice));
+            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice,true));
             if (subMoney.compareTo(valuePayCash.negate()) < 0) {
                 subMoney = valuePayCash.negate();
             }
@@ -485,7 +485,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
 
     @Transactional
-    private BigDecimal getDownGradeDiffMoney(String accountUuid, String productUuid, BigDecimal priceDownTo) {
+    private BigDecimal getDownGradeDiffMoney(String accountUuid, String productUuid, BigDecimal priceDownTo,boolean isUpdate) {
         List<SLALogVO> slaLogVOS = getSLALogVO(accountUuid, productUuid);
         BigDecimal returnMoney = BigDecimal.ZERO;
         if (slaLogVOS != null && slaLogVOS.size() > 0) {
@@ -496,11 +496,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                     duration = getNotUseMonths(LocalDateTime.now(), slaLogVO.getTimeEnd().toLocalDateTime());
                 }
                 if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) < 0) {
-                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(duration));
-                    slaLogVO.setSlaPrice(priceDownTo);
-                    slaLogVO.setTimeStart(slaLogVO.getTimeStart());
-                    slaLogVO.setTimeEnd(slaLogVO.getTimeEnd());
-                    dbf.getEntityManager().merge(slaLogVO);
+                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(duration.add(BigDecimal.ONE)));
+                    if (isUpdate) {
+                        slaLogVO.setSlaPrice(priceDownTo);
+                        slaLogVO.setTimeStart(slaLogVO.getTimeStart());
+                        slaLogVO.setTimeEnd(slaLogVO.getTimeEnd());
+                        dbf.getEntityManager().merge(slaLogVO);
+                    }
+
                 }
             }
         }
@@ -603,7 +606,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
         BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
-        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO));
+        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,false));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
@@ -654,7 +657,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         } else { //downgrade
             BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
-            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice));
+            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice,false));
 
         }
 
