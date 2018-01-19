@@ -491,13 +491,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal returnMoney = BigDecimal.ZERO;
         if (slaLogVOS != null && slaLogVOS.size() > 0) {
             for (SLALogVO slaLogVO : slaLogVOS) {
-                LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime().minusDays(1);
-                BigDecimal duration = getNotUseMonths(startTime, slaLogVO.getTimeEnd().toLocalDateTime());
+                LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime();
+                BigDecimal duration = getNotUseMonths(startTime.minusDays(1), slaLogVO.getTimeEnd().toLocalDateTime());
                 if (startTime.isBefore(LocalDateTime.now())) {
-                    duration = getNotUseMonths(LocalDateTime.now(), slaLogVO.getTimeEnd().toLocalDateTime());
+                    duration = getNotUseMonths(LocalDateTime.now().minusDays(1), slaLogVO.getTimeEnd().toLocalDateTime());
                 }
                 if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) < 0) {
-                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(getNotUseMonths(slaLogVO.getTimeStart().toLocalDateTime(),slaLogVO.getTimeEnd().toLocalDateTime())));
+                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(duration));
                     if (isUpdate) {
                         slaLogVO.setSlaPrice(priceDownTo);
                         slaLogVO.setTimeStart(slaLogVO.getTimeStart());
@@ -545,7 +545,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private BigDecimal getNotUseMonths(LocalDateTime stateTime, LocalDateTime expiredTime) {
         long months = Math.abs(ChronoUnit.MONTHS.between(stateTime, expiredTime));
-        long days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
+        long days = 0;
+        if (months > 0) {
+            Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
+        } else {
+            Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime));
+        }
+
         BigDecimal thisMonthDays = BigDecimal.valueOf(stateTime.toLocalDate().lengthOfMonth());
         return BigDecimal.valueOf(months).add(BigDecimal.valueOf(days).divide(thisMonthDays, 4, RoundingMode.HALF_UP)).setScale(2, RoundingMode.HALF_UP);
     }
