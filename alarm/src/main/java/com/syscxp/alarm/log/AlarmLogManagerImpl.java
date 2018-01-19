@@ -83,7 +83,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     }
 
     private void handle(HandleAlarmMsg msg) {
-        logger.debug(java.lang.String.format("[HandleAlarmMsg] event:p0 content: %s",msg.getAlarmValue()));
+        logger.debug(java.lang.String.format("[HandleAlarmMsg] event:p0 content: %s", msg.getAlarmValue()));
 
         String uuid = Platform.getUuid();
         thf.chainSubmit(new ChainTask(msg) {
@@ -154,6 +154,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * tunnel告警
+     *
      * @param eventVO
      */
     private void tunnelAlarm(AlarmEventVO eventVO) {
@@ -176,6 +177,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * tunnel恢复
+     *
      * @param eventVO
      */
     private void tunnelRecover(AlarmEventVO eventVO) {
@@ -233,6 +235,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 按告警event生成告警log
+     *
      * @param eventVO
      * @return
      */
@@ -292,6 +295,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 获取告警短信、邮件内容
+     *
      * @param eventVO
      * @param productName：产品名称
      * @return
@@ -321,6 +325,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 获取告警内容
+     *
      * @param eventVO
      * @return
      */
@@ -334,6 +339,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 获取告警内容模板
+     *
      * @param eventVO
      * @return
      */
@@ -355,6 +361,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 专线数据处理
+     *
      * @param eventVO
      */
     private void processTunnelEvent(AlarmEventVO eventVO) {
@@ -379,6 +386,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 重新计算带宽告警值与阈值（含共点专线带宽）
+     *
      * @param eventVO
      * @param tunnelInfos
      */
@@ -390,14 +398,12 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                 for (TunnelAlarmCmd.TunnelInfo tunnelInfo : tunnelInfos) {
                     sumBandwidth += tunnelInfo.getBandwidth();
                 }
-                long rightValue = (long) (Long.valueOf(eventVO.getExpression().getRightValue()) * 1.0 / sumBandwidth * 100);
 
+                long rightValue = (long) (Long.valueOf(eventVO.getExpression().getRightValue()) * 1.0 / sumBandwidth * 100);
                 eventVO.getExpression().setRightValue(String.valueOf(rightValue));
 
                 float leftValue = (long) (Long.valueOf(eventVO.getLeftValue()) * 1.0 / sumBandwidth * 100);
-                if (leftValue > 100)
-                    leftValue = 100;
-                eventVO.setLeftValue(String.valueOf(leftValue));
+                eventVO.setLeftValue(String.valueOf(leftValue > 0 ? 100 : leftValue));
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("failed to recalculate bandwidth! " +
@@ -409,6 +415,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 信息发送
+     *
      * @param logVO
      */
     private void sendMessage(AlarmLogVO logVO) {
