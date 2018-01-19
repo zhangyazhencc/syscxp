@@ -163,8 +163,9 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         AlarmLogVO existedLog = getExistedAlarmLog(eventVO);
         if (existedLog == null) {
             processTunnelEvent(eventVO);
-            AlarmLogVO logVO = generateAlarmLog(eventVO);
 
+            AlarmLogVO logVO = new AlarmLogVO();
+            generateAlarmLog(eventVO, logVO);
             dbf.persistAndRefresh(logVO);
 
             sendMessage(logVO);
@@ -188,29 +189,34 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
         AlarmLogVO existedLog = getExistedAlarmLog(eventVO);
         if (existedLog != null) {
-            List<AlarmEventVO> problemEvents = Q.New(AlarmEventVO.class)
-                    .eq(AlarmEventVO_.status, AlarmStatus.PROBLEM)
-                    .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())
-                    .eq(AlarmEventVO_.regulationUuid, eventVO.getRegulationUuid())
-                    .list();
-
-            if (problemEvents.isEmpty()) {
+            if (isRecovered(eventVO)) {
                 processTunnelEvent(eventVO);
 
-                existedLog.setResumeTime(eventVO.getEventTime());
-                existedLog.setDuration((eventVO.getEventTime().getTime() - existedLog.getAlarmTime().getTime()) / 1000);
-                existedLog.setStatus(AlarmStatus.OK);
-                existedLog.setAlarmContent(getAlarmContent(eventVO));
-                String alarmMessage = getMessageContent(eventVO, eventVO.getProductName());
-                existedLog.setSmsContent(alarmMessage);
-                existedLog.setMailContent(alarmMessage);
-                existedLog.setAccountUuid(eventVO.getAccountUuid());
-
+                generateAlarmLog(eventVO, existedLog);
                 dbf.updateAndRefresh(existedLog);
 
                 sendMessage(existedLog);
             }
         }
+    }
+
+    /**
+     * 不存在status=problem的event为恢复
+     *
+     * @param eventVO
+     * @return
+     */
+    private boolean isRecovered(AlarmEventVO eventVO) {
+        List<AlarmEventVO> problemEvents = Q.New(AlarmEventVO.class)
+                .eq(AlarmEventVO_.status, AlarmStatus.PROBLEM)
+                .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())
+                .eq(AlarmEventVO_.regulationUuid, eventVO.getRegulationUuid())
+                .list();
+
+        if (problemEvents.isEmpty())
+            return true;
+        else
+            return false;
     }
 
     private void handleStandardAlarm(AlarmEventVO alarmEventVO) {
@@ -235,22 +241,27 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
      * @param eventVO
      * @return
      */
-    private AlarmLogVO generateAlarmLog(AlarmEventVO eventVO) {
-        AlarmLogVO logVO = new AlarmLogVO();
-        logVO.setUuid(Platform.getUuid());
-        logVO.setEventId(eventVO.getId());
-        logVO.setAlarmTime(eventVO.getEventTime());
-        logVO.setStatus(eventVO.getStatus());
-        logVO.setProductType(eventVO.getPolicyVO().getProductType());
-        logVO.setProductUuid(eventVO.getProductUuid());
-        logVO.setPolicyUuid(eventVO.getPolicyVO().getUuid());
-        logVO.setRegulationUuid(eventVO.getRegulationUuid());
+    private AlarmLogVO generateAlarmLog(AlarmEventVO eventVO, AlarmLogVO logVO) {
+        if (eventVO.getStatus() == AlarmStatus.PROBLEM) {
+            logVO.setUuid(Platform.getUuid());
+            logVO.setEventId(eventVO.getId());
+            logVO.setAlarmTime(eventVO.getEventTime());
+            logVO.setProductType(eventVO.getPolicyVO().getProductType());
+            logVO.setProductUuid(eventVO.getProductUuid());
+            logVO.setPolicyUuid(eventVO.getPolicyVO().getUuid());
+            logVO.setRegulationUuid(eventVO.getRegulationUuid());
+        } else if (eventVO.getStatus() == AlarmStatus.OK) {
+            logVO.setResumeTime(eventVO.getEventTime());
+            logVO.setDuration((eventVO.getEventTime().getTime() - logVO.getAlarmTime().getTime()) / 1000);
+        }
 
+        logVO.setStatus(eventVO.getStatus());
+        logVO.setAccountUuid(eventVO.getAccountUuid());
         logVO.setAlarmContent(getAlarmContent(eventVO));
+
         String alarmMessage = getMessageContent(eventVO, eventVO.getProductName());
         logVO.setSmsContent(alarmMessage);
         logVO.setMailContent(alarmMessage);
-        logVO.setAccountUuid(eventVO.getAccountUuid());
 
         return logVO;
     }
