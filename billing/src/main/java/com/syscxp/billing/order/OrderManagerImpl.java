@@ -278,7 +278,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
 
         updateSLA(msg.getSlaUuid(), orderVo.getProductEffectTimeStart(), orderVo.getProductEffectTimeEnd());
-        saveSLALogVO(msg.getAccountUuid(), msg.getProductUuid(), msg.getDuration(), orderVo.getProductEffectTimeStart(), msg.getExpiredTime(), renewVO.getPriceOneMonth());
+        saveSLALogVO(msg.getAccountUuid(), msg.getProductUuid(), msg.getDuration(), orderVo.getProductEffectTimeStart(), orderVo.getProductEffectTimeEnd(), renewVO.getPriceOneMonth());
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVo);
         dbf.getEntityManager().flush();
