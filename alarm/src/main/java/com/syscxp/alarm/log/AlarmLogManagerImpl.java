@@ -359,19 +359,20 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
      */
     private void processTunnelEvent(AlarmEventVO eventVO) {
         List<TunnelAlarmCmd.TunnelInfo> tunnelInfos = getTunnelInfos(eventVO.getProductUuid());
+        //带宽占用率计算
+        recalculateBandwidth(eventVO, tunnelInfos);
+
         TunnelAlarmCmd.TunnelInfo tunnelInfo = new TunnelAlarmCmd.TunnelInfo();
         for (TunnelAlarmCmd.TunnelInfo tunnel : tunnelInfos) {
             if (tunnel.getTunnelUuid().equals(eventVO.getProductUuid())) {
                 tunnelInfo = tunnel;
+                break;
             }
         }
-
         if (tunnelInfo == null)
-            throw new RuntimeException(String.format("failed to generate alarm log [TunnelUuid: %s]"
+            throw new RuntimeException(String.format("failed to process tunnel! [TunnelUuid: %s]"
                     , eventVO.getProductUuid()));
 
-        //带宽占用率计算
-        recalculateBandwidth(eventVO, tunnelInfos);
         eventVO.setProductName(tunnelInfo.getTunnelName());
         eventVO.setAccountUuid(tunnelInfo.getAccountUuid());
     }
