@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -664,7 +665,6 @@ public class TunnelControllerBase extends AbstractTunnel {
      * 通过专线找出共点的交换机
      * */
     public String[] getCrossPhysicalSwitchUuid(TunnelVO vo){
-        TunnelValidateBase tunnelValidateBase = new TunnelValidateBase();
         TunnelBase tunnelBase = new TunnelBase();
         String interfaceUuidA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
@@ -676,7 +676,7 @@ public class TunnelControllerBase extends AbstractTunnel {
                 .eq(TunnelSwitchPortVO_.sortTag,"Z")
                 .select(TunnelSwitchPortVO_.interfaceUuid)
                 .findValue();
-        if(tunnelValidateBase.isCross(vo.getUuid(),interfaceUuidA)){
+        if(isCross(vo.getUuid(),interfaceUuidA)){
             String switchPortUuidA = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"A")
@@ -691,7 +691,7 @@ public class TunnelControllerBase extends AbstractTunnel {
             }else{
                 return new String[]{physicalSwitchVOA.getUuid()};
             }
-        }else if(tunnelValidateBase.isCross(vo.getUuid(),interfaceUuidZ)){
+        }else if(isCross(vo.getUuid(),interfaceUuidZ)){
             String switchPortUuidZ = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"Z")
@@ -709,6 +709,31 @@ public class TunnelControllerBase extends AbstractTunnel {
         }else{
             return new String[]{""};
         }
+    }
+
+    /**
+     * 控制器下发的共点判断
+     * */
+    public boolean isCross(String tunnelUuid, String interfaceUuid) {
+        TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+        Integer vsi = vo.getVsi();
+
+        String sql = "select b from TunnelVO a, TunnelSwitchPortVO b " +
+                "where a.uuid = b.tunnelUuid " +
+                "and a.uuid != :tunnelUuid " +
+                "and a.state = 'Enabled' " +
+                "and a.vsi = :vsi " +
+                "and b.interfaceUuid = :interfaceUuid";
+        TypedQuery<TunnelSwitchPortVO> vq = dbf.getEntityManager().createQuery(sql, TunnelSwitchPortVO.class);
+        vq.setParameter("tunnelUuid", tunnelUuid);
+        vq.setParameter("vsi", vsi);
+        vq.setParameter("interfaceUuid", interfaceUuid);
+        if (vq.getResultList().size() < 1) {
+            return false;
+        } else {
+            return true;
+        }
+
     }
 
 
