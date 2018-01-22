@@ -732,7 +732,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void validate(APICreateEndpointMsg msg) {
         if (msg.getEndpointType() == EndpointType.CLOUD) {
-            if (StringUtils.isEmpty(msg.getCloudType()) || !Q.New(CloudVO.class).eq(CloudVO_.name, msg.getCloudType()).isExists()) {
+            if (StringUtils.isEmpty(msg.getCloudType()) || !Q.New(CloudVO.class).eq(CloudVO_.uuid, msg.getCloudType()).isExists()) {
                 throw new ApiMessageInterceptionException(argerr(" the cloud endpoint must specify an existing cloud"));
             }
         }
