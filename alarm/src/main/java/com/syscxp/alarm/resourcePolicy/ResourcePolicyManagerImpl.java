@@ -413,6 +413,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         APIDeletePolicyEvent event = new APIDeletePolicyEvent(msg.getId());
         if (vo != null) {
             dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
+            UpdateQuery.New(AlarmLogVO.class).condAnd(AlarmLogVO_.policyUuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
         }
         List<RegulationVO> regulationVOS = getRegulationVOs(msg.getUuid());
         if (regulationVOS != null && regulationVOS.size() > 0) {
@@ -461,6 +462,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 RegulationVO deleteRegulation = dbf.findByUuid(msg.getUuid(), RegulationVO.class);
                 if (deleteRegulation != null) {
                     dbf.remove(deleteRegulation);
+
                 }
 
                 trigger.next();
@@ -489,6 +491,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
+                UpdateQuery.New(AlarmLogVO.class).condAnd(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
                 event.setInventory(RegulationInventory.valueOf(regulationVO));
                 bus.publish(event);
             }
