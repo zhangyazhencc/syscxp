@@ -124,10 +124,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateForciblyTunnelVlanMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelVlanMsg</name>
     </message>
 

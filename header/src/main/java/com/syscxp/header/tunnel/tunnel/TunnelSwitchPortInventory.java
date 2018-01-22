@@ -23,6 +23,9 @@ public class TunnelSwitchPortInventory {
     private String type;
     private Integer vlan;
     private String sortTag;
+    private String physicalSwitchUuid;
+    private String ownerMplsSwitchUuid;
+    private String peerMplsSwitchUuid;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -37,6 +40,9 @@ public class TunnelSwitchPortInventory {
         inv.setType(vo.getType().toString());
         inv.setVlan(vo.getVlan());
         inv.setSortTag(vo.getSortTag());
+        inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
+        inv.setOwnerMplsSwitchUuid(vo.getOwnerMplsSwitchUuid());
+        inv.setPeerMplsSwitchUuid(vo.getPeerMplsSwitchUuid());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -136,5 +142,29 @@ public class TunnelSwitchPortInventory {
 
     public void setInterfaceUuid(String interfaceUuid) {
         this.interfaceUuid = interfaceUuid;
+    }
+
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
+    }
+
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
+    }
+
+    public String getOwnerMplsSwitchUuid() {
+        return ownerMplsSwitchUuid;
+    }
+
+    public void setOwnerMplsSwitchUuid(String ownerMplsSwitchUuid) {
+        this.ownerMplsSwitchUuid = ownerMplsSwitchUuid;
+    }
+
+    public String getPeerMplsSwitchUuid() {
+        return peerMplsSwitchUuid;
+    }
+
+    public void setPeerMplsSwitchUuid(String peerMplsSwitchUuid) {
+        this.peerMplsSwitchUuid = peerMplsSwitchUuid;
     }
 }

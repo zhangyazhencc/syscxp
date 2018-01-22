@@ -47,6 +47,15 @@ public class TunnelSwitchPortVO {
     private String sortTag;
 
     @Column
+    private String physicalSwitchUuid;
+
+    @Column
+    private String ownerMplsSwitchUuid;
+
+    @Column
+    private String peerMplsSwitchUuid;
+
+    @Column
     private Timestamp createDate;
 
     @Column
@@ -143,5 +152,29 @@ public class TunnelSwitchPortVO {
 
     public void setInterfaceUuid(String interfaceUuid) {
         this.interfaceUuid = interfaceUuid;
+    }
+
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
+    }
+
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
+    }
+
+    public String getOwnerMplsSwitchUuid() {
+        return ownerMplsSwitchUuid;
+    }
+
+    public void setOwnerMplsSwitchUuid(String ownerMplsSwitchUuid) {
+        this.ownerMplsSwitchUuid = ownerMplsSwitchUuid;
+    }
+
+    public String getPeerMplsSwitchUuid() {
+        return peerMplsSwitchUuid;
+    }
+
+    public void setPeerMplsSwitchUuid(String peerMplsSwitchUuid) {
+        this.peerMplsSwitchUuid = peerMplsSwitchUuid;
     }
 }
