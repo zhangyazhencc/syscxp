@@ -40,7 +40,7 @@ public class TunnelMonitorJob implements Job {
 		try {
 		    if(jobType == MonitorJobType.START){
                 logger.info("开始执行JOB【开启监控】");
-                monitorManager.startControllerMonitor(tunnelUuid);
+                monitorManager.startControllerMonitorNoRollback(tunnelUuid);
 
                 completion.success(null);
             }else if(jobType == MonitorJobType.STOP){
@@ -48,9 +48,14 @@ public class TunnelMonitorJob implements Job {
                 monitorManager.stopControllerMonitor(tunnelUuid);
 
                 completion.success(null);
-            }else{
+            }else if(jobType == MonitorJobType.MODIFY){
                 logger.info("开始执行JOB【修改监控】");
                 monitorManager.modifyControllerMonitor(tunnelUuid);
+
+                completion.success(null);
+            }else if(jobType == MonitorJobType.ROLLBACK){
+                logger.info("开始执行JOB【开启监控失败-回滚】");
+                monitorManager.startControllerMonitorRollback(tunnelUuid);
 
                 completion.success(null);
             }

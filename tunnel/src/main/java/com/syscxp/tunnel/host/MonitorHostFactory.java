@@ -24,6 +24,8 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.host.*;
 import com.syscxp.header.tunnel.monitor.TunnelMonitorVO;
 import com.syscxp.header.tunnel.monitor.TunnelMonitorVO_;
+import com.syscxp.header.tunnel.tunnel.TunnelMonitorState;
+import com.syscxp.header.tunnel.tunnel.TunnelState;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.tunnel.host.MonitorAgentCommands.ReconnectMeCmd;
 import com.syscxp.tunnel.monitor.MonitorManagerImpl;
@@ -246,38 +248,35 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     }
 
     private void handle(APIUpdateHostSwitchMonitorMsg msg) {
+        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
+
         HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
 
         vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
         vo.setInterfaceName(msg.getInterfaceName());
         vo = dbf.updateAndRefresh(vo);
 
+        // TODO: 起线程执行
         // 更新所有受影响的监控通道（监控重启）
+        MonitorManagerImpl monitorManager = new MonitorManagerImpl();
+
         List<TunnelMonitorVO> hostTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.hostUuid, vo.getHostUuid())
                 .list();
-
-        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
         for (TunnelMonitorVO hostTunnelMonitorVO : hostTunnelMonitorVOS) {
-            TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(),TunnelVO.class);
-            MonitorManagerImpl monitorManager = new MonitorManagerImpl();
+            TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
 
-            monitorManager.initTunnelMonitor(tunnelVO);
-            try {
-                monitorManager.modifyControllerMonitor(hostTunnelMonitorVO.getTunnelUuid());
-                logger.info("修改监控成功：" + hostTunnelMonitorVO.getTunnelUuid());
-            } catch (Exception e) {
-                logger.error("修改监控失败，启动job: " + hostTunnelMonitorVO.getTunnelUuid() + " Error: " + e.getMessage());
+            if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
+                monitorManager.initTunnelMonitor(tunnelVO);
+
                 TunnelMonitorJob monitorJob = new TunnelMonitorJob();
                 monitorJob.setTunnelUuid(hostTunnelMonitorVO.getTunnelUuid());
                 monitorJob.setJobType(MonitorJobType.MODIFY);
-
                 jobf.execute("修改监控接口-修改监控", Platform.getManagementServerId(), monitorJob);
             }
         }
 
-        if (event.isSuccess())
-            event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
         bus.publish(event);
     }
 
