@@ -146,9 +146,10 @@ public class TunnelStrategy  {
 
         PhysicalSwitchVO mplsPhysicalSwitch = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO);
 
-        String sql = "select distinct a.vlan from TunnelSwitchPortVO a where a.ownerMplsSwitchUuid = :mplsPhysicalSwitch or a.peerMplsSwitchUuid = :mplsPhysicalSwitch ;";
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a where a.ownerMplsSwitchUuid = :mplsPhysicalSwitch or a.peerMplsSwitchUuid = :peerMplsSwitchUuid";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
-        avq.setParameter("mplsPhysicalSwitch",mplsPhysicalSwitch.getUuid());
+        avq.setParameter("mplsPhysicalSwitch", mplsPhysicalSwitch.getUuid());
+        avq.setParameter("peerMplsSwitchUuid", mplsPhysicalSwitch.getUuid());
         return avq.getResultList();
     }
 
