@@ -581,7 +581,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     public void removeJob(String resourceUuid,  final Class<?> jobClass){
         UpdateQuery.New(JobQueueEntryVO.class).set(JobQueueEntryVO_.restartable, false)
                 .eq(JobQueueEntryVO_.resourceUuid, resourceUuid)
-                .eq(JobQueueEntryVO_.name, jobClass.getSimpleName())
+                .eq(JobQueueEntryVO_.name, jobClass.getName())
                 .update();
     }
 
