@@ -100,7 +100,7 @@ public class TunnelStrategy  {
         Integer vlan;
 
         //查询该虚拟交换机下所有的Vlan段
-        List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class).eq(SwitchVlanVO_.switchUuid, switchUuid).find();
+        List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class).eq(SwitchVlanVO_.switchUuid, switchUuid).list();
 
         //查询该虚拟交换机所属物理交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
