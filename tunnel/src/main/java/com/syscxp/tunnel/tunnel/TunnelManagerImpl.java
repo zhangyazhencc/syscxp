@@ -170,8 +170,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIQueryTunnelDetailForAlarmMsg) msg);
         } else if (msg instanceof APIListSwitchPortByTypeMsg) {
             handle((APIListSwitchPortByTypeMsg) msg);
-        } else if (msg instanceof APIUpdateForciblyTunnelVlanMsg) {
-            handle((APIUpdateForciblyTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateTunnelVlanMsg) {
             handle((APIUpdateTunnelVlanMsg) msg);
         } else if (msg instanceof APIListCrossTunnelMsg) {
@@ -577,13 +575,60 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         boolean isUsed = tsPort != null;
         String commands = null;
 
+        TunnelSwitchPortVO tunnelSwitchPortB;
+        TunnelSwitchPortVO remoteTunnelSwitchPort = null;
+        PhysicalSwitchVO physicalSwitch = null;
+
         if(isUsed){
+
+            if (!Objects.equals(msg.getSwitchPortUuid(), iface.getSwitchPortUuid())){
+                String switchUuid = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid()).select(SwitchPortVO_.switchUuid).findValue();
+
+                new TunnelValidateBase().validateVlanForUpdateVlanOrInterface(switchUuid, tunnelBase.findSwitchByInterface(msg.getUuid()), tsPort.getVlan(), tsPort.getVlan());
+            }
+
             TunnelVO vo = Q.New(TunnelVO.class)
                     .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                     .find();
             commands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
+
+            tunnelSwitchPortB = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag, "B")
+                    .find();
+
+            //修改后的所属物理交换机
+            physicalSwitch = tunnelBase.getPhysicalSwitchBySwitchPortUuid(msg.getSwitchPortUuid());
+
+            //找到对端TunnelSwitchPort
+            if(tsPort.getSortTag().equals("A")){
+                if(tunnelSwitchPortB != null){
+                    remoteTunnelSwitchPort = tunnelSwitchPortB;
+
+                }else{
+                    remoteTunnelSwitchPort = Q.New(TunnelSwitchPortVO.class)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                            .find();
+                }
+            }else{
+                if(tunnelSwitchPortB != null){
+                    remoteTunnelSwitchPort = Q.New(TunnelSwitchPortVO.class)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "C")
+                            .find();
+                }else{
+                    remoteTunnelSwitchPort = Q.New(TunnelSwitchPortVO.class)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "A")
+                            .find();
+                }
+            }
+
         }
 
+        final TunnelSwitchPortVO remoteTunnelSwitchPortVO = remoteTunnelSwitchPort;
+        final PhysicalSwitchVO physicalSwitchVO = physicalSwitch;
         final String revertCommands = commands;
 
         Map<String, Object> rollback = new HashMap<>();
@@ -640,7 +685,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     UpdateQuery.New(TunnelSwitchPortVO.class)
                             .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
                             .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
+                            .set(TunnelSwitchPortVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
+                            .set(TunnelSwitchPortVO_.ownerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO).getUuid())
                             .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
+                            .update();
+
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO).getUuid())
+                            .eq(TunnelSwitchPortVO_.uuid, remoteTunnelSwitchPortVO.getUuid())
                             .update();
                     logger.info(String.format("after update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
@@ -651,6 +703,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (isUsed) {
                     dbf.updateAndRefresh(tsPort);
+                    dbf.updateAndRefresh(remoteTunnelSwitchPortVO);
                     logger.info(String.format("rollback to update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
                 trigger.rollback();
@@ -696,6 +749,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                             .find();
                     taskModifyTunnelPortsZK(tunnel.getUuid());
+
+                    trigger.next();
                 }else {
                     trigger.next();
                 }
@@ -797,8 +852,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setAccountUuid(vo.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
-        orderMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
-        orderMsg.setDuration(1);
+        orderMsg.setProductChargeModel(msg.getProductChargeModel());
+        orderMsg.setDuration(msg.getDuration());
 
         //支付
         OrderInventory orderInventory = tunnelBillingBase.createOrderForEdgeLine(orderMsg);
@@ -806,7 +861,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //开通成功,记录生效订单
             tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-            vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),ProductChargeModel.BY_MONTH,1));
+            vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),msg.getProductChargeModel(),msg.getDuration()));
             vo.setState(EdgeLineState.Opened);
             vo = dbf.updateAndRefresh(vo);
 
@@ -1141,43 +1196,60 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }else{
                 if (!isIfaceANew && msg.getInterfaceAUuid().equals(msg.getCrossInterfaceUuid())){   //A是共点
                     vlanA = crossVlan;
-                    vlanZ = ts.getVlanBySwitch(switchPortVOZ.getSwitchUuid());
-                    if (vlanZ == 0) {
-                        throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+
+                    if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), vlanA)){
+                        vlanZ = vlanA;
+                    }else{
+                        vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid());
+                        if (vlanZ == 0) {
+                            throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+                        }
                     }
+
                 }else{
-                    vlanA = ts.getVlanBySwitch(switchPortVOA.getSwitchUuid());
-                    if (vlanA == 0) {
-                        throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
-                    }
                     vlanZ = crossVlan;
+
+                    if(ts.vlanIsAvailable(switchPortVOA.getSwitchUuid(), vlanZ)){
+                        vlanA = vlanZ;
+                    }else{
+                        vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid());
+                        if (vlanA == 0) {
+                            throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
+                        }
+                    }
+
                 }
             }
         }else{
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)) {     //从同一个物理交换机进和出，不可能跨国
-                vlanA = ts.getVlanBySwitch(switchPortVOA.getSwitchUuid());
+                vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid());
                 if (vlanA == 0) {
                     throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
                 }
                 vlanZ = vlanA;
             }else{
-                vlanA = ts.getVlanBySwitch(switchPortVOA.getSwitchUuid());
+                vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid());
                 if (vlanA == 0) {
                     throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
                 }
-                vlanZ = ts.getVlanBySwitch(switchPortVOZ.getSwitchUuid());
-                if (vlanZ == 0) {
-                    throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+
+                if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), vlanA)){
+                    vlanZ = vlanA;
+                }else{
+                    vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid());
+                    if (vlanZ == 0) {
+                        throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+                    }
                 }
             }
         }
 
         if(tunnelType == TunnelType.CHINA2ABROAD){     //跨国互联
-            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,vlanA,vlanZ,switchPortVOA,switchPortVOZ,vo);
+            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,vlanA,vlanZ,interfaceVOA,interfaceVOZ,switchPortVOA,switchPortVOZ,vo);
+        }else{
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,switchPortVOZ.getUuid(),vlanA,"A");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,switchPortVOA.getUuid(),vlanZ,"Z");
         }
-
-        tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,vlanA,"A");
-        tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,vlanZ,"Z");
 
         return vo.getUuid();
     }
@@ -1186,6 +1258,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                           NodeVO nvoA,
                           Integer vlanA,
                           Integer vlanZ,
+                          InterfaceVO interfaceVOA,
+                          InterfaceVO interfaceVOZ,
                           SwitchPortVO switchPortVOA,
                           SwitchPortVO switchPortVOZ,
                           TunnelVO vo){
@@ -1214,20 +1288,38 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,innerSwitchPort)){
                 vlanBC = vlanA;
             }else{
-                vlanBC = ts.getVlanBySwitch(innerSwitch.getUuid());
-            }
+                if(ts.vlanIsAvailable(innerSwitch.getUuid(), vlanA) && ts.vlanIsAvailable(outerSwitch.getUuid(), vlanA)){
+                    vlanBC = vlanA;
+                }else{
+                    vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid());
+                    if (vlanBC == 0) {
+                        throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",innerSwitchPort.getUuid()));
+                    }
+                }
 
-            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),vlanBC,"B");
-            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),vlanBC,"C");
+            }
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),switchPortVOA.getUuid(),vlanBC,"B");
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),switchPortVOZ.getUuid(),vlanBC,"C");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,innerSwitchPort.getUuid(),vlanA,"A");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,outerSwitchPort.getUuid(),vlanZ,"Z");
         }else{                                  //A端国外Z端国内
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOZ,innerSwitchPort)){
                 vlanBC = vlanZ;
             }else{
-                vlanBC = ts.getVlanBySwitch(innerSwitch.getUuid());
-            }
+                if(ts.vlanIsAvailable(innerSwitch.getUuid(), vlanZ) && ts.vlanIsAvailable(outerSwitch.getUuid(), vlanZ)){
+                    vlanBC = vlanZ;
+                }else{
+                    vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid());
+                    if (vlanBC == 0) {
+                        throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员!",innerSwitchPort.getUuid()));
+                    }
+                }
 
-            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),vlanBC,"B");
-            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),vlanBC,"C");
+            }
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,outerSwitchPort.getUuid(),vlanA,"A");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,innerSwitchPort.getUuid(),vlanZ,"Z");
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),switchPortVOA.getUuid(),vlanBC,"B");
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),switchPortVOZ.getUuid(),vlanBC,"C");
         }
     }
 
@@ -1350,11 +1442,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setDistance(Distance.getDistance(nvoA.getLongitude(), nvoA.getLatitude(), nvoZ.getLongitude(), nvoZ.getLatitude()));
         dbf.getEntityManager().persist(vo);
 
-        tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,msg.getaVlan(),"A");
-        tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,msg.getzVlan(),"Z");
-
         if(tunnelType == TunnelType.CHINA2ABROAD){     //跨国互联
-            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,msg.getaVlan(),msg.getzVlan(),switchPortVOA,switchPortVOZ,vo);
+            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,msg.getaVlan(),msg.getzVlan(),interfaceVOA,interfaceVOZ,switchPortVOA,switchPortVOZ,vo);
+        }else{
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,switchPortVOZ.getUuid(),msg.getaVlan(),"A");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,switchPortVOA.getUuid(),msg.getzVlan(),"Z");
         }
 
         //如果开启Qinq,需要指定内部vlan段
@@ -1435,22 +1527,23 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
+        //专线是否修改了，用于下发判断
+        boolean updateVlanOrInterface = false;
+        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())
+                || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())
+                || !msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())
+                || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
+            updateVlanOrInterface = true;
+        }
+        final boolean updateTunnel = updateVlanOrInterface;
+
         String revertCommands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
 
+        //修改前的TunnelSwitchPort
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "A")
                 .find();
-        String switchPortUuidA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid();
-        SwitchPortVO switchPortVOA = dbf.findByUuid(switchPortUuidA,SwitchPortVO.class);
-
-        TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                .find();
-        String switchPortUuidZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid();
-        SwitchPortVO switchPortVOZ = dbf.findByUuid(switchPortUuidZ,SwitchPortVO.class);
-
         TunnelSwitchPortVO tunnelSwitchPortB = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "B")
@@ -1459,6 +1552,24 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "C")
                 .find();
+        TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                .find();
+
+        //修改后的端口
+        String switchPortUuidA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid();
+        SwitchPortVO switchPortVOA = dbf.findByUuid(switchPortUuidA,SwitchPortVO.class);
+
+        String switchPortUuidZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid();
+        SwitchPortVO switchPortVOZ = dbf.findByUuid(switchPortUuidZ,SwitchPortVO.class);
+
+        //修改后的交换机
+        PhysicalSwitchVO physicalSwitchA = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuidA);
+        PhysicalSwitchVO remotePhysicalSwitchA ;
+
+        PhysicalSwitchVO physicalSwitchZ = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuidZ);
+        PhysicalSwitchVO remotePhysicalSwitchZ ;
 
         boolean isABsame = false;
         boolean isCZsame = false;
@@ -1469,6 +1580,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOZ,dbf.findByUuid(tunnelSwitchPortC.getSwitchPortUuid(),SwitchPortVO.class))){
                 isCZsame = true;
             }
+
+            remotePhysicalSwitchA = tunnelBase.getPhysicalSwitchBySwitchPortUuid(tunnelSwitchPortB.getSwitchPortUuid());
+            remotePhysicalSwitchZ = tunnelBase.getPhysicalSwitchBySwitchPortUuid(tunnelSwitchPortC.getSwitchPortUuid());
+        }else{
+            remotePhysicalSwitchA = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuidZ);
+            remotePhysicalSwitchZ = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuidA);
         }
 
         FlowChain updatevlan = FlowChainBuilder.newSimpleFlowChain();
@@ -1483,21 +1600,35 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .set(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceAUuid())
                             .set(TunnelSwitchPortVO_.switchPortUuid, dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid())
                             .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
+                            .set(TunnelSwitchPortVO_.physicalSwitchUuid, physicalSwitchA.getUuid())
+                            .set(TunnelSwitchPortVO_.ownerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchA).getUuid())
+                            .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(remotePhysicalSwitchA).getUuid())
                             .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                             .eq(TunnelSwitchPortVO_.sortTag, "A")
                             .update();
-                    if(finalIsABsame){
-                        UpdateQuery.New(TunnelSwitchPortVO.class)
-                                .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
-                                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                                .eq(TunnelSwitchPortVO_.sortTag, "B")
-                                .update();
-                        UpdateQuery.New(TunnelSwitchPortVO.class)
-                                .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
-                                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                                .eq(TunnelSwitchPortVO_.sortTag, "C")
-                                .update();
+
+                    if(tunnelSwitchPortB != null){
+                        if(finalIsABsame){
+                            UpdateQuery.New(TunnelSwitchPortVO.class)
+                                    .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
+                                    .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchA).getUuid())
+                                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                                    .eq(TunnelSwitchPortVO_.sortTag, "B")
+                                    .update();
+                            UpdateQuery.New(TunnelSwitchPortVO.class)
+                                    .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
+                                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                                    .eq(TunnelSwitchPortVO_.sortTag, "C")
+                                    .update();
+                        }else{
+                            UpdateQuery.New(TunnelSwitchPortVO.class)
+                                    .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchA).getUuid())
+                                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                                    .eq(TunnelSwitchPortVO_.sortTag, "B")
+                                    .update();
+                        }
                     }
+
                     logger.info("修改A端物理接口或VLAN");
                 }
 
@@ -1507,11 +1638,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void rollback(FlowRollback trigger, Map data) {
                 if (!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
+
                     dbf.updateAndRefresh(tunnelSwitchPortA);
-                    if(finalIsABsame){
-                        dbf.updateAndRefresh(tunnelSwitchPortB);
-                        dbf.updateAndRefresh(tunnelSwitchPortC);
+                    if(tunnelSwitchPortB != null){
+                        if(finalIsABsame){
+                            dbf.updateAndRefresh(tunnelSwitchPortB);
+                            dbf.updateAndRefresh(tunnelSwitchPortC);
+                        }else{
+                            dbf.updateAndRefresh(tunnelSwitchPortB);
+                        }
                     }
+
                     logger.info("回滚A端物理接口或VLAN");
                 }
 
@@ -1525,21 +1662,35 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .set(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceZUuid())
                             .set(TunnelSwitchPortVO_.switchPortUuid, dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid())
                             .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
+                            .set(TunnelSwitchPortVO_.physicalSwitchUuid, physicalSwitchZ.getUuid())
+                            .set(TunnelSwitchPortVO_.ownerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchZ).getUuid())
+                            .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(remotePhysicalSwitchZ).getUuid())
                             .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                             .eq(TunnelSwitchPortVO_.sortTag, "Z")
                             .update();
-                    if(finalIsCZsame){
-                        UpdateQuery.New(TunnelSwitchPortVO.class)
-                                .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
-                                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                                .eq(TunnelSwitchPortVO_.sortTag, "B")
-                                .update();
-                        UpdateQuery.New(TunnelSwitchPortVO.class)
-                                .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
-                                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                                .eq(TunnelSwitchPortVO_.sortTag, "C")
-                                .update();
+
+                    if(tunnelSwitchPortB != null){
+                        if(finalIsCZsame){
+                            UpdateQuery.New(TunnelSwitchPortVO.class)
+                                    .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
+                                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                                    .eq(TunnelSwitchPortVO_.sortTag, "B")
+                                    .update();
+                            UpdateQuery.New(TunnelSwitchPortVO.class)
+                                    .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
+                                    .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchZ).getUuid())
+                                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                                    .eq(TunnelSwitchPortVO_.sortTag, "C")
+                                    .update();
+                        }else{
+                            UpdateQuery.New(TunnelSwitchPortVO.class)
+                                    .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchZ).getUuid())
+                                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                                    .eq(TunnelSwitchPortVO_.sortTag, "C")
+                                    .update();
+                        }
                     }
+
                     logger.info("修改Z端物理接口或VLAN");
                 }
 
@@ -1549,11 +1700,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void rollback(FlowRollback trigger, Map data) {
                 if (!Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
+
                     dbf.updateAndRefresh(tunnelSwitchPortZ);
-                    if(finalIsCZsame){
-                        dbf.updateAndRefresh(tunnelSwitchPortB);
-                        dbf.updateAndRefresh(tunnelSwitchPortC);
+                    if(tunnelSwitchPortB != null){
+                        if(finalIsCZsame){
+                            dbf.updateAndRefresh(tunnelSwitchPortB);
+                            dbf.updateAndRefresh(tunnelSwitchPortC);
+                        }else{
+                            dbf.updateAndRefresh(tunnelSwitchPortC);
+                        }
                     }
+
                     logger.info("回滚Z端物理接口或VLAN");
                 }
                 trigger.rollback();
@@ -1561,39 +1718,50 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                if (!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan()) || !Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-                    //创建任务
-                    TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyPorts);
+                if(msg.isIssue()){      //下发
+                    if (updateTunnel) {
+                        //创建任务
+                        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyPorts);
 
-                    ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
-                    modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
-                    modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
-                    bus.makeLocalServiceId(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID);
-                    bus.send(modifyTunnelPortsMsg, new CloudBusCallBack(null) {
-                        @Override
-                        public void run(MessageReply reply) {
-                            if (reply.isSuccess()) {
-                                logger.info(String.format("Successfully update vlan of tunnel[uuid:%s].", vo.getUuid()));
+                        ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
+                        modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
+                        modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
+                        bus.makeLocalServiceId(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID);
+                        bus.send(modifyTunnelPortsMsg, new CloudBusCallBack(null) {
+                            @Override
+                            public void run(MessageReply reply) {
+                                if (reply.isSuccess()) {
+                                    logger.info(String.format("Successfully update vlan of tunnel[uuid:%s].", vo.getUuid()));
 
-                                jobf.removeJob(vo.getUuid(), RevertTunnelControlJob.class);
+                                    jobf.removeJob(vo.getUuid(), RevertTunnelControlJob.class);
 
-                                trigger.next();
-                            } else {
-                                logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
+                                    trigger.next();
+                                } else {
+                                    logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
 
-                                //恢复Tunnel
-                                if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
-                                    logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
-                                    taskRevertTunnel(vo,revertCommands);
+                                    //恢复Tunnel
+                                    if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                                        logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
+                                        taskRevertTunnel(vo,revertCommands);
+                                    }
+
+                                    trigger.fail(reply.getError());
                                 }
-
-                                trigger.fail(reply.getError());
                             }
-                        }
-                    });
-                } else {
-                    trigger.next();
+                        });
+                    } else {
+                        trigger.next();
+                    }
+                }else{              //不用下发
+                    if(updateTunnel){
+                        taskModifyTunnelPortsZK(vo.getUuid());
+
+                        trigger.next();
+                    }else{
+                        trigger.next();
+                    }
                 }
+
             }
 
             @Override
@@ -1620,119 +1788,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     }
 
-    /**
-     * 强制切换云专线已有的物理接口和修改端口VLAN（仅保存）
-     **/
-    private void handle(APIUpdateForciblyTunnelVlanMsg msg) {
-        TunnelBase tunnelBase = new TunnelBase();
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-
-        //如果vlan改变，问专线是否被使用
-        if (!msg.getaVlan().equals(msg.getOldAVlan()) || !msg.getzVlan().equals(msg.getOldZVlan())) {
-            for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
-                extp.preDelete(vo);
-            }
-        }
-
-        boolean updateA = false;
-        boolean updateZ = false;
-        TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "A")
-                .find();
-        String switchPortUuidA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid();
-        SwitchPortVO switchPortVOA = dbf.findByUuid(switchPortUuidA,SwitchPortVO.class);
-
-        TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                .find();
-        String switchPortUuidZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid();
-        SwitchPortVO switchPortVOZ = dbf.findByUuid(switchPortUuidZ,SwitchPortVO.class);
-
-        TunnelSwitchPortVO tunnelSwitchPortB = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "B")
-                .find();
-        TunnelSwitchPortVO tunnelSwitchPortC = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "C")
-                .find();
-
-        boolean isABsame = false;
-        boolean isCZsame = false;
-        if(tunnelSwitchPortB != null){
-            if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,dbf.findByUuid(tunnelSwitchPortB.getSwitchPortUuid(),SwitchPortVO.class))){
-                isABsame = true;
-            }
-            if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOZ,dbf.findByUuid(tunnelSwitchPortC.getSwitchPortUuid(),SwitchPortVO.class))){
-                isCZsame = true;
-            }
-        }
-
-        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())) {
-            tunnelSwitchPortA.setInterfaceUuid(msg.getInterfaceAUuid());
-            tunnelSwitchPortA.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid());
-            tunnelSwitchPortA.setVlan(msg.getaVlan());
-            updateA = true;
-        } else {
-            if (!Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
-                tunnelSwitchPortA.setVlan(msg.getaVlan());
-                updateA = true;
-            }
-        }
-        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())) {
-            tunnelSwitchPortZ.setInterfaceUuid(msg.getInterfaceZUuid());
-            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
-            tunnelSwitchPortZ.setVlan(msg.getzVlan());
-            updateZ = true;
-        } else {
-            if (!Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-                tunnelSwitchPortZ.setVlan(msg.getzVlan());
-                updateZ = true;
-            }
-        }
-        if (updateA){
-            dbf.updateAndRefresh(tunnelSwitchPortA);
-            if(isABsame){
-                UpdateQuery.New(TunnelSwitchPortVO.class)
-                        .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "B")
-                        .update();
-                UpdateQuery.New(TunnelSwitchPortVO.class)
-                        .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "C")
-                        .update();
-            }
-        }
-
-        if (updateZ){
-            dbf.updateAndRefresh(tunnelSwitchPortZ);
-            if(isCZsame){
-                UpdateQuery.New(TunnelSwitchPortVO.class)
-                        .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "B")
-                        .update();
-                UpdateQuery.New(TunnelSwitchPortVO.class)
-                        .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "C")
-                        .update();
-            }
-        }
-
-        if(updateA || updateZ){
-            taskModifyTunnelPortsZK(vo.getUuid());
-        }
-
-        APIUpdateForciblyTunnelVlanEvent evt = new APIUpdateForciblyTunnelVlanEvent(msg.getId());
-        evt.setInventory(TunnelInventory.valueOf(vo));
-        bus.publish(evt);
-
-    }
 
     /**
      * 修改云专线的名称和描述
@@ -2631,7 +2686,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIGetVlanAutoReply reply = new APIGetVlanAutoReply();
 
         TunnelStrategy ts = new TunnelStrategy();
-        Integer vlan = ts.getVlanByStrategy(msg.getInterfaceUuid());
+        TunnelBase tunnelBase = new TunnelBase();
+
+        Integer vlan = ts.getVlanByStrategy(tunnelBase.findSwitchByInterface(msg.getInterfaceUuid()));
         if (vlan == 0) {
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
         }
@@ -3030,7 +3087,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
 
         EdgeLineVO vo = dbf.findByUuid(cmd.getPorductUuid(), EdgeLineVO.class);
-        vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),ProductChargeModel.BY_MONTH,1));
+        vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),cmd.getProductChargeModel(),cmd.getDuration()));
         vo.setState(EdgeLineState.Opened);
         vo = dbf.updateAndRefresh(vo);
 
@@ -3425,8 +3482,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelValidateBase.validate((APIDeleteQinqMsg) msg);
         } else if (msg instanceof APIUpdateTunnelVlanMsg) {
             tunnelValidateBase.validate((APIUpdateTunnelVlanMsg) msg);
-        } else if (msg instanceof APIUpdateForciblyTunnelVlanMsg) {
-            tunnelValidateBase.validate((APIUpdateForciblyTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateInterfacePortMsg) {
             tunnelValidateBase.validate((APIUpdateInterfacePortMsg) msg);
         } else if (msg instanceof APICreateEdgeLineMsg) {

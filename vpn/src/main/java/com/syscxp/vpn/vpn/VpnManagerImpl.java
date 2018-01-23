@@ -114,6 +114,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private ThreadFacade thdf;
 
     private static String NO_TUNNEL = "";
+
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -1110,6 +1111,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             }
 
         }).then(new NoRollbackFlow() {
+            String __name__ = "detach-vpn-cert";
+
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                if (vpn.getVpnCertUuid() != null) {
+                    detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
+                    LOGGER.debug(String.format("VPN[UUID:%s]解绑证书[UUID:%s]成功", vpn.getUuid(), vpn.getVpnCertUuid()));
+                }
+                trigger.next();
+            }
+        }).then(new NoRollbackFlow() {
             String __name__ = "destroy-vpn";
 
             @Override
@@ -1130,17 +1142,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         }
                     }
                 });
-            }
-        }).then(new NoRollbackFlow() {
-            String __name__ = "detach-vpn-cert";
-
-            @Override
-            public void run(final FlowTrigger trigger, Map data) {
-                if (vpn.getVpnCertUuid() != null) {
-                    detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
-                    LOGGER.debug(String.format("VPN[UUID:%s]解绑证书[UUID:%s]成功", vpn.getUuid(), vpn.getVpnCertUuid()));
-                }
-                trigger.next();
             }
         });
         chain.done(new FlowDoneHandler(msg) {

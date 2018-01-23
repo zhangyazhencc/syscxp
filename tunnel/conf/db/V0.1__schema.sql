@@ -459,6 +459,9 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelSwitchPortVO` (
   `type` varchar(32) NOT NULL DEFAULT 'TRUNK' COMMENT '用途:TRUNK,ACCESS,QINQ',
   `vlan` INT(11) NOT NULL COMMENT '端口外部vlan',
   `sortTag` varchar(32) NOT NULL COMMENT '排序',
+  `physicalSwitchUuid` varchar(32) DEFAULT NULL COMMENT '物理交换机',
+  `ownerMplsSwitchUuid` varchar(32) DEFAULT NULL COMMENT 'MPLS交换机',
+  `peerMplsSwitchUuid` varchar(32) DEFAULT NULL COMMENT '对端MPLS交换机',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
