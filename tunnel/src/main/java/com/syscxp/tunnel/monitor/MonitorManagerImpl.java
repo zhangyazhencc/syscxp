@@ -140,8 +140,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         tunnelVO.setStatus(TunnelStatus.Connected);
         dbf.getEntityManager().merge(tunnelVO);
 
-        initTunnelMonitor(tunnelVO);
-
         // 删除job
         jobf.removeJob(msg.getTunnelUuid(), TunnelMonitorVO.class);
 
@@ -216,7 +214,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         dbf.getEntityManager().merge(tunnelVO);
 
-        initTunnelMonitor(tunnelVO);
+        initTunnelMonitor(msg.getTunnelUuid());
 
         // 删除job
         jobf.removeJob(msg.getTunnelUuid(), TunnelMonitorVO.class);
@@ -238,7 +236,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @return 创建通道监控
      */
     @Transactional
-    public List<TunnelMonitorVO> initTunnelMonitor(TunnelVO tunnelVO) {
+    public List<TunnelMonitorVO> initTunnelMonitor(String tunnelUuid) {
+        TunnelVO tunnelVO = dbf.getEntityManager().find(TunnelVO.class, tunnelUuid);
         // 共点不能使用相同的cidr，防止ip重复
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.monitorCidr, tunnelVO.getMonitorCidr())
@@ -287,8 +286,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return
      */
+    @Transactional
     public void startControllerMonitor(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
+            initTunnelMonitor(tunnelUuid);
+
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                     .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
                     .list();
@@ -316,8 +318,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return
      */
+    @Transactional
     public void startControllerMonitorNoRollback(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
+            initTunnelMonitor(tunnelUuid);
+
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                     .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
                     .list();
@@ -336,6 +341,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return
      */
+    @Transactional
     public void startControllerMonitorRollback(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
@@ -354,6 +360,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /**
      * 停止控制器监控
      */
+    @Transactional
     public void stopControllerMonitor(String tunnelUuid) {
         Map<String, String> cmd = new HashMap<>();
         cmd.put("tunnel_id", tunnelUuid);
@@ -368,8 +375,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /**
      * 控制器命令修改：修改监控ip、vlan、带宽、端口（跨交换机）
      */
+    @Transactional
     public void modifyControllerMonitor(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
+            initTunnelMonitor(tunnelUuid);
+
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
             ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, false, tunnelMonitorVOS);
 

@@ -267,8 +267,6 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
 
             if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
-                monitorManager.initTunnelMonitor(tunnelVO);
-
                 TunnelMonitorJob monitorJob = new TunnelMonitorJob();
                 monitorJob.setTunnelUuid(hostTunnelMonitorVO.getTunnelUuid());
                 monitorJob.setJobType(MonitorJobType.MODIFY);
