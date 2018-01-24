@@ -15,6 +15,7 @@ import com.syscxp.utils.gson.GsonTypeCoder;
 import com.syscxp.utils.gson.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -298,7 +299,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         new JobWrapper() {
             private Long myJobId;
 
-            @Transactional
+            @Transactional(propagation = Propagation.REQUIRES_NEW)
             private JobQueueVO saveJob() throws IOException {
                 JobQueueVO ret = null;
                 String sql = "select queue from JobQueueVO queue where queue.name = :queueName";
