@@ -10,7 +10,9 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.job.JobQueueFacade;
+import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.PeriodicTask;
+import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
@@ -39,6 +41,7 @@ import com.syscxp.utils.data.SizeUnit;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
+import groovy.transform.TailRecursive;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,169 +128,110 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
     }
 
+    @Transactional
     private void handle(APIStartTunnelMonitorMsg msg) {
         APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
-        if (!tunnelVO.getState().equals(TunnelState.Enabled))
+        if (tunnelVO.getState() != TunnelState.Enabled)
             throw new IllegalArgumentException(String.format("can not start monitor for %s tunnel!", tunnelVO.getState()));
+
+        if (tunnelVO.getMonitorState() == TunnelMonitorState.Enabled)
+            throw new IllegalArgumentException("tunnel monitor already started !");
 
         // 初始化监控通道
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
         tunnelVO.setStatus(TunnelStatus.Connected);
-        dbf.updateAndRefresh(tunnelVO);
+        dbf.getEntityManager().merge(tunnelVO);
 
-        FlowChain startMonitor = FlowChainBuilder.newSimpleFlowChain();
-        startMonitor.setName(String.format("start-tunnel-monitor-%s", tunnelVO.getName()));
-        startMonitor.then(new Flow() {
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                initTunnelMonitor(tunnelVO);
+        // 开启控制器监控
+        startControllerMonitor(tunnelVO.getUuid());
 
-                trigger.next();
+        // 开启agent监控
+        try {
+            startAgentMonitor(tunnelVO.getUuid());
+        } catch (Exception e) {
+            try {
+                stopControllerMonitor(msg.getTunnelUuid());
+            } catch (Exception e1) {
+                logger.info(String.format("start job to stop controller monitor[tunnel: %s MonitorJobType: %s]"
+                        , msg.getTunnelUuid(), MonitorJobType.STOP.toString()));
+
+                TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+                monitorJob.setTunnelUuid(msg.getTunnelUuid());
+                monitorJob.setJobType(MonitorJobType.STOP);
+                jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
             }
 
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                tunnelVO.setMonitorCidr(null);
-                tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
-                tunnelVO.setStatus(TunnelStatus.Connected);
-                dbf.updateAndRefresh(tunnelVO);
+            throw new RuntimeException(String.format("failed to start agent monitor![Tunnel:%s] Error: %s",
+                    tunnelVO.getName(), e.getMessage()));
+        }
 
-                trigger.rollback();
-            }
-        }).then(new Flow() {
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                startControllerMonitor(tunnelVO.getUuid());
-
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
-
-                trigger.rollback();
-            }
-        }).then(new Flow() {
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                startAgentMonitor(tunnelVO.getUuid());
-
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                stopControllerMonitor(tunnelVO.getUuid());
-
-                trigger.rollback();
-            }
-        }).done(new FlowDoneHandler(null) {
-            @Override
-            public void handle(Map data) {
-                logger.info(String.format("%s start monitor success!", tunnelVO.getName()));
-                event.setInventory(TunnelInventory.valueOf(tunnelVO));
-            }
-        }).error(new FlowErrorHandler(null) {
-            @Override
-            public void handle(ErrorCode errCode, Map data) {
-                logger.error(String.format("%s start monitor failed! Error: %s", tunnelVO.getName(), errCode.getDetails()));
-                event.setError(errCode);
-            }
-        }).start();
-
+        event.setInventory(TunnelInventory.valueOf(tunnelVO));
         bus.publish(event);
     }
 
+    @Transactional
     private void handle(APIStopTunnelMonitorMsg msg) {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
 
-        stopControllerMonitor(tunnelVO.getUuid());
-        try {
-            stopAgentMonitor(tunnelVO.getUuid());
-        } catch (Exception e) {
-            logger.info(String.format("failed to stop agent monitor[tunnel: %s] Error: %s", tunnelVO.getName(), e.getMessage()));
-        }
+        if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
+            throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
+                    , TunnelMonitorState.Enabled));
 
         tunnelVO.setStatus(TunnelStatus.Connected);
         tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
         tunnelVO.setMonitorCidr("");
-        tunnelVO = dbf.updateAndRefresh(tunnelVO);
+        tunnelVO = dbf.getEntityManager().merge(tunnelVO);
 
-        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                .eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid())
+                .list();
+        for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
+            dbf.getEntityManager().remove(tunnelMonitorVO);
+
+        // job关闭控制器监控
+        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+        monitorJob.setTunnelUuid(msg.getTunnelUuid());
+        monitorJob.setJobType(MonitorJobType.STOP);
+        jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
+
+        // 关闭agent监控，失败后由agent定时任务停止
+        try {
+            stopAgentMonitor(tunnelVO.getUuid());
+        } catch (Exception e) {
+            logger.error(String.format("failed to stop agent monitor[tunnel: %s] Error: %s"
+                    , tunnelVO.getName(), e.getMessage()));
+        }
 
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
         bus.publish(event);
     }
 
+    @Transactional
     private void handle(APIRestartTunnelMonitorMsg msg) {
-
         APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
 
-        // 获取监控通道数据
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
-        if (!tunnelVO.getState().equals(TunnelState.Enabled))
+        if (tunnelVO.getState() != TunnelState.Enabled)
             throw new IllegalArgumentException(String.format("can not restart monitor for %s tunnel!", tunnelVO.getState()));
 
-        if (tunnelVO.getMonitorState().equals(TunnelMonitorState.Disabled))
-            throw new IllegalArgumentException("please start tunnel first!");
-
-        String originalMonitorCidr = tunnelVO.getMonitorCidr();
-        List<TunnelMonitorVO> originalTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
-                .list();
+        if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
+            throw new IllegalArgumentException(String.format("can only restart monitor for tunnels which monitor status is [%s]!"
+                    , TunnelMonitorState.Enabled));
 
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
-        dbf.updateAndRefresh(tunnelVO);
+        dbf.getEntityManager().merge(tunnelVO);
 
-        List<TunnelMonitorVO> tunnelMonitorVOS = new ArrayList<>();
-        try {
-            tunnelMonitorVOS = initTunnelMonitor(tunnelVO);
-        } catch (Exception e) {
-            UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
-            dbf.persistCollection(originalTunnelMonitorVOS);
-
-            throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Error: cannot init TunnelMonitor"));
-        }
-
-        try {
-            modifyControllerMonitor(tunnelVO.getUuid());
-        } catch (Exception e) {
-            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelVO.getUuid(), false, originalTunnelMonitorVOS);
-
-            String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
-            ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-
-            if (response.isSuccess()) {
-                UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
-                dbf.persistCollection(originalTunnelMonitorVOS);
-
-                tunnelVO.setMonitorCidr(originalMonitorCidr);
-                dbf.updateAndRefresh(tunnelVO);
-
-                throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Error: %s", e.getMessage()));
-            } else {
-                if (needRollback(response)) {
-                    cmd.setRollback(true);
-                    sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-                }
-
-                tunnelVO.setMonitorCidr(null);
-                tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
-                tunnelVO.setStatus(TunnelStatus.Connected);
-                dbf.updateAndRefresh(tunnelVO);
-
-                throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Fail to restart monitor! Error: %s", response.getMsg()));
-            }
-        }
+        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+        monitorJob.setTunnelUuid(msg.getTunnelUuid());
+        monitorJob.setJobType(MonitorJobType.MODIFY);
+        jobf.execute("修改监控失败-修改监控", Platform.getManagementServerId(), monitorJob);
 
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
         logger.info(String.format("%s reset cidr success!", tunnelVO.getName()));
-
         bus.publish(event);
     }
 
@@ -296,7 +240,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelVO
      * @return 创建通道监控
      */
-    public List<TunnelMonitorVO> initTunnelMonitor(TunnelVO tunnelVO) {
+    @Transactional
+    public List<TunnelMonitorVO> initTunnelMonitor(String tunnelUuid) {
+        TunnelVO tunnelVO = dbf.getEntityManager().find(TunnelVO.class, tunnelUuid);
         // 共点不能使用相同的cidr，防止ip重复
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.monitorCidr, tunnelVO.getMonitorCidr())
@@ -311,8 +257,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
                 .list();
-        if (!tunnelMonitorVOS.isEmpty())
-            UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
+        for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
+            dbf.getEntityManager().remove(tunnelMonitorVO);
 
         tunnelMonitorVOS = new ArrayList<>();
         // 获取tunnel两端交换机端口
@@ -329,7 +275,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             // 监控主机
             String hostUuid = getHostUuid(tunnelSwitchPortVO.getSwitchPortUuid());
             tunnelMonitorVO.setHostUuid(hostUuid);
-            dbf.persist(tunnelMonitorVO);
+            dbf.getEntityManager().persist(tunnelMonitorVO);
 
             tunnelMonitorVOS.add(tunnelMonitorVO);
         }
@@ -341,58 +287,91 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /***
-     * job调用监控命令下发至控制器
+     * 开启控制器监控
      * @param tunnelUuid
      * @return
      */
+    @Transactional
     public void startControllerMonitor(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
+            initTunnelMonitor(tunnelUuid);
+
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                     .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
                     .list();
             ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, false, tunnelMonitorVOS);
 
-            startControllerMonitor(cmd);
+            String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
+            ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            if (!response.isSuccess()) {
+                if (needRollback(response)) {
+                    TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+                    monitorJob.setTunnelUuid(cmd.getTunnel_id());
+                    monitorJob.setJobType(MonitorJobType.ROLLBACK);
+
+                    jobf.execute("开启监控失败-回滚", Platform.getManagementServerId(), monitorJob);
+                }
+
+                throw new RuntimeException(String.format("Failure to execute RYU start command [TunnelUuid: %s]! Error:%s"
+                        , cmd.getTunnel_id(), response.getMsg()));
+            }
         }
     }
 
     /***
-     * 监控命令下发至控制器
-     * @param cmd
+     * 开启控制器监控，不判断回滚（job调用）
+     * @param tunnelUuid
+     * @return
      */
-    private void startControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
-        String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
+    @Transactional
+    public void startControllerMonitorNoRollback(String tunnelUuid) {
+        if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
+            // job stop时，没有清除数据，此处不需要初始化
+            // initTunnelMonitor(tunnelUuid);
 
-        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                    .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
+                    .list();
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, false, tunnelMonitorVOS);
 
-        logger.info("========= response: " + response.isRollback());
-        if (!response.isSuccess()) {
-            if (needRollback(response)) {
-                cmd.setRollback(true);
-                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-            }
+            String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
+            ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            if (!response.isSuccess())
+                throw new RuntimeException(String.format("Failure to execute RYU start command [TunnelUuid: %s]! Error:%s"
+                        , cmd.getTunnel_id(), response.getMsg()));
+        }
+    }
 
-            throw new RuntimeException(String.format("Failure to execute RYU start command [TunnelUuid: %s]! Error:%s"
-                    , cmd.getTunnel_id(), response.getMsg()));
+    /***
+     * 开启监控下发失败，且回滚失败，job调用监控回滚命令下发至控制器
+     * @param tunnelUuid
+     * @return
+     */
+    @Transactional
+    public void startControllerMonitorRollback(String tunnelUuid) {
+        if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                    .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
+                    .list();
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, true, tunnelMonitorVOS);
+
+            String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
+            ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            if (!response.isSuccess())
+                throw new RuntimeException(String.format("Failure to execute RYU start command [TunnelUuid: %s]! Error:%s"
+                        , cmd.getTunnel_id(), response.getMsg()));
         }
     }
 
     /**
-     * job控制器命令删除：中止tunnel
+     * 停止控制器监控
      */
+    @Transactional
     public void stopControllerMonitor(String tunnelUuid) {
         Map<String, String> cmd = new HashMap<>();
         cmd.put("tunnel_id", tunnelUuid);
 
-        stopControllerMonitor(cmd);
-    }
-
-    /**
-     * 控制器命令删除：关闭监控
-     */
-    private void stopControllerMonitor(Map<String, String> cmd) {
         String url = getControllerUrl(ControllerRestConstant.STOP_TUNNEL_MONITOR);
-
         ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
         if (!response.isSuccess())
             throw new RuntimeException(String.format("Failure to execute RYU stop command! Error:%s"
@@ -400,35 +379,55 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /**
-     * job控制器命令修改：修改vlan、带宽、端口（跨交换机）
+     * 控制器命令修改：修改监控ip、vlan、带宽、端口（跨交换机）
      */
+    @Transactional
     public void modifyControllerMonitor(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
+            initTunnelMonitor(tunnelUuid);
+
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
             ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, false, tunnelMonitorVOS);
-            modifyControllerMonitor(cmd);
+
+            String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
+            ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            if (!response.isSuccess())
+                throw new RuntimeException(String.format("Failure to execute RYU modify command [TunnelUuid : %s]! Error:%s"
+                        , cmd.getTunnel_id(), response.getMsg()));
         }
     }
 
     /**
-     * 控制器命令删除：关闭监控
+     * 删除监控（job调用：删除tunnel、删除monitor host）
      */
-    private void modifyControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
-        String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
-
-        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-        if (!response.isSuccess()) {
-            if (needRollback(response)) {
-                cmd.setRollback(true);
-                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-            }
-
-            throw new RuntimeException(String.format("Failure to execute RYU modify command [TunnelUuid : %s]! Error:%s"
-                    , cmd.getTunnel_id(), response.getMsg()));
+    @Transactional
+    public void deleteControllerMonitor(String tunnelUuid) {
+        TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+        if (tunnelVO != null) {
+            tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
+            tunnelVO.setStatus(TunnelStatus.Connected);
+            tunnelVO.setMonitorCidr("");
+            dbf.update(tunnelVO);
         }
+        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).delete();
+
+        Map<String, String> cmd = new HashMap<>();
+        cmd.put("tunnel_id", tunnelUuid);
+
+        String url = getControllerUrl(ControllerRestConstant.STOP_TUNNEL_MONITOR);
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isSuccess())
+            throw new RuntimeException(String.format("Failure to execute RYU stop command! Error:%s"
+                    , response.getMsg()));
 
     }
 
+    /**
+     * 根据控制器返回值判断是否需要回滚
+     *
+     * @param response
+     * @return
+     */
     public boolean needRollback(ControllerCommands.ControllerRestResponse response) {
         boolean needRollback = false;
 
@@ -1647,37 +1646,47 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     @Override
-    @Transactional
     public void beforeDeleteHost(HostInventory inventory) {
         logger.info("BeforeDeleteHost: " + inventory.getUuid());
-
-        // 停止所有连接该监控主机上专线监控
-        List<TunnelMonitorVO> hostTunnelMonitors = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.hostUuid, inventory.getUuid())
-                .list();
-        for (TunnelMonitorVO tunnelMonitorVO : hostTunnelMonitors) {
-
-            updateTunnel(tunnelMonitorVO.getTunnelUuid(), "", TunnelMonitorState.Disabled);
-            UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelMonitorVO.getTunnelUuid()).delete();
-
-            try {
-                stopControllerMonitor(tunnelMonitorVO.getTunnelUuid());
-                logger.info("关闭监控成功：" + tunnelMonitorVO.getTunnelUuid());
-            } catch (Exception e) {
-                logger.error("关闭监控失败，启动job: " + tunnelMonitorVO.getTunnelUuid() + " Error: " + e.getMessage());
-                TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-                monitorJob.setTunnelUuid(tunnelMonitorVO.getTunnelUuid());
-                monitorJob.setJobType(MonitorJobType.STOP);
-
-                jobf.execute("删除监控主机-停止监控", Platform.getManagementServerId(), monitorJob);
-            }
-
-        }
 
         // 删除监控主机与物理交换机的关联
         UpdateQuery.New(HostSwitchMonitorVO.class)
                 .eq(HostSwitchMonitorVO_.hostUuid, inventory.getUuid())
                 .delete();
+
+        // 停止所有连接该监控主机的专线监控
+        thdf.chainSubmit(new ChainTask(null) {
+            @Override
+            public String getSyncSignature() {
+                return String.format("Before-Delete-Host - %s", inventory.getUuid());
+            }
+
+            @Override
+            public void run(final SyncTaskChain chain) {
+                logger.info(String.format("[删除监控主机：%s]启动线程-删除所有连接监控主机的专线监控", inventory.getName()));
+
+                List<TunnelMonitorVO> hostTunnelMonitors = Q.New(TunnelMonitorVO.class)
+                        .eq(TunnelMonitorVO_.hostUuid, inventory.getUuid())
+                        .list();
+                for (TunnelMonitorVO tunnelMonitorVO : hostTunnelMonitors) {
+                    TunnelVO tunnelVO = dbf.findByUuid(tunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
+                    if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
+                        updateTunnel(tunnelMonitorVO.getTunnelUuid(), "", TunnelMonitorState.Disabled);
+                        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelMonitorVO.getTunnelUuid()).delete();
+
+                        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+                        monitorJob.setTunnelUuid(tunnelMonitorVO.getTunnelUuid());
+                        monitorJob.setJobType(MonitorJobType.DELETE);
+                        jobf.execute("删除监控主机-删除监控", Platform.getManagementServerId(), monitorJob);
+                    }
+                }
+            }
+
+            @Override
+            public String getName() {
+                return getSyncSignature();
+            }
+        });
     }
 
 

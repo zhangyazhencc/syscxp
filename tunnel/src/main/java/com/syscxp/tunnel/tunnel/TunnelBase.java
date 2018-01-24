@@ -535,7 +535,7 @@ public class TunnelBase {
                 logger.info("删除通道成功，并创建任务：TunnelMonitorJob");
                 TunnelMonitorJob job = new TunnelMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
-                job.setJobType(MonitorJobType.STOP);
+                job.setJobType(MonitorJobType.DELETE);
                 jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
             }
 
