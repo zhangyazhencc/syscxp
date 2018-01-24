@@ -419,12 +419,13 @@ public class TunnelBase {
 
         String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
                 "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
-                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state " +
-                "and sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid)) ";
+                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state and (sp.portType=:portType " +
+                "or sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid))) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("switchState", SwitchState.Enabled)
                 .param("endpointUuid", endpointUuid)
+                .param("portType", "SHARE")
                 .list();
     }
 
@@ -433,8 +434,11 @@ public class TunnelBase {
      */
     public List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type, Integer start, Integer limit) {
         String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
-                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
-                "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
+                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType ";
+        if (!"SHARE".equals(type)){
+            sql = sql + "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
+        }
+
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("switchState", SwitchState.Enabled)
