@@ -10,7 +10,9 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.job.JobQueueFacade;
+import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.PeriodicTask;
+import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
@@ -1615,32 +1617,47 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     @Override
-    @Transactional
     public void beforeDeleteHost(HostInventory inventory) {
         logger.info("BeforeDeleteHost: " + inventory.getUuid());
-
-        // TODO: 起线程执行
-        // 停止所有连接该监控主机上专线监控
-        List<TunnelMonitorVO> hostTunnelMonitors = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.hostUuid, inventory.getUuid())
-                .list();
-        for (TunnelMonitorVO tunnelMonitorVO : hostTunnelMonitors) {
-            TunnelVO tunnelVO = dbf.findByUuid(tunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
-            if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
-                updateTunnel(tunnelMonitorVO.getTunnelUuid(), "", TunnelMonitorState.Disabled);
-                UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelMonitorVO.getTunnelUuid()).delete();
-
-                TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-                monitorJob.setTunnelUuid(tunnelMonitorVO.getTunnelUuid());
-                monitorJob.setJobType(MonitorJobType.STOP);
-                jobf.execute("删除监控主机-停止监控", Platform.getManagementServerId(), monitorJob);
-            }
-        }
 
         // 删除监控主机与物理交换机的关联
         UpdateQuery.New(HostSwitchMonitorVO.class)
                 .eq(HostSwitchMonitorVO_.hostUuid, inventory.getUuid())
                 .delete();
+
+        // 停止所有连接该监控主机的专线监控
+        thdf.chainSubmit(new ChainTask(null) {
+            @Override
+            public String getSyncSignature() {
+                return String.format("Before-Delete-Host - %s", inventory.getUuid());
+            }
+
+            @Override
+            public void run(final SyncTaskChain chain) {
+                logger.info(String.format("[删除监控主机]启动线程-停止所有连接监控主机[%s]专线监控", inventory.getName()));
+
+                List<TunnelMonitorVO> hostTunnelMonitors = Q.New(TunnelMonitorVO.class)
+                        .eq(TunnelMonitorVO_.hostUuid, inventory.getUuid())
+                        .list();
+                for (TunnelMonitorVO tunnelMonitorVO : hostTunnelMonitors) {
+                    TunnelVO tunnelVO = dbf.findByUuid(tunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
+                    if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
+                        updateTunnel(tunnelMonitorVO.getTunnelUuid(), "", TunnelMonitorState.Disabled);
+                        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelMonitorVO.getTunnelUuid()).delete();
+
+                        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+                        monitorJob.setTunnelUuid(tunnelMonitorVO.getTunnelUuid());
+                        monitorJob.setJobType(MonitorJobType.STOP);
+                        jobf.execute("删除监控主机-停止监控", Platform.getManagementServerId(), monitorJob);
+                    }
+                }
+            }
+
+            @Override
+            public String getName() {
+                return getSyncSignature();
+            }
+        });
     }
 
 

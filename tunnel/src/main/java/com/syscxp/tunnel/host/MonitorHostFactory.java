@@ -15,6 +15,9 @@ import com.syscxp.core.host.HostGlobalConfig;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.notification.N;
 import com.syscxp.core.thread.AsyncThread;
+import com.syscxp.core.thread.ChainTask;
+import com.syscxp.core.thread.SyncTaskChain;
+import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
 import com.syscxp.header.host.*;
@@ -37,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +65,8 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     private RESTFacade restf;
     @Autowired
     private JobQueueFacade jobf;
+    @Autowired
+    private ThreadFacade thf;
 
     @Override
     public HostVO createHost(HostVO vo, AddHostMessage msg) {
@@ -248,32 +254,47 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     }
 
     private void handle(APIUpdateHostSwitchMonitorMsg msg) {
-        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
-
         HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
-
         vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
         vo.setInterfaceName(msg.getInterfaceName());
         vo = dbf.updateAndRefresh(vo);
 
-        // TODO: 起线程执行
-        // 更新所有受影响的监控通道（监控重启）
-        MonitorManagerImpl monitorManager = new MonitorManagerImpl();
-
-        List<TunnelMonitorVO> hostTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.hostUuid, vo.getHostUuid())
-                .list();
-        for (TunnelMonitorVO hostTunnelMonitorVO : hostTunnelMonitorVOS) {
-            TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
-
-            if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
-                TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-                monitorJob.setTunnelUuid(hostTunnelMonitorVO.getTunnelUuid());
-                monitorJob.setJobType(MonitorJobType.MODIFY);
-                jobf.execute("修改监控接口-修改监控", Platform.getManagementServerId(), monitorJob);
+        // 更新所有受影响的监控通道
+        final String hostUuid = vo.getHostUuid();
+        final String physicalSwitchUuid = vo.getPhysicalSwitchUuid();
+        thf.chainSubmit(new ChainTask(msg) {
+            @Override
+            public String getSyncSignature() {
+                return String.format("Update-Host-Switch-Monitor - %s", hostUuid);
             }
-        }
 
+            @Override
+            public void run(final SyncTaskChain chain) {
+                logger.info(String.format("[更新监控接口]启动线程-更新所有受影响的监控通道![HostUuid: %s , PhysicalSwitchUuid: %s]"
+                        , hostUuid, physicalSwitchUuid));
+
+                List<TunnelMonitorVO> hostTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                        .eq(TunnelMonitorVO_.hostUuid, hostUuid)
+                        .list();
+                for (TunnelMonitorVO hostTunnelMonitorVO : hostTunnelMonitorVOS) {
+                    TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
+
+                    if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
+                        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+                        monitorJob.setTunnelUuid(hostTunnelMonitorVO.getTunnelUuid());
+                        monitorJob.setJobType(MonitorJobType.MODIFY);
+                        jobf.execute("修改监控接口-修改监控", Platform.getManagementServerId(), monitorJob);
+                    }
+                }
+            }
+
+            @Override
+            public String getName() {
+                return getSyncSignature();
+            }
+        });
+
+        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
         event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
         bus.publish(event);
     }
