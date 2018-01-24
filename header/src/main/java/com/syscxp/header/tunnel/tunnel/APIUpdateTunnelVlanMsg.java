@@ -33,6 +33,9 @@ public class APIUpdateTunnelVlanMsg extends APIMessage {
     @APIParam(numberRange = {1, 4094})
     private Integer oldZVlan;
 
+    @APIParam(required = false)
+    private boolean issue = false;
+
     public String getUuid() {
         return uuid;
     }
@@ -103,6 +106,14 @@ public class APIUpdateTunnelVlanMsg extends APIMessage {
 
     public void setOldZVlan(Integer oldZVlan) {
         this.oldZVlan = oldZVlan;
+    }
+
+    public boolean isIssue() {
+        return issue;
+    }
+
+    public void setIssue(boolean issue) {
+        this.issue = issue;
     }
 
     public ApiNotification __notification__() {
