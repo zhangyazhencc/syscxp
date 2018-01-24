@@ -1680,6 +1680,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         jobf.execute("删除监控主机-删除监控", Platform.getManagementServerId(), monitorJob);
                     }
                 }
+
+                chain.next();
             }
 
             @Override

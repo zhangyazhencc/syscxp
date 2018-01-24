@@ -103,6 +103,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
                 // HandleALarmReply
                 handleAlarm(eventVO);
+
+                chain.next();
             }
 
             @Override

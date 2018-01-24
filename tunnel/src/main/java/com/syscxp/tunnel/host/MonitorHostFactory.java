@@ -262,7 +262,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         // 更新所有受影响的监控通道
         final String hostUuid = vo.getHostUuid();
         final String physicalSwitchUuid = vo.getPhysicalSwitchUuid();
-        thf.chainSubmit(new ChainTask(msg) {
+        thf.chainSubmit(new ChainTask(null) {
             @Override
             public String getSyncSignature() {
                 return String.format("Update-Host-Switch-Monitor - %s", hostUuid);
@@ -279,13 +279,17 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
                 for (TunnelMonitorVO hostTunnelMonitorVO : hostTunnelMonitorVOS) {
                     TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
 
-                    if (tunnelVO != null && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
+                    if (tunnelVO != null
+                            && tunnelVO.getState() == TunnelState.Enabled
+                            && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
                         TunnelMonitorJob monitorJob = new TunnelMonitorJob();
                         monitorJob.setTunnelUuid(hostTunnelMonitorVO.getTunnelUuid());
                         monitorJob.setJobType(MonitorJobType.MODIFY);
                         jobf.execute("修改监控接口-修改监控", Platform.getManagementServerId(), monitorJob);
                     }
                 }
+
+                chain.next();
             }
 
             @Override
