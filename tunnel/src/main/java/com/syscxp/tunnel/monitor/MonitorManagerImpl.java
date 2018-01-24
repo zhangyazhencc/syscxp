@@ -133,17 +133,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
-        if (!tunnelVO.getState().equals(TunnelState.Enabled))
+        if (tunnelVO.getState() != TunnelState.Enabled)
             throw new IllegalArgumentException(String.format("can not start monitor for %s tunnel!", tunnelVO.getState()));
+
+        if (tunnelVO.getMonitorState() == TunnelMonitorState.Enabled)
+            throw new IllegalArgumentException("tunnel monitor already started !");
 
         // 初始化监控通道
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
         tunnelVO.setStatus(TunnelStatus.Connected);
         dbf.getEntityManager().merge(tunnelVO);
-
-        // 删除job
-        jobf.removeJob(msg.getTunnelUuid(), TunnelMonitorVO.class);
 
         // 开启控制器监控
         startControllerMonitor(tunnelVO.getUuid());
@@ -164,7 +164,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
             }
 
-            throw new RuntimeException(String.format("failed to start agent monitor![Tunnel:%s]", tunnelVO.getName()));
+            throw new RuntimeException(String.format("failed to start agent monitor![Tunnel:%s] Error: %s",
+                    tunnelVO.getName(), e.getMessage()));
         }
 
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
@@ -174,6 +175,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional
     private void handle(APIStopTunnelMonitorMsg msg) {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
+
+        if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
+            throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
+                    , TunnelMonitorState.Enabled));
+
         tunnelVO.setStatus(TunnelStatus.Connected);
         tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
         tunnelVO.setMonitorCidr("");
@@ -182,12 +188,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid())
                 .list();
-
         for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
             dbf.getEntityManager().remove(tunnelMonitorVO);
-
-        // 删除job
-        jobf.removeJob(msg.getTunnelUuid(), TunnelMonitorVO.class);
 
         // job关闭控制器监控
         TunnelMonitorJob monitorJob = new TunnelMonitorJob();
@@ -213,13 +215,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
+        if (tunnelVO.getState() != TunnelState.Enabled)
+            throw new IllegalArgumentException(String.format("can not restart monitor for %s tunnel!", tunnelVO.getState()));
+
+        if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
+            throw new IllegalArgumentException(String.format("can only restart monitor for tunnels which monitor status is [%s]!"
+                    , TunnelMonitorState.Enabled));
+
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         dbf.getEntityManager().merge(tunnelVO);
-
-        initTunnelMonitor(msg.getTunnelUuid());
-
-        // 删除job
-        jobf.removeJob(msg.getTunnelUuid(), TunnelMonitorVO.class);
 
         TunnelMonitorJob monitorJob = new TunnelMonitorJob();
         monitorJob.setTunnelUuid(msg.getTunnelUuid());
@@ -228,7 +232,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
         logger.info(String.format("%s reset cidr success!", tunnelVO.getName()));
-
         bus.publish(event);
     }
 
@@ -323,7 +326,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional
     public void startControllerMonitorNoRollback(String tunnelUuid) {
         if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
-            initTunnelMonitor(tunnelUuid);
+            // job stop时，没有清除数据，此处不需要初始化
+            // initTunnelMonitor(tunnelUuid);
 
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                     .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
@@ -364,6 +368,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     @Transactional
     public void stopControllerMonitor(String tunnelUuid) {
+        // 删除tunnel job调用，需清理TunnelMonitorVO数据
+        if (!dbf.isExist(tunnelUuid, TunnelVO.class))
+            UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).delete();
+
         Map<String, String> cmd = new HashMap<>();
         cmd.put("tunnel_id", tunnelUuid);
 
