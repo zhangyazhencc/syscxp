@@ -9,5 +9,6 @@ public enum  MonitorJobType {
     START,
     STOP,
     MODIFY,
-    ROLLBACK
+    ROLLBACK,
+    DELETE
 }

@@ -368,10 +368,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     @Transactional
     public void stopControllerMonitor(String tunnelUuid) {
-        // 删除tunnel job调用，需清理TunnelMonitorVO数据
-        if (!dbf.isExist(tunnelUuid, TunnelVO.class))
-            UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).delete();
-
         Map<String, String> cmd = new HashMap<>();
         cmd.put("tunnel_id", tunnelUuid);
 
@@ -399,6 +395,31 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 throw new RuntimeException(String.format("Failure to execute RYU modify command [TunnelUuid : %s]! Error:%s"
                         , cmd.getTunnel_id(), response.getMsg()));
         }
+    }
+
+    /**
+     * 删除监控（job调用：删除tunnel、删除monitor host）
+     */
+    @Transactional
+    public void deleteControllerMonitor(String tunnelUuid) {
+        TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+        if (tunnelVO != null) {
+            tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
+            tunnelVO.setStatus(TunnelStatus.Connected);
+            tunnelVO.setMonitorCidr("");
+            dbf.update(tunnelVO);
+        }
+        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).delete();
+
+        Map<String, String> cmd = new HashMap<>();
+        cmd.put("tunnel_id", tunnelUuid);
+
+        String url = getControllerUrl(ControllerRestConstant.STOP_TUNNEL_MONITOR);
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isSuccess())
+            throw new RuntimeException(String.format("Failure to execute RYU stop command! Error:%s"
+                    , response.getMsg()));
+
     }
 
     /**
@@ -1642,7 +1663,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             @Override
             public void run(final SyncTaskChain chain) {
-                logger.info(String.format("[删除监控主机]启动线程-停止所有连接监控主机[%s]专线监控", inventory.getName()));
+                logger.info(String.format("[删除监控主机：%s]启动线程-删除所有连接监控主机的专线监控", inventory.getName()));
 
                 List<TunnelMonitorVO> hostTunnelMonitors = Q.New(TunnelMonitorVO.class)
                         .eq(TunnelMonitorVO_.hostUuid, inventory.getUuid())
@@ -1655,8 +1676,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                         TunnelMonitorJob monitorJob = new TunnelMonitorJob();
                         monitorJob.setTunnelUuid(tunnelMonitorVO.getTunnelUuid());
-                        monitorJob.setJobType(MonitorJobType.STOP);
-                        jobf.execute("删除监控主机-停止监控", Platform.getManagementServerId(), monitorJob);
+                        monitorJob.setJobType(MonitorJobType.DELETE);
+                        jobf.execute("删除监控主机-删除监控", Platform.getManagementServerId(), monitorJob);
                     }
                 }
             }

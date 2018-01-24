@@ -58,6 +58,11 @@ public class TunnelMonitorJob implements Job {
                 monitorManager.startControllerMonitorRollback(tunnelUuid);
 
                 completion.success(null);
+            }else if(jobType == MonitorJobType.DELETE){
+                logger.info("开始执行JOB【删除监控】");
+                monitorManager.deleteControllerMonitor(tunnelUuid);
+
+                completion.success(null);
             }
 
 		} catch (Exception e) {
