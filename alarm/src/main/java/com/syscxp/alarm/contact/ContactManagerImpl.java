@@ -90,16 +90,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
         vo.setLastOpDate(dbf.getCurrentSqlTime());
 
         List<String> codes = msg.getWays();
-        Set<NotifyWayVO> s = new HashSet<>();
-        if (codes == null || codes.size() == 0) {
-            s.add(getNotifyWayByCode("mobile"));
-            vo.setNotifyWayVOs(s);
-        } else {
-            for (String code : codes) {
-                s.add(getNotifyWayByCode(code));
-            }
-            vo.setNotifyWayVOs(s);
-        }
+        assignWays(codes, vo);
         dbf.getEntityManager().merge(vo);
         dbf.getEntityManager().flush();
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
@@ -176,20 +167,26 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
         vo.setName(msg.getName());
         vo.setAccountUuid(msg.getAccountUuid());
 
+        assignWays(codes, vo);
+
         dbf.getEntityManager().persist(vo);
-
-        if (codes == null || codes.size() == 0) {
-            persistNotifyWay(vo.getUuid(), "mobile");
-        } else {
-            for (String code : codes) {
-                persistNotifyWay(vo.getUuid(), code);
-            }
-        }
-
         dbf.getEntityManager().flush();
         APICreateContactEvent evt = new APICreateContactEvent(msg.getId());
         evt.setInventory(ContactInventory.valueOf(vo));
         bus.publish(evt);
+    }
+
+    private void assignWays(List<String> codes, ContactVO vo) {
+        Set<NotifyWayVO> s = new HashSet<>();
+        if (codes == null || codes.size() == 0) {
+            s.add(getNotifyWayByCode("mobile"));
+            vo.setNotifyWayVOs(s);
+        } else {
+            for (String code : codes) {
+                s.add(getNotifyWayByCode(code));
+            }
+            vo.setNotifyWayVOs(s);
+        }
     }
 
     @Transactional
