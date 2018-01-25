@@ -77,38 +77,40 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
             validateUpdateCaptcha(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
         }
 
-
-        String uuid = msg.getUuid();
-        ContactVO vo = dbf.getEntityManager().find(ContactVO.class, uuid);
-        if (vo != null) {
-            if (msg.getEmail() != null) {
-                vo.setEmail(msg.getEmail());
-            }
-            if (msg.getName() != null) {
-                vo.setName(msg.getName());
-            }
-            if (msg.getMobile() != null) {
-                vo.setMobile(msg.getMobile());
-            }
-            vo.setLastOpDate(dbf.getCurrentSqlTime());
-            dbf.getEntityManager().merge(vo);
-            vo.getNotifyWayVOs().clear();
-            UpdateQuery.New(ContactNotifyWayRefVO.class).condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid()).delete();
-            List<String> codes = msg.getWays();
-            if (codes == null || codes.size() == 0) {
-                vo.getNotifyWayVOs().add(persistNotifyWay(vo.getUuid(), "mobile"));
-            } else {
-                Set<NotifyWayVO> notifyWayVOS = new HashSet<>();
-                for (String code : codes) {
-                    notifyWayVOS.add(persistNotifyWay(vo.getUuid(), code));
-                }
-                vo.setNotifyWayVOs(notifyWayVOS);
-            }
-            dbf.getEntityManager().flush();
+        ContactVO vo = dbf.getEntityManager().find(ContactVO.class, msg.getUuid());
+        if (msg.getEmail() != null) {
+            vo.setEmail(msg.getEmail());
         }
+        if (msg.getName() != null) {
+            vo.setName(msg.getName());
+        }
+        if (msg.getMobile() != null) {
+            vo.setMobile(msg.getMobile());
+        }
+        vo.setLastOpDate(dbf.getCurrentSqlTime());
+
+        List<String> codes = msg.getWays();
+        Set<NotifyWayVO> s = new HashSet<>();
+        if (codes == null || codes.size() == 0) {
+            s.add(getNotifyWayByCode("mobile"));
+            vo.setNotifyWayVOs(s);
+        } else {
+            for (String code : codes) {
+                s.add(getNotifyWayByCode(code));
+            }
+            vo.setNotifyWayVOs(s);
+        }
+        dbf.getEntityManager().merge(vo);
+        dbf.getEntityManager().flush();
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
         event.setInventory(ContactInventory.valueOf(vo));
         bus.publish(event);
+    }
+
+    private NotifyWayVO getNotifyWayByCode(String code) {
+        SimpleQuery<NotifyWayVO> q = dbf.createQuery(NotifyWayVO.class);
+        q.add(NotifyWayVO_.code, SimpleQuery.Op.EQ, code);
+        return q.find();
     }
 
     private void validationCaptcha(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
