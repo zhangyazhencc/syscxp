@@ -103,6 +103,10 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             handle((APIDeleteResourcePolicyRefMsg) msg);
         } else if (msg instanceof APIUpdateTunnelInfoForFalconMsg) {
             handle((APIUpdateTunnelInfoForFalconMsg) msg);
+        } else if (msg instanceof APIStopResourceAlarmMsg) {
+            handle((APIStopResourceAlarmMsg) msg);
+        } else if (msg instanceof APIStartResourceAlarmMsg) {
+            handle((APIStartResourceAlarmMsg) msg);
         } else if (msg instanceof APIGetComparisonRuleListMsg) {
             handle((APIGetComparisonRuleListMsg) msg);
         } else if (msg instanceof APIGetMonitorTargetListMsg) {
@@ -223,7 +227,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                updateFalconByResource(msg.getSession(), msg.getResourceUuid());
+                updateFalconByResource(msg.getSession().getAccountUuid(), msg.getResourceUuid());
 
                 trigger.next();
             }
@@ -357,6 +361,58 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     }
 
+    private void handle(APIStopResourceAlarmMsg msg) {
+        List<ResourcePolicyRefVO> refVOS = Q.New(ResourcePolicyRefVO.class)
+                .eq(ResourcePolicyRefVO_.resourceUuid, msg.getTunnelUuid())
+                .list();
+
+        APIStopResourceAlarmReply reply = new APIStopResourceAlarmReply();
+        for (ResourcePolicyRefVO refVO : refVOS) {
+            String url = getFalconUrl(FalconApiRestConstant.STRATEGY_DELETE);
+            Map<String, String> tunnelIdMap = new HashMap<>();
+            tunnelIdMap.put("tunnel_id", msg.getTunnelUuid());
+            FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
+            try {
+                response = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(tunnelIdMap), FalconApiCommands.RestResponse.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.setSuccess(false);
+                response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
+            }
+
+            if (!response.isSuccess()) {
+                reply.setError(Platform.argerr("fail to delete falcon strategy![ResourceUuid: %s ,PolicyUuid: %s] ERROR:%s",
+                        refVO.getResourceUuid(), refVO.getPolicyUuid(), response.getMsg()));
+                break;
+            }
+        }
+
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIStartResourceAlarmMsg msg) {
+        List<ResourcePolicyRefVO> refVOS = Q.New(ResourcePolicyRefVO.class)
+                .eq(ResourcePolicyRefVO_.resourceUuid, msg.getTunnelUuid())
+                .list();
+
+        APIStartResourceAlarmReply reply = new APIStartResourceAlarmReply();
+        for (ResourcePolicyRefVO refVO : refVOS) {
+            try {
+                PolicyVO policyVO = dbf.findByUuid(refVO.getPolicyUuid(), PolicyVO.class);
+                if (policyVO != null)
+                    updateFalconByResource(policyVO.getAccountUuid(), msg.getTunnelUuid());
+                else
+                    throw new RuntimeException(String.format("no policy existed![ResourceUuid: %s]", msg.getTunnelUuid()));
+            } catch (Exception e) {
+                reply.setError(Platform.argerr("fail to sync falcon strategy![ResourceUuid: %s ,PolicyUuid: %s] ERROR:%s",
+                        refVO.getResourceUuid(), refVO.getPolicyUuid(), e.getMessage()));
+                break;
+            }
+        }
+
+        bus.reply(msg, reply);
+    }
+
     private void handle(APIDeleteResourcePolicyRefMsg msg) {
         String url = getFalconUrl(FalconApiRestConstant.STRATEGY_DELETE);
         Map<String, String> tunnelIdMap = new HashMap<>();
@@ -413,7 +469,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         APIDeletePolicyEvent event = new APIDeletePolicyEvent(msg.getId());
         if (vo != null) {
             dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
-            UpdateQuery.New(AlarmLogVO.class).condAnd(AlarmLogVO_.policyUuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+            UpdateQuery.New(AlarmLogVO.class).condAnd(AlarmLogVO_.policyUuid, SimpleQuery.Op.EQ, msg.getUuid()).delete();
         }
         List<RegulationVO> regulationVOS = getRegulationVOs(msg.getUuid());
         if (regulationVOS != null && regulationVOS.size() > 0) {
@@ -491,7 +547,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                UpdateQuery.New(AlarmLogVO.class).condAnd(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+                UpdateQuery.New(AlarmLogVO.class).condAnd(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, msg.getUuid()).delete();
                 event.setInventory(RegulationInventory.valueOf(regulationVO));
                 bus.publish(event);
             }
@@ -734,14 +790,14 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
 
-    private void updateFalconByResource(SessionInventory session, String resourceUuid) {
-        String falconCommand = getFalconCommandByResource(resourceUuid, session);
+    private void updateFalconByResource(String accountUuid, String resourceUuid) {
+        String falconCommand = getFalconCommandByResource(resourceUuid, accountUuid);
         String url = getFalconUrl(FalconApiRestConstant.STRATEGY_SYNC);
 
         sendFalconCommand(url, falconCommand);
     }
 
-    private String getFalconCommandByResource(String resourceUuid, SessionInventory session) {
+    private String getFalconCommandByResource(String resourceUuid, String accountUuid) {
         List<String> list = new ArrayList<>();
         list.add(resourceUuid);
         Map<String, Object> map = getTunnelInfo(list);
@@ -752,7 +808,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         if (refVOList.isEmpty()) {
             if (map.containsKey(resourceUuid)) {
                 FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resourceUuid).toString(), FalconApiCommands.Tunnel.class);
-                tunnel.setUser_id(session.getAccountUuid());
+                tunnel.setUser_id(accountUuid);
 
                 List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
                 tunnel.setRules(rulelist);
@@ -764,7 +820,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                     continue;
 
                 FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(refVO.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
-                tunnel.setUser_id(session.getAccountUuid());
+                tunnel.setUser_id(accountUuid);
 
                 SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
                 regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, refVO.getPolicyUuid());

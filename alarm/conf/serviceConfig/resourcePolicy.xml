@@ -65,4 +65,11 @@
         <name>com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.alarm.APIStartResourceAlarmMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.alarm.APIStopResourceAlarmMsg</name>
+    </message>
 </service>
