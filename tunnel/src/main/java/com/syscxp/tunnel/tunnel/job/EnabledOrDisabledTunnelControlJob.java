@@ -13,6 +13,7 @@ import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelBase;
+import com.syscxp.tunnel.tunnel.TunnelJobAndTaskBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -63,7 +64,7 @@ public class EnabledOrDisabledTunnelControlJob implements Job {
                             @Override
                             public void run(MessageReply reply) {
                                 if (reply.isSuccess()) {
-                                    new TunnelBase().enabledTunnelJob(vo, "恢复专线连接");
+                                    new TunnelJobAndTaskBase().enabledTunnelForRelationJob(vo, "恢复专线连接");
                                     completion.success(null);
                                 } else {
                                     completion.fail(reply.getError());
@@ -83,7 +84,7 @@ public class EnabledOrDisabledTunnelControlJob implements Job {
                             @Override
                             public void run(MessageReply reply) {
                                 if (reply.isSuccess()) {
-                                    new TunnelBase().disabledTunnelJob(vo, "关闭专线连接");
+                                    new TunnelJobAndTaskBase().disabledTunnelForRelationJob(vo, "关闭专线连接");
                                     completion.success(null);
                                 } else {
                                     completion.fail(reply.getError());

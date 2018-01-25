@@ -8,6 +8,7 @@ public enum TaskType {
     EnabledZK,
 
     Disabled,
+    DisabledZK,
 
     ModifyBandwidth,
 
@@ -15,6 +16,9 @@ public enum TaskType {
     ModifyPortsZK,
 
     Create,
+    CreateZK,
+
+    RollBackCreate,
 
     Delete,
     DeleteZK,

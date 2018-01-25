@@ -20,13 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 /**
- * Create by DCY on 2018/1/18
+ * Create by DCY on 2018/1/25
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 @UniqueResourceJob
-public class CreateTunnelControlZKJob implements Job {
-    private static final CLogger logger = Utils.getLogger(CreateTunnelControlZKJob.class);
+public class RollBackCreateTunnelJob implements Job {
+    private static final CLogger logger = Utils.getLogger(RollBackCreateTunnelJob.class);
 
     @JobContext
     private String tunnelUuid;
@@ -47,15 +47,15 @@ public class CreateTunnelControlZKJob implements Job {
             if(dbf.isExist(tunnelUuid, TunnelVO.class)){
                 TunnelVO vo = dbf.findByUuid(tunnelUuid,TunnelVO.class);
 
-                logger.info("开始执行JOB【控制器下发保存ZK数据】");
+                logger.info("开始执行JOB【控制器下发回滚创建Tunnel】");
 
-                TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.CreateZK);
+                TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.RollBackCreate);
 
-                CreateTunnelZKMsg createTunnelZKMsg = new CreateTunnelZKMsg();
-                createTunnelZKMsg.setTunnelUuid(vo.getUuid());
-                createTunnelZKMsg.setTaskUuid(taskResourceVO.getUuid());
-                bus.makeLocalServiceId(createTunnelZKMsg, TunnelConstant.SERVICE_ID);
-                bus.send(createTunnelZKMsg, new CloudBusCallBack(null) {
+                RollBackCreateTunnelMsg rollBackCreateTunnelMsg = new RollBackCreateTunnelMsg();
+                rollBackCreateTunnelMsg.setTunnelUuid(vo.getUuid());
+                rollBackCreateTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeLocalServiceId(rollBackCreateTunnelMsg, TunnelConstant.SERVICE_ID);
+                bus.send(rollBackCreateTunnelMsg, new CloudBusCallBack(null) {
                     @Override
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
@@ -65,11 +65,10 @@ public class CreateTunnelControlZKJob implements Job {
                         }
                     }
                 });
+
             }else{
                 completion.success(null);
             }
-
-
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
 

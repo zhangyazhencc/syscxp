@@ -5,6 +5,8 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SQL;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.job.JobQueueEntryVO;
+import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.billing.APIGetHasNotifyMsg;
 import com.syscxp.header.billing.APIGetHasNotifyReply;
@@ -601,14 +603,33 @@ public class TunnelValidateBase {
         checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
     }
 
-    public void validate(APIUpdateTunnelStateMsg msg) {
+    public void validate(APIOpenOrUnsupportTunnelMsg msg) {
+    }
+
+    public void validate(APIEnableOrDisableTunnelMsg msg){
+
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         if (vo.getState() == msg.getState()) {
             throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 已是该状况，不可重复操作 ", msg.getUuid()));
         }
+
+        if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
+            throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
+        }
     }
 
     public void validate(APICreateQinqMsg msg) {
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+        //判断该专线是否中止
+        if(vo.getState() == TunnelState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("添加QINQ，请先断开连接！"));
+        }
+
+        //判断该专线是否还有未完成任务
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, msg.getUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
+        }
 
         //判断同一个switchPort下内部VLAN段是否有重叠
         String sql = "select count(a.uuid) from QinqVO a " +
@@ -650,6 +671,18 @@ public class TunnelValidateBase {
 
     public void validate(APIDeleteQinqMsg msg) {
         QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
+
+        TunnelVO vo = dbf.findByUuid(qinqVO.getTunnelUuid(), TunnelVO.class);
+        //判断该专线是否中止
+        if(vo.getState() == TunnelState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("删除QINQ，请先断开连接！"));
+        }
+
+        //判断该专线是否还有未完成任务
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, qinqVO.getTunnelUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
+        }
+
         Long count = Q.New(QinqVO.class)
                 .eq(QinqVO_.tunnelUuid, qinqVO.getTunnelUuid())
                 .count();
@@ -660,6 +693,17 @@ public class TunnelValidateBase {
 
     public void validate(APIUpdateTunnelVlanMsg msg) {
         TunnelBase tunnelBase = new TunnelBase();
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+        //判断该专线是否中止
+        if(vo.getState() == TunnelState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("修改专线配置，请先断开连接！"));
+        }
+
+        //判断该专线是否还有未完成任务
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, msg.getUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
+        }
 
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class);

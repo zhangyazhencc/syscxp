@@ -6,6 +6,9 @@ import com.syscxp.header.message.NeedReplyMessage;
  * Create by DCY on 2018/1/18
  */
 public class DeleteTunnelZKMsg extends NeedReplyMessage {
+
+    private String tunnelUuid;
+
     private String taskUuid;
 
     private String commands;
@@ -24,5 +27,13 @@ public class DeleteTunnelZKMsg extends NeedReplyMessage {
 
     public void setCommands(String commands) {
         this.commands = commands;
+    }
+
+    public String getTunnelUuid() {
+        return tunnelUuid;
+    }
+
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 }

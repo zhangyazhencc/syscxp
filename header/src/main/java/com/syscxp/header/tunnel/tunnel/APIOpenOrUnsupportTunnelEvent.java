@@ -7,12 +7,12 @@ import com.syscxp.header.rest.RestResponse;
  * Create by DCY on 2017/10/31
  */
 @RestResponse(allTo = "inventory")
-public class APIUpdateTunnelStateEvent extends APIEvent {
+public class APIOpenOrUnsupportTunnelEvent extends APIEvent {
     private TunnelInventory inventory;
 
-    public APIUpdateTunnelStateEvent(){}
+    public APIOpenOrUnsupportTunnelEvent(){}
 
-    public APIUpdateTunnelStateEvent(String apiId){super(apiId);}
+    public APIOpenOrUnsupportTunnelEvent(String apiId){super(apiId);}
 
     public TunnelInventory getInventory() {
         return inventory;

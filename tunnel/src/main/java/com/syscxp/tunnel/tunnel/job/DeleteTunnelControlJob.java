@@ -16,6 +16,7 @@ import com.syscxp.header.tunnel.tunnel.TaskResourceVO;
 import com.syscxp.header.tunnel.tunnel.TaskType;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.tunnel.tunnel.TunnelBase;
+import com.syscxp.tunnel.tunnel.TunnelJobAndTaskBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -63,7 +64,7 @@ public class DeleteTunnelControlJob implements Job {
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
 
-                            new TunnelBase().deleteTunnelJob(vo, "删除专线");
+                            new TunnelJobAndTaskBase().deleteTunnelForRelationJob(vo, "删除专线");
                             completion.success(null);
                         } else {
                             completion.fail(reply.getError());

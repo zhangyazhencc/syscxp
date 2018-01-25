@@ -14,6 +14,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.tunnel.tunnel.TunnelControllerBase;
+import com.syscxp.tunnel.tunnel.TunnelJobAndTaskBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -49,7 +50,7 @@ public class UpdateBandwidthJob implements Job {
         setTunnelUuid(tunnelUuid);
 
         TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid,TunnelVO.class);
-        setControlCommand(JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(tunnelVO)));
+        setControlCommand(JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(tunnelVO, false)));
     }
     public UpdateBandwidthJob(){
 
@@ -75,7 +76,7 @@ public class UpdateBandwidthJob implements Job {
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
 
-                            new TunnelBase().updateTunnelBandwidthJob(vo, "调整专线带宽");
+                            new TunnelJobAndTaskBase().updateTunnelBandwidthForRelationJob(vo, "调整专线带宽");
                             completion.success(null);
                         } else {
                             completion.fail(reply.getError());

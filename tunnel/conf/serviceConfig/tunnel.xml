@@ -84,7 +84,11 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelStateMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIOpenOrUnsupportTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIEnableOrDisableTunnelMsg</name>
     </message>
 
     <message>
