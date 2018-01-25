@@ -25,7 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ContactManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
@@ -90,22 +92,22 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
             }
             vo.setLastOpDate(dbf.getCurrentSqlTime());
             dbf.getEntityManager().merge(vo);
-            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
-            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
-            q.delete();
+            vo.getNotifyWayVOs().clear();
+            UpdateQuery.New(ContactNotifyWayRefVO.class).condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid()).delete();
             List<String> codes = msg.getWays();
             if (codes == null || codes.size() == 0) {
-                persistNotifyWay(vo.getUuid(), "mobile");
+                vo.getNotifyWayVOs().add(persistNotifyWay(vo.getUuid(), "mobile"));
             } else {
+                Set<NotifyWayVO> notifyWayVOS = new HashSet<>();
                 for (String code : codes) {
-                    persistNotifyWay(vo.getUuid(), code);
+                    notifyWayVOS.add(persistNotifyWay(vo.getUuid(), code));
                 }
+                vo.setNotifyWayVOs(notifyWayVOS);
             }
             dbf.getEntityManager().flush();
         }
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
-        ContactVO contactVO = dbf.findByUuid(msg.getUuid(),ContactVO.class);
-        event.setInventory(ContactInventory.valueOf(contactVO));
+        event.setInventory(ContactInventory.valueOf(vo));
         bus.publish(event);
     }
 
@@ -189,7 +191,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
     }
 
     @Transactional
-    private void persistNotifyWay(String contactUuid, String code) {
+    private NotifyWayVO persistNotifyWay(String contactUuid, String code) {
         SimpleQuery<NotifyWayVO> q = dbf.createQuery(NotifyWayVO.class);
         q.add(NotifyWayVO_.code, SimpleQuery.Op.EQ, code);
         NotifyWayVO notifyWayVO = q.find();
@@ -197,6 +199,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
         contactNotifyWayRefVO.setContactUuid(contactUuid);
         contactNotifyWayRefVO.setNotifyWayUuid(notifyWayVO.getUuid());
         dbf.persistAndRefresh(contactNotifyWayRefVO);
+        return notifyWayVO;
     }
 
 
