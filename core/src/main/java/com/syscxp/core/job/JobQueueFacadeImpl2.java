@@ -15,6 +15,7 @@ import com.syscxp.utils.gson.GsonTypeCoder;
 import com.syscxp.utils.gson.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -166,7 +167,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
             @Override
             public void run() {
-                if (jobWrappers.isEmpty()){
+                if (jobWrappers.isEmpty()) {
                     takeOverJobs();
                     takeOverLeftNodeJobs(null);
                 }
@@ -212,7 +213,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
         List<JobQueueEntryVO> es = q.list();
         for (JobQueueEntryVO e : es) {
-            if ((e.getState() == JobState.Processing || e.getState() == JobState.Error)  && !e.isRestartable()) {
+            if ((e.getState() == JobState.Processing || e.getState() == JobState.Error) && !e.isRestartable()) {
                 dbf.remove(e);
                 JobEvent evt = new JobEvent();
                 evt.setErrorCode(errf.instantiateErrorCode(SysErrors.MANAGEMENT_NODE_UNAVAILABLE_ERROR,
@@ -298,7 +299,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         new JobWrapper() {
             private Long myJobId;
 
-            @Transactional
+            @Transactional(propagation = Propagation.REQUIRES_NEW)
             private JobQueueVO saveJob() throws IOException {
                 JobQueueVO ret = null;
                 String sql = "select queue from JobQueueVO queue where queue.name = :queueName";
@@ -327,7 +328,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     ret = qvo;
                 }
 
-                if (entry.isUniqueResource()){
+                if (entry.isUniqueResource()) {
 
                     UpdateQuery.New(JobQueueEntryVO.class).set(JobQueueEntryVO_.restartable, false)
                             .eq(JobQueueEntryVO_.resourceUuid, entry.getResourceUuid())
@@ -348,6 +349,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
                 myJobId = ne.getId();
                 jobWrappers.put(myJobId, this);
+
                 return ret;
             }
 
@@ -386,7 +388,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
                 JobQueueEntryVO ev = q.find();
 
-                if (ev == null){
+                if (ev == null) {
 
                     SimpleQuery<JobQueueEntryVO> q2 = dbf.createQuery(JobQueueEntryVO.class);
                     q2.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
@@ -418,9 +420,9 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     JobQueueEntryVO jobe = findJob(qvo);
                     if (jobe == null) {
                         // nothing to do, release queue
-                        if (! existHistoryErrorJobQueueEntry(qvo)) {    // 也没有error的需要再次执行的job
+                        if (!existHistoryErrorJobQueueEntry(qvo)) {    // 也没有error的需要再次执行的job
                             dbf.remove(qvo);
-                        }else{
+                        } else {
                             UpdateQuery.New(JobQueueVO.class).set(JobQueueVO_.workerManagementNodeId, null)
                                     .eq(JobQueueVO_.id, qvo.getId())
                                     .update();
@@ -447,7 +449,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                             logger.warn(err, e1);
                             jobFail(jobe, errf.stringToInternalError(err));
                             jobe = findJob(qvo);
-                            if (jobe == null){
+                            if (jobe == null) {
                                 return null;
                             }
                         }
@@ -480,7 +482,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                         try {
                             jobDone(e, returnValue);
                             logger.debug(String.format("[Job Success] job[id:%s, name:%s] succeed", e.getId(), e.getName()));
-                        } catch (Throwable t){
+                        } catch (Throwable t) {
                             logger.warn(String.format("unhandled exception happened when calling %s", job.getClass().getName()), t);
                             jobFail(e, errf.stringToInternalError(t.getMessage()));
                         } finally {
@@ -493,7 +495,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                         try {
                             jobFail(e, errorCode);
                             logger.debug(String.format("[Job Failure] job[id:%s, name:%s] failed", e.getId(), e.getName()));
-                        } catch (Throwable t){
+                        } catch (Throwable t) {
                             logger.warn(String.format("unhandled exception happened when calling %s", job.getClass().getName()), t);
                             jobFail(e, errf.stringToInternalError(t.getMessage()));
                         } finally {
@@ -531,14 +533,14 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
             @Override
             public void success(Object ret) {
-                DebugUtils.Assert(myJobId!=null, "how can myJobId be null???");
+                DebugUtils.Assert(myJobId != null, "how can myJobId be null???");
                 jobWrappers.remove(myJobId);
-                completion.success((T)ret);
+                completion.success((T) ret);
             }
 
             @Override
             public void fail(ErrorCode err) {
-                DebugUtils.Assert(myJobId!=null, "how can myJobId be null???");
+                DebugUtils.Assert(myJobId != null, "how can myJobId be null???");
                 jobWrappers.remove(myJobId);
                 completion.fail(err);
             }
@@ -578,10 +580,10 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         }, null);
     }
 
-    public void removeJob(String resourceUuid,  final Class<?> jobClass){
+    public void removeJob(String resourceUuid, final Class<?> jobClass) {
         UpdateQuery.New(JobQueueEntryVO.class).set(JobQueueEntryVO_.restartable, false)
                 .eq(JobQueueEntryVO_.resourceUuid, resourceUuid)
-                .eq(JobQueueEntryVO_.name, jobClass.getSimpleName())
+                .eq(JobQueueEntryVO_.name, jobClass.getName())
                 .update();
     }
 

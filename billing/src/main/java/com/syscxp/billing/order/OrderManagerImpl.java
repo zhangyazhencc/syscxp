@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -277,7 +278,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
 
         updateSLA(msg.getSlaUuid(), orderVo.getProductEffectTimeStart(), orderVo.getProductEffectTimeEnd());
-        saveSLALogVO(msg.getAccountUuid(), msg.getProductUuid(), msg.getDuration(), orderVo.getProductEffectTimeStart(), msg.getExpiredTime(), renewVO.getPriceOneMonth());
+        saveSLALogVO(msg.getAccountUuid(), msg.getProductUuid(), msg.getDuration(), orderVo.getProductEffectTimeStart(), orderVo.getProductEffectTimeEnd(), renewVO.getPriceOneMonth());
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVo);
         dbf.getEntityManager().flush();
@@ -335,7 +336,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
         BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
 
-        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO));
+        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,true));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
@@ -426,7 +427,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } else { //downgrade
             BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
             orderVo.setType(OrderType.DOWNGRADE);
-            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice));
+            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice,true));
             if (subMoney.compareTo(valuePayCash.negate()) < 0) {
                 subMoney = valuePayCash.negate();
             }
@@ -485,22 +486,25 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
 
     @Transactional
-    private BigDecimal getDownGradeDiffMoney(String accountUuid, String productUuid, BigDecimal priceDownTo) {
+    private BigDecimal getDownGradeDiffMoney(String accountUuid, String productUuid, BigDecimal priceDownTo,boolean isUpdate) {
         List<SLALogVO> slaLogVOS = getSLALogVO(accountUuid, productUuid);
         BigDecimal returnMoney = BigDecimal.ZERO;
         if (slaLogVOS != null && slaLogVOS.size() > 0) {
             for (SLALogVO slaLogVO : slaLogVOS) {
-                LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime().minusDays(1);
+                LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime();
                 BigDecimal duration = getNotUseMonths(startTime, slaLogVO.getTimeEnd().toLocalDateTime());
                 if (startTime.isBefore(LocalDateTime.now())) {
-                    duration = getNotUseMonths(LocalDateTime.now(), slaLogVO.getTimeEnd().toLocalDateTime());
+                    duration = getNotUseMonths(LocalDateTime.now().minusDays(1), slaLogVO.getTimeEnd().toLocalDateTime());
                 }
                 if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) < 0) {
                     returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(duration));
-                    slaLogVO.setSlaPrice(priceDownTo);
-                    slaLogVO.setTimeStart(slaLogVO.getTimeStart());
-                    slaLogVO.setTimeEnd(slaLogVO.getTimeEnd());
-                    dbf.getEntityManager().merge(slaLogVO);
+                    if (isUpdate) {
+                        slaLogVO.setSlaPrice(priceDownTo);
+                        slaLogVO.setTimeStart(slaLogVO.getTimeStart());
+                        slaLogVO.setTimeEnd(slaLogVO.getTimeEnd());
+                        dbf.getEntityManager().merge(slaLogVO);
+                    }
+
                 }
             }
         }
@@ -541,7 +545,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private BigDecimal getNotUseMonths(LocalDateTime stateTime, LocalDateTime expiredTime) {
         long months = Math.abs(ChronoUnit.MONTHS.between(stateTime, expiredTime));
-        long days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
+        long days = 0;
+        if (months > 0) {
+            days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
+        } else {
+            days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime));
+        }
         BigDecimal thisMonthDays = BigDecimal.valueOf(stateTime.toLocalDate().lengthOfMonth());
         return BigDecimal.valueOf(months).add(BigDecimal.valueOf(days).divide(thisMonthDays, 4, RoundingMode.HALF_UP)).setScale(2, RoundingMode.HALF_UP);
     }
@@ -603,7 +612,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
         BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
-        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO));
+        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,false));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
@@ -654,7 +663,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         } else { //downgrade
             BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
-            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice));
+            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice,false));
 
         }
 

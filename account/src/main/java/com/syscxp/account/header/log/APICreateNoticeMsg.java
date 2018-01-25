@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 public class APICreateNoticeMsg extends APICreateMessage {
     @APIParam(maxLength = 255, emptyString = false)
     private String title;
-    @APIParam(maxLength = 255, emptyString = false)
+    @APIParam(maxLength = 255, required = false)
     private String link;
     @APIParam
     private Timestamp startTime;

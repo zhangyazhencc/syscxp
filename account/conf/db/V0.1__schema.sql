@@ -364,7 +364,7 @@ INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('cloudLine','申请云�
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('trustee','申请托管工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('leadCable','申请引接缆工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('crossConnection','申请交叉互联工单','officialWebsite');
-INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('internetEntrance','申请互联网工单','officialWebsite');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('internetEntrance','申请互联网接入工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('cloudTransmission','申请云传输工单','officialWebsite');
 update TicketTypeVO set lastOpDate = now(), createDate = now();
 

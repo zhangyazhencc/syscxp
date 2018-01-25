@@ -50,15 +50,11 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     @Autowired
     private ThreadFacade thf;
     @Autowired
-    private ErrorFacade errf;
-    @Autowired
     private RESTFacade restf;
     @Autowired
     private SmsService smsService;
     @Autowired
     private MailService mailService;
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     @Override
     @MessageSafe
@@ -83,7 +79,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     }
 
     private void handle(HandleAlarmMsg msg) {
-        logger.debug(java.lang.String.format("[HandleAlarmMsg] event:p0 content: %s",msg.getAlarmValue()));
+        logger.debug(java.lang.String.format("[HandleAlarmMsg] event:p0 content: %s", msg.getAlarmValue()));
 
         String uuid = Platform.getUuid();
         thf.chainSubmit(new ChainTask(msg) {
@@ -107,6 +103,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
                 // HandleALarmReply
                 handleAlarm(eventVO);
+
+                chain.next();
             }
 
             @Override
@@ -150,10 +148,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             tunnelAlarm(eventVO);
         else if (eventVO.getStatus() == AlarmStatus.OK)
             tunnelRecover(eventVO);
+        else
+            throw new IllegalArgumentException(String.format("unknown alarm status [%s]", eventVO.getStatus()));
     }
 
     /**
      * tunnel告警
+     *
      * @param eventVO
      */
     private void tunnelAlarm(AlarmEventVO eventVO) {
@@ -163,11 +164,11 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         if (existedEvent == null)
             dbf.persistAndRefresh(eventVO);
 
-        AlarmLogVO existedLog = getExistedAlarmLog(eventVO);
-        if (existedLog == null) {
+        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+        if (logVO == null) {
             processTunnelEvent(eventVO);
-            AlarmLogVO logVO = generateAlarmLog(eventVO);
 
+            logVO = generateAlarmLog(eventVO);
             dbf.persistAndRefresh(logVO);
 
             sendMessage(logVO);
@@ -176,6 +177,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * tunnel恢复
+     *
      * @param eventVO
      */
     private void tunnelRecover(AlarmEventVO eventVO) {
@@ -188,38 +190,45 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         } else
             dbf.persist(eventVO);
 
-        AlarmLogVO existedLog = getExistedAlarmLog(eventVO);
-        if (existedLog != null) {
-            List<AlarmEventVO> problemEvents = Q.New(AlarmEventVO.class)
-                    .eq(AlarmEventVO_.status, AlarmStatus.PROBLEM)
-                    .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())
-                    .eq(AlarmEventVO_.regulationUuid, eventVO.getRegulationUuid())
-                    .list();
-
-            if (problemEvents.isEmpty()) {
+        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+        if (logVO != null) {
+            if (isRecovered(eventVO)) {
                 processTunnelEvent(eventVO);
 
-                existedLog.setResumeTime(eventVO.getEventTime());
-                existedLog.setDuration((eventVO.getEventTime().getTime() - existedLog.getAlarmTime().getTime()) / 1000);
-                existedLog.setStatus(AlarmStatus.OK);
-                existedLog.setAlarmContent(getAlarmContent(eventVO));
-                String alarmMessage = getMessageContent(eventVO, eventVO.getProductName());
-                existedLog.setSmsContent(alarmMessage);
-                existedLog.setMailContent(alarmMessage);
-                existedLog.setAccountUuid(eventVO.getAccountUuid());
+                logVO = generateAlarmLog(eventVO);
+                dbf.updateAndRefresh(logVO);
 
-                dbf.updateAndRefresh(existedLog);
-
-                sendMessage(existedLog);
+                sendMessage(logVO);
             }
         }
     }
 
-    private void handleStandardAlarm(AlarmEventVO alarmEventVO) {
-        if (alarmEventVO.getStatus() == AlarmStatus.PROBLEM)
-            standardAlarm(alarmEventVO);
-        else if (alarmEventVO.getStatus() == AlarmStatus.OK)
-            standardRecover(alarmEventVO);
+    /**
+     * 不存在status=problem的event为恢复
+     *
+     * @param eventVO
+     * @return
+     */
+    private boolean isRecovered(AlarmEventVO eventVO) {
+        List<AlarmEventVO> problemEvents = Q.New(AlarmEventVO.class)
+                .eq(AlarmEventVO_.status, AlarmStatus.PROBLEM)
+                .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())
+                .eq(AlarmEventVO_.regulationUuid, eventVO.getRegulationUuid())
+                .list();
+
+        if (problemEvents.isEmpty())
+            return true;
+        else
+            return false;
+    }
+
+    private void handleStandardAlarm(AlarmEventVO eventVO) {
+        if (eventVO.getStatus() == AlarmStatus.PROBLEM)
+            standardAlarm(eventVO);
+        else if (eventVO.getStatus() == AlarmStatus.OK)
+            standardRecover(eventVO);
+        else
+            throw new IllegalArgumentException(String.format("unknown alarm status [%s]", eventVO.getStatus()));
     }
 
     private void standardAlarm(AlarmEventVO eventVO) {
@@ -233,25 +242,33 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 按告警event生成告警log
+     *
      * @param eventVO
      * @return
      */
     private AlarmLogVO generateAlarmLog(AlarmEventVO eventVO) {
         AlarmLogVO logVO = new AlarmLogVO();
-        logVO.setUuid(Platform.getUuid());
-        logVO.setEventId(eventVO.getId());
-        logVO.setAlarmTime(eventVO.getEventTime());
-        logVO.setStatus(eventVO.getStatus());
-        logVO.setProductType(eventVO.getPolicyVO().getProductType());
-        logVO.setProductUuid(eventVO.getProductUuid());
-        logVO.setPolicyUuid(eventVO.getPolicyVO().getUuid());
-        logVO.setRegulationUuid(eventVO.getRegulationUuid());
+        if (eventVO.getStatus() == AlarmStatus.PROBLEM) {
+            logVO.setUuid(Platform.getUuid());
+            logVO.setEventId(eventVO.getId());
+            logVO.setAlarmTime(eventVO.getEventTime());
+            logVO.setAlarmContent(getAlarmContent(eventVO));
+            logVO.setProductType(eventVO.getPolicyVO().getProductType());
+            logVO.setProductUuid(eventVO.getProductUuid());
+            logVO.setPolicyUuid(eventVO.getPolicyVO().getUuid());
+            logVO.setRegulationUuid(eventVO.getRegulationUuid());
+        } else if (eventVO.getStatus() == AlarmStatus.OK) {
+            logVO = getExistedAlarmLog(eventVO);
+            logVO.setResumeTime(eventVO.getEventTime());
+            logVO.setDuration((eventVO.getEventTime().getTime() - logVO.getAlarmTime().getTime()) / 1000);
+        }
 
-        logVO.setAlarmContent(getAlarmContent(eventVO));
+        logVO.setStatus(eventVO.getStatus());
+        logVO.setAccountUuid(eventVO.getAccountUuid());
+
         String alarmMessage = getMessageContent(eventVO, eventVO.getProductName());
         logVO.setSmsContent(alarmMessage);
         logVO.setMailContent(alarmMessage);
-        logVO.setAccountUuid(eventVO.getAccountUuid());
 
         return logVO;
     }
@@ -292,6 +309,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 获取告警短信、邮件内容
+     *
      * @param eventVO
      * @param productName：产品名称
      * @return
@@ -321,6 +339,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 获取告警内容
+     *
      * @param eventVO
      * @return
      */
@@ -334,6 +353,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 获取告警内容模板
+     *
      * @param eventVO
      * @return
      */
@@ -355,29 +375,32 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 专线数据处理
+     *
      * @param eventVO
      */
     private void processTunnelEvent(AlarmEventVO eventVO) {
         List<TunnelAlarmCmd.TunnelInfo> tunnelInfos = getTunnelInfos(eventVO.getProductUuid());
+        //带宽占用率计算
+        recalculateBandwidth(eventVO, tunnelInfos);
+
         TunnelAlarmCmd.TunnelInfo tunnelInfo = new TunnelAlarmCmd.TunnelInfo();
         for (TunnelAlarmCmd.TunnelInfo tunnel : tunnelInfos) {
             if (tunnel.getTunnelUuid().equals(eventVO.getProductUuid())) {
                 tunnelInfo = tunnel;
+                break;
             }
         }
-
         if (tunnelInfo == null)
-            throw new RuntimeException(String.format("failed to generate alarm log [TunnelUuid: %s]"
+            throw new RuntimeException(String.format("failed to process tunnel event! [TunnelUuid: %s]"
                     , eventVO.getProductUuid()));
 
-        //带宽占用率计算
-        recalculateBandwidth(eventVO, tunnelInfos);
         eventVO.setProductName(tunnelInfo.getTunnelName());
         eventVO.setAccountUuid(tunnelInfo.getAccountUuid());
     }
 
     /**
      * 重新计算带宽告警值与阈值（含共点专线带宽）
+     *
      * @param eventVO
      * @param tunnelInfos
      */
@@ -389,14 +412,12 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                 for (TunnelAlarmCmd.TunnelInfo tunnelInfo : tunnelInfos) {
                     sumBandwidth += tunnelInfo.getBandwidth();
                 }
-                long rightValue = (long) (Long.valueOf(eventVO.getExpression().getRightValue()) * 1.0 / sumBandwidth * 100);
 
+                long rightValue = (long) (Long.valueOf(eventVO.getExpression().getRightValue()) * 1.0 / sumBandwidth * 100);
                 eventVO.getExpression().setRightValue(String.valueOf(rightValue));
 
                 float leftValue = (long) (Long.valueOf(eventVO.getLeftValue()) * 1.0 / sumBandwidth * 100);
-                if (leftValue > 100)
-                    leftValue = 100;
-                eventVO.setLeftValue(String.valueOf(leftValue));
+                eventVO.setLeftValue(String.valueOf(leftValue > 0 ? 100 : leftValue));
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("failed to recalculate bandwidth! " +
@@ -408,6 +429,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /**
      * 信息发送
+     *
      * @param logVO
      */
     private void sendMessage(AlarmLogVO logVO) {

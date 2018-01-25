@@ -25,7 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ContactManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
@@ -75,38 +77,40 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
             validateUpdateCaptcha(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
         }
 
-
-        String uuid = msg.getUuid();
-        ContactVO vo = dbf.getEntityManager().find(ContactVO.class, uuid);
-        if (vo != null) {
-            if (msg.getEmail() != null) {
-                vo.setEmail(msg.getEmail());
-            }
-            if (msg.getName() != null) {
-                vo.setName(msg.getName());
-            }
-            if (msg.getMobile() != null) {
-                vo.setMobile(msg.getMobile());
-            }
-            vo.setLastOpDate(dbf.getCurrentSqlTime());
-            dbf.getEntityManager().merge(vo);
-            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
-            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
-            q.delete();
-            List<String> codes = msg.getWays();
-            if (codes == null || codes.size() == 0) {
-                persistNotifyWay(vo.getUuid(), "mobile");
-            } else {
-                for (String code : codes) {
-                    persistNotifyWay(vo.getUuid(), code);
-                }
-            }
-            dbf.getEntityManager().flush();
+        ContactVO vo = dbf.getEntityManager().find(ContactVO.class, msg.getUuid());
+        if (msg.getEmail() != null) {
+            vo.setEmail(msg.getEmail());
         }
+        if (msg.getName() != null) {
+            vo.setName(msg.getName());
+        }
+        if (msg.getMobile() != null) {
+            vo.setMobile(msg.getMobile());
+        }
+        vo.setLastOpDate(dbf.getCurrentSqlTime());
+
+        List<String> codes = msg.getWays();
+        Set<NotifyWayVO> s = new HashSet<>();
+        if (codes == null || codes.size() == 0) {
+            s.add(getNotifyWayByCode("mobile"));
+            vo.setNotifyWayVOs(s);
+        } else {
+            for (String code : codes) {
+                s.add(getNotifyWayByCode(code));
+            }
+            vo.setNotifyWayVOs(s);
+        }
+        dbf.getEntityManager().merge(vo);
+        dbf.getEntityManager().flush();
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
-        ContactVO contactVO = dbf.findByUuid(msg.getUuid(),ContactVO.class);
-        event.setInventory(ContactInventory.valueOf(contactVO));
+        event.setInventory(ContactInventory.valueOf(vo));
         bus.publish(event);
+    }
+
+    private NotifyWayVO getNotifyWayByCode(String code) {
+        SimpleQuery<NotifyWayVO> q = dbf.createQuery(NotifyWayVO.class);
+        q.add(NotifyWayVO_.code, SimpleQuery.Op.EQ, code);
+        return q.find();
     }
 
     private void validationCaptcha(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
@@ -189,7 +193,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
     }
 
     @Transactional
-    private void persistNotifyWay(String contactUuid, String code) {
+    private NotifyWayVO persistNotifyWay(String contactUuid, String code) {
         SimpleQuery<NotifyWayVO> q = dbf.createQuery(NotifyWayVO.class);
         q.add(NotifyWayVO_.code, SimpleQuery.Op.EQ, code);
         NotifyWayVO notifyWayVO = q.find();
@@ -197,6 +201,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
         contactNotifyWayRefVO.setContactUuid(contactUuid);
         contactNotifyWayRefVO.setNotifyWayUuid(notifyWayVO.getUuid());
         dbf.persistAndRefresh(contactNotifyWayRefVO);
+        return notifyWayVO;
     }
 
 

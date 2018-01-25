@@ -8,5 +8,7 @@ package com.syscxp.tunnel.tunnel.job;
 public enum  MonitorJobType {
     START,
     STOP,
-    MODIFY
+    MODIFY,
+    ROLLBACK,
+    DELETE
 }

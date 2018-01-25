@@ -17,6 +17,9 @@ public class TunnelSwitchPortVO_ {
     public static volatile SingularAttribute<TunnelSwitchPortVO, NetworkType> type;
     public static volatile SingularAttribute<TunnelSwitchPortVO, Integer> vlan;
     public static volatile SingularAttribute<TunnelSwitchPortVO, String> sortTag;
+    public static volatile SingularAttribute<TunnelSwitchPortVO, String> physicalSwitchUuid;
+    public static volatile SingularAttribute<TunnelSwitchPortVO, String> ownerMplsSwitchUuid;
+    public static volatile SingularAttribute<TunnelSwitchPortVO, String> peerMplsSwitchUuid;
     public static volatile SingularAttribute<TunnelSwitchPortVO, Timestamp> createDate;
     public static volatile SingularAttribute<TunnelSwitchPortVO, Timestamp> lastOpDate;
 }

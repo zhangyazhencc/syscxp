@@ -583,13 +583,13 @@ public class TunnelControllerBase extends AbstractTunnel {
                     .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"C")
                     .find();
-            tmcB = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortB,tunnelSwitchPortA,qinqVOs,"B");
-            tmcC = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortC,tunnelSwitchPortZ,qinqVOs,"C");
-            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortB,qinqVOs,"A");
-            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortC,qinqVOs,"Z");
+            tmcB = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortB,qinqVOs,"B");
+            tmcC = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortC,qinqVOs,"C");
+            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,qinqVOs,"A");
+            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,qinqVOs,"Z");
         }else{
-            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortZ,qinqVOs,"A");
-            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortA,qinqVOs,"Z");
+            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,qinqVOs,"A");
+            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,qinqVOs,"Z");
         }
         ControllerCommands.TunnelSdnConfig tscA = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortA,qinqVOs,"A");
         ControllerCommands.TunnelSdnConfig tscZ = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortZ,qinqVOs,"Z");
@@ -740,61 +740,47 @@ public class TunnelControllerBase extends AbstractTunnel {
     /**
      *  MPLS 下发配置
      */
-    public ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, TunnelSwitchPortVO remoteSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
-        TunnelBase tunnelBase = new TunnelBase();
+    public ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
+
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
+        PhysicalSwitchVO mplsPhysicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getOwnerMplsSwitchUuid(), PhysicalSwitchVO.class);
+        SwitchModelVO mplsSwitchModel = dbf.findByUuid(mplsPhysicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
+        PhysicalSwitchVO peerMplsPhysicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getPeerMplsSwitchUuid(), PhysicalSwitchVO.class);
+
 
         ControllerCommands.TunnelMplsConfig tmc = new ControllerCommands.TunnelMplsConfig();
-        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchVO = new TunnelBase().getPhysicalSwitch(switchPortVO);
 
-        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
+        tmc.setUuid(mplsPhysicalSwitchVO.getUuid());
+        tmc.setSwitch_type(mplsSwitchModel.getModel());
+        tmc.setSub_type(mplsSwitchModel.getSubModel());
+        tmc.setVni(tunnelVO.getVsi());
+        tmc.setRemote_ip(peerMplsPhysicalSwitchVO.getLocalIP());
+        tmc.setVlan_id(tunnelSwitchPortVO.getVlan());
+        tmc.setM_ip(mplsPhysicalSwitchVO.getmIP());
+        tmc.setUsername(mplsPhysicalSwitchVO.getUsername());
+        tmc.setPassword(mplsPhysicalSwitchVO.getPassword());
+        tmc.setSortTag(sortTag);
 
-            //找到SDN交换机的上联传输交换机
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
+
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
                     .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
                     .find();
-            PhysicalSwitchVO mplsPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
-            SwitchModelVO mplsSwitchModel = dbf.findByUuid(mplsPhysicalSwitch.getSwitchModelUuid(),SwitchModelVO.class);
-
-            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
-
-            tmc.setUuid(mplsPhysicalSwitch.getUuid());
-            tmc.setSwitch_type(mplsSwitchModel.getModel());
-            tmc.setSub_type(mplsSwitchModel.getSubModel());
-            tmc.setVni(tunnelVO.getVsi());
-            tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
             tmc.setPort_name(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());
-            tmc.setVlan_id(tunnelSwitchPortVO.getVlan());
-            tmc.setM_ip(mplsPhysicalSwitch.getmIP());
-            tmc.setUsername(mplsPhysicalSwitch.getUsername());
-            tmc.setPassword(mplsPhysicalSwitch.getPassword());
             tmc.setNetwork_type("TRUNK");
-            tmc.setSortTag(sortTag);
-
-        }else if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS){  //Mpls接入
-            SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
-
-            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
-
-            tmc.setUuid(physicalSwitchVO.getUuid());
-            tmc.setSwitch_type(switchModel.getModel());
-            tmc.setSub_type(switchModel.getSubModel());
-            tmc.setVni(tunnelVO.getVsi());
-            tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
+        }else{
             tmc.setPort_name(switchPortVO.getPortName());
-            tmc.setVlan_id(tunnelSwitchPortVO.getVlan());
-            tmc.setM_ip(physicalSwitchVO.getmIP());
-            tmc.setUsername(physicalSwitchVO.getUsername());
-            tmc.setPassword(physicalSwitchVO.getPassword());
             tmc.setNetwork_type(tunnelSwitchPortVO.getType().toString());
+
+            tmc.setBandwidth(tunnelVO.getBandwidth()/1024);
             if(tunnelSwitchPortVO.getType() == NetworkType.QINQ){
                 tmc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
-            tmc.setBandwidth(tunnelVO.getBandwidth()/1024);
-            tmc.setSortTag(sortTag);
         }
 
         return tmc;
+
     }
 
     /**
@@ -802,8 +788,10 @@ public class TunnelControllerBase extends AbstractTunnel {
      */
     public ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(Long bandwidth, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
         ControllerCommands.TunnelSdnConfig tsc = new ControllerCommands.TunnelSdnConfig();
+
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchVO = new TunnelBase().getPhysicalSwitch(switchPortVO);
+
         if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
             //找到SDN交换机的上联传输交换机
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
