@@ -496,9 +496,7 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorVO` (
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `uuid` (`uuid`)
 )
-ENGINE=InnoDB
-DEFAULT CHARSET=utf8
-COMMENT '通道监控';
+ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '通道监控';
 ALTER TABLE TunnelMonitorVO ADD CONSTRAINT fkTunnelMonitorVOTunnelEO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 
