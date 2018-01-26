@@ -10,8 +10,6 @@ import com.syscxp.header.rest.RestResponse;
 public class APIEnableOrDisableTunnelEvent extends APIEvent {
     private TunnelInventory inventory;
 
-    public APIEnableOrDisableTunnelEvent(){}
-
     public APIEnableOrDisableTunnelEvent(String apiId){super(apiId);}
 
     public TunnelInventory getInventory() {

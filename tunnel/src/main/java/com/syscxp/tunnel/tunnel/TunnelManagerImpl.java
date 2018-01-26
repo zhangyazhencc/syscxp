@@ -2148,7 +2148,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 恢复链接，关闭连接
      * */
     private void handle(APIEnableOrDisableTunnelMsg msg){
-        APIEnableOrDisableTunnelEvent evt = new APIEnableOrDisableTunnelEvent();
+        APIEnableOrDisableTunnelEvent evt = new APIEnableOrDisableTunnelEvent(msg.getId());
 
         TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
 
