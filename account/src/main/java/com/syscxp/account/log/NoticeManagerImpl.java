@@ -127,10 +127,12 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             nvo.setTitle(msg.getTitle());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getLink())) {
+
+        if (msg.getLink() != null) {
             nvo.setLink(msg.getLink());
             update = true;
         }
+
         if (!StringUtils.isEmpty(msg.getStartTime())) {
             nvo.setStartTime(msg.getStartTime());
             update = true;
