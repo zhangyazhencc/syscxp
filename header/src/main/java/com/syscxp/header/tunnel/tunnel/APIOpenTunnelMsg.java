@@ -8,16 +8,14 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
- * Create by DCY on 2018/1/24
+ * Create by DCY on 2017/10/31
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIEnableOrDisableTunnelMsg extends APIMessage {
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+public class APIOpenTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
-    private TunnelState state;
     @APIParam
-    private boolean saveOnly = false;
+    private boolean saveOnly;
 
     public String getUuid() {
         return uuid;
@@ -25,14 +23,6 @@ public class APIEnableOrDisableTunnelMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public TunnelState getState() {
-        return state;
-    }
-
-    public void setState(TunnelState state) {
-        this.state = state;
     }
 
     public boolean isSaveOnly() {
@@ -49,7 +39,7 @@ public class APIEnableOrDisableTunnelMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update TunnelVO State")
+                ntfy("Open Tunnel")
                         .resource(uuid, TunnelVO.class)
                         .messageAndEvent(that, evt).done();
             }

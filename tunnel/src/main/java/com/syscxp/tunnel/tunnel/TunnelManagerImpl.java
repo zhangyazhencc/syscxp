@@ -162,10 +162,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIDeleteTunnelMsg) msg);
         } else if (msg instanceof APIDeleteForciblyTunnelMsg) {
             handle((APIDeleteForciblyTunnelMsg) msg);
-        } else if (msg instanceof APIOpenOrUnsupportTunnelMsg) {
-            handle((APIOpenOrUnsupportTunnelMsg) msg);
-        } else if (msg instanceof APIEnableOrDisableTunnelMsg) {
-            handle((APIEnableOrDisableTunnelMsg) msg);
+        } else if (msg instanceof APIOpenTunnelMsg) {
+            handle((APIOpenTunnelMsg) msg);
+        } else if (msg instanceof APIUnsupportTunnelMsg) {
+            handle((APIUnsupportTunnelMsg) msg);
+        } else if (msg instanceof APIEnableTunnelMsg) {
+            handle((APIEnableTunnelMsg) msg);
+        } else if (msg instanceof APIDisableTunnelMsg) {
+            handle((APIDisableTunnelMsg) msg);
         } else if (msg instanceof APICreateQinqMsg) {
             handle((APICreateQinqMsg) msg);
         } else if (msg instanceof APIDeleteQinqMsg) {
@@ -2145,137 +2149,153 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
 
     /**
-     * 恢复链接，关闭连接
+     * 恢复链接
      * */
-    private void handle(APIEnableOrDisableTunnelMsg msg){
-        APIEnableOrDisableTunnelEvent evt = new APIEnableOrDisableTunnelEvent(msg.getId());
+    private void handle(APIEnableTunnelMsg msg){
+        APIEnableTunnelEvent evt = new APIEnableTunnelEvent(msg.getId());
 
         TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        if (msg.getState() == TunnelState.Enabled) {
-            if(msg.isSaveOnly()){
+        if(msg.isSaveOnly()){
 
-                taskBase.taskEnableTunnelZK(vo.getUuid());
+            taskBase.taskEnableTunnelZK(vo.getUuid());
 
-                vo.setState(TunnelState.Enabled);
-                vo.setStatus(TunnelStatus.Connected);
-                dbf.updateAndRefresh(vo);
+            vo.setState(TunnelState.Enabled);
+            vo.setStatus(TunnelStatus.Connected);
+            dbf.updateAndRefresh(vo);
 
-                evt.setInventory(TunnelInventory.valueOf(vo));
-                bus.publish(evt);
+            evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
 
-            }else{
-                taskBase.taskEnableTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
-                    @Override
-                    public void success(TunnelInventory inv) {
-                        evt.setInventory(inv);
-                        bus.publish(evt);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        evt.setError(errorCode);
-                        bus.publish(evt);
-                    }
-                });
-            }
-
-        } else {
-            if(msg.isSaveOnly()){
-
-                taskBase.taskDisableTunnelZK(vo.getUuid());
-
-                vo.setState(TunnelState.Disabled);
-                vo.setStatus(TunnelStatus.Disconnected);
-                vo = dbf.updateAndRefresh(vo);
-
-                evt.setInventory(TunnelInventory.valueOf(vo));
-                bus.publish(evt);
-
-            }else{
-                taskBase.taskDisableTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
-                    @Override
-                    public void success(TunnelInventory inv) {
-                        evt.setInventory(inv);
-                        bus.publish(evt);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        evt.setError(errorCode);
-                        bus.publish(evt);
-                    }
-                });
-            }
-        }
-    }
-
-    /**
-     * 开通（是否仅保存），无法开通
-     **/
-    private void handle(APIOpenOrUnsupportTunnelMsg msg) {
-        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
-        APIOpenOrUnsupportTunnelEvent evt = new APIOpenOrUnsupportTunnelEvent(msg.getId());
-
-        final TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-
-        if (msg.isUnsupport()) {
-            doUnsubcribeTunnel(vo,false,true,msg.getSession().getAccountUuid(),new Completion(null) {
+        }else{
+            taskBase.taskEnableTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
                 @Override
-                public void success() {
-                    vo.setState(TunnelState.Unsupport);
-                    vo.setStatus(TunnelStatus.Disconnected);
-                    vo.setExpireDate(dbf.getCurrentSqlTime());
-                    final TunnelVO vo2 = dbf.updateAndRefresh(vo);
-
-                    evt.setInventory(TunnelInventory.valueOf(vo2));
+                public void success(TunnelInventory inv) {
+                    evt.setInventory(inv);
                     bus.publish(evt);
                 }
 
                 @Override
                 public void fail(ErrorCode errorCode) {
-                    evt.setError(errf.stringToOperationError("退订失败"));
+                    evt.setError(errorCode);
                     bus.publish(evt);
                 }
             });
+        }
+    }
 
-        } else {
-            if (msg.isSaveOnly()) {
+    /**
+     * 关闭连接
+     * */
+    private void handle(APIDisableTunnelMsg msg){
+        APIDisableTunnelEvent evt = new APIDisableTunnelEvent(msg.getId());
 
-                vo.setState(TunnelState.Enabled);
-                vo.setStatus(TunnelStatus.Connected);
-                if (vo.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                    vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(vo.getDuration())));
-                } else if (vo.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                    vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(vo.getDuration())));
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+
+        if(msg.isSaveOnly()){
+
+            taskBase.taskDisableTunnelZK(vo.getUuid());
+
+            vo.setState(TunnelState.Disabled);
+            vo.setStatus(TunnelStatus.Disconnected);
+            vo = dbf.updateAndRefresh(vo);
+
+            evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
+
+        }else{
+            taskBase.taskDisableTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
+                @Override
+                public void success(TunnelInventory inv) {
+                    evt.setInventory(inv);
+                    bus.publish(evt);
                 }
 
-                final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    evt.setError(errorCode);
+                    bus.publish(evt);
+                }
+            });
+        }
 
-                new TunnelJobAndTaskBase().taskCreateTunnelZK(vo2.getUuid());
+    }
+
+    /**
+     * 开通（是否仅保存）
+     **/
+    private void handle(APIOpenTunnelMsg msg) {
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+        APIOpenTunnelEvent evt = new APIOpenTunnelEvent(msg.getId());
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        if (msg.isSaveOnly()) {
+
+            vo.setState(TunnelState.Enabled);
+            vo.setStatus(TunnelStatus.Connected);
+            if (vo.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
+                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(vo.getDuration())));
+            } else if (vo.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
+                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(vo.getDuration())));
+            }
+
+            vo = dbf.updateAndRefresh(vo);
+
+            new TunnelJobAndTaskBase().taskCreateTunnelZK(vo.getUuid());
+
+            evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
+        } else {
+
+            taskBase.taskOpenTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
+                @Override
+                public void success(TunnelInventory inv) {
+                    evt.setInventory(inv);
+                    bus.publish(evt);
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    evt.setError(errorCode);
+                    bus.publish(evt);
+                }
+            });
+        }
+
+    }
+
+    /**
+     * 无法开通
+     **/
+    private void handle(APIUnsupportTunnelMsg msg) {
+        APIUnsupportTunnelEvent evt = new APIUnsupportTunnelEvent(msg.getId());
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        doUnsubcribeTunnel(vo,false,true,msg.getSession().getAccountUuid(),new Completion(null) {
+            @Override
+            public void success() {
+                vo.setState(TunnelState.Unsupport);
+                vo.setStatus(TunnelStatus.Disconnected);
+                vo.setExpireDate(dbf.getCurrentSqlTime());
+                final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
                 evt.setInventory(TunnelInventory.valueOf(vo2));
                 bus.publish(evt);
-            } else {
-
-                taskBase.taskOpenTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
-                    @Override
-                    public void success(TunnelInventory inv) {
-                        evt.setInventory(inv);
-                        bus.publish(evt);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        evt.setError(errorCode);
-                        bus.publish(evt);
-                    }
-                });
             }
-        }
 
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errf.stringToOperationError("退订失败"));
+                bus.publish(evt);
+            }
+        });
 
     }
 
@@ -3250,10 +3270,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelValidateBase.validate((APIDeleteTunnelMsg) msg);
         } else if (msg instanceof APIDeleteForciblyTunnelMsg) {
             tunnelValidateBase.validate((APIDeleteForciblyTunnelMsg) msg);
-        } else if (msg instanceof APIOpenOrUnsupportTunnelMsg) {
-            tunnelValidateBase.validate((APIOpenOrUnsupportTunnelMsg) msg);
-        } else if (msg instanceof APIEnableOrDisableTunnelMsg) {
-            tunnelValidateBase.validate((APIEnableOrDisableTunnelMsg) msg);
+        } else if (msg instanceof APIOpenTunnelMsg) {
+            tunnelValidateBase.validate((APIOpenTunnelMsg) msg);
+        } else if (msg instanceof APIUnsupportTunnelMsg) {
+            tunnelValidateBase.validate((APIUnsupportTunnelMsg) msg);
+        } else if (msg instanceof APIEnableTunnelMsg) {
+            tunnelValidateBase.validate((APIEnableTunnelMsg) msg);
+        } else if (msg instanceof APIDisableTunnelMsg) {
+            tunnelValidateBase.validate((APIDisableTunnelMsg) msg);
         } else if (msg instanceof APICreateQinqMsg) {
             tunnelValidateBase.validate((APICreateQinqMsg) msg);
         } else if (msg instanceof APIDeleteQinqMsg) {

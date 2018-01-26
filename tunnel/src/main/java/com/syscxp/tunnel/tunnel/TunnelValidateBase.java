@@ -603,15 +603,20 @@ public class TunnelValidateBase {
         checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
     }
 
-    public void validate(APIOpenOrUnsupportTunnelMsg msg) {
+    public void validate(APIOpenTunnelMsg msg) {
     }
 
-    public void validate(APIEnableOrDisableTunnelMsg msg){
+    public void validate(APIUnsupportTunnelMsg msg) {
+    }
 
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-        if (vo.getState() == msg.getState()) {
-            throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 已是该状况，不可重复操作 ", msg.getUuid()));
+    public void validate(APIEnableTunnelMsg msg){
+
+        if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
+            throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
         }
+    }
+
+    public void validate(APIDisableTunnelMsg msg){
 
         if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
             throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));

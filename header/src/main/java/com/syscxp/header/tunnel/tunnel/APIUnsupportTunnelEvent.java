@@ -4,15 +4,15 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
 /**
- * Create by DCY on 2018/1/24
+ * Create by DCY on 2018/1/26
  */
 @RestResponse(allTo = "inventory")
-public class APIEnableOrDisableTunnelEvent extends APIEvent {
+public class APIUnsupportTunnelEvent extends APIEvent {
     private TunnelInventory inventory;
 
-    public APIEnableOrDisableTunnelEvent(){}
+    public APIUnsupportTunnelEvent(){}
 
-    public APIEnableOrDisableTunnelEvent(String apiId){super(apiId);}
+    public APIUnsupportTunnelEvent(String apiId){super(apiId);}
 
     public TunnelInventory getInventory() {
         return inventory;
@@ -21,4 +21,5 @@ public class APIEnableOrDisableTunnelEvent extends APIEvent {
     public void setInventory(TunnelInventory inventory) {
         this.inventory = inventory;
     }
+
 }
