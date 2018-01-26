@@ -341,12 +341,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
-
-        if (msg.isCreateFailure()) {
-            remainMoney = buyOrder.getPayCash();
-            refundPresent = buyOrder.getPayPresent();
-        }
+//        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
+//
+//        if (msg.isCreateFailure()) {
+//            remainMoney = buyOrder.getPayCash();
+//            refundPresent = buyOrder.getPayPresent();
+//        }
         orderVo.setOriginalPrice(remainMoney);
         orderVo.setPrice(remainMoney);
         orderVo.setProductEffectTimeStart(msg.getStartTime());
@@ -617,11 +617,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
-        if (msg.isCreateFailure()) {
-            remainMoney = buyOrder.getPayCash();
-            refundPresent = buyOrder.getPayPresent();
-        }
+//        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
+//        if (msg.isCreateFailure()) {
+//            remainMoney = buyOrder.getPayCash();
+//            refundPresent = buyOrder.getPayPresent();
+//        }
         reply.setReFoundMoney(refundPresent);
         reply.setInventory(remainMoney);
         bus.reply(msg, reply);
