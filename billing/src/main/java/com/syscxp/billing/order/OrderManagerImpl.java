@@ -334,7 +334,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
 
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
-        BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
+        BigDecimal valuePayCash =BigDecimal.ZERO; //getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
 
         remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,true));
         if (remainMoney.compareTo(valuePayCash) > 0) {
@@ -611,7 +611,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
 
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
-        BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
+        BigDecimal valuePayCash = BigDecimal.ZERO;//getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
         remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,false));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
