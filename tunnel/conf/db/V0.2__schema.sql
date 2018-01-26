@@ -7,7 +7,7 @@ CREATE TABLE `L3NetworkEO` (
   `ownerAccountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
   `name` varchar(128) NOT NULL COMMENT '名称',
   `code` varchar(128) NOT NULL COMMENT '客户code，必须为字母或数字',
-  `vid` INT(11) NOT NULL COMMENT 'vid，100000以上唯一',
+  `vid` INT(11) NOT NULL UNIQUE COMMENT 'vid，100000以上唯一',
   `type` varchar(32) NOT NULL DEFAULT 'MPLSVPN' COMMENT '网络类型',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '状态',
   `endPointNum` INT(11) NOT NULL COMMENT '连接点数量',
