@@ -334,19 +334,19 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
 
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
-        BigDecimal valuePayCash =BigDecimal.ZERO; //getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
+        BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
 
         remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,true));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-//        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
-//
-//        if (msg.isCreateFailure()) {
-//            remainMoney = buyOrder.getPayCash();
-//            refundPresent = buyOrder.getPayPresent();
-//        }
+        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
+
+        if (msg.isCreateFailure()) {
+            remainMoney = buyOrder.getPayCash();
+            refundPresent = buyOrder.getPayPresent();
+        }
         orderVo.setOriginalPrice(remainMoney);
         orderVo.setPrice(remainMoney);
         orderVo.setProductEffectTimeStart(msg.getStartTime());
@@ -611,17 +611,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
 
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
-        BigDecimal valuePayCash = BigDecimal.ZERO;//getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
+        BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
         remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO,false));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-//        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
-//        if (msg.isCreateFailure()) {
-//            remainMoney = buyOrder.getPayCash();
-//            refundPresent = buyOrder.getPayPresent();
-//        }
+        OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
+        if (msg.isCreateFailure()) {
+            remainMoney = buyOrder.getPayCash();
+            refundPresent = buyOrder.getPayPresent();
+        }
         reply.setReFoundMoney(refundPresent);
         reply.setInventory(remainMoney);
         bus.reply(msg, reply);
@@ -664,6 +664,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } else { //downgrade
             BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
             subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice,false));
+            if (subMoney.compareTo(valuePayCash.negate()) < 0) {
+                subMoney = valuePayCash.negate();
+            }
 
         }
 
