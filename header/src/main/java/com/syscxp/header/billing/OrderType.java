@@ -7,5 +7,6 @@ public enum OrderType {
     RENEW,
     SLA_COMPENSATION,
     UN_SUBCRIBE,
-    MODIFY
+    MODIFY,
+    AUTORENEW
 }

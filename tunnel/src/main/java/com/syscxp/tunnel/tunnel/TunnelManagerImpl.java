@@ -420,6 +420,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid("system");
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
+        orderMsg.setAutoRenew(true);
 
         OrderInventory inventory = tunnelBillingBase.createOrder(orderMsg);
 
@@ -1558,7 +1559,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getOwnerAccountUuid(),
-                msg.getSession().getAccountUuid());
+                msg.getSession().getAccountUuid(),false);
 
         bus.reply(msg, reply);
     }
@@ -1573,7 +1574,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getOwnerAccountUuid(),
-                vo.getAccountUuid());
+                vo.getAccountUuid(),true);
 
         bus.reply(msg, reply);
     }
@@ -1582,7 +1583,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                             Integer duration,
                                             ProductChargeModel productChargeModel,
                                             String accountUuid,
-                                            String opAccountUuid) {
+                                            String opAccountUuid,boolean isAutoRenew) {
 
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         APIRenewTunnelReply reply = new APIRenewTunnelReply();
@@ -1605,6 +1606,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         renewOrderMsg.setExpiredTime(vo.getExpireDate());
         renewOrderMsg.setNotifyUrl(restf.getSendCommandUrl());
         renewOrderMsg.setCallBackData(RESTApiDecoder.dump(rc));
+        renewOrderMsg.setAutoRenew(isAutoRenew);
 
         OrderInventory orderInventory = tunnelBillingBase.createOrder(renewOrderMsg);
 

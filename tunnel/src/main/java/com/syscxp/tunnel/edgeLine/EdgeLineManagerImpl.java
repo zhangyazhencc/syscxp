@@ -204,7 +204,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getAccountUuid(),
-                msg.getSession().getAccountUuid());
+                msg.getSession().getAccountUuid(),false);
 
         bus.reply(msg, reply);
     }
@@ -219,7 +219,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getAccountUuid(),
-                "system");
+                "system",true);
 
         bus.reply(msg, reply);
     }
@@ -228,7 +228,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
                                                 Integer duration,
                                                 ProductChargeModel productChargeModel,
                                                 String accountUuid,
-                                                String opAccountUuid) {
+                                                String opAccountUuid,boolean isAutoRenew) {
 
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         APIRenewEdgeLineReply reply = new APIRenewEdgeLineReply();
@@ -251,6 +251,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
         renewOrderMsg.setExpiredTime(vo.getExpireDate());
         renewOrderMsg.setNotifyUrl(restf.getSendCommandUrl());
         renewOrderMsg.setCallBackData(RESTApiDecoder.dump(rc));
+        renewOrderMsg.setAutoRenew(isAutoRenew);
 
         OrderInventory orderInventory = tunnelBillingBase.createOrder(renewOrderMsg);
 

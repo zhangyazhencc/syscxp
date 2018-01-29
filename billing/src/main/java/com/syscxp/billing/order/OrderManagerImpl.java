@@ -234,7 +234,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
         }
         payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
-        orderVo.setType(OrderType.RENEW);
+        ;
+        if (msg.isAutoRenew()) {
+            orderVo.setType(OrderType.AUTORENEW);
+        } else {
+            orderVo.setType(OrderType.RENEW);
+        }
+
         orderVo.setOriginalPrice(discountPrice);
         orderVo.setPrice(discountPrice);
         orderVo.setProductEffectTimeStart(msg.getExpiredTime());

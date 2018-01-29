@@ -21,6 +21,9 @@ public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
     @APIParam
     private Timestamp expiredTime;
 
+    @APIParam(required = false)
+    private boolean isAutoRenew;
+
     public Timestamp getExpiredTime() {
         return expiredTime;
     }
@@ -56,6 +59,14 @@ public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
 
     public APICreateRenewOrderMsg(APICreateOrderMsg msg) {
         super(msg);
+    }
+
+    public boolean isAutoRenew() {
+        return isAutoRenew;
+    }
+
+    public void setAutoRenew(boolean autoRenew) {
+        isAutoRenew = autoRenew;
     }
 
     public APICreateRenewOrderMsg() {
