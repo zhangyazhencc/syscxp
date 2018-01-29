@@ -43,7 +43,7 @@ public class TunnelBillingBase {
      */
     public OrderInventory createOrder(APICreateOrderMsg orderMsg) {
         try {
-            APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            APICreateOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
             if (reply.isOrderSuccess()) {
                 return reply.getInventory();
@@ -59,7 +59,7 @@ public class TunnelBillingBase {
      */
     public List<OrderInventory> createBuyOrder(APICreateBuyOrderMsg orderMsg) {
         try {
-            APICreateBuyOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            APICreateBuyOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
             if (reply.isSuccess()) {
                 return reply.getInventories();
@@ -75,7 +75,7 @@ public class TunnelBillingBase {
      */
     public OrderInventory createOrderForEdgeLine(APICreateBuyEdgeLineOrderMsg orderMsg) {
         try {
-            APICreateBuyEdgeLineOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            APICreateBuyEdgeLineOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
             if (reply.isSuccess()) {
                 return reply.getInventory();

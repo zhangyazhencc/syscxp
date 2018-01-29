@@ -22,7 +22,7 @@ import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.tunnel.edgeLine.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelBillingBase;
-import com.syscxp.tunnel.tunnel.TunnelRESTCaller;
+import com.syscxp.tunnel.tunnel.BillingRESTCaller;
 import com.syscxp.tunnel.tunnel.TunnelValidateBase;
 import com.syscxp.tunnel.tunnel.job.DeleteRenewVOAfterDeleteResourceJob;
 import com.syscxp.utils.Utils;
@@ -403,7 +403,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
             upmsg.setProductUuid(msg.getUuid());
             upmsg.setExpiredTime(vo.getExpireDate());
 
-            reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(upmsg);
+            reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(upmsg);
         }
 
         bus.reply(msg, new APIGetUnscribeEdgeLinePriceDiffReply(reply));

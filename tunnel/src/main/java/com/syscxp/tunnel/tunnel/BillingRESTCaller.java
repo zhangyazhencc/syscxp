@@ -2,7 +2,6 @@ package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.message.APIReply;
@@ -23,8 +22,8 @@ import com.syscxp.utils.logging.CLogger;
  * Create by DCY on 2017/9/29
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
-public class TunnelRESTCaller {
-    private static final CLogger logger = Utils.getLogger(TunnelRESTCaller.class);
+public class BillingRESTCaller {
+    private static final CLogger logger = Utils.getLogger(BillingRESTCaller.class);
     @Autowired
     private RESTFacade restf;
     @Autowired
@@ -32,11 +31,11 @@ public class TunnelRESTCaller {
 
     private String baseUrl;
 
-    public TunnelRESTCaller() {
+    public BillingRESTCaller() {
         this.baseUrl = CoreGlobalProperty.BILLING_SERVER_URL;
     }
 
-    public TunnelRESTCaller(String baseUrl) {
+    public BillingRESTCaller(String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
@@ -44,7 +43,7 @@ public class TunnelRESTCaller {
         String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);
 
-        RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
+        RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class, 0);
         APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
         if (!reply.isSuccess()){
             logger.debug(String.format("call billing failed: %s", reply.getError()));
