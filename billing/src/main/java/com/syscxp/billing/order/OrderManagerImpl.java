@@ -627,7 +627,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             reply.setReFoundMoney(refundPresent);
             reply.setInventory(remainMoney);
         }
-        
+
         bus.reply(msg, reply);
     }
 

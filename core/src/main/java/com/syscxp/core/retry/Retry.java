@@ -19,7 +19,15 @@ public abstract class Retry<T> {
 
     protected abstract T call();
 
+    protected int times = 5;
+
     protected String __name__;
+
+
+    public Retry<T> setRetryTimes(int times){
+        this.times = times;
+        return this;
+    }
 
     public T run() {
         Method m;
@@ -29,7 +37,6 @@ public abstract class Retry<T> {
             throw new CloudRuntimeException(e);
         }
 
-        int times = 5;
         int interval = 1;
         Class[] onExceptions = {};
 

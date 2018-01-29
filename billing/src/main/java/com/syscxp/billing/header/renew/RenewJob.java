@@ -49,16 +49,18 @@ public class RenewJob {
         template = RESTFacade.createRestTemplate(3000, 3000);
     }
 
-    @Scheduled(cron = "0 0/10 * * * ? ")
+    @Scheduled(cron = "0 0/60 * * * ? ")
     @Transactional
     protected void autoRenew() {
 
-        GLock lock = new GLock(String.format("id-%s", "createRenew"), 120);
+        GLock lock = new GLock(String.format("id-%s", "createRenew"), 600);
         lock.lock();
         try {
 
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
+            q.add(RenewVO_.expiredTime, SimpleQuery.Op.LT, dbf.getCurrentSqlTime());
+            q.add(RenewVO_.expiredTime, SimpleQuery.Op.GT, dbf.getCurrentSqlTime().toLocalDateTime().minusDays(7));
             List<RenewVO> renewVOs = q.list();
             if (renewVOs == null || renewVOs.size()==0) {
                 logger.info("there is no activity renew product");
@@ -68,17 +70,6 @@ public class RenewJob {
             ListIterator<RenewVO> ite = renewVOs.listIterator();
             while (ite.hasNext()) {
                 RenewVO renewVO = ite.next();
-                LocalDateTime now = LocalDateTime.now();
-                LocalDateTime expiredTime = renewVO.getExpiredTime().toLocalDateTime();
-                if (expiredTime.isAfter(now)) {
-                    continue;
-                }
-                if ((ChronoUnit.DAYS.between(now, expiredTime) > 7) && expiredTime.isBefore(now)) {
-                    dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
-                    dbf.getEntityManager().flush();
-                    continue;
-                }
-
 
                 ProductCaller caller = new ProductCaller(renewVO.getProductType());
 
@@ -176,7 +167,7 @@ public class RenewJob {
             protected ResponseEntity<String> call() {
                 return template.exchange(url, HttpMethod.POST, req, String.class);
             }
-        }.run();
+        }.setRetryTimes(0).run();
 
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
             throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
