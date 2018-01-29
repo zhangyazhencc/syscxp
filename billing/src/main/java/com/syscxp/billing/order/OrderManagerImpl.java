@@ -664,6 +664,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } else { //downgrade
             BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
             subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice,false));
+            if (subMoney.compareTo(valuePayCash.negate()) < 0) {
+                subMoney = valuePayCash.negate();
+            }
 
         }
 
