@@ -95,6 +95,15 @@ public class RenewJob {
 //                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
 //                        throw new RuntimeException("unknown mistake");
 //                    }
+                }else if(renewVO.getProductType().equals(ProductType.EDGELINE)){
+                    APIRenewAutoEdgeLineMsg msg = new APIRenewAutoEdgeLineMsg();
+                    msg.setUuid(renewVO.getProductUuid());
+                    msg.setDuration(1);
+                    msg.setProductChargeModel(renewVO.getProductChargeModel());
+                    InnerMessageHelper.setMD5(msg);
+                    String gstr = RESTApiDecoder.dump(msg);
+                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class,null);
+
                 } else if (renewVO.getProductType().equals(ProductType.PORT)) {
                     APIRenewAutoInterfaceMsg aMsg = new APIRenewAutoInterfaceMsg();
 
