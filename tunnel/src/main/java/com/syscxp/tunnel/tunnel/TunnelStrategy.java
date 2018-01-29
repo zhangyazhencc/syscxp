@@ -96,14 +96,14 @@ public class TunnelStrategy  {
     /**
      * 策略分配外部VLAN
      * */
-    public Integer getVlanByStrategy(String switchUuid){
+    public Integer getVlanByStrategy(String switchUuid, String peerSwitchUuid){
         Integer vlan;
 
         //查询该虚拟交换机下所有的Vlan段
         List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class).eq(SwitchVlanVO_.switchUuid, switchUuid).list();
 
         //查询该虚拟交换机所属物理交换机下已经分配的Vlan
-        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
+        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
         if(vlanList.isEmpty()){
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
@@ -119,10 +119,10 @@ public class TunnelStrategy  {
     /**
      * 验证VLAN是否可用
      * */
-    public boolean vlanIsAvailable(String switchUuid, Integer vlan){
+    public boolean vlanIsAvailable(String switchUuid, String peerSwitchUuid, Integer vlan){
 
         //查询该虚拟交换机所属的物理交换机已经分配的Vlan
-        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
+        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
@@ -133,23 +133,35 @@ public class TunnelStrategy  {
     }
 
     /**
-     * 查询该虚拟交换机所属物理交换机已经分配的Vlan
+     * 查询该虚拟交换机所属物理交换机和对端物理交换机已经分配的Vlan
      * */
-    public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
+    public List<Integer> fingAllocateVlanBySwitch(String switchUuid, String peerSwitchUuid){
         TunnelBase tunnelBase = new TunnelBase();
 
         String physicalSwitchUuid = Q.New(SwitchVO.class)
                 .eq(SwitchVO_.uuid,switchUuid)
                 .select(SwitchVO_.physicalSwitchUuid)
                 .findValue();
+        String peerPhysicalSwitchUuid = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.uuid,peerSwitchUuid)
+                .select(SwitchVO_.physicalSwitchUuid)
+                .findValue();
+
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(physicalSwitchUuid, PhysicalSwitchVO.class);
+        PhysicalSwitchVO peerPhysicalSwitchVO = dbf.findByUuid(peerPhysicalSwitchUuid, PhysicalSwitchVO.class);
 
         PhysicalSwitchVO mplsPhysicalSwitch = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO);
+        PhysicalSwitchVO peerMplsPhysicalSwitch = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(peerPhysicalSwitchVO);
 
-        String sql = "select distinct a.vlan from TunnelSwitchPortVO a where a.ownerMplsSwitchUuid = :mplsPhysicalSwitch or a.peerMplsSwitchUuid = :peerMplsSwitchUuid";
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a " +
+                "where a.ownerMplsSwitchUuid = :mplsPhysicalSwitch " +
+                "or a.ownerMplsSwitchUuid = :peerMplsPhysicalSwitch " +
+                "or a.peerMplsSwitchUuid = :mplsPhysicalSwitch2";
+
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
         avq.setParameter("mplsPhysicalSwitch", mplsPhysicalSwitch.getUuid());
-        avq.setParameter("peerMplsSwitchUuid", mplsPhysicalSwitch.getUuid());
+        avq.setParameter("peerMplsPhysicalSwitch", peerMplsPhysicalSwitch.getUuid());
+        avq.setParameter("mplsPhysicalSwitch2", mplsPhysicalSwitch.getUuid());
         return avq.getResultList();
     }
 

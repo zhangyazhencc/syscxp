@@ -66,6 +66,7 @@ public class DeleteTunnelControlZKJob implements Job {
             taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
 
             DeleteTunnelZKMsg deleteTunnelZKMsg = new DeleteTunnelZKMsg();
+            deleteTunnelZKMsg.setTunnelUuid(null);
             deleteTunnelZKMsg.setCommands(commands);
             deleteTunnelZKMsg.setTaskUuid(taskResourceVO.getUuid());
             bus.makeLocalServiceId(deleteTunnelZKMsg, TunnelConstant.SERVICE_ID);

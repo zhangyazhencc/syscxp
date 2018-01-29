@@ -240,7 +240,7 @@ public class TunnelBillingBase {
      */
     public String getSharePortBandwidthOffering(String bandwidthOfferingUuid){
         final String offeringA = "LT500M";
-        final String offeringB = "GT500LT2G";
+        final String offeringB = "GT500MLT2G";
         final String offeringC = "GT2G";
 
         Long bandwidth = dbf.findByUuid(bandwidthOfferingUuid, BandwidthOfferingVO.class).getBandwidth();

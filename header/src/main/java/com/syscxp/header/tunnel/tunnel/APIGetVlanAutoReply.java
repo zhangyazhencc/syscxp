@@ -7,13 +7,23 @@ import com.syscxp.header.message.APIReply;
  */
 public class APIGetVlanAutoReply extends APIReply {
 
-    private Integer vlan;
+    private Integer vlanA;
 
-    public Integer getVlan() {
-        return vlan;
+    private Integer vlanZ;
+
+    public Integer getVlanA() {
+        return vlanA;
     }
 
-    public void setVlan(Integer vlan) {
-        this.vlan = vlan;
+    public void setVlanA(Integer vlanA) {
+        this.vlanA = vlanA;
+    }
+
+    public Integer getVlanZ() {
+        return vlanZ;
+    }
+
+    public void setVlanZ(Integer vlanZ) {
+        this.vlanZ = vlanZ;
     }
 }

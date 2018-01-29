@@ -4,6 +4,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 
 /**
  * Create by DCY on 2017/11/3
@@ -12,13 +13,35 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APIGetVlanAutoMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
-    private String interfaceUuid;
+    private String interfaceUuidA;
 
-    public String getInterfaceUuid() {
-        return interfaceUuid;
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    private String interfaceUuidZ;
+
+    @APIParam(emptyString = false, required = false, maxLength = 32, resourceType = EndpointVO.class)
+    private String innerConnectedEndpointUuid;
+
+    public String getInterfaceUuidA() {
+        return interfaceUuidA;
     }
 
-    public void setInterfaceUuid(String interfaceUuid) {
-        this.interfaceUuid = interfaceUuid;
+    public void setInterfaceUuidA(String interfaceUuidA) {
+        this.interfaceUuidA = interfaceUuidA;
+    }
+
+    public String getInterfaceUuidZ() {
+        return interfaceUuidZ;
+    }
+
+    public void setInterfaceUuidZ(String interfaceUuidZ) {
+        this.interfaceUuidZ = interfaceUuidZ;
+    }
+
+    public String getInnerConnectedEndpointUuid() {
+        return innerConnectedEndpointUuid;
+    }
+
+    public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
+        this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
     }
 }
