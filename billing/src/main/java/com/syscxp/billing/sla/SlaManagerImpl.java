@@ -10,7 +10,7 @@ import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.tunnel.APISLAEdgeLineMsg;
+import com.syscxp.header.tunnel.edgeLine.APISLAEdgeLineMsg;
 import com.syscxp.header.tunnel.tunnel.APISLAInterfaceMsg;
 import com.syscxp.header.tunnel.tunnel.APISLATunnelMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
