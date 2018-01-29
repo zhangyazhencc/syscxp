@@ -371,11 +371,7 @@ public class TunnelValidateBase {
         if (outerSwitchPort == null) {
             throw new ApiMessageInterceptionException(argerr("该外联逻辑交换机下未添加端口 "));
         }
-        //获取互联设备的VLAN
-        Integer innerVlan = ts.getVlanByStrategy(innerSwitch.getUuid());
-        if (innerVlan == 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属内联虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-        }
+
     }
 
     public void validate(APICreateTunnelManualMsg msg) {
@@ -426,17 +422,44 @@ public class TunnelValidateBase {
             }
         }
 
-        //如果跨国,验证互联连接点和内外联交换机配置
+        //如果跨国,验证:互联连接点-内外联交换机配置-VLAN
+        String switchUuidA = tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid());
+        String switchUuidZ = tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid());
         if (msg.getInnerConnectedEndpointUuid() != null) {
             EndpointVO endpointVO = dbf.findByUuid(msg.getInnerConnectedEndpointUuid(), EndpointVO.class);
             if(endpointVO.getEndpointType() == EndpointType.INTERCONNECTED){
                 validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
-            }
-        }
 
-        //判断外部VLAN是否可用
-        validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
-        validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+                //通过互联连接点找到内联交换机和内联端口
+                SwitchVO innerSwitch = Q.New(SwitchVO.class)
+                        .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                        .eq(SwitchVO_.type, SwitchType.INNER)
+                        .find();
+                //通过互联连接点找到外联交换机和外联端口
+                SwitchVO outerSwitch = Q.New(SwitchVO.class)
+                        .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                        .eq(SwitchVO_.type, SwitchType.OUTER)
+                        .find();
+
+                NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+                if(nvoA.getCountry().equals("CHINA")){
+                    validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan());
+                    validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan());
+                }else{
+                    validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan());
+                    validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan());
+                }
+
+            }else{
+
+                validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+                validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+            }
+        }else{
+
+            validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+            validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+        }
 
         //如果是ACCESS或是QINQ的物理接口，判断该物理接口是否已经开通通道
         if (interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ) {
@@ -719,20 +742,56 @@ public class TunnelValidateBase {
             if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
             }
-            validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid()),
-                    tunnelBase.findSwitchByInterface(msg.getOldInterfaceAUuid()),
-                    msg.getaVlan(),
-                    msg.getOldAVlan());
+
+            if(vo.getType() == TunnelType.CHINA2ABROAD){
+                String switchPortUuidB = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag, "B")
+                        .select(TunnelSwitchPortVO_.switchPortUuid)
+                        .findValue();
+                String switchUuidB = dbf.findByUuid(switchPortUuidB, SwitchPortVO.class).getSwitchUuid();
+
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid()),
+                        switchUuidB,
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceAUuid()),
+                        msg.getaVlan(),
+                        msg.getOldAVlan());
+            }else{
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceAUuid()),
+                        msg.getaVlan(),
+                        msg.getOldAVlan());
+            }
+
         }
 
         if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
             if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
             }
-            validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid()),
-                    tunnelBase.findSwitchByInterface(msg.getOldInterfaceZUuid()),
-                    msg.getzVlan(),
-                    msg.getOldZVlan());
+
+            if(vo.getType() == TunnelType.CHINA2ABROAD){
+                String switchPortUuidC = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag, "C")
+                        .select(TunnelSwitchPortVO_.switchPortUuid)
+                        .findValue();
+                String switchUuidC = dbf.findByUuid(switchPortUuidC, SwitchPortVO.class).getSwitchUuid();
+
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid()),
+                        switchUuidC,
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceZUuid()),
+                        msg.getzVlan(),
+                        msg.getOldZVlan());
+            }else{
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceZUuid()),
+                        msg.getzVlan(),
+                        msg.getOldZVlan());
+            }
+
         }
 
         if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())){
@@ -805,14 +864,14 @@ public class TunnelValidateBase {
     /**
      * 判断外部VLAN是否可用
      */
-    private void validateVlan(String interfaceUuid, Integer vlan) {
+    private void validateVlan(String interfaceUuid, String peerSwitchUuid, Integer vlan) {
         TunnelStrategy ts = new TunnelStrategy();
         TunnelBase tunnelBase = new TunnelBase();
         //查询该TUNNEL的物理接口所属的虚拟交换机
         String switchUuid = tunnelBase.findSwitchByInterface(interfaceUuid);
 
         //查询该虚拟交换机所属的物理交换机已经分配的Vlan
-        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
+        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
@@ -823,7 +882,7 @@ public class TunnelValidateBase {
     /**
      * 修改物理接口或VLAN时判断外部VLAN是否可用
      */
-    public void validateVlanForUpdateVlanOrInterface(String switchUuid,String oldSwitchUuid, Integer vlan, Integer oldVlan){
+    public void validateVlanForUpdateVlanOrInterface(String switchUuid, String peerSwitchUuid, String oldSwitchUuid, Integer vlan, Integer oldVlan){
         TunnelStrategy ts = new TunnelStrategy();
 
         String physicalSwitchUuid = Q.New(SwitchVO.class)
@@ -836,7 +895,7 @@ public class TunnelValidateBase {
                 .findValue();
 
         //查询该虚拟交换机所属物理交换机下Tunnel已经分配的Vlan
-        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
+        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
         if(notNeedValidateVlanForUpdateInterface(physicalSwitchUuid,oldPhysicalSwitchUuid)){
             if(!oldVlan.equals(vlan)){

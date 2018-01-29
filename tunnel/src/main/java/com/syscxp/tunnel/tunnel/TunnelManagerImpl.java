@@ -42,10 +42,7 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.*;
-import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointInventory;
-import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
-import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO_;
+import com.syscxp.header.tunnel.endpoint.*;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
@@ -602,13 +599,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 throw new ApiMessageInterceptionException(argerr("该接口已有运行的专线[uuid:%s]，请先断开连接！",vo.getUuid()));
             }
 
-            //端口改变，验证VLAN
-            if (!Objects.equals(msg.getSwitchPortUuid(), iface.getSwitchPortUuid())){
-                String switchUuid = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid()).select(SwitchPortVO_.switchUuid).findValue();
-
-                new TunnelValidateBase().validateVlanForUpdateVlanOrInterface(switchUuid, tunnelBase.findSwitchByInterface(msg.getUuid()), tsPort.getVlan(), tsPort.getVlan());
-            }
-
             tunnelSwitchPortB = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag, "B")
@@ -640,6 +630,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .eq(TunnelSwitchPortVO_.sortTag, "A")
                             .find();
                 }
+            }
+
+            //端口改变，验证VLAN
+            if (!Objects.equals(msg.getSwitchPortUuid(), iface.getSwitchPortUuid())){
+                String switchUuid = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid()).select(SwitchPortVO_.switchUuid).findValue();
+
+                SwitchPortVO peerSwitchPort = dbf.findByUuid(remoteTunnelSwitchPort.getSwitchPortUuid(), SwitchPortVO.class);
+                new TunnelValidateBase().validateVlanForUpdateVlanOrInterface(switchUuid, peerSwitchPort.getSwitchUuid(), tunnelBase.findSwitchByInterface(msg.getUuid()), tsPort.getVlan(), tsPort.getVlan());
             }
 
         }
@@ -1169,6 +1167,30 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         //创建TunnelSwitchPort
         Integer vlanA;
         Integer vlanZ;
+        String peerSwitchUuidA;
+        String peerSwitchUuidZ;
+        if(tunnelType == TunnelType.CHINA2ABROAD){
+
+            SwitchVO innerSwitch = Q.New(SwitchVO.class)
+                    .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                    .eq(SwitchVO_.type, SwitchType.INNER)
+                    .find();
+
+            SwitchVO outerSwitch = Q.New(SwitchVO.class)
+                    .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                    .eq(SwitchVO_.type, SwitchType.OUTER)
+                    .find();
+            if(nvoA.getCountry().equals("CHINA")){
+                peerSwitchUuidA = innerSwitch.getUuid();
+                peerSwitchUuidZ = outerSwitch.getUuid();
+            }else{
+                peerSwitchUuidA = outerSwitch.getUuid();
+                peerSwitchUuidZ = innerSwitch.getUuid();
+            }
+        }else{
+            peerSwitchUuidA = switchPortVOZ.getSwitchUuid();
+            peerSwitchUuidZ = switchPortVOA.getSwitchUuid();
+        }
 
         if(crossTunnel){    //共点专线
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)){     //从同一个物理交换机进和出，不可能跨国
@@ -1178,10 +1200,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 if (!isIfaceANew && msg.getInterfaceAUuid().equals(msg.getCrossInterfaceUuid())){   //A是共点
                     vlanA = crossVlan;
 
-                    if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), vlanA)){
+                    if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA)){
                         vlanZ = vlanA;
                     }else{
-                        vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid());
+                        vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);
                         if (vlanZ == 0) {
                             throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
                         }
@@ -1190,10 +1212,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }else{
                     vlanZ = crossVlan;
 
-                    if(ts.vlanIsAvailable(switchPortVOA.getSwitchUuid(), vlanZ)){
+                    if(ts.vlanIsAvailable(switchPortVOA.getSwitchUuid(), peerSwitchUuidA, vlanZ)){
                         vlanA = vlanZ;
                     }else{
-                        vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid());
+                        vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
                         if (vlanA == 0) {
                             throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
                         }
@@ -1203,21 +1225,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }else{
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)) {     //从同一个物理交换机进和出，不可能跨国
-                vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid());
+                vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
                 if (vlanA == 0) {
                     throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
                 }
                 vlanZ = vlanA;
             }else{
-                vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid());
+                vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
                 if (vlanA == 0) {
                     throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
                 }
 
-                if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), vlanA)){
+                if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA)){
                     vlanZ = vlanA;
                 }else{
-                    vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid());
+                    vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);
                     if (vlanZ == 0) {
                         throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
                     }
@@ -1269,10 +1291,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,innerSwitchPort)){
                 vlanBC = vlanA;
             }else{
-                if(ts.vlanIsAvailable(innerSwitch.getUuid(), vlanA) && ts.vlanIsAvailable(outerSwitch.getUuid(), vlanA)){
+                if(ts.vlanIsAvailable(innerSwitch.getUuid(), switchPortVOA.getSwitchUuid(), vlanA) && ts.vlanIsAvailable(outerSwitch.getUuid(), switchPortVOZ.getUuid(), vlanA)){
                     vlanBC = vlanA;
                 }else{
-                    vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid());
+                    vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid(), switchPortVOA.getSwitchUuid());
                     if (vlanBC == 0) {
                         throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",innerSwitchPort.getUuid()));
                     }
@@ -1287,10 +1309,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOZ,innerSwitchPort)){
                 vlanBC = vlanZ;
             }else{
-                if(ts.vlanIsAvailable(innerSwitch.getUuid(), vlanZ) && ts.vlanIsAvailable(outerSwitch.getUuid(), vlanZ)){
+                if(ts.vlanIsAvailable(innerSwitch.getUuid(), switchPortVOZ.getSwitchUuid(), vlanZ) && ts.vlanIsAvailable(outerSwitch.getUuid(), switchPortVOA.getSwitchUuid(), vlanZ)){
                     vlanBC = vlanZ;
                 }else{
-                    vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid());
+                    vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid(), switchPortVOZ.getSwitchUuid());
                     if (vlanBC == 0) {
                         throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员!",innerSwitchPort.getUuid()));
                     }
@@ -2484,12 +2506,72 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelStrategy ts = new TunnelStrategy();
         TunnelBase tunnelBase = new TunnelBase();
 
-        Integer vlan = ts.getVlanByStrategy(tunnelBase.findSwitchByInterface(msg.getInterfaceUuid()));
-        if (vlan == 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceUuidA(), InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceUuidZ(), InterfaceVO.class);
+
+        EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
+        NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+
+        SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
+        SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
+
+        Integer vlanA;
+        Integer vlanZ;
+        String peerSwitchUuidA;
+        String peerSwitchUuidZ;
+
+        if(msg.getInnerConnectedEndpointUuid() != null){
+            EndpointVO endpointVO = dbf.findByUuid(msg.getInnerConnectedEndpointUuid(), EndpointVO.class);
+            if(endpointVO.getEndpointType() == EndpointType.INTERCONNECTED){
+                SwitchVO innerSwitch = Q.New(SwitchVO.class)
+                        .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                        .eq(SwitchVO_.type, SwitchType.INNER)
+                        .find();
+
+                SwitchVO outerSwitch = Q.New(SwitchVO.class)
+                        .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                        .eq(SwitchVO_.type, SwitchType.OUTER)
+                        .find();
+                if(nvoA.getCountry().equals("CHINA")){
+                    peerSwitchUuidA = innerSwitch.getUuid();
+                    peerSwitchUuidZ = outerSwitch.getUuid();
+                }else{
+                    peerSwitchUuidA = outerSwitch.getUuid();
+                    peerSwitchUuidZ = innerSwitch.getUuid();
+                }
+            }else{
+                peerSwitchUuidA = switchPortVOZ.getSwitchUuid();
+                peerSwitchUuidZ = switchPortVOA.getSwitchUuid();
+            }
+        }else{
+            peerSwitchUuidA = switchPortVOZ.getSwitchUuid();
+            peerSwitchUuidZ = switchPortVOA.getSwitchUuid();
         }
 
-        reply.setVlan(vlan);
+        if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)) {     //从同一个物理交换机进和出，不可能跨国
+            vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
+            if (vlanA == 0) {
+                throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN",switchPortVOA.getUuid()));
+            }
+            vlanZ = vlanA;
+        }else{
+            vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
+            if (vlanA == 0) {
+                throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN",switchPortVOA.getUuid()));
+            }
+
+            if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA)){
+                vlanZ = vlanA;
+            }else{
+                vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);
+                if (vlanZ == 0) {
+                    throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN",switchPortVOZ.getUuid()));
+                }
+            }
+        }
+
+        reply.setVlanA(vlanA);
+        reply.setVlanZ(vlanZ);
         bus.reply(msg, reply);
     }
 
