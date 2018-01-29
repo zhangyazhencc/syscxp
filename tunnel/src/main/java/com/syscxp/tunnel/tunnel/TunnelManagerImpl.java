@@ -3380,6 +3380,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelValidateBase.validate((APISLAEdgeLineMsg) msg);
         } else if (msg instanceof APIDeleteEdgeLineMsg) {
             tunnelValidateBase.validate((APIDeleteEdgeLineMsg) msg);
+        } else if (msg instanceof APIGetVlanAutoMsg) {
+            tunnelValidateBase.validate((APIGetVlanAutoMsg) msg);
         }
         return msg;
     }

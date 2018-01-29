@@ -719,6 +719,17 @@ public class TunnelValidateBase {
         }
     }
 
+    public void validate(APIGetVlanAutoMsg msg){
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceUuidA(), InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceUuidZ(), InterfaceVO.class);
+        //若果跨国，则互联连接点不能为空
+        if (isTransnational(interfaceVOA.getEndpointUuid(), interfaceVOZ.getEndpointUuid())) {
+            if (msg.getInnerConnectedEndpointUuid() == null) {
+                throw new ApiMessageInterceptionException(argerr("该通道是跨国通道，互联连接点不能为空！ "));
+            }
+        }
+    }
+
     public void validate(APIUpdateTunnelVlanMsg msg) {
         TunnelBase tunnelBase = new TunnelBase();
 
