@@ -18,6 +18,7 @@ import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.job.*;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -518,5 +521,50 @@ public class TunnelBase {
         }else{
             return true;
         }
+    }
+
+    /**
+     * 退订成功后专线控制器相关操作
+     */
+    public TunnelVO doControlDeleteTunnelAfterUnsubcribeSuccess(TunnelVO vo){
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+        if(vo.getExpireDate() == null || vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))){
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+        }
+        vo.setAccountUuid(null);
+        vo = dbf.updateAndRefresh(vo);
+
+        if(isNeedControlDelete(vo.getState())){
+            taskBase.taskDeleteTunnel(vo);
+        }else{
+            deleteTunnelDB(vo);
+
+            taskBase.deleteTunnelForRelationJob(vo, "删除专线");
+        }
+
+
+        return vo;
+    }
+
+    /**
+     * 退订成功后专线数据库相关操作
+     */
+    public TunnelVO doDeleteTunnelDBAfterUnsubcribeSuccess(TunnelVO vo){
+        String commands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo, false));
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+
+        if(vo.getExpireDate() == null || vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))){
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+        }
+        vo.setAccountUuid(null);
+        vo = dbf.updateAndRefresh(vo);
+
+        deleteTunnelDB(vo);
+
+        new TunnelJobAndTaskBase().taskDeleteTunnelZK(vo.getUuid(), vo.getOwnerAccountUuid(), commands);
+
+        taskBase.deleteTunnelForRelationJob(vo, "删除专线");
+
+        return vo;
     }
 }

@@ -15,6 +15,8 @@ import com.syscxp.header.billing.APIGetProductPriceReply;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO_;
 import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
@@ -47,37 +49,6 @@ public class TunnelValidateBase {
 
     @Autowired
     private DatabaseFacade dbf;
-
-    public void validate(APIOpenEdgeLineMsg msg){
-        EdgeLineVO vo = dbf.findByUuid(msg.getUuid() ,EdgeLineVO.class);
-        if(vo.getPrices() == null){
-            throw new ApiMessageInterceptionException(argerr("该最后一公里未设置金额！"));
-        }
-    }
-
-    public void validate(APICreateEdgeLineMsg msg){
-        //BOSS创建验证物理接口的账户是否一致
-        if (msg.getSession().getType() == AccountType.SystemAdmin) {
-            String accountUuid = dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class).getAccountUuid();
-            if (!Objects.equals(msg.getAccountUuid(), accountUuid)) {
-                throw new ApiMessageInterceptionException(argerr("物理接口不属于该用户！"));
-            }
-        }
-
-        if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getInterfaceUuid()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("一个物理接口只能申请开通一次！"));
-        }
-    }
-
-    public void validate(APIDeleteEdgeLineMsg msg) {
-        EdgeLineVO vo = dbf.findByUuid(msg.getUuid(), EdgeLineVO.class);
-
-        if(Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,vo.getInterfaceUuid()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("该最后一公里下的接口已经开通专线，不能删！"));
-        }
-
-        checkOrderNoPay(vo.getAccountUuid(), msg.getUuid());
-    }
 
     public void validate(APIUpdateInterfacePortMsg msg) {
 
@@ -562,30 +533,6 @@ public class TunnelValidateBase {
         }
     }
 
-    public void validate(APIRenewEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    public void validate(APIRenewAutoEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    public void validate(APISLAEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
     public void validate(APIRenewTunnelMsg msg) {
         String accountUuid = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.uuid, msg.getUuid())
@@ -982,7 +929,7 @@ public class TunnelValidateBase {
     /**
      * 判断该产品是否有未完成订单
      */
-    private void checkOrderNoPay(String accountUuid, String productUuid) {
+    public void checkOrderNoPay(String accountUuid, String productUuid) {
         //判断该产品是否有未完成订单
         APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);

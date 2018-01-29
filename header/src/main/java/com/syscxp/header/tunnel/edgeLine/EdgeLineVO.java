@@ -1,5 +1,6 @@
-package com.syscxp.header.tunnel.tunnel;
+package com.syscxp.header.tunnel.edgeLine;
 
+import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 import com.syscxp.header.vo.EO;
 
 import javax.persistence.*;

@@ -1,4 +1,4 @@
-package com.syscxp.header.tunnel.tunnel;
+package com.syscxp.header.tunnel.edgeLine;
 
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
@@ -7,12 +7,12 @@ import com.syscxp.header.rest.RestResponse;
  * Create by DCY on 2018/1/11
  */
 @RestResponse(allTo = "inventory")
-public class APICreateEdgeLineEvent extends APIEvent {
+public class APIUpdateEdgeLineEvent extends APIEvent {
     private EdgeLineInventory inventory;
 
-    public APICreateEdgeLineEvent(){}
+    public APIUpdateEdgeLineEvent(){}
 
-    public APICreateEdgeLineEvent(String apiId){super(apiId);}
+    public APIUpdateEdgeLineEvent(String apiId){super(apiId);}
 
     public EdgeLineInventory getInventory() {
         return inventory;

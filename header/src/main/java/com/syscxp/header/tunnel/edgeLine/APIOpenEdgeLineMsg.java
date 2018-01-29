@@ -1,27 +1,27 @@
-package com.syscxp.header.tunnel.tunnel;
+package com.syscxp.header.tunnel.edgeLine;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.tunnel.EdgeLineConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
  * Create by DCY on 2018/1/12
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIRenewEdgeLineMsg extends APISyncCallMessage {
+@Action(services = {EdgeLineConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+public class APIOpenEdgeLineMsg extends APIMessage {
 
-    @APIParam(emptyString = false, resourceType = EdgeLineVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = EdgeLineVO.class)
     private String uuid;
 
     @APIParam
     private Integer duration;
 
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getUuid() {
@@ -54,7 +54,7 @@ public class APIRenewEdgeLineMsg extends APISyncCallMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Renew EdgeLineVO")
+                ntfy("Update EdgeLineVO")
                         .resource(uuid, EdgeLineVO.class)
                         .messageAndEvent(that, evt).done();
             }
