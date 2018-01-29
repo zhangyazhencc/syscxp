@@ -1760,27 +1760,25 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .eq(TunnelVO_.vsi, cmdTunnel.getVsi())
                 .list();
         for (TunnelVO tunnelVO : tunnelVOS) {
-            if (tunnelVO.getState() == TunnelState.Enabled) {
-                MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
-                for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
-                    if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
-                        endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                        endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
-                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
-                    } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
-                        endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                        endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
-                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
-                    }
+            MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
+            for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
+                if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
+                    endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                    endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
+                            tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
+                    endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                    endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
+                            tunnelSwitchPort.getSwitchPortUuid()).getmIP());
                 }
-
-                endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
-                endpointTunnel.setTunnelName(tunnelVO.getName());
-                endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
-                endpointTunnel.setAccountUuid(tunnelVO.getOwnerAccountUuid());
-
-                endpointTunnels.add(endpointTunnel);
             }
+
+            endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
+            endpointTunnel.setTunnelName(tunnelVO.getName());
+            endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
+            endpointTunnel.setAccountUuid(tunnelVO.getOwnerAccountUuid());
+
+            endpointTunnels.add(endpointTunnel);
         }
 
         return EndpointTunnelsInventory.valueOf(endpointTunnels);

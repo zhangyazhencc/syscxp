@@ -1,18 +1,20 @@
-package com.syscxp.header.tunnel.tunnel;
+package com.syscxp.header.tunnel.edgeLine;
 
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
 /**
- * Create by DCY on 2018/1/11
+ * Create by DCY on 2018/1/12
  */
 @RestResponse(allTo = "inventory")
-public class APIUpdateEdgeLineEvent extends APIEvent {
+public class APIDeleteEdgeLineEvent extends APIEvent {
     private EdgeLineInventory inventory;
 
-    public APIUpdateEdgeLineEvent(){}
+    public APIDeleteEdgeLineEvent(String apiId) {
+        super(apiId);
+    }
 
-    public APIUpdateEdgeLineEvent(String apiId){super(apiId);}
+    public APIDeleteEdgeLineEvent() {}
 
     public EdgeLineInventory getInventory() {
         return inventory;

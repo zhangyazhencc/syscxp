@@ -1,4 +1,4 @@
-package com.syscxp.header.tunnel.tunnel;
+package com.syscxp.header.tunnel.edgeLine;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.InnerCredentialCheck;

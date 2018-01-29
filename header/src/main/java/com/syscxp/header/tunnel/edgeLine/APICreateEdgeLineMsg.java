@@ -1,4 +1,4 @@
-package com.syscxp.header.tunnel.tunnel;
+package com.syscxp.header.tunnel.edgeLine;
 
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
@@ -6,12 +6,14 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.tunnel.EdgeLineConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 
 /**
  * Create by DCY on 2018/1/11
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
+@Action(services = {EdgeLineConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateEdgeLineMsg extends APIMessage {
 
     @APIParam(required = false, maxLength = 32)

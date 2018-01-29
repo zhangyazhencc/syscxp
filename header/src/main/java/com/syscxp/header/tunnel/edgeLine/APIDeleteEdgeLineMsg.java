@@ -1,16 +1,17 @@
-package com.syscxp.header.tunnel.tunnel;
+package com.syscxp.header.tunnel.edgeLine;
 
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.tunnel.EdgeLineConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
  * Create by DCY on 2018/1/12
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
+@Action(services = {EdgeLineConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteEdgeLineMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = EdgeLineVO.class)
     private String uuid;

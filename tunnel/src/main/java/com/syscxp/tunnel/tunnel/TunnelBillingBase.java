@@ -8,7 +8,7 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.tunnel.endpoint.EndpointType;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
