@@ -21,7 +21,7 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
     private String portOfferingUuid;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false, required = false)
     private String portAttribute;
 
     @APIParam(numberRange = {0, 1})

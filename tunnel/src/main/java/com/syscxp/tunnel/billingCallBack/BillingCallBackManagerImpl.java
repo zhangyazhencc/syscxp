@@ -155,6 +155,7 @@ public class BillingCallBackManagerImpl extends AbstractService implements Billi
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
 
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+        vo.setBandwidthOffering(message.getBandwidthOffering());
         vo.setBandwidth(message.getBandwidth());
         vo = dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单

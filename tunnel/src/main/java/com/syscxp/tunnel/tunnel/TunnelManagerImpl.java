@@ -837,6 +837,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setVsi(vsi);
         vo.setMonitorCidr(null);
         vo.setName(msg.getName());
+        vo.setBandwidthOffering(msg.getBandwidthOfferingUuid());
         vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
         vo.setDuration(msg.getDuration());
         vo.setState(TunnelState.Unpaid);
@@ -1125,6 +1126,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setMonitorCidr(null);
         vo.setName(msg.getName());
         vo.setDuration(msg.getDuration());
+        vo.setBandwidthOffering(msg.getBandwidthOfferingUuid());
         vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
@@ -1512,6 +1514,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付-调整带宽
         UpdateTunnelBandwidthCallBack uc = new UpdateTunnelBandwidthCallBack();
+        uc.setBandwidthOffering(msg.getBandwidthOfferingUuid());
         uc.setBandwidth(bandwidthOfferingVO.getBandwidth());
 
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
@@ -1532,6 +1535,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //付款成功,记录生效订单
             tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
+            vo.setBandwidthOffering(msg.getBandwidthOfferingUuid());
             vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
             vo = dbf.updateAndRefresh(vo);
 
