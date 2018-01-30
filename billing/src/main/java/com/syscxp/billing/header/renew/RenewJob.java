@@ -118,7 +118,7 @@ public class RenewJob {
                     renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                     renewCmd.setUuid(renewVO.getProductUuid());
                     String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class,header);
+                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
                 }else if (renewVO.getProductType().equals(ProductType.HOST)) {
                     Map<String, String> header = new HashMap<>();
                     header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpHost");
@@ -128,7 +128,7 @@ public class RenewJob {
                     renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                     renewCmd.setUuid(renewVO.getProductUuid());
                     String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class,header);
+                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
                 }else if (renewVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
                     Map<String, String> header = new HashMap<>();
                     header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpResourcePool");
@@ -138,7 +138,7 @@ public class RenewJob {
                     renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                     renewCmd.setUuid(renewVO.getProductUuid());
                     String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class,header);
+                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
                 }
 
             }

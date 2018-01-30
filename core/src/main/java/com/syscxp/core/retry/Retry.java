@@ -19,7 +19,7 @@ public abstract class Retry<T> {
 
     protected abstract T call();
 
-    protected int times = 5;
+    protected int times = 0;
 
     protected String __name__;
 
