@@ -35,6 +35,7 @@ public class TunnelStatusChecker implements Component {
 
     private Future<Void> checkTunnelStatusThread = null;
     private int checkTunnelStatusInterval;
+    private boolean isCheckTunnelStatus;
     public static final String TUNNEL_PACKETS_LOST = "tunnel.packets.lost";
     public static final String OPENTSDB_SERVER_URL = CoreGlobalProperty.OPENTSDB_SERVER_URL + "/api/query";
     public static final double PACKETS_LOST_MIN = 5;
@@ -42,6 +43,7 @@ public class TunnelStatusChecker implements Component {
 
     private void startCleanExpiredProduct() {
         checkTunnelStatusInterval = TunnelGlobalConfig.CHECK_TUNNEL_STATUS_INTERVAL.value(Integer.class);
+        isCheckTunnelStatus = TunnelGlobalConfig.IS_CHECK_TUNNEL_STATUS.value(Boolean.class);
         if (checkTunnelStatusThread != null) {
             checkTunnelStatusThread.cancel(true);
         }
@@ -56,6 +58,15 @@ public class TunnelStatusChecker implements Component {
         startCleanExpiredProduct();
 
         TunnelGlobalConfig.CHECK_TUNNEL_STATUS_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
+            @Override
+            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
+                logger.debug(String.format("%s change from %s to %s, restart startCleanExpiredProduct thread",
+                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+                startCleanExpiredProduct();
+            }
+        });
+
+        TunnelGlobalConfig.IS_CHECK_TUNNEL_STATUS.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
             @Override
             public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
                 logger.debug(String.format("%s change from %s to %s, restart startCleanExpiredProduct thread",
@@ -94,6 +105,9 @@ public class TunnelStatusChecker implements Component {
         @Override
         public void run() {
             List<TunnelVO> tunnelVOs = new ArrayList<>();
+            if (!isCheckTunnelStatus) {
+                return;
+            }
             try {
                 tunnelVOs = getTunnels();
                 logger.debug("tunnel status check.");
