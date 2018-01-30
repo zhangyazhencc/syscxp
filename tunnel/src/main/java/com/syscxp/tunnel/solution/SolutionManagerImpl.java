@@ -31,7 +31,7 @@ import com.syscxp.header.tunnel.solution.*;
 import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.TunnelControllerBase;
-import com.syscxp.tunnel.tunnel.TunnelRESTCaller;
+import com.syscxp.tunnel.tunnel.BillingRESTCaller;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
@@ -164,7 +164,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         APIGetProductPriceReply reply = getVPNPrice(vo, solutionVO.getAccountUuid());
         if(reply.getOriginalPrice().compareTo(vo.getCost()) != 0){
             solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(reply.getOriginalPrice()));
-            dbf.getEntityManager().merge(solutionVO);
+            solutionVO = dbf.getEntityManager().merge(solutionVO);
 
             vo.setCost(reply.getOriginalPrice());
             dbf.getEntityManager().merge(vo);
@@ -198,7 +198,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         APIGetProductPriceReply reply = getTunnelPrice(vo, solutionVO.getAccountUuid());
         if(reply.getOriginalPrice().compareTo(vo.getCost()) != 0){
             solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(reply.getOriginalPrice()));
-            dbf.getEntityManager().merge(solutionVO);
+            solutionVO = dbf.getEntityManager().merge(solutionVO);
 
             vo.setCost(reply.getOriginalPrice());
             dbf.getEntityManager().merge(vo);
@@ -220,7 +220,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(reply.getOriginalPrice()));
             vo.setCost(reply.getOriginalPrice());
             dbf.getEntityManager().merge(vo);
-            dbf.getEntityManager().merge(solutionVO);
+            solutionVO = dbf.getEntityManager().merge(solutionVO);
         }
 
         APIRecountInterfacePriceReply priceReply = new APIRecountInterfacePriceReply();
@@ -239,7 +239,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
 
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(msg.getCost()));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
@@ -259,7 +259,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
 
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(msg.getCost()));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
@@ -293,7 +293,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         APIDeleteSolutionVpnEvent event = new APIDeleteSolutionVpnEvent(msg.getId());
         event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
@@ -318,7 +318,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         dbf.removeCollection(solutionVpnVOS,SolutionVpnVO.class);
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         APIDeleteSolutionTunnelEvent event = new APIDeleteSolutionTunnelEvent(msg.getId());
         event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
@@ -330,7 +330,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         APIDeleteSolutionInterfaceEvent event = new APIDeleteSolutionInterfaceEvent(msg.getId());
         event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
@@ -372,7 +372,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
         solutionVO.setTotalCost(solutionVO.getTotalCost().add(vo.getCost()));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         APICreateSolutionVpnEvent event = new APICreateSolutionVpnEvent(msg.getId());
         event.setVpnInventory(SolutionVpnInventory.valueOf(vo));
@@ -416,7 +416,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
         solutionVO.setTotalCost(solutionVO.getTotalCost().add(msg.getCost()));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         APICreateSolutionTunnelEvent event = new APICreateSolutionTunnelEvent(msg.getId());
         event.setTunnelInventory(SolutionTunnelInventory.valueOf(vo));
@@ -442,7 +442,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
         System.out.println(vo.getCost());
         solutionVO.setTotalCost(solutionVO.getTotalCost().add(vo.getCost()));
-        dbf.getEntityManager().merge(solutionVO);
+        solutionVO = dbf.getEntityManager().merge(solutionVO);
 
         APICreateSolutionInterfaceEvent event = new APICreateSolutionInterfaceEvent(msg.getId());
         event.setInterfaceInventory(SolutionInterfaceInventory.valueOf(vo));
@@ -511,7 +511,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         pmsg.setDuration(vo.getDuration());
         pmsg.setAccountUuid(accountUuid);
         pmsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(vo.getPortOfferingUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller().syncJsonPost(pmsg);
         return reply;
     }
     /*获取VPN的价格*/
@@ -584,7 +584,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
                     endpointVOZ, null));
         }
 
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
 
         return reply;
     }

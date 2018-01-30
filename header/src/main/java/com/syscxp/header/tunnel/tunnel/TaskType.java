@@ -5,10 +5,23 @@ package com.syscxp.header.tunnel.tunnel;
  */
 public enum TaskType {
     Enabled,
+    EnabledZK,
+
     Disabled,
+    DisabledZK,
+
     ModifyBandwidth,
+
     ModifyPorts,
+    ModifyPortsZK,
+
     Create,
+    CreateZK,
+
+    RollBackCreate,
+
     Delete,
+    DeleteZK,
+
     Revert
 }

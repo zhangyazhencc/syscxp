@@ -84,7 +84,19 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelStateMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIOpenTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIUnsupportTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIEnableTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIDisableTunnelMsg</name>
     </message>
 
     <message>
@@ -124,10 +136,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateForciblyTunnelVlanMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelVlanMsg</name>
     </message>
 
@@ -145,43 +153,6 @@
 
     <message>
         <name>com.syscxp.header.tunnel.tunnel.APIGetModifyBandwidthNumMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APICreateEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIOpenEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIRenewEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIRenewAutoEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APISLAEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIGetUnscribeEdgeLinePriceDiffMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIDeleteEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIQueryEdgeLineMsg</name>
-        <serviceId>query</serviceId>
     </message>
 
     <message>

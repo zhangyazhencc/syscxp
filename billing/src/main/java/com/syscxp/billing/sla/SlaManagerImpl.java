@@ -10,6 +10,7 @@ import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.header.tunnel.edgeLine.APISLAEdgeLineMsg;
 import com.syscxp.header.tunnel.tunnel.APISLAInterfaceMsg;
 import com.syscxp.header.tunnel.tunnel.APISLATunnelMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -130,7 +131,20 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 if (!rsp.getState().equals(RestAPIState.Done.toString())) {
                     throw new IllegalArgumentException("the network is not fine ,try for a moment");
                 }
-            } else if (slaCompensateVO.getProductType().equals(ProductType.HOST) || slaCompensateVO.getProductType().equals(ProductType.DISK) || slaCompensateVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
+            } else if(slaCompensateVO.getProductType().equals(ProductType.EDGELINE)){
+                APISLAEdgeLineMsg aMsg = new APISLAEdgeLineMsg();
+                aMsg.setUuid(slaCompensateVO.getProductUuid());
+                aMsg.setSlaUuid(slaCompensateVO.getUuid());
+                aMsg.setDuration(slaCompensateVO.getDuration());
+                aMsg.setSession(msg.getSession());
+                String gstr = RESTApiDecoder.dumpWithSession(aMsg);
+                RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
+
+                if (!rsp.getState().equals(RestAPIState.Done.toString())) {
+                    throw new IllegalArgumentException("the network is not fine ,try for a moment");
+                }
+
+            }else if (slaCompensateVO.getProductType().equals(ProductType.HOST) || slaCompensateVO.getProductType().equals(ProductType.DISK) || slaCompensateVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
                 Map<String, String> header = new HashMap<>();
                 header.put(RESTConstant.COMMAND_PATH, "compensate");
                 SLACmd slaCmd = new SLACmd();

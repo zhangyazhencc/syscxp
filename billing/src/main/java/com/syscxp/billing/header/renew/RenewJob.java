@@ -9,6 +9,7 @@ import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.rest.*;
+import com.syscxp.header.tunnel.edgeLine.APIRenewAutoEdgeLineMsg;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -49,16 +51,18 @@ public class RenewJob {
         template = RESTFacade.createRestTemplate(3000, 3000);
     }
 
-    @Scheduled(cron = "0 0/10 * * * ? ")
+    @Scheduled(cron = "0 0/5 * * * ? ")
     @Transactional
     protected void autoRenew() {
 
-        GLock lock = new GLock(String.format("id-%s", "createRenew"), 120);
+        GLock lock = new GLock(String.format("id-%s", "createRenew"), 600);
         lock.lock();
         try {
 
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
+            q.add(RenewVO_.expiredTime, SimpleQuery.Op.LT, dbf.getCurrentSqlTime());
+            q.add(RenewVO_.expiredTime, SimpleQuery.Op.GT, Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(7)));
             List<RenewVO> renewVOs = q.list();
             if (renewVOs == null || renewVOs.size()==0) {
                 logger.info("there is no activity renew product");
@@ -68,17 +72,6 @@ public class RenewJob {
             ListIterator<RenewVO> ite = renewVOs.listIterator();
             while (ite.hasNext()) {
                 RenewVO renewVO = ite.next();
-                LocalDateTime now = LocalDateTime.now();
-                LocalDateTime expiredTime = renewVO.getExpiredTime().toLocalDateTime();
-                if (expiredTime.isAfter(now)) {
-                    continue;
-                }
-                if ((ChronoUnit.DAYS.between(now, expiredTime) > 7) && expiredTime.isBefore(now)) {
-                    dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
-                    dbf.getEntityManager().flush();
-                    continue;
-                }
-
 
                 ProductCaller caller = new ProductCaller(renewVO.getProductType());
 
@@ -95,6 +88,15 @@ public class RenewJob {
 //                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
 //                        throw new RuntimeException("unknown mistake");
 //                    }
+                }else if(renewVO.getProductType().equals(ProductType.EDGELINE)){
+                    APIRenewAutoEdgeLineMsg msg = new APIRenewAutoEdgeLineMsg();
+                    msg.setUuid(renewVO.getProductUuid());
+                    msg.setDuration(1);
+                    msg.setProductChargeModel(renewVO.getProductChargeModel());
+                    InnerMessageHelper.setMD5(msg);
+                    String gstr = RESTApiDecoder.dump(msg);
+                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class,null);
+
                 } else if (renewVO.getProductType().equals(ProductType.PORT)) {
                     APIRenewAutoInterfaceMsg aMsg = new APIRenewAutoInterfaceMsg();
 
@@ -117,7 +119,7 @@ public class RenewJob {
                     renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                     renewCmd.setUuid(renewVO.getProductUuid());
                     String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class,header);
+                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
                 }else if (renewVO.getProductType().equals(ProductType.HOST)) {
                     Map<String, String> header = new HashMap<>();
                     header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpHost");
@@ -127,7 +129,7 @@ public class RenewJob {
                     renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                     renewCmd.setUuid(renewVO.getProductUuid());
                     String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class,header);
+                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
                 }else if (renewVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
                     Map<String, String> header = new HashMap<>();
                     header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpResourcePool");
@@ -137,12 +139,14 @@ public class RenewJob {
                     renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                     renewCmd.setUuid(renewVO.getProductUuid());
                     String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class,header);
+                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
                 }
 
             }
 
-        } finally {
+        } catch(Exception e){
+            e.printStackTrace();
+        }finally {
             lock.unlock();
         }
 
@@ -167,7 +171,7 @@ public class RenewJob {
             protected ResponseEntity<String> call() {
                 return template.exchange(url, HttpMethod.POST, req, String.class);
             }
-        }.run();
+        }.setRetryTimes(0).run();
 
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
             throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));

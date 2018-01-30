@@ -21,6 +21,7 @@
         <property name="resourceTypeForAccountRef">
             <list>
                 <value>com.syscxp.alarm.header.resourcePolicy.PolicyVO</value>
+                <value>com.syscxp.alarm.header.log.AlarmLogVO</value>
             </list>
         </property>
     </bean>

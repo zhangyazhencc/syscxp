@@ -18,6 +18,7 @@ import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.job.*;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -126,8 +129,12 @@ public class TunnelBase {
     /**
      * 创建跨国的TunnelSwitchPort
      */
-    public void createTunnelSwitchPortForAbroad(TunnelVO vo,String endpointUuid,String switchPortUuid,Integer vlan,String sortTag){
+    public void createTunnelSwitchPortForAbroad(TunnelVO vo,String endpointUuid,String switchPortUuid,String remoteSwitchPortUuid,Integer vlan,String sortTag){
+        PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPortUuid(switchPortUuid);
+        PhysicalSwitchVO remotePhysicalSwitch = getPhysicalSwitchBySwitchPortUuid(remoteSwitchPortUuid);
+
         TunnelSwitchPortVO tsvo = new TunnelSwitchPortVO();
+
         tsvo.setUuid(Platform.getUuid());
         tsvo.setTunnelUuid(vo.getUuid());
         tsvo.setEndpointUuid(endpointUuid);
@@ -136,6 +143,9 @@ public class TunnelBase {
         tsvo.setType(NetworkType.TRUNK);
         tsvo.setVlan(vlan);
         tsvo.setSortTag(sortTag);
+        tsvo.setPhysicalSwitchUuid(physicalSwitch.getUuid());
+        tsvo.setOwnerMplsSwitchUuid(getUplinkMplsSwitchByPhysicalSwitch(physicalSwitch).getUuid());
+        tsvo.setPeerMplsSwitchUuid(getUplinkMplsSwitchByPhysicalSwitch(remotePhysicalSwitch).getUuid());
 
         dbf.getEntityManager().persist(tsvo);
     }
@@ -143,8 +153,12 @@ public class TunnelBase {
     /**
      * 创建TunnelSwitchPort
      */
-    public void createTunnelSwitchPort(TunnelVO tunnelVO,InterfaceVO interfaceVO,Integer vlan,String sortTag){
+    public void createTunnelSwitchPort(TunnelVO tunnelVO,InterfaceVO interfaceVO,String remoteSwitchPortUuid,Integer vlan,String sortTag){
+        PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPortUuid(interfaceVO.getSwitchPortUuid());
+        PhysicalSwitchVO remotePhysicalSwitch = getPhysicalSwitchBySwitchPortUuid(remoteSwitchPortUuid);
+
         TunnelSwitchPortVO tsvo = new TunnelSwitchPortVO();
+
         tsvo.setUuid(Platform.getUuid());
         tsvo.setTunnelUuid(tunnelVO.getUuid());
         tsvo.setInterfaceUuid(interfaceVO.getUuid());
@@ -153,8 +167,38 @@ public class TunnelBase {
         tsvo.setType(interfaceVO.getType());
         tsvo.setVlan(vlan);
         tsvo.setSortTag(sortTag);
+        tsvo.setPhysicalSwitchUuid(physicalSwitch.getUuid());
+        tsvo.setOwnerMplsSwitchUuid(getUplinkMplsSwitchByPhysicalSwitch(physicalSwitch).getUuid());
+        tsvo.setPeerMplsSwitchUuid(getUplinkMplsSwitchByPhysicalSwitch(remotePhysicalSwitch).getUuid());
 
         dbf.getEntityManager().persist(tsvo);
+    }
+
+    /**
+     * 查询物理接口所属的虚拟交换机
+     * */
+    public String findSwitchByInterface (String interfaceUuid){
+        String sql = "select a.switchUuid from SwitchPortVO a,InterfaceVO b " +
+                "where a.uuid = b.switchPortUuid " +
+                "and b.uuid = :interfaceUuid";
+        TypedQuery<String> sq = dbf.getEntityManager().createQuery(sql,String.class);
+        sq.setParameter("interfaceUuid",interfaceUuid);
+        return sq.getSingleResult();
+    }
+
+    /**
+     * 找出SDN物理交换机的上联MPLS交换机，如果是MPLS直接返回
+     * */
+    public PhysicalSwitchVO getUplinkMplsSwitchByPhysicalSwitch(PhysicalSwitchVO physicalSwitch){
+        if(physicalSwitch.getType() == PhysicalSwitchType.SDN){
+
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitch.getUuid())
+                    .find();
+            return dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+        }else{
+            return physicalSwitch;
+        }
     }
 
     /**
@@ -350,7 +394,6 @@ public class TunnelBase {
     /**
      * 删除Tunnel数据库及其关联
      */
-    @Transactional
     public void deleteTunnelDB(TunnelVO vo) {
         dbf.remove(vo);
 
@@ -396,35 +439,19 @@ public class TunnelBase {
     }
 
     /**
-     * 根据 tunnelSwitchPortVO 获取对端MPLS交换机
-     */
-    public PhysicalSwitchVO getRemotePhysicalSwitch(TunnelSwitchPortVO tunnelSwitchPortVO) {
-        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(), SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
-        if (physicalSwitchVO.getType() == PhysicalSwitchType.SDN) {   //SDN接入
-            //找到SDN交换机的上联传输交换机
-            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO = Q.New(PhysicalSwitchUpLinkRefVO.class)
-                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
-                    .find();
-            physicalSwitchVO = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        }
-
-        return physicalSwitchVO;
-    }
-
-    /**
      * 通过连接点获取可用的端口规格
      */
     public List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
 
         String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
                 "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
-                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state " +
-                "and sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid)) ";
+                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state and (sp.portType=:portType " +
+                "or sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid))) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("switchState", SwitchState.Enabled)
                 .param("endpointUuid", endpointUuid)
+                .param("portType", "SHARE")
                 .list();
     }
 
@@ -433,8 +460,11 @@ public class TunnelBase {
      */
     public List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type, Integer start, Integer limit) {
         String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
-                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
-                "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
+                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType ";
+        if (!"SHARE".equals(type)){
+            sql = sql + "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
+        }
+
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("switchState", SwitchState.Enabled)
@@ -483,195 +513,6 @@ public class TunnelBase {
     }
 
     /**
-     * 修改端口和物理接口是否跨了物理交换机
-     */
-    public boolean isChangeSwitchCauseUpdatePort(String oldSwitchPortUuid, String newSwitchPortUuid) {
-        SwitchPortVO oldPort = dbf.findByUuid(oldSwitchPortUuid, SwitchPortVO.class);
-        SwitchVO oldSwitch = dbf.findByUuid(oldPort.getSwitchUuid(), SwitchVO.class);
-
-        SwitchPortVO newPort = dbf.findByUuid(newSwitchPortUuid, SwitchPortVO.class);
-        SwitchVO newSwitch = dbf.findByUuid(newPort.getSwitchUuid(), SwitchVO.class);
-
-        if (oldSwitch.getPhysicalSwitchUuid().equals(newSwitch.getPhysicalSwitchUuid())) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /************************************************Tunnel Job*****************************************/
-
-    public void deleteTunnelJob(TunnelVO vo, String queueName) {
-        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            if (vo.getState() == TunnelState.Enabled) {
-                logger.info("删除通道成功，并创建任务：TunnelMonitorJob");
-                TunnelMonitorJob job = new TunnelMonitorJob();
-                job.setTunnelUuid(vo.getUuid());
-                job.setJobType(MonitorJobType.STOP);
-                jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
-            }
-
-        }
-        logger.info("删除通道成功，并创建任务：DeleteResourcePolicyRefJob");
-        DeleteResourcePolicyRefJob job2 = new DeleteResourcePolicyRefJob();
-        job2.setTunnelUuid(vo.getUuid());
-        jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
-
-        logger.info("删除通道成功，并创建任务：TerminateAliEdgeRouterJob");
-        TerminateAliEdgeRouterJob job4 = new TerminateAliEdgeRouterJob();
-        job4.setTunnelUuid(vo.getUuid());
-        jobf.execute(queueName + "-中止阿里边界路由器", Platform.getManagementServerId(), job4);
-    }
-
-    public void updateInterfacePortsJob(APIUpdateInterfacePortMsg msg, String queueName) {
-        //首先判断该物理接口有没有开通专线
-        boolean isBeUsedForTunnel = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
-                .isExists();
-        if (msg.isIssue() && isBeUsedForTunnel) {
-            String tunnelUuid = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
-                    .select(TunnelSwitchPortVO_.tunnelUuid)
-                    .findValue();
-            InterfaceVO interfaceVO = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
-            TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
-            boolean isChangeSwitch = isChangeSwitchCauseUpdatePort(interfaceVO.getSwitchPortUuid(), msg.getSwitchPortUuid());
-            if (isChangeSwitch) {
-                if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-                    logger.info("修改端口成功，并创建任务：TunnelMonitorJob");
-                    TunnelMonitorJob job = new TunnelMonitorJob();
-                    job.setTunnelUuid(vo.getUuid());
-                    job.setJobType(MonitorJobType.MODIFY);
-                    jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
-
-                }
-
-                logger.info("修改端口成功，并创建任务：UpdateTunnelInfoForFalconJob");
-                UpdateTunnelInfoForFalconJob job2 = new UpdateTunnelInfoForFalconJob();
-                job2.setTunnelUuid(vo.getUuid());
-                job2.setBandwidth(vo.getBandwidth());
-                TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "A")
-                        .find();
-                TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                        .find();
-                job2.setSwitchAVlan(tunnelSwitchPortA.getVlan());
-                job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
-                job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
-                job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
-                job2.setAccountUuid(vo.getOwnerAccountUuid());
-                jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
-            }
-        }
-    }
-
-    public void updateTunnelVlanOrInterfaceJob(TunnelVO vo, APIUpdateTunnelVlanMsg msg, String queueName) {
-
-        String oldSwitchPortUuidA = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid, msg.getOldInterfaceAUuid())
-                .select(InterfaceVO_.switchPortUuid)
-                .findValue();
-        String newSwitchPortUuidA = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid, msg.getInterfaceAUuid())
-                .select(InterfaceVO_.switchPortUuid)
-                .findValue();
-        String oldSwitchPortUuidZ = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid, msg.getOldInterfaceZUuid())
-                .select(InterfaceVO_.switchPortUuid)
-                .findValue();
-        String newSwitchPortUuidZ = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid, msg.getInterfaceZUuid())
-                .select(InterfaceVO_.switchPortUuid)
-                .findValue();
-        boolean isChangeA = isChangeSwitchCauseUpdatePort(oldSwitchPortUuidA, newSwitchPortUuidA);
-        boolean isChangeZ = isChangeSwitchCauseUpdatePort(oldSwitchPortUuidZ, newSwitchPortUuidZ);
-        if ((!Objects.equals(msg.getaVlan(), msg.getOldAVlan()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan()))
-                || (isChangeA || isChangeZ)) {
-
-            if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-                logger.info("修改VLAN或物理接口成功，并创建任务：TunnelMonitorJob");
-                TunnelMonitorJob job = new TunnelMonitorJob();
-                job.setTunnelUuid(vo.getUuid());
-                job.setJobType(MonitorJobType.MODIFY);
-                jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
-
-            }
-
-            logger.info("修改VLAN或物理接口成功，并创建任务：UpdateTunnelInfoForFalconJob");
-            UpdateTunnelInfoForFalconJob job2 = new UpdateTunnelInfoForFalconJob();
-            job2.setTunnelUuid(vo.getUuid());
-            job2.setBandwidth(vo.getBandwidth());
-            TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag, "A")
-                    .find();
-            TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                    .find();
-            job2.setSwitchAVlan(tunnelSwitchPortA.getVlan());
-            job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
-            job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
-            job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
-            job2.setAccountUuid(vo.getOwnerAccountUuid());
-            jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
-        }
-    }
-
-    public void updateTunnelBandwidthJob(TunnelVO vo, String queueName) {
-        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            logger.info("修改带宽成功，并创建任务：TunnelMonitorJob");
-            TunnelMonitorJob job = new TunnelMonitorJob();
-            job.setTunnelUuid(vo.getUuid());
-            job.setJobType(MonitorJobType.MODIFY);
-            jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
-
-
-        }
-        logger.info("修改带宽成功，并创建任务：UpdateTunnelInfoForFalconJob");
-        UpdateTunnelInfoForFalconJob job2 = new UpdateTunnelInfoForFalconJob();
-        job2.setTunnelUuid(vo.getUuid());
-        job2.setBandwidth(vo.getBandwidth());
-        TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "A")
-                .find();
-        TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                .find();
-        job2.setSwitchAVlan(tunnelSwitchPortA.getVlan());
-        job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
-        job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
-        job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
-        job2.setAccountUuid(vo.getOwnerAccountUuid());
-        jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
-    }
-
-    public void enabledTunnelJob(TunnelVO vo, String queueName) {
-        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            logger.info("专线恢复连接成功，并创建任务：TunnelMonitorJob");
-            TunnelMonitorJob job = new TunnelMonitorJob();
-            job.setTunnelUuid(vo.getUuid());
-            job.setJobType(MonitorJobType.START);
-            jobf.execute(queueName + "-开启监控", Platform.getManagementServerId(), job);
-        }
-    }
-
-    public void disabledTunnelJob(TunnelVO vo, String queueName) {
-        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            logger.info("专线关闭连接成功，并创建任务：TunnelMonitorJob");
-            TunnelMonitorJob job = new TunnelMonitorJob();
-            job.setTunnelUuid(vo.getUuid());
-            job.setJobType(MonitorJobType.STOP);
-            jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
-        }
-    }
-
-    /**
      * 判断是否需要调用控制器下发删除
      */
     public boolean isNeedControlDelete(TunnelState tunnelState){
@@ -680,5 +521,50 @@ public class TunnelBase {
         }else{
             return true;
         }
+    }
+
+    /**
+     * 退订成功后专线控制器相关操作
+     */
+    public TunnelVO doControlDeleteTunnelAfterUnsubcribeSuccess(TunnelVO vo){
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+        if(vo.getExpireDate() == null || vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))){
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+        }
+        vo.setAccountUuid(null);
+        vo = dbf.updateAndRefresh(vo);
+
+        if(isNeedControlDelete(vo.getState())){
+            taskBase.taskDeleteTunnel(vo);
+        }else{
+            deleteTunnelDB(vo);
+
+            taskBase.deleteTunnelForRelationJob(vo, "删除专线");
+        }
+
+
+        return vo;
+    }
+
+    /**
+     * 退订成功后专线数据库相关操作
+     */
+    public TunnelVO doDeleteTunnelDBAfterUnsubcribeSuccess(TunnelVO vo){
+        String commands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo, false));
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+
+        if(vo.getExpireDate() == null || vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))){
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+        }
+        vo.setAccountUuid(null);
+        vo = dbf.updateAndRefresh(vo);
+
+        deleteTunnelDB(vo);
+
+        new TunnelJobAndTaskBase().taskDeleteTunnelZK(vo.getUuid(), vo.getOwnerAccountUuid(), commands);
+
+        taskBase.deleteTunnelForRelationJob(vo, "删除专线");
+
+        return vo;
     }
 }

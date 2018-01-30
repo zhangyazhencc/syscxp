@@ -60,6 +60,7 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
+import com.syscxp.vpn.job.DeleteVpnJob;
 import com.syscxp.vpn.job.DestroyVpnJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
@@ -111,6 +112,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private JobQueueFacade jobf;
     @Autowired
     private ThreadFacade thdf;
+
+    private static String NO_TUNNEL = "";
 
     @Override
     @MessageSafe
@@ -230,7 +233,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         UpdateQuery.New(VpnVO.class)
                 .in(VpnVO_.uuid, vpnUuids)
-                .set(VpnVO_.tunnelUuid, "")
+                .set(VpnVO_.tunnelUuid, NO_TUNNEL)
                 .set(VpnVO_.state, VpnState.Disabled)
                 .update();
 
@@ -413,10 +416,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vo.setVlan(msg.getVlan());
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setDuration(msg.getDuration());
-        vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
         vo.setPayment(Payment.UNPAID);
-        vo.setState(VpnState.Enabled);
-        vo.setStatus(VpnStatus.Connecting);
+        vo.setState(VpnState.Disabled);
+        vo.setStatus(VpnStatus.Disconnected);
         vo.setMaxModifies(VpnGlobalProperty.VPN_MAX_MOTIFIES);
         vo.setSid(Platform.getUuid());
         vo.setCertKey(generateCertKey(msg.getAccountUuid(), vo.getSid()));
@@ -442,7 +444,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 createOrder(orderMsg, new Completion(trigger) {
                     @Override
                     public void success() {
+                        vpn.setState(VpnState.Enabled);
+                        vpn.setStatus(VpnStatus.Connecting);
                         vpn.setPayment(Payment.PAID);
+                        vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
                         dbf.updateAndRefresh(vpn);
                         LOGGER.debug(String.format("VPN[name:%s, uuid:%s]付款成功", vo.getName(), vo.getUuid()));
                         trigger.next();
@@ -663,17 +668,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         afterRenewVpn(reply, vo, msg);
     }
 
-    private void saveMotifyRecord(APIUpdateVpnBandwidthMsg msg, MotifyType type) {
-        ResourceMotifyRecordVO record = new ResourceMotifyRecordVO();
-        record.setResourceUuid(msg.getUuid());
-        record.setResourceType(VpnVO.class.getSimpleName());
-        record.setUuid(Platform.getUuid());
-        record.setMotifyType(type);
-        record.setOpAccountUuid(msg.getSession().getAccountUuid());
-        record.setOpUserUuid(msg.getSession().getUserUuid());
-        dbf.persistAndRefresh(record);
-    }
-
     public void handle(APIUpdateVpnBandwidthMsg msg) {
         APIUpdateVpnBandwidthEvent evt = new APIUpdateVpnBandwidthEvent(msg.getId());
 
@@ -784,6 +778,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void deleteVpnByApiMessage(APIDeleteVpnMsg msg) {
         final APIDeleteVpnEvent evt = new APIDeleteVpnEvent(msg.getId());
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        boolean unsubcribe = vpn.getAccountUuid() != null && vpn.getExpireDate().after(dbf.getCurrentSqlTime());
         VpnInventory vinv = VpnInventory.valueOf(vpn);
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-vpn-%s", msg.getUuid()));
@@ -792,7 +787,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                if (vpn.getAccountUuid() != null) {
+                if (unsubcribe) {
                     APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, vpn.getBandwidthOfferingUuid(), new UnsubcribeVpnCallBack()));
                     orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
                     orderMsg.setStartTime(vinv.getCreateDate());
@@ -819,26 +814,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 }
             }
         }).then(new NoRollbackFlow() {
-            String __name__ = "detach-vpn-cert";
-
-            @Override
-            public void run(final FlowTrigger trigger, Map data) {
-                if (vpn.getVpnCertUuid() != null) {
-                    detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
-                    LOGGER.debug(String.format("VPN[UUID:%s]解绑证书[UUID:%s]成功", vpn.getUuid(), vpn.getVpnCertUuid()));
-                }
-                trigger.next();
-            }
-        }).then(new NoRollbackFlow() {
             String __name__ = "send-delete-vpn-message";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                LOGGER.debug(String.format("创建VPN[UUID:%s]销毁任务", vpn.getUuid()));
-                DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
-                destroyVpnJob.setVpnUuid(vpn.getUuid());
-                destroyVpnJob.setDelete(true);
-                jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
+                LOGGER.debug(String.format("创建VPN[UUID:%s]删除任务", vpn.getUuid()));
+                DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
+                deleteVpnJob.setVpnUuid(vpn.getUuid());
+                deleteVpnJob.setDeleteRenew(!unsubcribe);
+                jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
                 trigger.next();
             }
         });
@@ -1087,9 +1071,92 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handleLocalMessage(Message msg) {
         if (msg instanceof CheckVpnStatusMsg) {
             handle((CheckVpnStatusMsg) msg);
+        } else if (msg instanceof DeleteVpnMsg) {
+            handle((DeleteVpnMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(DeleteVpnMsg msg) {
+        DeleteVpnReply reply = new DeleteVpnReply();
+        VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
+        FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
+        chain.setName(String.format("delete-vpn-%s", msg.getVpnUuid()));
+        chain.then(new NoRollbackFlow() {
+            String __name__ = "delete-renew";
+
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                if (msg.isExpired()) {
+                    APIDeleteExpiredRenewMsg deleteExpiredRenewMsg = new APIDeleteExpiredRenewMsg();
+                    deleteExpiredRenewMsg.setAccountUuid(vpn.getAccountUuid());
+                    deleteExpiredRenewMsg.setProductUuid(vpn.getUuid());
+                    createOrder(deleteExpiredRenewMsg, new Completion(trigger) {
+                        @Override
+                        public void success() {
+                            LOGGER.debug(String.format("VPN[UUID:%s] 清楚续费成功", vpn.getUuid()));
+                            trigger.next();
+                        }
+
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            LOGGER.debug(String.format("VPN[UUID:%s] 清楚续费失败", vpn.getUuid()));
+                            trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "清楚续费失败", errorCode));
+                        }
+                    });
+                } else {
+                    trigger.next();
+                }
+            }
+
+        }).then(new NoRollbackFlow() {
+            String __name__ = "detach-vpn-cert";
+
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                if (vpn.getVpnCertUuid() != null) {
+                    detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
+                    LOGGER.debug(String.format("VPN[UUID:%s]解绑证书[UUID:%s]成功", vpn.getUuid(), vpn.getVpnCertUuid()));
+                }
+                trigger.next();
+            }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "destroy-vpn";
+
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+
+                DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
+                destroyVpnMsg.setVpnUuid(vpn.getUuid());
+                bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
+                bus.send(destroyVpnMsg, new CloudBusCallBack(trigger) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            LOGGER.debug(String.format("VPN[UUID:%s]销毁成功", vpn.getUuid()));
+                            trigger.next();
+                        } else {
+                            LOGGER.debug(String.format("VPN[UUID:%s]销毁失败", vpn.getUuid()));
+                            trigger.fail(reply.getError());
+                        }
+                    }
+                });
+            }
+        });
+        chain.done(new FlowDoneHandler(msg) {
+            @Override
+            public void handle(Map data) {
+                dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
+                bus.reply(msg, reply);
+            }
+        }).error(new FlowErrorHandler(msg) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                reply.setError(errCode);
+                bus.reply(msg, reply);
+            }
+        }).start();
     }
 
     private void handle(final CheckVpnStatusMsg msg) {
@@ -1140,7 +1207,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         return bus.makeLocalServiceId(VpnConstant.SERVICE_ID);
     }
 
-    private <T extends AgentResponse> void sendCommand(String url, final AgentCommand cmd, final Class<T> retClass, final ReturnValueCompletion<T> completion) {
+    private <T extends AgentResponse> void sendCommand(String url, final AgentCommand cmd, final Class<T> retClass,
+                                                       final ReturnValueCompletion<T> completion) {
 
         try {
             T rsp = restf.syncJsonPost(url, cmd, retClass);
@@ -1159,7 +1227,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void placeCreateCert() {
         File createCert = PathUtil.findFileOnClassPath("tools/create_cert.py");
         if (createCert == null) {
-            throw new CloudRuntimeException(String.format("cannot find tools/create_cert.py on classpath"));
+            throw new CloudRuntimeException("cannot find tools/create_cert.py on classpath");
         }
 
         ShellUtils.run(String.format("yes | cp %s %s", createCert.getAbsolutePath(), AnsibleConstant.ROOT_DIR));
@@ -1200,19 +1268,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 for (VpnVO vo : vpnVOS) {
                     if (vo.getExpireDate().before(deleteTime)) {
                         LOGGER.debug(String.format("The Vpn[name:%s, UUID:%s] has expired, start to delete it.", vo.getName(), vo.getUuid()));
-                        if (vo.getExpireDate().before(deleteTime)) {
-                             deleteVpn(vo.getUuid(), new Completion(null) {
-                                 @Override
-                                 public void success() {
-                                     LOGGER.debug(String.format("Delete expired Vpn[UUID:%s] success.", vo.getUuid()));
-                                 }
 
-                                 @Override
-                                 public void fail(ErrorCode errorCode) {
-                                     LOGGER.debug(String.format("Delete expired Vpn[UUID:%s] failed.", vo.getUuid()));
-                                 }
-                             });
-                        }
+                        DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
+                        deleteVpnJob.setVpnUuid(vo.getUuid());
+                        // 未支付的和退订未完成的不需要清楚续费表
+                        deleteVpnJob.setDeleteRenew(vo.getPayment() == Payment.PAID && vo.getAccountUuid() != null);
+                        jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
+
                     }
                 }
             } catch (Throwable t) {
@@ -1264,31 +1326,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
-                    if (message instanceof CreateVpnCallBack) {
-                        updateVpnFromOrder(cmd);
-                    } else if (message instanceof RenewAutoVpnCallBack) {
-                        updateVpnFromOrder(cmd);
-                    } else if (message instanceof RenewVpnCallBack) {
-                        updateVpnFromOrder(cmd);
-                    } else if (message instanceof SlaVpnCallBack) {
-                        updateVpnFromOrder(cmd);
-                    } else if (message instanceof UnsubcribeVpnCallBack) {
-                        VpnVO vpn = dbf.findByUuid(cmd.getPorductUuid(), VpnVO.class);
+                    VpnVO vpn = updateVpnFromOrder(cmd);
+                    if (message instanceof UnsubcribeVpnCallBack) {
                         if (vpn != null) {
-                            deleteVpn(vpn.getUuid(), new Completion(message) {
-                                @Override
-                                public void success() {
-                                    dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
-                                }
-
-                                @Override
-                                public void fail(ErrorCode errorCode) {
-                                    LOGGER.debug(String.format("delete vpn failed, cause by: %s", errorCode.getDetails()));
-                                }
-                            });
+                            DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
+                            deleteVpnJob.setVpnUuid(vpn.getUuid());
+                            jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
                         }
                     } else if (message instanceof UpdateVpnBandwidthCallBack) {
-                        VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected) {
                             reconnectVpn(vpn, new Completion(null) {
                                 @Override
@@ -1300,8 +1345,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                                 }
                             });
                         }
-                    } else {
-                        LOGGER.debug("未知回调！！！！！！！！");
                     }
                     return null;
                 });
@@ -1545,8 +1588,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             if (apiReply.isSuccess()) {
                 complete.success();
             } else {
-                LOGGER.debug(String.format("Message[%s]:交易失败", orderMsg.getClass().getSimpleName()));
-                complete.fail(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "交易失败"));
+                LOGGER.debug(String.format("Message[%s]:billing处理失败", orderMsg.getClass().getSimpleName()));
+                complete.fail(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "billing处理失败"));
             }
         } catch (Exception e) {
             LOGGER.debug(String.format("call billing[url: %s] failed.", url));
@@ -1624,3 +1667,5 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
 }
+
+

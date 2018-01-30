@@ -5,6 +5,8 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SQL;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.job.JobQueueEntryVO;
+import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.billing.APIGetHasNotifyMsg;
 import com.syscxp.header.billing.APIGetHasNotifyReply;
@@ -13,6 +15,8 @@ import com.syscxp.header.billing.APIGetProductPriceReply;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO_;
 import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
@@ -46,37 +50,6 @@ public class TunnelValidateBase {
     @Autowired
     private DatabaseFacade dbf;
 
-    public void validate(APIOpenEdgeLineMsg msg){
-        EdgeLineVO vo = dbf.findByUuid(msg.getUuid() ,EdgeLineVO.class);
-        if(vo.getPrices() == null){
-            throw new ApiMessageInterceptionException(argerr("该最后一公里未设置金额！"));
-        }
-    }
-
-    public void validate(APICreateEdgeLineMsg msg){
-        //BOSS创建验证物理接口的账户是否一致
-        if (msg.getSession().getType() == AccountType.SystemAdmin) {
-            String accountUuid = dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class).getAccountUuid();
-            if (!Objects.equals(msg.getAccountUuid(), accountUuid)) {
-                throw new ApiMessageInterceptionException(argerr("物理接口不属于该用户！"));
-            }
-        }
-
-        if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getInterfaceUuid()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("一个物理接口只能申请开通一次！"));
-        }
-    }
-
-    public void validate(APIDeleteEdgeLineMsg msg) {
-        EdgeLineVO vo = dbf.findByUuid(msg.getUuid(), EdgeLineVO.class);
-
-        if(Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,vo.getInterfaceUuid()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("该最后一公里下的接口已经开通专线，不能删！"));
-        }
-
-        checkOrderNoPay(vo.getAccountUuid(), msg.getUuid());
-    }
-
     public void validate(APIUpdateInterfacePortMsg msg) {
 
         //过期接口不让改
@@ -103,6 +76,8 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("接口类型暂时不支持改成ACCESS！"));
         }
+
+
 
         if (msg.getSwitchPortUuid().equals(iface.getSwitchPortUuid())) {
             if (msg.getNetworkType() == iface.getType()) {
@@ -152,7 +127,7 @@ public class TunnelValidateBase {
             priceMsg.setProductChargeModel(msg.getProductChargeModel());
             priceMsg.setDuration(msg.getDuration());
             priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
-            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
             if (!reply.isPayable())
                 throw new ApiMessageInterceptionException(
                         argerr("账户[uuid:%s]余额不足!", msg.getAccountUuid()));
@@ -193,7 +168,7 @@ public class TunnelValidateBase {
             priceMsg.setProductChargeModel(msg.getProductChargeModel());
             priceMsg.setDuration(msg.getDuration());
             priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(portType));
-            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
             if (!reply.isPayable())
                 throw new ApiMessageInterceptionException(
                         argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -330,7 +305,7 @@ public class TunnelValidateBase {
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -367,11 +342,7 @@ public class TunnelValidateBase {
         if (outerSwitchPort == null) {
             throw new ApiMessageInterceptionException(argerr("该外联逻辑交换机下未添加端口 "));
         }
-        //获取互联设备的VLAN
-        Integer innerVlan = ts.getVlanBySwitch(innerSwitch.getUuid());
-        if (innerVlan == 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属内联虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-        }
+
     }
 
     public void validate(APICreateTunnelManualMsg msg) {
@@ -422,17 +393,44 @@ public class TunnelValidateBase {
             }
         }
 
-        //如果跨国,验证互联连接点和内外联交换机配置
+        //如果跨国,验证:互联连接点-内外联交换机配置-VLAN
+        String switchUuidA = tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid());
+        String switchUuidZ = tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid());
         if (msg.getInnerConnectedEndpointUuid() != null) {
             EndpointVO endpointVO = dbf.findByUuid(msg.getInnerConnectedEndpointUuid(), EndpointVO.class);
             if(endpointVO.getEndpointType() == EndpointType.INTERCONNECTED){
                 validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
-            }
-        }
 
-        //判断外部VLAN是否可用
-        validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
-        validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+                //通过互联连接点找到内联交换机和内联端口
+                SwitchVO innerSwitch = Q.New(SwitchVO.class)
+                        .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                        .eq(SwitchVO_.type, SwitchType.INNER)
+                        .find();
+                //通过互联连接点找到外联交换机和外联端口
+                SwitchVO outerSwitch = Q.New(SwitchVO.class)
+                        .eq(SwitchVO_.endpointUuid, msg.getInnerConnectedEndpointUuid())
+                        .eq(SwitchVO_.type, SwitchType.OUTER)
+                        .find();
+
+                NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+                if(nvoA.getCountry().equals("CHINA")){
+                    validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan());
+                    validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan());
+                }else{
+                    validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan());
+                    validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan());
+                }
+
+            }else{
+
+                validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+                validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+            }
+        }else{
+
+            validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+            validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+        }
 
         //如果是ACCESS或是QINQ的物理接口，判断该物理接口是否已经开通通道
         if (interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ) {
@@ -494,7 +492,7 @@ public class TunnelValidateBase {
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -533,30 +531,6 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("The Tunnel[uuid:%s] has motified %s times.", msg.getUuid(), times));
         }
-    }
-
-    public void validate(APIRenewEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    public void validate(APIRenewAutoEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    public void validate(APISLAEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
     }
 
     public void validate(APIRenewTunnelMsg msg) {
@@ -599,14 +573,38 @@ public class TunnelValidateBase {
         checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
     }
 
-    public void validate(APIUpdateTunnelStateMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-        if (vo.getState() == msg.getState()) {
-            throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 已是该状况，不可重复操作 ", msg.getUuid()));
+    public void validate(APIOpenTunnelMsg msg) {
+    }
+
+    public void validate(APIUnsupportTunnelMsg msg) {
+    }
+
+    public void validate(APIEnableTunnelMsg msg){
+
+        if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
+            throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
+        }
+    }
+
+    public void validate(APIDisableTunnelMsg msg){
+
+        if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
+            throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
         }
     }
 
     public void validate(APICreateQinqMsg msg) {
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+        //判断该专线是否中止
+        if(vo.getState() == TunnelState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("添加QINQ，请先断开连接！"));
+        }
+
+        //判断该专线是否还有未完成任务
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, msg.getUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
+        }
 
         //判断同一个switchPort下内部VLAN段是否有重叠
         String sql = "select count(a.uuid) from QinqVO a " +
@@ -648,6 +646,18 @@ public class TunnelValidateBase {
 
     public void validate(APIDeleteQinqMsg msg) {
         QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
+
+        TunnelVO vo = dbf.findByUuid(qinqVO.getTunnelUuid(), TunnelVO.class);
+        //判断该专线是否中止
+        if(vo.getState() == TunnelState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("删除QINQ，请先断开连接！"));
+        }
+
+        //判断该专线是否还有未完成任务
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, qinqVO.getTunnelUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
+        }
+
         Long count = Q.New(QinqVO.class)
                 .eq(QinqVO_.tunnelUuid, qinqVO.getTunnelUuid())
                 .count();
@@ -656,7 +666,31 @@ public class TunnelValidateBase {
         }
     }
 
+    public void validate(APIGetVlanAutoMsg msg){
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceUuidA(), InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceUuidZ(), InterfaceVO.class);
+        //若果跨国，则互联连接点不能为空
+        if (isTransnational(interfaceVOA.getEndpointUuid(), interfaceVOZ.getEndpointUuid())) {
+            if (msg.getInnerConnectedEndpointUuid() == null) {
+                throw new ApiMessageInterceptionException(argerr("该通道是跨国通道，互联连接点不能为空！ "));
+            }
+        }
+    }
+
     public void validate(APIUpdateTunnelVlanMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+        //判断该专线是否中止
+        if(vo.getState() == TunnelState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("修改专线配置，请先断开连接！"));
+        }
+
+        //判断该专线是否还有未完成任务
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, msg.getUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
+        }
+
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class);
         InterfaceVO oldInterfaceVOA = dbf.findByUuid(msg.getOldInterfaceAUuid(),InterfaceVO.class);
@@ -666,14 +700,56 @@ public class TunnelValidateBase {
             if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
             }
-            validateVlanForUpdateVlanOrInterface(msg.getInterfaceAUuid(),msg.getOldInterfaceAUuid(), msg.getaVlan(),msg.getOldAVlan());
+
+            if(vo.getType() == TunnelType.CHINA2ABROAD){
+                String switchPortUuidB = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag, "B")
+                        .select(TunnelSwitchPortVO_.switchPortUuid)
+                        .findValue();
+                String switchUuidB = dbf.findByUuid(switchPortUuidB, SwitchPortVO.class).getSwitchUuid();
+
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid()),
+                        switchUuidB,
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceAUuid()),
+                        msg.getaVlan(),
+                        msg.getOldAVlan());
+            }else{
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceAUuid()),
+                        msg.getaVlan(),
+                        msg.getOldAVlan());
+            }
+
         }
 
         if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
             if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
             }
-            validateVlanForUpdateVlanOrInterface(msg.getInterfaceZUuid(),msg.getOldInterfaceZUuid(), msg.getzVlan(),msg.getOldZVlan());
+
+            if(vo.getType() == TunnelType.CHINA2ABROAD){
+                String switchPortUuidC = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag, "C")
+                        .select(TunnelSwitchPortVO_.switchPortUuid)
+                        .findValue();
+                String switchUuidC = dbf.findByUuid(switchPortUuidC, SwitchPortVO.class).getSwitchUuid();
+
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid()),
+                        switchUuidC,
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceZUuid()),
+                        msg.getzVlan(),
+                        msg.getOldZVlan());
+            }else{
+                validateVlanForUpdateVlanOrInterface(tunnelBase.findSwitchByInterface(msg.getInterfaceZUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getInterfaceAUuid()),
+                        tunnelBase.findSwitchByInterface(msg.getOldInterfaceZUuid()),
+                        msg.getzVlan(),
+                        msg.getOldZVlan());
+            }
+
         }
 
         if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())){
@@ -698,49 +774,6 @@ public class TunnelValidateBase {
             }
         }
 
-    }
-
-    public void validate(APIUpdateForciblyTunnelVlanMsg msg) {
-        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class);
-        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class);
-        InterfaceVO oldInterfaceVOA = dbf.findByUuid(msg.getOldInterfaceAUuid(),InterfaceVO.class);
-        InterfaceVO oldInterfaceVOZ = dbf.findByUuid(msg.getOldInterfaceZUuid(),InterfaceVO.class);
-
-        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
-            if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
-                throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！"));
-            }
-            validateVlanForUpdateVlanOrInterface(msg.getInterfaceAUuid(),msg.getOldInterfaceAUuid(), msg.getaVlan(),msg.getOldAVlan());
-        }
-
-        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-            if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
-                throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
-            }
-            validateVlanForUpdateVlanOrInterface(msg.getInterfaceZUuid(),msg.getOldInterfaceZUuid(), msg.getzVlan(),msg.getOldZVlan());
-        }
-
-        if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())){
-            if(interfaceVOA.getType() == oldInterfaceVOA.getType()){
-                if((interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ)
-                        && Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,interfaceVOA.getUuid()).isExists()){
-                    throw new ApiMessageInterceptionException(argerr("ACCESS或QINQ的物理接口已经开通了专线，不能切换成该物理接口！！"));
-                }
-            }else{
-                throw new ApiMessageInterceptionException(argerr("切换物理接口，不能切换接口模式！"));
-            }
-        }
-
-        if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())){
-            if(interfaceVOZ.getType() == oldInterfaceVOZ.getType()){
-                if((interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ)
-                        && Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,interfaceVOZ.getUuid()).isExists()){
-                    throw new ApiMessageInterceptionException(argerr("ACCESS或QINQ的物理接口已经开通了专线，不能切换成该物理接口！！"));
-                }
-            }else{
-                throw new ApiMessageInterceptionException(argerr("切换物理接口，不能切换接口模式！"));
-            }
-        }
     }
 
     /**
@@ -789,32 +822,15 @@ public class TunnelValidateBase {
     /**
      * 判断外部VLAN是否可用
      */
-    private void validateVlan(String interfaceUuid, Integer vlan) {
+    private void validateVlan(String interfaceUuid, String peerSwitchUuid, Integer vlan) {
         TunnelStrategy ts = new TunnelStrategy();
+        TunnelBase tunnelBase = new TunnelBase();
         //查询该TUNNEL的物理接口所属的虚拟交换机
-        String switchUuid = ts.findSwitchByInterface(interfaceUuid);
-
-        //查询该虚拟交换机下所有的Vlan段
-        List<SwitchVlanVO> vlanList = ts.findSwitchVlanBySwitch(switchUuid);
-
-        if (vlanList.isEmpty()) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
-        }
+        String switchUuid = tunnelBase.findSwitchByInterface(interfaceUuid);
 
         //查询该虚拟交换机所属的物理交换机已经分配的Vlan
-        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
+        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
-        //判断外部VLAN是否在该虚拟交换机的VLAN段中
-        /*Boolean inner = false;
-        for (SwitchVlanVO switchVlanVO : vlanList) {
-            if (vlan >= switchVlanVO.getStartVlan() && vlan <= switchVlanVO.getEndVlan()) {
-                inner = true;
-                break;
-            }
-        }
-        if (!inner) {
-            throw new ApiMessageInterceptionException(argerr("avlan not in switchVlan"));
-        }*/
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
             throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
@@ -824,11 +840,9 @@ public class TunnelValidateBase {
     /**
      * 修改物理接口或VLAN时判断外部VLAN是否可用
      */
-    private void validateVlanForUpdateVlanOrInterface(String interfaceUuid,String oldInterfaceUuid, Integer vlan, Integer oldVlan){
+    public void validateVlanForUpdateVlanOrInterface(String switchUuid, String peerSwitchUuid, String oldSwitchUuid, Integer vlan, Integer oldVlan){
         TunnelStrategy ts = new TunnelStrategy();
-        //查询该TUNNEL的物理接口所属的虚拟交换机
-        String switchUuid = ts.findSwitchByInterface(interfaceUuid);
-        String oldSwitchUuid = ts.findSwitchByInterface(oldInterfaceUuid);
+
         String physicalSwitchUuid = Q.New(SwitchVO.class)
                 .eq(SwitchVO_.uuid,switchUuid)
                 .select(SwitchVO_.physicalSwitchUuid)
@@ -838,17 +852,10 @@ public class TunnelValidateBase {
                 .select(SwitchVO_.physicalSwitchUuid)
                 .findValue();
 
-        //查询该虚拟交换机下所有的Vlan段
-        List<SwitchVlanVO> vlanList = ts.findSwitchVlanBySwitch(switchUuid);
-
-        if (vlanList.isEmpty()) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
-        }
-
         //查询该虚拟交换机所属物理交换机下Tunnel已经分配的Vlan
-        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
+        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
-        if(needValidateForUpdateInterface(physicalSwitchUuid,oldPhysicalSwitchUuid)){
+        if(notNeedValidateVlanForUpdateInterface(physicalSwitchUuid,oldPhysicalSwitchUuid)){
             if(!oldVlan.equals(vlan)){
                 if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
                     throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
@@ -861,7 +868,7 @@ public class TunnelValidateBase {
         }
     }
 
-    private boolean needValidateForUpdateInterface(String physicalSwitchUuid,String oldPhysicalSwitchUuid){
+    public boolean notNeedValidateVlanForUpdateInterface(String physicalSwitchUuid,String oldPhysicalSwitchUuid){
         if(physicalSwitchUuid.equals(oldPhysicalSwitchUuid)){
             return true;
         }else{
@@ -922,13 +929,13 @@ public class TunnelValidateBase {
     /**
      * 判断该产品是否有未完成订单
      */
-    private void checkOrderNoPay(String accountUuid, String productUuid) {
+    public void checkOrderNoPay(String accountUuid, String productUuid) {
         //判断该产品是否有未完成订单
         APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);
         apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-        APIGetHasNotifyReply reply = new TunnelRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
+        APIGetHasNotifyReply reply = new BillingRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));

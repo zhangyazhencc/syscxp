@@ -1,17 +1,12 @@
 package com.syscxp.account.log;
 
-import com.syscxp.account.header.account.AccountVO_;
-import com.syscxp.account.header.log.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import com.syscxp.account.header.account.AccountVO;
+import com.syscxp.account.header.account.AccountVO_;
 import com.syscxp.account.header.log.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.notification.APICreateNotificationMsg;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -19,6 +14,8 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 
@@ -31,8 +28,6 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private DbEntityLister dl;
 
     @Override
     public void handleMessage(Message msg) {
@@ -132,10 +127,12 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             nvo.setTitle(msg.getTitle());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getLink())) {
+
+        if (msg.getLink() != null) {
             nvo.setLink(msg.getLink());
             update = true;
         }
+
         if (!StringUtils.isEmpty(msg.getStartTime())) {
             nvo.setStartTime(msg.getStartTime());
             update = true;
@@ -198,19 +195,9 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             validate((APIUpdateNoticeMsg) msg);
         } else if (msg instanceof APICreateAlarmContactMsg) {
             validate((APICreateAlarmContactMsg) msg);
-        } else if (msg instanceof APIUpdateAlarmContactMsg) {
-            validate((APIUpdateAlarmContactMsg) msg);
-        } else if (msg instanceof APICreateNotificationMsg) {
-            validate((APICreateNotificationMsg) msg);
         }
 
         return msg;
-    }
-
-    private void validate(APICreateNotificationMsg msg) {
-    }
-
-    private void validate(APIUpdateAlarmContactMsg msg) {
     }
 
     private void validate(APICreateAlarmContactMsg msg) {
@@ -219,41 +206,38 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         AccountVO account = q.find();
         if (account == null) {
             throw new ApiMessageInterceptionException(argerr(
-                    "The Account[name:%S] does not exist.", msg.getAccountName()
+                    "账户[name:%S]不存在", msg.getAccountName()
             ));
         }
         if (StringUtils.isEmpty(msg.getPhone()) && StringUtils.isEmpty(msg.getEmail())){
             throw new ApiMessageInterceptionException(argerr(
-                    "The phone or email must be not null at least."
+                    "手机号和邮箱至少有一个不为空."
             ));
         }
     }
     private void validate(APIUpdateNoticeMsg msg) {
-        if (!dbf.isExist(msg.getUuid(), NoticeVO.class)) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Notice[uuid:%S] does not exist.", msg.getUuid()
-            ));
-        }
-
-        checkStartAndEndTime(msg.getStartTime(), msg.getEndTime());
+        checkStartTime(msg.getStartTime(), msg.getEndTime());
     }
 
-    private void checkStartAndEndTime(Timestamp start, Timestamp end) {
+    private void checkStartTime(Timestamp start, Timestamp end) {
         if (start.after(end)) {
             throw new ApiMessageInterceptionException(argerr(
-                    "The Start time must be earlier than end time ."
+                    "开始时间必须小于结束时间 ."
             ));
         }
+    }
+
+    private void checkEndTime(Timestamp end) {
         if (dbf.getCurrentSqlTime().after(end)) {
             throw new ApiMessageInterceptionException(argerr(
-                    "The end time must be later than the current time ."
+                    "结束时间必须大于当前时间."
             ));
         }
     }
 
     private void validate(APICreateNoticeMsg msg) {
-
-        checkStartAndEndTime(msg.getStartTime(), msg.getEndTime());
+        checkStartTime(msg.getStartTime(), msg.getEndTime());
+        checkEndTime(msg.getEndTime());
     }
 
 }

@@ -1,7 +1,5 @@
 package com.syscxp.account.header.log;
 
-import com.syscxp.account.header.account.AccountConstant;
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APICreateMessage;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;

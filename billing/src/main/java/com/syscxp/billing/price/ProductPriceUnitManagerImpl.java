@@ -340,7 +340,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             vo.setProductCategoryUuid(msg.getProductCategoryUuid());
             vo.setAreaCode(msg.getAreaCode());
             vo.setAreaName(msg.getAreaName());
-            vo.setLineCode(msg.getLineName());
+            vo.setLineCode(msg.getLineCode());
             vo.setLineName(msg.getLineName());
             vo.setConfigCode((String) entry.getKey());
             vo.setConfigName((String) entry.getKey());

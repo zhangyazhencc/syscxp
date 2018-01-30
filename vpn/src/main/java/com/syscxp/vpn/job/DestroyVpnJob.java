@@ -33,11 +33,7 @@ public class DestroyVpnJob implements Job {
     @Autowired
     private CloudBus bus;
     @Autowired
-    private DatabaseFacade dbf;
-    @Autowired
     private ErrorFacade errf;
-    @JobContext
-    private boolean delete = false;
 
     @Override
     public void run(ReturnValueCompletion<Object> completion) {
@@ -51,14 +47,10 @@ public class DestroyVpnJob implements Job {
                 @Override
                 public void run(MessageReply reply) {
                     if (reply.isSuccess()) {
-                        LOGGER.debug(String.format("VPN[UUID:%s]销毁成功", vpnUuid));
-                        if (delete) {
-                            dbf.removeByPrimaryKey(vpnUuid, VpnVO.class);
-                            LOGGER.debug(String.format("数据库删除VPN[UUID:%s]成功", vpnUuid));
-                        }
+                        LOGGER.debug(String.format("VPN[UUID:%s]服务销毁成功", vpnUuid));
                         completion.success(null);
                     } else {
-                        LOGGER.debug(String.format("VPN[UUID:%s]销毁失败", vpnUuid));
+                        LOGGER.debug(String.format("VPN[UUID:%s]服务销毁失败", vpnUuid));
                         completion.fail(reply.getError());
                     }
                 }
@@ -69,14 +61,6 @@ public class DestroyVpnJob implements Job {
             completion.fail(errf.throwableToInternalError(e));
         }
 
-    }
-
-    public boolean isDelete() {
-        return delete;
-    }
-
-    public void setDelete(boolean delete) {
-        this.delete = delete;
     }
 
     public String getVpnUuid() {

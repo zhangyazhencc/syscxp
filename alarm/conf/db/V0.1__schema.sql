@@ -88,8 +88,8 @@ CREATE TABLE `AlarmLogVO` (
   `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
   `alarmTime` timestamp NULL DEFAULT '0000-00-00 00:00:00',
   `resumeTime` timestamp NULL DEFAULT '0000-00-00 00:00:00',
-  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   `regulationUuid` varchar(32) DEFAULT NULL,
   `count` int(10) DEFAULT NULL COMMENT '计数器',
   `policyUuid` varchar(256) DEFAULT NULL COMMENT '策略id',
@@ -108,8 +108,8 @@ CREATE TABLE `AlarmEventVO` (
   `eventTime` timestamp NULL DEFAULT NULL COMMENT '告警时间',
   `productUuid` varchar(32) NOT NULL COMMENT '产品ID',
   `regulationUuid` varchar(32) NOT NULL COMMENT '策略规则ID',
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -120,12 +120,17 @@ CREATE TABLE `AlarmTemplateVO` (
   `monitorTargetUuid` varchar(32) DEFAULT NULL COMMENT '规则ID',
   `template` varchar(255) DEFAULT NULL COMMENT '模板',
   `status` varchar(127) DEFAULT NULL COMMENT '报警状态',
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `AlarmLogVO` */
+
+insert  into `AlarmTemplateVO`(uuid, productType, template, status, createDate, lastOpDate)
+values ('07fe0248fb0311e7bc5900e0b4506238', 'TUNNEL', '尊敬的用户，您的通道:%s，%s已达到%s (阀值:%s)', 'PROBLEM', '2018-01-18 12:22:16', '2018-01-17 14:38:40'),
+('42e26d94fb0e11e7bc5900e0b4506238', 'TUNNEL', '尊敬的用户，您的通道:%s，%s超出告警阀值%s的问题已恢复', 'OK', '2018-01-18 12:22:17', '2018-01-17 14:38:40');
+
 
 /*Table structure for table `ComparisonRuleVO` */
 DROP TABLE IF EXISTS `ComparisonRuleVO`;
@@ -135,8 +140,8 @@ CREATE TABLE `ComparisonRuleVO` (
   `productType` varchar(255) DEFAULT NULL,
   `comparisonName` varchar(127) DEFAULT NULL,
   `comparisonValue` varchar(127) DEFAULT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `ComparisonRuleVO` */
@@ -151,8 +156,8 @@ CREATE TABLE `ContactNotifyWayRefVO` (
   `uuid` varchar(32) NOT NULL,
   `contactUuid` varchar(32) DEFAULT NULL,
   `notifyWayUuid` varchar(32) DEFAULT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -164,9 +169,9 @@ CREATE TABLE `ContactVO` (
   `name` varchar(127) DEFAULT NULL,
   `mobile` varchar(20) DEFAULT NULL,
   `email` varchar(127) DEFAULT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `accountUuid` varchar(32) DEFAULT NULL,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `unique_email` (`email`),
   UNIQUE KEY `unique_mobile` (`mobile`)
@@ -180,8 +185,8 @@ CREATE TABLE `MonitorTargetVO` (
   `productType` varchar(255) DEFAULT NULL,
   `targetName` varchar(128) DEFAULT NULL,
   `targetValue` varchar(127) DEFAULT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `MonitorTargetVO` */
@@ -197,8 +202,8 @@ CREATE TABLE `NotifyWayVO` (
   `uuid` varchar(32) NOT NULL,
   `code` varchar(127) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `unique_code` (`code`),
   UNIQUE KEY `unique_name` (`name`)
@@ -217,8 +222,8 @@ CREATE TABLE `PolicyVO` (
   `productType` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(1024) DEFAULT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   `accountUuid` varchar(32) DEFAULT NULL,
   `bindResources` int(4) DEFAULT NULL,
   PRIMARY KEY (`uuid`)
@@ -235,8 +240,8 @@ CREATE TABLE `RegulationVO` (
   `alarmThreshold` int(10) DEFAULT NULL,
   `detectPeriod` int(10) DEFAULT NULL,
   `triggerPeriod` int(10) DEFAULT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -249,8 +254,8 @@ CREATE TABLE `ResourcePolicyRefVO` (
   `resourceUuid` varchar(32) NOT NULL,
   `policyUuid` varchar(32) NOT NULL,
   `productType` varchar(50) NOT NULL,
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `unique` (`resourceUuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -272,8 +277,8 @@ CREATE TABLE `SmsVO` (
   `dateCreated` varchar(20) DEFAULT NULL,
   `smsMessagesId` varchar(255) DEFAULT NULL,
   `msgEntrance` int(10) DEFAULT NULL,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
-  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8;

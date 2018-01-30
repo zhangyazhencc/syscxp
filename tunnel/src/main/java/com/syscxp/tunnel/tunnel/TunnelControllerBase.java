@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -64,18 +65,26 @@ public class TunnelControllerBase extends AbstractTunnel {
             handle((CreateTunnelMsg) msg);
         }else if(msg instanceof DeleteTunnelMsg){
             handle((DeleteTunnelMsg) msg);
+        }else if(msg instanceof DeleteTunnelZKMsg){
+            handle((DeleteTunnelZKMsg) msg);
         }else if(msg instanceof EnabledTunnelMsg){
             handle((EnabledTunnelMsg) msg);
+        }else if(msg instanceof CreateTunnelZKMsg){
+            handle((CreateTunnelZKMsg) msg);
         }else if(msg instanceof DisabledTunnelMsg){
             handle((DisabledTunnelMsg) msg);
         }else if(msg instanceof ModifyTunnelBandwidthMsg){
             handle((ModifyTunnelBandwidthMsg) msg);
         }else if(msg instanceof ModifyTunnelPortsMsg){
             handle((ModifyTunnelPortsMsg) msg);
+        }else if(msg instanceof ModifyTunnelPortsZKMsg){
+            handle((ModifyTunnelPortsZKMsg) msg);
         }else if(msg instanceof ListTraceRouteMsg){
             handle((ListTraceRouteMsg) msg);
         }else if(msg instanceof RevertTunnelMsg){
             handle((RevertTunnelMsg) msg);
+        }else if(msg instanceof RollBackCreateTunnelMsg){
+            handle((RollBackCreateTunnelMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
@@ -87,7 +96,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         ListTraceRouteReply reply = new ListTraceRouteReply();
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
 
         List<ControllerCommands.TunnelMplsConfig> tunnelMplsConfig = issuedTunnelCommand.getTunnel().get(0).getMpls_switches();
         for (int i = 0; i < tunnelMplsConfig.size(); i++){
@@ -151,13 +160,52 @@ public class TunnelControllerBase extends AbstractTunnel {
         });
     }
 
+    private void handle(RollBackCreateTunnelMsg msg){
+        RollBackCreateTunnelReply reply = new RollBackCreateTunnelReply();
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, true);
+        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发创建回滚成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发创建回滚失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
     private void handle(CreateTunnelMsg msg){
         CreateTunnelReply reply = new CreateTunnelReply();
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
@@ -210,7 +258,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
@@ -251,7 +299,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
@@ -303,7 +351,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
@@ -346,7 +394,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
@@ -385,7 +433,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
@@ -418,10 +466,136 @@ public class TunnelControllerBase extends AbstractTunnel {
 
     }
 
+    /***********************************************************************************************************************************************************************/
+
+    private void handle(ModifyTunnelPortsZKMsg msg){
+        ModifyTunnelPortsZKReply reply = new ModifyTunnelPortsZKReply();
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
+        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_PORTS_ZK, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发更改端口ZK数据修改成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发更改端口ZK数据修改失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+
+    }
+
+    private void handle(CreateTunnelZKMsg msg){
+        CreateTunnelZKReply reply = new CreateTunnelZKReply();
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
+        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.START_TUNNEL_ZK, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发保存ZK数据成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发保存ZK数据失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(DeleteTunnelZKMsg msg){
+        DeleteTunnelZKReply reply = new DeleteTunnelZKReply();
+        String commands;
+        if(msg.getTunnelUuid() == null){
+            commands = msg.getCommands();
+        }else{
+            TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+            ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
+            commands = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        }
+
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.STOP_TUNNEL_ZK, commands, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发删除ZK数据成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(commands);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发删除ZK数据失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(commands);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    /*************************************************************************************************************************************************************************************/
+
     /**
      *  获取控制器下发配置
      */
-    public ControllerCommands.IssuedTunnelCommand getTunnelConfigInfo(TunnelVO tunnelVO){
+    public ControllerCommands.IssuedTunnelCommand getTunnelConfigInfo(TunnelVO tunnelVO, boolean isRollback){
 
         List<ControllerCommands.TunnelConfig> tunnelList = new ArrayList<>();
 
@@ -462,13 +636,13 @@ public class TunnelControllerBase extends AbstractTunnel {
                     .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"C")
                     .find();
-            tmcB = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortB,tunnelSwitchPortA,qinqVOs,"B");
-            tmcC = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortC,tunnelSwitchPortZ,qinqVOs,"C");
-            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortB,qinqVOs,"A");
-            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortC,qinqVOs,"Z");
+            tmcB = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortB,qinqVOs,"B");
+            tmcC = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortC,qinqVOs,"C");
+            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,qinqVOs,"A");
+            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,qinqVOs,"Z");
         }else{
-            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortZ,qinqVOs,"A");
-            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortA,qinqVOs,"Z");
+            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,qinqVOs,"A");
+            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,qinqVOs,"Z");
         }
         ControllerCommands.TunnelSdnConfig tscA = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortA,qinqVOs,"A");
         ControllerCommands.TunnelSdnConfig tscZ = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortZ,qinqVOs,"Z");
@@ -490,6 +664,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         }
 
         tunnelConfig.setTunnel_id(tunnelVO.getUuid());
+        tunnelConfig.setRollback(isRollback);
         tunnelConfig.setCross_tunnel(getCrossPhysicalSwitchUuid(tunnelVO));
         tunnelConfig.setSame_switch(getSameSwitch(tunnelVO));
         tunnelConfig.setMpls_switches(mplsList);
@@ -544,7 +719,6 @@ public class TunnelControllerBase extends AbstractTunnel {
      * 通过专线找出共点的交换机
      * */
     public String[] getCrossPhysicalSwitchUuid(TunnelVO vo){
-        TunnelValidateBase tunnelValidateBase = new TunnelValidateBase();
         TunnelBase tunnelBase = new TunnelBase();
         String interfaceUuidA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
@@ -556,7 +730,7 @@ public class TunnelControllerBase extends AbstractTunnel {
                 .eq(TunnelSwitchPortVO_.sortTag,"Z")
                 .select(TunnelSwitchPortVO_.interfaceUuid)
                 .findValue();
-        if(tunnelValidateBase.isCross(vo.getUuid(),interfaceUuidA)){
+        if(isCross(vo.getUuid(),interfaceUuidA)){
             String switchPortUuidA = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"A")
@@ -571,7 +745,7 @@ public class TunnelControllerBase extends AbstractTunnel {
             }else{
                 return new String[]{physicalSwitchVOA.getUuid()};
             }
-        }else if(tunnelValidateBase.isCross(vo.getUuid(),interfaceUuidZ)){
+        }else if(isCross(vo.getUuid(),interfaceUuidZ)){
             String switchPortUuidZ = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"Z")
@@ -591,65 +765,76 @@ public class TunnelControllerBase extends AbstractTunnel {
         }
     }
 
+    /**
+     * 控制器下发的共点判断
+     * */
+    public boolean isCross(String tunnelUuid, String interfaceUuid) {
+        TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+        Integer vsi = vo.getVsi();
+
+        String sql = "select b from TunnelVO a, TunnelSwitchPortVO b " +
+                "where a.uuid = b.tunnelUuid " +
+                "and a.uuid != :tunnelUuid " +
+                "and a.state = 'Enabled' " +
+                "and a.vsi = :vsi " +
+                "and b.interfaceUuid = :interfaceUuid";
+        TypedQuery<TunnelSwitchPortVO> vq = dbf.getEntityManager().createQuery(sql, TunnelSwitchPortVO.class);
+        vq.setParameter("tunnelUuid", tunnelUuid);
+        vq.setParameter("vsi", vsi);
+        vq.setParameter("interfaceUuid", interfaceUuid);
+        if (vq.getResultList().size() < 1) {
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
 
     /**
      *  MPLS 下发配置
      */
-    public ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, TunnelSwitchPortVO remoteSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
-        TunnelBase tunnelBase = new TunnelBase();
+    public ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
+
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
+        PhysicalSwitchVO mplsPhysicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getOwnerMplsSwitchUuid(), PhysicalSwitchVO.class);
+        SwitchModelVO mplsSwitchModel = dbf.findByUuid(mplsPhysicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
+        PhysicalSwitchVO peerMplsPhysicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getPeerMplsSwitchUuid(), PhysicalSwitchVO.class);
+
 
         ControllerCommands.TunnelMplsConfig tmc = new ControllerCommands.TunnelMplsConfig();
-        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchVO = new TunnelBase().getPhysicalSwitch(switchPortVO);
 
-        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
+        tmc.setUuid(mplsPhysicalSwitchVO.getUuid());
+        tmc.setSwitch_type(mplsSwitchModel.getModel());
+        tmc.setSub_type(mplsSwitchModel.getSubModel());
+        tmc.setVni(tunnelVO.getVsi());
+        tmc.setRemote_ip(peerMplsPhysicalSwitchVO.getLocalIP());
+        tmc.setVlan_id(tunnelSwitchPortVO.getVlan());
+        tmc.setM_ip(mplsPhysicalSwitchVO.getmIP());
+        tmc.setUsername(mplsPhysicalSwitchVO.getUsername());
+        tmc.setPassword(mplsPhysicalSwitchVO.getPassword());
+        tmc.setSortTag(sortTag);
 
-            //找到SDN交换机的上联传输交换机
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
+
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
                     .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
                     .find();
-            PhysicalSwitchVO mplsPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
-            SwitchModelVO mplsSwitchModel = dbf.findByUuid(mplsPhysicalSwitch.getSwitchModelUuid(),SwitchModelVO.class);
-
-            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
-
-            tmc.setUuid(mplsPhysicalSwitch.getUuid());
-            tmc.setSwitch_type(mplsSwitchModel.getModel());
-            tmc.setSub_type(mplsSwitchModel.getSubModel());
-            tmc.setVni(tunnelVO.getVsi());
-            tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
             tmc.setPort_name(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());
-            tmc.setVlan_id(tunnelSwitchPortVO.getVlan());
-            tmc.setM_ip(mplsPhysicalSwitch.getmIP());
-            tmc.setUsername(mplsPhysicalSwitch.getUsername());
-            tmc.setPassword(mplsPhysicalSwitch.getPassword());
             tmc.setNetwork_type("TRUNK");
-            tmc.setSortTag(sortTag);
-
-        }else if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS){  //Mpls接入
-            SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
-
-            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
-
-            tmc.setUuid(physicalSwitchVO.getUuid());
-            tmc.setSwitch_type(switchModel.getModel());
-            tmc.setSub_type(switchModel.getSubModel());
-            tmc.setVni(tunnelVO.getVsi());
-            tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
+        }else{
             tmc.setPort_name(switchPortVO.getPortName());
-            tmc.setVlan_id(tunnelSwitchPortVO.getVlan());
-            tmc.setM_ip(physicalSwitchVO.getmIP());
-            tmc.setUsername(physicalSwitchVO.getUsername());
-            tmc.setPassword(physicalSwitchVO.getPassword());
             tmc.setNetwork_type(tunnelSwitchPortVO.getType().toString());
+
+            tmc.setBandwidth(tunnelVO.getBandwidth()/1024);
             if(tunnelSwitchPortVO.getType() == NetworkType.QINQ){
                 tmc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
-            tmc.setBandwidth(tunnelVO.getBandwidth()/1024);
-            tmc.setSortTag(sortTag);
         }
 
         return tmc;
+
     }
 
     /**
@@ -657,8 +842,10 @@ public class TunnelControllerBase extends AbstractTunnel {
      */
     public ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(Long bandwidth, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
         ControllerCommands.TunnelSdnConfig tsc = new ControllerCommands.TunnelSdnConfig();
+
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(tunnelSwitchPortVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchVO = new TunnelBase().getPhysicalSwitch(switchPortVO);
+
         if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
             //找到SDN交换机的上联传输交换机
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)

@@ -20,6 +20,9 @@ public class APICreateTunnelProductPriceUnitMsg extends APIMessage{
     @APIParam(maxLength = 256)
     private String lineName;
 
+    @APIParam(maxLength = 256, required = false)
+    private String lineCode;
+
     @APIParam(maxLength = 256)
     private Map<String,Integer> configPrice;
 
@@ -61,5 +64,13 @@ public class APICreateTunnelProductPriceUnitMsg extends APIMessage{
 
     public void setProductCategoryUuid(String productCategoryUuid) {
         this.productCategoryUuid = productCategoryUuid;
+    }
+
+    public String getLineCode() {
+        return lineCode;
+    }
+
+    public void setLineCode(String lineCode) {
+        this.lineCode = lineCode;
     }
 }

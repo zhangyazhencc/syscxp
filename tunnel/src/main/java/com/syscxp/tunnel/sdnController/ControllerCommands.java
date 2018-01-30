@@ -344,6 +344,7 @@ public class ControllerCommands {
      */
     public static class TunnelConfig {
         private String tunnel_id;
+        private boolean rollback = false;
         private String[] cross_tunnel;
         private String[] same_switch;
         private List<TunnelMplsConfig> mpls_switches;
@@ -387,6 +388,14 @@ public class ControllerCommands {
 
         public void setSame_switch(String[] same_switch) {
             this.same_switch = same_switch;
+        }
+
+        public boolean isRollback() {
+            return rollback;
+        }
+
+        public void setRollback(boolean rollback) {
+            this.rollback = rollback;
         }
     }
 

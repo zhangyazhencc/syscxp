@@ -8,7 +8,7 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.tunnel.endpoint.EndpointType;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
@@ -43,7 +43,7 @@ public class TunnelBillingBase {
      */
     public OrderInventory createOrder(APICreateOrderMsg orderMsg) {
         try {
-            APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            APICreateOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
             if (reply.isOrderSuccess()) {
                 return reply.getInventory();
@@ -59,7 +59,7 @@ public class TunnelBillingBase {
      */
     public List<OrderInventory> createBuyOrder(APICreateBuyOrderMsg orderMsg) {
         try {
-            APICreateBuyOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            APICreateBuyOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
             if (reply.isSuccess()) {
                 return reply.getInventories();
@@ -75,7 +75,7 @@ public class TunnelBillingBase {
      */
     public OrderInventory createOrderForEdgeLine(APICreateBuyEdgeLineOrderMsg orderMsg) {
         try {
-            APICreateBuyEdgeLineOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            APICreateBuyEdgeLineOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
             if (reply.isSuccess()) {
                 return reply.getInventory();
@@ -240,7 +240,7 @@ public class TunnelBillingBase {
      */
     public String getSharePortBandwidthOffering(String bandwidthOfferingUuid){
         final String offeringA = "LT500M";
-        final String offeringB = "GT500LT2G";
+        final String offeringB = "GT500MLT2G";
         final String offeringC = "GT2G";
 
         Long bandwidth = dbf.findByUuid(bandwidthOfferingUuid, BandwidthOfferingVO.class).getBandwidth();

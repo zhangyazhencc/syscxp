@@ -1,12 +1,10 @@
 package com.syscxp.alarm.log;
 
-import com.syscxp.alarm.header.log.AlarmStatus;
-
 import java.util.List;
 
 public class TunnelAlarmCmd {
 
-    public static class TunnelInfo{
+    public static class TunnelInfo {
         private String tunnelUuid;
         private String tunnelName;
         private String accountUuid;
@@ -81,7 +79,7 @@ public class TunnelAlarmCmd {
         }
     }
 
-    public static class TunnelAlarmResponse{
+    public static class TunnelAlarmResponse {
         private boolean success;
         private String msg;
         private List<TunnelInfo> inventories;

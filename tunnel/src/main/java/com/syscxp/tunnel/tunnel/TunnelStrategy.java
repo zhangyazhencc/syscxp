@@ -93,16 +93,17 @@ public class TunnelStrategy  {
 
     }
 
-    //策略分配外部VLAN（通过物理接口）
-    public Integer getVlanByStrategy(String interfaceUuid){
-        Integer vlan = null;
+    /**
+     * 策略分配外部VLAN
+     * */
+    public Integer getVlanByStrategy(String switchUuid, String peerSwitchUuid){
+        Integer vlan;
 
-        //查询该TUNNEL的物理接口所属的虚拟交换机
-        String switchUuid = findSwitchByInterface(interfaceUuid);
         //查询该虚拟交换机下所有的Vlan段
-        List<SwitchVlanVO> vlanList = findSwitchVlanBySwitch(switchUuid);
+        List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class).eq(SwitchVlanVO_.switchUuid, switchUuid).list();
+
         //查询该虚拟交换机所属物理交换机下已经分配的Vlan
-        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
+        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
         if(vlanList.isEmpty()){
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
@@ -115,67 +116,53 @@ public class TunnelStrategy  {
         }
     }
 
-    //策略分配外部VLAN（通过交换机）
-    public Integer getVlanBySwitch(String switchUuid){
-        Integer vlan = null;
+    /**
+     * 验证VLAN是否可用
+     * */
+    public boolean vlanIsAvailable(String switchUuid, String peerSwitchUuid, Integer vlan){
 
-        //查询该虚拟交换机下所有的Vlan段
-        List<SwitchVlanVO> vlanList = findSwitchVlanBySwitch(switchUuid);
-        //查询该虚拟交换机所属物理交换机下已经分配的Vlan
-        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
+        //查询该虚拟交换机所属的物理交换机已经分配的Vlan
+        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
-        if(vlanList.isEmpty()){
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
-        }
-        if(allocatedVlans.isEmpty()){
-            return vlanList.get(0).getStartVlan();
+        //判断外部vlan是否可用
+        if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
+            return false;
         }else{
-            vlan = allocateVlan(vlanList, allocatedVlans);
-            return vlan;
+            return true;
         }
     }
 
-    //查询物理接口所属的虚拟交换机
-    public String findSwitchByInterface (String interfaceUuid){
-        String sql = "select a.switchUuid from SwitchPortVO a,InterfaceVO b " +
-                "where a.uuid = b.switchPortUuid " +
-                "and b.uuid = :interfaceUuid";
-        TypedQuery<String> sq = dbf.getEntityManager().createQuery(sql,String.class);
-        sq.setParameter("interfaceUuid",interfaceUuid);
-        return sq.getSingleResult();
-    }
+    /**
+     * 查询该虚拟交换机所属物理交换机和对端物理交换机已经分配的Vlan
+     * */
+    public List<Integer> fingAllocateVlanBySwitch(String switchUuid, String peerSwitchUuid){
+        TunnelBase tunnelBase = new TunnelBase();
 
-    //查询该虚拟交换机下所有的Vlan段
-    public List<SwitchVlanVO> findSwitchVlanBySwitch (String switchUuid){
-        String sql = "select a from SwitchVlanVO a where a.switchUuid = :switchUuid";
-        TypedQuery<SwitchVlanVO> svq = dbf.getEntityManager().createQuery(sql, SwitchVlanVO.class);
-        svq.setParameter("switchUuid",switchUuid);
-        return svq.getResultList();
-    }
-
-    //查询该虚拟交换机所属物理交换机下及上联交换机Tunnel已经分配的Vlan
-    public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
         String physicalSwitchUuid = Q.New(SwitchVO.class)
                 .eq(SwitchVO_.uuid,switchUuid)
                 .select(SwitchVO_.physicalSwitchUuid)
                 .findValue();
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(physicalSwitchUuid,PhysicalSwitchVO.class);
-        String uplinkPhysicalSwitchUuid;
-        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
-            uplinkPhysicalSwitchUuid = Q.New(PhysicalSwitchUpLinkRefVO.class)
-                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchUuid)
-                    .select(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid)
-                    .findValue();
-        }else{
-            uplinkPhysicalSwitchUuid = physicalSwitchUuid;
-        }
-        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b,SwitchVO c " +
-                "where a.switchPortUuid = b.uuid and b.switchUuid = c.uuid " +
-                "and (c.physicalSwitchUuid = :uplinkPhysicalSwitchUuid or c.physicalSwitchUuid in (select physicalSwitchUuid from PhysicalSwitchUpLinkRefVO where uplinkPhysicalSwitchUuid = :uplinkPhysicalSwitchUuid)) ";
-        TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
-        avq.setParameter("uplinkPhysicalSwitchUuid",uplinkPhysicalSwitchUuid);
-        return avq.getResultList();
+        String peerPhysicalSwitchUuid = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.uuid,peerSwitchUuid)
+                .select(SwitchVO_.physicalSwitchUuid)
+                .findValue();
 
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(physicalSwitchUuid, PhysicalSwitchVO.class);
+        PhysicalSwitchVO peerPhysicalSwitchVO = dbf.findByUuid(peerPhysicalSwitchUuid, PhysicalSwitchVO.class);
+
+        PhysicalSwitchVO mplsPhysicalSwitch = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO);
+        PhysicalSwitchVO peerMplsPhysicalSwitch = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(peerPhysicalSwitchVO);
+
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a " +
+                "where a.ownerMplsSwitchUuid = :mplsPhysicalSwitch " +
+                "or a.ownerMplsSwitchUuid = :peerMplsPhysicalSwitch " +
+                "or a.peerMplsSwitchUuid = :mplsPhysicalSwitch2";
+
+        TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
+        avq.setParameter("mplsPhysicalSwitch", mplsPhysicalSwitch.getUuid());
+        avq.setParameter("peerMplsPhysicalSwitch", peerMplsPhysicalSwitch.getUuid());
+        avq.setParameter("mplsPhysicalSwitch2", mplsPhysicalSwitch.getUuid());
+        return avq.getResultList();
     }
 
     //分配可用VLAN
@@ -203,7 +190,7 @@ public class TunnelStrategy  {
 
     //查询同一个物理交换机下的所有VLAN段
     public List<SwitchVlanVO> getSwitchVlans(String physicalSwitchUuid){
-        List<SwitchVlanVO> switchVlans = new ArrayList<>();
+        List<SwitchVlanVO> switchVlans;
         String sql = "select c from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c " +
                 "where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid " +
                 "and a.uuid = :physicalSwitchUuid";
@@ -215,7 +202,7 @@ public class TunnelStrategy  {
 
     //查询同一个上联交换机下的所有VLAN段、
     public List<SwitchVlanVO> getSwitchVlansFromUplink(String uplinkPhysicalSwitchUuid){
-        List<SwitchVlanVO> switchVlans = new ArrayList<>();
+        List<SwitchVlanVO> switchVlans;
         String sql = "select d from PhysicalSwitchUpLinkRefVO a,PhysicalSwitchVO b,SwitchVO c,SwitchVlanVO d " +
                 "where a.physicalSwitchUuid = b.uuid and b.uuid = c.physicalSwitchUuid and c.uuid = d.switchUuid " +
                 "and a.uplinkPhysicalSwitchUuid = :uplinkPhysicalSwitchUuid";

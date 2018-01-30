@@ -6,6 +6,7 @@ import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -26,6 +27,7 @@ public class TunnelInventory {
     private String monitorCidr;
     private List<TunnelSwitchPortInventory> tunnelSwitchs = new ArrayList<TunnelSwitchPortInventory>();
     private String name;
+    private String bandwidthOffering;
     private Long bandwidth;
     private Double distance;
     private String state;
@@ -40,6 +42,7 @@ public class TunnelInventory {
     private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
+    private boolean expired;
 
     public static TunnelInventory valueOf(TunnelVO vo){
         TunnelInventory inv = new TunnelInventory();
@@ -50,6 +53,7 @@ public class TunnelInventory {
         inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setTunnelSwitchs(TunnelSwitchPortInventory.valueOf(vo.getTunnelSwitchPortVOS()));
         inv.setName(vo.getName());
+        inv.setBandwidthOffering(vo.getBandwidthOffering());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
         inv.setState(vo.getState().toString());
@@ -201,6 +205,12 @@ public class TunnelInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+
+        if (expireDate != null){
+            if (expireDate.before(Timestamp.valueOf(LocalDateTime.now()))){
+                this.expired = true;
+            }
+        }
     }
 
     public String getOwnerAccountUuid() {
@@ -241,5 +251,21 @@ public class TunnelInventory {
 
     public void setInnerEndpointUuid(String innerEndpointUuid) {
         this.innerEndpointUuid = innerEndpointUuid;
+    }
+
+    public String getBandwidthOffering() {
+        return bandwidthOffering;
+    }
+
+    public void setBandwidthOffering(String bandwidthOffering) {
+        this.bandwidthOffering = bandwidthOffering;
+    }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
     }
 }

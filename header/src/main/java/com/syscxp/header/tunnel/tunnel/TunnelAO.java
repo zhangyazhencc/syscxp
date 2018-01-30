@@ -31,6 +31,9 @@ public class TunnelAO {
     private String name;
 
     @Column
+    private String bandwidthOffering;
+
+    @Column
     private Long bandwidth;
 
     @Column
@@ -240,5 +243,13 @@ public class TunnelAO {
 
     public void setInnerEndpointUuid(String innerEndpointUuid) {
         this.innerEndpointUuid = innerEndpointUuid;
+    }
+
+    public String getBandwidthOffering() {
+        return bandwidthOffering;
+    }
+
+    public void setBandwidthOffering(String bandwidthOffering) {
+        this.bandwidthOffering = bandwidthOffering;
     }
 }
