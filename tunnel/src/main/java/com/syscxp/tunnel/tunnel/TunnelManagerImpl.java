@@ -420,6 +420,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid("system");
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
+        orderMsg.setAutoRenew(true);
 
         OrderInventory inventory = tunnelBillingBase.createOrder(orderMsg);
 
@@ -1562,7 +1563,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getOwnerAccountUuid(),
-                msg.getSession().getAccountUuid());
+                msg.getSession().getAccountUuid(),false);
 
         bus.reply(msg, reply);
     }
@@ -1577,7 +1578,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getOwnerAccountUuid(),
-                vo.getAccountUuid());
+                vo.getAccountUuid(),true);
 
         bus.reply(msg, reply);
     }
@@ -1586,7 +1587,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                             Integer duration,
                                             ProductChargeModel productChargeModel,
                                             String accountUuid,
-                                            String opAccountUuid) {
+                                            String opAccountUuid,boolean isAutoRenew) {
 
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         APIRenewTunnelReply reply = new APIRenewTunnelReply();
@@ -1609,6 +1610,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         renewOrderMsg.setExpiredTime(vo.getExpireDate());
         renewOrderMsg.setNotifyUrl(restf.getSendCommandUrl());
         renewOrderMsg.setCallBackData(RESTApiDecoder.dump(rc));
+        renewOrderMsg.setAutoRenew(isAutoRenew);
 
         OrderInventory orderInventory = tunnelBillingBase.createOrder(renewOrderMsg);
 
@@ -2243,7 +2245,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             pmsg.setDuration(msg.getDuration());
             pmsg.setAccountUuid(msg.getAccountUuid());
             pmsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
-            APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
+            APIGetProductPriceReply reply = new BillingRESTCaller().syncJsonPost(pmsg);
             bus.reply(msg, new APIGetInterfacePriceReply(reply));
         }
 
@@ -2274,7 +2276,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 upmsg.setExpiredTime(vo.getExpireDate());
             }
 
-            APIGetUnscribeProductPriceDiffReply reply = new TunnelRESTCaller().syncJsonPost(upmsg);
+            APIGetUnscribeProductPriceDiffReply reply = new BillingRESTCaller().syncJsonPost(upmsg);
 
             bus.reply(msg, new APIGetUnscribeInterfacePriceDiffReply(reply));
         }
@@ -2295,7 +2297,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         rpmsg.setDuration(msg.getDuration());
         rpmsg.setProductChargeModel(msg.getProductChargeModel());
 
-        APIGetRenewProductPriceReply priceReply = new TunnelRESTCaller().syncJsonPost(rpmsg);
+        APIGetRenewProductPriceReply priceReply = new BillingRESTCaller().syncJsonPost(rpmsg);
 
         bus.reply(msg, new APIGetRenewInterfacePriceReply(priceReply));
     }
@@ -2314,7 +2316,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         rpmsg.setDuration(msg.getDuration());
         rpmsg.setProductChargeModel(msg.getProductChargeModel());
 
-        APIGetRenewProductPriceReply priceReply = new TunnelRESTCaller().syncJsonPost(rpmsg);
+        APIGetRenewProductPriceReply priceReply = new BillingRESTCaller().syncJsonPost(rpmsg);
 
         bus.reply(msg, new APIGetRenewTunnelPriceReply(priceReply));
     }
@@ -2331,7 +2333,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
         pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetTunnelPriceReply(reply));
     }
 
@@ -2358,7 +2360,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setAccountUuid(vo.getOwnerAccountUuid());
         pmsg.setExpiredTime(dbf.findByUuid(msg.getUuid(), TunnelVO.class).getExpireDate());
 
-        APIGetModifyProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        APIGetModifyProductPriceDiffReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetModifyTunnelPriceDiffReply(reply));
     }
 
@@ -2386,7 +2388,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             upmsg.setExpiredTime(vo.getExpireDate());
         }
 
-        APIGetUnscribeProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(upmsg);
+        APIGetUnscribeProductPriceDiffReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(upmsg);
         bus.reply(msg, new APIGetUnscribeTunnelPriceDiffReply(reply));
 
     }

@@ -11,6 +11,7 @@ import com.syscxp.billing.header.sla.SLACompensateVO;
 import com.syscxp.billing.header.sla.SLALogVO;
 import com.syscxp.billing.header.sla.SLALogVO_;
 import com.syscxp.billing.header.sla.SLAState;
+import com.syscxp.core.db.GLock;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -210,47 +211,70 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private void handle(APICreateRenewOrderMsg msg) {
 
-        RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
-        if (renewVO == null) {
-            throw new IllegalArgumentException("please input the correct value");
-        }
-
-        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
-
-        BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
-
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        BigDecimal cashBalance = abvo.getCashBalance();
-        BigDecimal presentBalance = abvo.getPresentBalance();
-        BigDecimal creditPoint = abvo.getCreditPoint();
-        BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
-
-        OrderVO orderVo = new OrderVO();
-        setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), msg.getDuration(), msg.getCallBackData());
-        //discountPrice = discountPrice.multiply(duration);//按现在的价格续费
-//        BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);//按上次买的价格续费
-        BigDecimal discountPrice = renewVO.getPriceDiscount().multiply(duration);//-- 按续费的价格续费可能会调低
-        if (discountPrice.compareTo(mayPayTotal) > 0) {
-            throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
-        }
-        payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
-        orderVo.setType(OrderType.RENEW);
-        orderVo.setOriginalPrice(discountPrice);
-        orderVo.setPrice(discountPrice);
-        orderVo.setProductEffectTimeStart(msg.getExpiredTime());
-        orderVo.setProductEffectTimeEnd(Timestamp.valueOf(msg.getExpiredTime().toLocalDateTime().plusMonths(duration.intValue())));
-
-        renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
-        renewVO.setProductChargeModel(msg.getProductChargeModel());
-        renewVO.setPriceOneMonth(renewVO.getPriceDiscount());
-
-        dbf.getEntityManager().merge(renewVO);
-        dbf.getEntityManager().merge(abvo);
-        dbf.getEntityManager().persist(orderVo);
-        saveNotifyOrderVO(msg, orderVo.getUuid());
-        dbf.getEntityManager().flush();
         APICreateOrderReply reply = new APICreateOrderReply();
-        reply.setInventory(OrderInventory.valueOf(orderVo));
+
+        GLock lock = new GLock(String.format("autorenew-%s", msg.getProductType().toString()), 10);
+        lock.lock();
+        try {
+
+            RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
+            if (renewVO == null) {
+                throw new IllegalArgumentException("续费产品不存在");
+            }
+
+            Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+
+            if (msg.isAutoRenew()) {
+                if (! currentTimestamp.after(renewVO.getExpiredTime())){
+                    bus.reply(msg, reply);
+                    return;
+                }
+            }
+
+            BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
+
+            AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+            BigDecimal cashBalance = abvo.getCashBalance();
+            BigDecimal presentBalance = abvo.getPresentBalance();
+            BigDecimal creditPoint = abvo.getCreditPoint();
+            BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
+
+            OrderVO orderVo = new OrderVO();
+
+            setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), msg.getDuration(), msg.getCallBackData());
+            //BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);//按上次买的价格续费
+            BigDecimal discountPrice = renewVO.getPriceDiscount().multiply(duration);//-- 按续费的价格续费可能会调低
+            if (discountPrice.compareTo(mayPayTotal) > 0) {
+                throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+            }
+            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
+
+            if (msg.isAutoRenew()) {
+                orderVo.setType(OrderType.AUTORENEW);
+            } else {
+                orderVo.setType(OrderType.RENEW);
+            }
+
+            orderVo.setOriginalPrice(discountPrice);
+            orderVo.setPrice(discountPrice);
+            orderVo.setProductEffectTimeStart(msg.getExpiredTime());
+            orderVo.setProductEffectTimeEnd(Timestamp.valueOf(msg.getExpiredTime().toLocalDateTime().plusMonths(duration.intValue())));
+
+            renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
+            renewVO.setProductChargeModel(msg.getProductChargeModel());
+            renewVO.setPriceOneMonth(renewVO.getPriceDiscount());
+
+            dbf.getEntityManager().merge(renewVO);
+            dbf.getEntityManager().merge(abvo);
+            dbf.getEntityManager().persist(orderVo);
+            saveNotifyOrderVO(msg, orderVo.getUuid());
+            dbf.getEntityManager().flush();
+
+            reply.setInventory(OrderInventory.valueOf(orderVo));
+        } finally {
+            lock.unlock();
+        }
+
         bus.reply(msg, reply);
     }
 
@@ -627,7 +651,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             reply.setReFoundMoney(refundPresent);
             reply.setInventory(remainMoney);
         }
-        
+
         bus.reply(msg, reply);
     }
 

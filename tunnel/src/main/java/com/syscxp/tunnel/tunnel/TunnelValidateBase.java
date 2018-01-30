@@ -127,7 +127,7 @@ public class TunnelValidateBase {
             priceMsg.setProductChargeModel(msg.getProductChargeModel());
             priceMsg.setDuration(msg.getDuration());
             priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
-            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
             if (!reply.isPayable())
                 throw new ApiMessageInterceptionException(
                         argerr("账户[uuid:%s]余额不足!", msg.getAccountUuid()));
@@ -168,7 +168,7 @@ public class TunnelValidateBase {
             priceMsg.setProductChargeModel(msg.getProductChargeModel());
             priceMsg.setDuration(msg.getDuration());
             priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(portType));
-            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
             if (!reply.isPayable())
                 throw new ApiMessageInterceptionException(
                         argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -305,7 +305,7 @@ public class TunnelValidateBase {
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -492,7 +492,7 @@ public class TunnelValidateBase {
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -935,7 +935,7 @@ public class TunnelValidateBase {
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);
         apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-        APIGetHasNotifyReply reply = new TunnelRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
+        APIGetHasNotifyReply reply = new BillingRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
