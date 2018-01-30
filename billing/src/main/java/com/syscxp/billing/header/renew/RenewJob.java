@@ -27,6 +27,7 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class RenewJob {
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
             q.add(RenewVO_.expiredTime, SimpleQuery.Op.LT, dbf.getCurrentSqlTime());
-            q.add(RenewVO_.expiredTime, SimpleQuery.Op.GT, dbf.getCurrentSqlTime().toLocalDateTime().minusDays(7));
+            q.add(RenewVO_.expiredTime, SimpleQuery.Op.GT, Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(7)));
             List<RenewVO> renewVOs = q.list();
             if (renewVOs == null || renewVOs.size()==0) {
                 logger.info("there is no activity renew product");
@@ -143,7 +144,9 @@ public class RenewJob {
 
             }
 
-        } finally {
+        } catch(Exception e){
+            e.printStackTrace();
+        }finally {
             lock.unlock();
         }
 
