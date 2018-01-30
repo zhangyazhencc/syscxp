@@ -433,7 +433,17 @@ public class RESTFacadeImpl implements RESTFacade {
     }
 
     @Override
+    public <T> T syncJsonPost(String url, String body, Class<T> returnClass, int retryTimes) {
+        return syncJsonPost(url, body, null, returnClass, retryTimes);
+    }
+
+    @Override
     public <T> T syncJsonPost(String url, String body, Map<String, String> headers, Class<T> returnClass) {
+        return syncJsonPost(url, body, headers, returnClass, 0);
+    }
+
+    @Override
+    public <T> T syncJsonPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes) {
         body = body == null ? "" : body;
 
         HttpHeaders requestHeaders = new HttpHeaders();
@@ -453,7 +463,7 @@ public class RESTFacadeImpl implements RESTFacade {
             protected ResponseEntity<String> call() {
                 return template.exchange(url, HttpMethod.POST, req, String.class);
             }
-        }.run();
+        }.setRetryTimes(retryTimes).run();
 
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
             throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
@@ -469,7 +479,6 @@ public class RESTFacadeImpl implements RESTFacade {
             return null;
         }
     }
-
     @Override
     public void echo(String url, Completion callback) {
         echo(url, callback, TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(30));

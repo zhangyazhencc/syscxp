@@ -266,7 +266,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchPortVO` (
   `portNum` INT(11) DEFAULT NULL COMMENT '该交换机端口编号：1口，2口...',
   `portName` varchar(128) NOT NULL COMMENT '端口名称',
   `portType` varchar(128) NOT NULL COMMENT '端口类型：光口，电口',
-  `portAttribute` varchar(128) NOT NULL COMMENT '属性',
+  `portAttribute` varchar(128) DEFAULT NULL COMMENT '属性',
   `autoAllot` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否自动分配',
   `state` varchar(128) NOT NULL DEFAULT 'Enabled' COMMENT '是否启用',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -336,6 +336,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `vsi` INT(11) NOT NULL COMMENT 'VSI',
   `monitorCidr` varchar(128) DEFAULT NULL COMMENT '监控网段',
   `name` varchar(128) NOT NULL COMMENT '通道名称',
+  `bandwidthOffering` VARCHAR(32) NOT NULL COMMENT '带宽规格',
   `bandwidth` BIGINT NOT NULL COMMENT '带宽',
   `distance` decimal(10,2) NOT NULL COMMENT '距离',
   `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:开通，未开通,未支付',
@@ -353,7 +354,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, type, innerEndpointUuid, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidthOffering, bandwidth, distance, state, status, type, innerEndpointUuid, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted IS NULL;
 ##带宽配置表
 CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (
@@ -369,6 +370,7 @@ CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (
 INSERT INTO `syscxp_tunnel`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
 VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('10G','10G','',10737418240,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('20G','20G','',21474836480,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('1G','1G','',1073741824,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('10M','10M','',10485760,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('20M','20M','',20971520,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
@@ -378,7 +380,8 @@ VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('500M','500M','',524288000,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('5G','5G','',5368709120,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('200M','200M','',209715200,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
-  ('2M','2M','',2097152,'2017-11-01 13:51:31','2017-11-01 13:51:31');
+  ('2M','2M','',2097152,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('20G','20G','',21474836480,'2017-11-01 13:51:31','2017-11-01 13:51:31');
 
 ##端口配置表
 CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (

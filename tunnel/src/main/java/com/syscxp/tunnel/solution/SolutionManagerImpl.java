@@ -31,7 +31,7 @@ import com.syscxp.header.tunnel.solution.*;
 import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.TunnelControllerBase;
-import com.syscxp.tunnel.tunnel.TunnelRESTCaller;
+import com.syscxp.tunnel.tunnel.BillingRESTCaller;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
@@ -511,7 +511,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         pmsg.setDuration(vo.getDuration());
         pmsg.setAccountUuid(accountUuid);
         pmsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(vo.getPortOfferingUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller().syncJsonPost(pmsg);
         return reply;
     }
     /*获取VPN的价格*/
@@ -584,7 +584,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
                     endpointVOZ, null));
         }
 
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
 
         return reply;
     }

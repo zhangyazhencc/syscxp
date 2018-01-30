@@ -156,43 +156,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APICreateEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIOpenEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIRenewEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIRenewAutoEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APISLAEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIGetUnscribeEdgeLinePriceDiffMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIDeleteEdgeLineMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIQueryEdgeLineMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
-    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>

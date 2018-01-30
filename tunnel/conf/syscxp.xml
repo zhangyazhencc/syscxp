@@ -58,5 +58,7 @@
     <import resource="springConfigXml/MongodbFacade.xml"/>
     <import resource="springConfigXml/AliEdgeRouterManager.xml"/>
     <import resource="springConfigXml/SolutionManager.xml"/>
+    <import resource="springConfigXml/BillingCallBackManager.xml"/>
+    <import resource="springConfigXml/EdgeLineManager.xml"/>
 
 </beans>

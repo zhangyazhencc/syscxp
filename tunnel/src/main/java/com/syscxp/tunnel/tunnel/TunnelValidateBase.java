@@ -15,6 +15,8 @@ import com.syscxp.header.billing.APIGetProductPriceReply;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO_;
 import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
@@ -47,37 +49,6 @@ public class TunnelValidateBase {
 
     @Autowired
     private DatabaseFacade dbf;
-
-    public void validate(APIOpenEdgeLineMsg msg){
-        EdgeLineVO vo = dbf.findByUuid(msg.getUuid() ,EdgeLineVO.class);
-        if(vo.getPrices() == null){
-            throw new ApiMessageInterceptionException(argerr("该最后一公里未设置金额！"));
-        }
-    }
-
-    public void validate(APICreateEdgeLineMsg msg){
-        //BOSS创建验证物理接口的账户是否一致
-        if (msg.getSession().getType() == AccountType.SystemAdmin) {
-            String accountUuid = dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class).getAccountUuid();
-            if (!Objects.equals(msg.getAccountUuid(), accountUuid)) {
-                throw new ApiMessageInterceptionException(argerr("物理接口不属于该用户！"));
-            }
-        }
-
-        if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getInterfaceUuid()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("一个物理接口只能申请开通一次！"));
-        }
-    }
-
-    public void validate(APIDeleteEdgeLineMsg msg) {
-        EdgeLineVO vo = dbf.findByUuid(msg.getUuid(), EdgeLineVO.class);
-
-        if(Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,vo.getInterfaceUuid()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("该最后一公里下的接口已经开通专线，不能删！"));
-        }
-
-        checkOrderNoPay(vo.getAccountUuid(), msg.getUuid());
-    }
 
     public void validate(APIUpdateInterfacePortMsg msg) {
 
@@ -156,7 +127,7 @@ public class TunnelValidateBase {
             priceMsg.setProductChargeModel(msg.getProductChargeModel());
             priceMsg.setDuration(msg.getDuration());
             priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
-            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
             if (!reply.isPayable())
                 throw new ApiMessageInterceptionException(
                         argerr("账户[uuid:%s]余额不足!", msg.getAccountUuid()));
@@ -197,7 +168,7 @@ public class TunnelValidateBase {
             priceMsg.setProductChargeModel(msg.getProductChargeModel());
             priceMsg.setDuration(msg.getDuration());
             priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(portType));
-            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
             if (!reply.isPayable())
                 throw new ApiMessageInterceptionException(
                         argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -334,7 +305,7 @@ public class TunnelValidateBase {
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -521,7 +492,7 @@ public class TunnelValidateBase {
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
@@ -560,30 +531,6 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("The Tunnel[uuid:%s] has motified %s times.", msg.getUuid(), times));
         }
-    }
-
-    public void validate(APIRenewEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    public void validate(APIRenewAutoEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    public void validate(APISLAEdgeLineMsg msg){
-        String accountUuid = Q.New(EdgeLineVO.class)
-                .eq(EdgeLineVO_.uuid, msg.getUuid())
-                .select(EdgeLineVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
     }
 
     public void validate(APIRenewTunnelMsg msg) {
@@ -982,13 +929,13 @@ public class TunnelValidateBase {
     /**
      * 判断该产品是否有未完成订单
      */
-    private void checkOrderNoPay(String accountUuid, String productUuid) {
+    public void checkOrderNoPay(String accountUuid, String productUuid) {
         //判断该产品是否有未完成订单
         APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);
         apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-        APIGetHasNotifyReply reply = new TunnelRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
+        APIGetHasNotifyReply reply = new BillingRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
