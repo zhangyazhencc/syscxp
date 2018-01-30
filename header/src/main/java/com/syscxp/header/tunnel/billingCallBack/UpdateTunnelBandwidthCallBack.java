@@ -7,6 +7,8 @@ import com.syscxp.header.billing.NotifyCallBackData;
  */
 public class UpdateTunnelBandwidthCallBack extends NotifyCallBackData {
 
+    private String bandwidthOffering;
+
     private Long bandwidth;
 
     public Long getBandwidth() {
@@ -15,5 +17,13 @@ public class UpdateTunnelBandwidthCallBack extends NotifyCallBackData {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getBandwidthOffering() {
+        return bandwidthOffering;
+    }
+
+    public void setBandwidthOffering(String bandwidthOffering) {
+        this.bandwidthOffering = bandwidthOffering;
     }
 }
