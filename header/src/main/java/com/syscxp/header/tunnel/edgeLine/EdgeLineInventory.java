@@ -6,6 +6,7 @@ import com.syscxp.header.search.Inventory;
 import com.syscxp.header.tunnel.endpoint.EndpointInventory;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +36,7 @@ public class EdgeLineInventory {
     private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
+    private boolean expired;
 
     public static EdgeLineInventory valueOf(EdgeLineVO vo){
         EdgeLineInventory inv = new EdgeLineInventory();
@@ -133,6 +135,12 @@ public class EdgeLineInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+
+        if (expireDate != null){
+            if (expireDate.before(Timestamp.valueOf(LocalDateTime.now()))){
+                this.expired = true;
+            }
+        }
     }
 
     public Timestamp getLastOpDate() {
@@ -173,5 +181,13 @@ public class EdgeLineInventory {
 
     public void setDestinationInfo(String destinationInfo) {
         this.destinationInfo = destinationInfo;
+    }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
     }
 }
