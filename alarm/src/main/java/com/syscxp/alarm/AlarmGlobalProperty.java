@@ -15,4 +15,12 @@ public class AlarmGlobalProperty {
     @GlobalProperty(name = "falconApiUrl",defaultValue = "http://192.168.211.96:6892")
     public static String FALCON_API_URL;
 
+    @GlobalProperty(name = "emailTag",defaultValue = "true")
+    public static String EMAIL_TAG;
+
+    @GlobalProperty(name = "phoneTag",defaultValue = "true")
+    public static String PHONE_TAG;
+
+
+
 }
