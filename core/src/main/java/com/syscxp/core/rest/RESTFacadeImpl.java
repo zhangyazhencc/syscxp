@@ -439,7 +439,7 @@ public class RESTFacadeImpl implements RESTFacade {
 
     @Override
     public <T> T syncJsonPost(String url, String body, Map<String, String> headers, Class<T> returnClass) {
-        return syncJsonPost(url, body, headers, returnClass, 2);
+        return syncJsonPost(url, body, headers, returnClass, 0);
     }
 
     @Override
