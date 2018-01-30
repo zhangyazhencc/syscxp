@@ -104,10 +104,10 @@ public class TunnelStatusChecker implements Component {
 
         @Override
         public void run() {
-            List<TunnelVO> tunnelVOs = new ArrayList<>();
             if (!isCheckTunnelStatus) {
                 return;
             }
+            List<TunnelVO> tunnelVOs = new ArrayList<>();
             try {
                 tunnelVOs = getTunnels();
                 logger.debug("tunnel status check.");
