@@ -6,6 +6,7 @@ import com.syscxp.header.search.Inventory;
 import com.syscxp.header.tunnel.switchs.SwitchPortInventory;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +39,7 @@ public class InterfaceInventory {
     private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
+    private boolean expired;
 
     public static InterfaceInventory valueOf(InterfaceVO vo){
         InterfaceInventory inv = new InterfaceInventory();
@@ -204,6 +206,12 @@ public class InterfaceInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+
+        if (expireDate != null){
+            if (expireDate.before(Timestamp.valueOf(LocalDateTime.now()))){
+                this.expired = true;
+            }
+        }
     }
 
     public String getOwnerAccountUuid() {
@@ -212,5 +220,13 @@ public class InterfaceInventory {
 
     public void setOwnerAccountUuid(String ownerAccountUuid) {
         this.ownerAccountUuid = ownerAccountUuid;
+    }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
     }
 }
