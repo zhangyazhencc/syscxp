@@ -26,6 +26,7 @@ public class TunnelInventory {
     private String monitorCidr;
     private List<TunnelSwitchPortInventory> tunnelSwitchs = new ArrayList<TunnelSwitchPortInventory>();
     private String name;
+    private String bandwidthOffering;
     private Long bandwidth;
     private Double distance;
     private String state;
@@ -50,6 +51,7 @@ public class TunnelInventory {
         inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setTunnelSwitchs(TunnelSwitchPortInventory.valueOf(vo.getTunnelSwitchPortVOS()));
         inv.setName(vo.getName());
+        inv.setBandwidthOffering(vo.getBandwidthOffering());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
         inv.setState(vo.getState().toString());
@@ -241,5 +243,13 @@ public class TunnelInventory {
 
     public void setInnerEndpointUuid(String innerEndpointUuid) {
         this.innerEndpointUuid = innerEndpointUuid;
+    }
+
+    public String getBandwidthOffering() {
+        return bandwidthOffering;
+    }
+
+    public void setBandwidthOffering(String bandwidthOffering) {
+        this.bandwidthOffering = bandwidthOffering;
     }
 }

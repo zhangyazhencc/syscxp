@@ -18,6 +18,7 @@ public class TunnelAO_ {
     public static volatile SingularAttribute<TunnelAO, Integer> vsi;
     public static volatile SingularAttribute<TunnelAO, String> monitorCidr;
     public static volatile SingularAttribute<TunnelAO, String> name;
+    public static volatile SingularAttribute<TunnelAO, String> bandwidthOffering;
     public static volatile SingularAttribute<TunnelAO, Long> bandwidth;
     public static volatile SingularAttribute<TunnelAO, Double> distance;
     public static volatile SingularAttribute<TunnelAO, TunnelState> state;
