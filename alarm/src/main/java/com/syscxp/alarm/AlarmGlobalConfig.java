@@ -3,16 +3,17 @@ package com.syscxp.alarm;
 
 import com.syscxp.core.GlobalPropertyDefinition;
 import com.syscxp.core.config.GlobalConfig;
+import com.syscxp.core.config.GlobalConfigDefinition;
 import com.syscxp.core.config.GlobalConfigValidation;
 
-@GlobalPropertyDefinition
+@GlobalConfigDefinition
 public class AlarmGlobalConfig {
 
     public static final String CATEGORY = "alarm";
 
     @GlobalConfigValidation
-    public static GlobalConfig EMAIL_TAG = new GlobalConfig(CATEGORY, "emailTag");
+    public static GlobalConfig ALARM_SEND_MAIL = new GlobalConfig(CATEGORY, "alarm.sendMail");
 
     @GlobalConfigValidation
-    public static GlobalConfig PHONE_TAG = new GlobalConfig(CATEGORY, "phoneTag");
+    public static GlobalConfig ALARM_SEND_SMS = new GlobalConfig(CATEGORY, "alarm.sendSms");
 }

@@ -2,17 +2,17 @@
 <globalConfig xmlns="http://syscxp.com/schema/syscxp">
     <config>
         <category>alarm</category>
-        <name>emailTag</name>
+        <name>alarm.sendMail</name>
         <description>do or don't need to send an alarm message</description>
-        <defaultValue>true</defaultValue>
+        <defaultValue>false</defaultValue>
         <type>java.lang.Boolean</type>
     </config>
 
     <config>
         <category>alarm</category>
-        <name>phoneTag</name>
+        <name>alarm.sendSms</name>
         <description>do or don't need to send an alarm message</description>
-        <defaultValue>true</defaultValue>
+        <defaultValue>false</defaultValue>
         <type>java.lang.Boolean</type>
     </config>
 

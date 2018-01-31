@@ -445,9 +445,9 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             for (ContactVO contactVO : contactVOS) {
                 Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
                 for (NotifyWayVO notifyWayVO : notifyWayVOs) {
-                    if ("email".equals(notifyWayVO.getCode()) && AlarmGlobalConfig.EMAIL_TAG.value(Boolean.class))
+                    if ("email".equals(notifyWayVO.getCode()) && AlarmGlobalConfig.ALARM_SEND_MAIL.value(Boolean.class))
                         emailList.add(contactVO.getEmail());
-                    else if ("mobile".equals(notifyWayVO.getCode())  && AlarmGlobalConfig.PHONE_TAG.value(Boolean.class))
+                    else if ("mobile".equals(notifyWayVO.getCode())  && AlarmGlobalConfig.ALARM_SEND_SMS.value(Boolean.class))
                         phoneList.add(contactVO.getMobile());
                 }
             }
