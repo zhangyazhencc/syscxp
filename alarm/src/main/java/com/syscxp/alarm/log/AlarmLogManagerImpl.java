@@ -2,6 +2,7 @@ package com.syscxp.alarm.log;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.syscxp.alarm.AlarmGlobalConfig;
 import com.syscxp.alarm.AlarmGlobalProperty;
 import com.syscxp.alarm.AlarmUtil;
 import com.syscxp.alarm.header.contact.ContactVO;
@@ -443,11 +444,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             List<ContactVO> contactVOS = query.list();
             for (ContactVO contactVO : contactVOS) {
                 Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
-                for (NotifyWayVO notifyWayVO : notifyWayVOs) {
-                    if ("email".equals(notifyWayVO.getCode()) && AlarmGlobalProperty.EMAIL_TAG.equals("true"))
-                        emailList.add(contactVO.getEmail());
-                    else if ("mobile".equals(notifyWayVO.getCode())  && AlarmGlobalProperty.PHONE_TAG.equals("true"))
-                        phoneList.add(contactVO.getMobile());
+                if (notifyWayVOs != null) {
+                    for (NotifyWayVO notifyWayVO : notifyWayVOs) {
+                        if ("email".equals(notifyWayVO.getCode()) && AlarmGlobalConfig.ALARM_SEND_MAIL.value(Boolean.class))
+                            emailList.add(contactVO.getEmail());
+                        else if ("mobile".equals(notifyWayVO.getCode()) && AlarmGlobalConfig.ALARM_SEND_SMS.value(Boolean.class))
+                            phoneList.add(contactVO.getMobile());
+                    }
                 }
             }
 

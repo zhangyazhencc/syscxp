@@ -118,10 +118,10 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
     private void validateUpdateCaptcha(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
         if (!StringUtils.isEmpty(mobile)) {
             if (StringUtils.isEmpty(mobileCaptcha)) {
-                throw new IllegalArgumentException("please input the mobile captcha");
+                throw new IllegalArgumentException("please input the mobile identifying code");
             }
             if (!smsService.validateVerificationCode(mobile, mobileCaptcha)) {
-                throw new IllegalArgumentException("the mobile captcha is not correct");
+                throw new IllegalArgumentException("the mobile identifying code is not correct");
             }
         }
         validateEmail(email, emailCaptcha);
@@ -131,10 +131,10 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
     private void validateEmail(String email, String emailCaptcha) {
         if (!StringUtils.isEmpty(email)) {
             if (StringUtils.isEmpty(emailCaptcha)) {
-                throw new IllegalArgumentException("please input the email captcha");
+                throw new IllegalArgumentException("please input the email identifying code");
             }
             if (!mailService.ValidateMailCode(email, emailCaptcha)) {
-                throw new IllegalArgumentException("the email captcha is not correct");
+                throw new IllegalArgumentException("the email identifying code is not correct");
             }
         }
     }
@@ -179,7 +179,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
     private void assignWays(List<String> codes, ContactVO vo) {
         Set<NotifyWayVO> s = new HashSet<>();
         if (codes == null || codes.size() == 0) {
-            s.add(getNotifyWayByCode("mobile"));
+            //s.add(getNotifyWayByCode("mobile"));
             vo.setNotifyWayVOs(s);
         } else {
             for (String code : codes) {
