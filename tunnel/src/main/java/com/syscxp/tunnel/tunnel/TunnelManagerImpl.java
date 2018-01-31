@@ -2409,7 +2409,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             tunnelCmd.setTunnel_id(tunnel.getUuid());
             tunnelCmd.setBandwidth(tunnel.getBandwidth());
-            tunnelCmd.setUser_id(null);
+            tunnelCmd.setUser_id(tunnel.getOwnerAccountUuid());
             tunnelCmd.setRules(null);
 
             List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();

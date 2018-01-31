@@ -72,4 +72,8 @@
     <message>
         <name>com.syscxp.header.alarm.APIStopResourceAlarmMsg</name>
     </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIInitAlarmStrategyMsg</name>
+    </message>
 </service>

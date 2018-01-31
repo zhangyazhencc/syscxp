@@ -23,6 +23,13 @@
     </config>
     <config>
         <category>tunnel</category>
+        <name>isCheck.tunnelStatus</name>
+        <description>is check tunnel status</description>
+        <defaultValue>false</defaultValue>
+        <type>java.lang.Boolean</type>
+    </config>
+    <config>
+        <category>tunnel</category>
         <name>expiredProduct.closeInterval</name>
         <description>expired product clean interval</description>
         <defaultValue>3</defaultValue>

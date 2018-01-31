@@ -8,7 +8,6 @@ import com.syscxp.alarm.header.log.AlarmLogVO;
 import com.syscxp.alarm.header.log.AlarmLogVO_;
 import com.syscxp.alarm.header.resourcePolicy.*;
 import com.syscxp.alarm.quota.AlarmQuotaOperator;
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
@@ -17,8 +16,6 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.identity.InnerMessageHelper;
-import com.syscxp.core.jsonlabel.JsonLabelVO;
-import com.syscxp.core.jsonlabel.JsonLabelVO_;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
@@ -28,16 +25,13 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
-import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
-import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmMsg;
@@ -46,14 +40,14 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import javax.persistence.StoredProcedureQuery;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.syscxp.utils.CollectionDSL.list;
@@ -117,9 +111,32 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             handle((APIGetPolicyByResourceUuidMsg) msg);
         } else if (msg instanceof APIGetResourceUuidsByPolicyMsg) {
             handle((APIGetResourceUuidsByPolicyMsg) msg);
+        } else if (msg instanceof APIInitAlarmStrategyMsg) {
+            handle((APIInitAlarmStrategyMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    /**
+     * 初始化策略与规则
+     * @param msg
+     */
+    private void handle(APIInitAlarmStrategyMsg msg) {
+        APIInitAlarmStrategyEvent event = new APIInitAlarmStrategyEvent(msg.getId());
+
+        StoredProcedureQuery q =  dbf.getEntityManager().createStoredProcedureQuery("proc_tunnel_strategy_init");
+        q.execute();
+        List<PolicyVO> policyVOS = Q.New(PolicyVO.class)
+                .eq(PolicyVO_.description, "init")
+                .list();
+
+        for (PolicyVO policyVO : policyVOS) {
+            logger.info(String.format("updateFalconByPolicy Policy: [%s]", policyVO.getName()));
+            updateFalconByPolicy(policyVO.getUuid());
+        }
+
+        bus.publish(event);
     }
 
     private void handle(APIGetResourceUuidsByPolicyMsg msg) {
@@ -227,7 +244,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                updateFalconByResource(msg.getSession().getAccountUuid(), msg.getResourceUuid());
+                updateFalconByResource(msg.getResourceUuid());
 
                 trigger.next();
             }
@@ -400,7 +417,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             try {
                 PolicyVO policyVO = dbf.findByUuid(refVO.getPolicyUuid(), PolicyVO.class);
                 if (policyVO != null)
-                    updateFalconByResource(policyVO.getAccountUuid(), msg.getTunnelUuid());
+                    updateFalconByResource(msg.getTunnelUuid());
                 else
                     throw new RuntimeException(String.format("no policy existed![ResourceUuid: %s]", msg.getTunnelUuid()));
             } catch (Exception e) {
@@ -534,7 +551,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
                         .eq(ResourcePolicyRefVO_.policyUuid, regulationVO.getPolicyUuid()).list();
                 if (!refVOList.isEmpty())
-                    updateFalconByPolicy(msg.getSession(), regulationVO.getPolicyUuid());
+                    updateFalconByPolicy(regulationVO.getPolicyUuid());
 
                 trigger.next();
             }
@@ -600,7 +617,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
                         .eq(ResourcePolicyRefVO_.policyUuid, regulationVO.getPolicyUuid()).list();
                 if (!refVOList.isEmpty())
-                    updateFalconByPolicy(msg.getSession(), regulationVO.getPolicyUuid());
+                    updateFalconByPolicy(regulationVO.getPolicyUuid());
 
                 trigger.next();
             }
@@ -673,7 +690,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
                         .eq(ResourcePolicyRefVO_.policyUuid, regulationVO.getPolicyUuid()).list();
                 if (!refVOList.isEmpty())
-                    updateFalconByPolicy(msg.getSession(), regulationVO.getPolicyUuid());
+                    updateFalconByPolicy(regulationVO.getPolicyUuid());
 
                 trigger.next();
             }
@@ -739,14 +756,14 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         return msg;
     }
 
-    private void updateFalconByPolicy(SessionInventory session, String policyUuid) {
-        String falconCommand = getFalconCommandByPolicy(policyUuid, session);
+    private void updateFalconByPolicy(String policyUuid) {
+        String falconCommand = getFalconCommandByPolicy(policyUuid);
         String url = getFalconUrl(FalconApiRestConstant.STRATEGY_SYNC);
 
         sendFalconCommand(url, falconCommand);
     }
 
-    private String getFalconCommandByPolicy(String policyUuid, SessionInventory session) {
+    private String getFalconCommandByPolicy(String policyUuid) {
         SimpleQuery<ResourcePolicyRefVO> resourcequery = dbf.createQuery(ResourcePolicyRefVO.class);
         resourcequery.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
 
@@ -766,7 +783,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 continue;
 
             FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resource.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
-            tunnel.setUser_id(session.getAccountUuid());
+            //tunnel.setUser_id(session.getAccountUuid());
 
             List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
             SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
@@ -790,14 +807,14 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
 
-    private void updateFalconByResource(String accountUuid, String resourceUuid) {
-        String falconCommand = getFalconCommandByResource(resourceUuid, accountUuid);
+    private void updateFalconByResource(String resourceUuid) {
+        String falconCommand = getFalconCommandByResource(resourceUuid);
         String url = getFalconUrl(FalconApiRestConstant.STRATEGY_SYNC);
 
         sendFalconCommand(url, falconCommand);
     }
 
-    private String getFalconCommandByResource(String resourceUuid, String accountUuid) {
+    private String getFalconCommandByResource(String resourceUuid) {
         List<String> list = new ArrayList<>();
         list.add(resourceUuid);
         Map<String, Object> map = getTunnelInfo(list);
@@ -808,7 +825,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         if (refVOList.isEmpty()) {
             if (map.containsKey(resourceUuid)) {
                 FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resourceUuid).toString(), FalconApiCommands.Tunnel.class);
-                tunnel.setUser_id(accountUuid);
 
                 List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
                 tunnel.setRules(rulelist);
@@ -820,7 +836,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                     continue;
 
                 FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(refVO.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
-                tunnel.setUser_id(accountUuid);
 
                 SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
                 regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, refVO.getPolicyUuid());
