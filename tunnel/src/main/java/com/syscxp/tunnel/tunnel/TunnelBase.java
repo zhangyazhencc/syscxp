@@ -153,7 +153,7 @@ public class TunnelBase {
     /**
      * 创建TunnelSwitchPort
      */
-    public void createTunnelSwitchPort(TunnelVO tunnelVO,InterfaceVO interfaceVO,String remoteSwitchPortUuid,Integer vlan,String sortTag){
+    public void createTunnelSwitchPort(TunnelVO tunnelVO,InterfaceVO interfaceVO,String remoteSwitchPortUuid,Integer vlan,String sortTag,boolean isQinq){
         PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPortUuid(interfaceVO.getSwitchPortUuid());
         PhysicalSwitchVO remotePhysicalSwitch = getPhysicalSwitchBySwitchPortUuid(remoteSwitchPortUuid);
 
@@ -164,7 +164,11 @@ public class TunnelBase {
         tsvo.setInterfaceUuid(interfaceVO.getUuid());
         tsvo.setEndpointUuid(interfaceVO.getEndpointUuid());
         tsvo.setSwitchPortUuid(interfaceVO.getSwitchPortUuid());
-        tsvo.setType(interfaceVO.getType());
+        if(isQinq){
+            tsvo.setType(NetworkType.QINQ);
+        }else{
+            tsvo.setType(interfaceVO.getType());
+        }
         tsvo.setVlan(vlan);
         tsvo.setSortTag(sortTag);
         tsvo.setPhysicalSwitchUuid(physicalSwitch.getUuid());
@@ -357,38 +361,6 @@ public class TunnelBase {
         }
 
         return isShare;
-    }
-
-    /**
-     * 修改接口类型
-     */
-    public List<String> updateNetworkType(InterfaceVO iface, String tunnelUuid, NetworkType newType, List<InnerVlanSegment> segments) {
-        UpdateQuery.New(InterfaceVO.class)
-                .set(InterfaceVO_.type, newType)
-                .eq(InterfaceVO_.uuid, iface.getUuid())
-                .update();
-
-        List<String> vos = new ArrayList<>();
-        if (tunnelUuid == null) {
-            return vos;
-        }
-
-        if (iface.getType() == NetworkType.QINQ) {
-            UpdateQuery.New(QinqVO.class).eq(QinqVO_.tunnelUuid, tunnelUuid).delete();
-        }
-
-        if (newType == NetworkType.QINQ) {
-            for (InnerVlanSegment segment : segments) {
-                QinqVO qinq = new QinqVO();
-                qinq.setUuid(Platform.getUuid());
-                qinq.setTunnelUuid(tunnelUuid);
-                qinq.setStartVlan(segment.getStartVlan());
-                qinq.setEndVlan(segment.getEndVlan());
-                qinq = dbf.persistAndRefresh(qinq);
-                vos.add(qinq.getUuid());
-            }
-        }
-        return vos;
     }
 
     /**

@@ -168,10 +168,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIEnableTunnelMsg) msg);
         } else if (msg instanceof APIDisableTunnelMsg) {
             handle((APIDisableTunnelMsg) msg);
-        } else if (msg instanceof APICreateQinqMsg) {
-            handle((APICreateQinqMsg) msg);
-        } else if (msg instanceof APIDeleteQinqMsg) {
-            handle((APIDeleteQinqMsg) msg);
+        } else if (msg instanceof APIUpdateQinqMsg) {
+            handle((APIUpdateQinqMsg) msg);
         } else if (msg instanceof APIQueryTunnelDetailForAlarmMsg) {
             handle((APIQueryTunnelDetailForAlarmMsg) msg);
         } else if (msg instanceof APIListSwitchPortByTypeMsg) {
@@ -632,16 +630,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         final PhysicalSwitchVO physicalSwitchVO = physicalSwitch;
 
         Map<String, Object> rollback = new HashMap<>();
-        if (tsPort != null && iface.getType() == NetworkType.QINQ) {
-            List<QinqVO> qinqs = Q.New(QinqVO.class)
-                    .eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).list();
-            rollback.put("qinQs", qinqs);
-        }
 
         APIUpdateInterfacePortEvent evt = new APIUpdateInterfacePortEvent(msg.getId());
         FlowChain updateInterface = FlowChainBuilder.newSimpleFlowChain();
         updateInterface.setName(String.format("update-interfacePort-%s", msg.getUuid()));
-        updateInterface.setData(rollback);
         updateInterface.then(new Flow() {
             String __name__ = "update-interface-for-DB";
 
@@ -653,13 +645,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .eq(InterfaceVO_.uuid, msg.getUuid())
                             .update();
                 } else {
-                    String tunnelUuid = isUsed ? tsPort.getTunnelUuid() : null;
-                    List<String> qinqs = tunnelBase.updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
-                    if (!qinqs.isEmpty())
-                        data.put("newQinQs", qinqs);
+
+                    UpdateQuery.New(InterfaceVO.class)
+                            .set(InterfaceVO_.type, msg.getNetworkType())
+                            .eq(InterfaceVO_.uuid, iface.getUuid())
+                            .update();
                 }
                 logger.info(String.format("after update InterfaceVO[uuid: %s]", iface.getUuid()));
-                //throw new CloudRuntimeException("update interface port ...............");
                 trigger.next();
             }
 
@@ -667,12 +659,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
                 dbf.updateAndRefresh(iface);
-                if (isUsed) {
-                    List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinQs", new ArrayList());
-                    dbf.updateCollection(qinqs);
-                    List<String> qinqUuids = (List<String>) data.getOrDefault("newQinQs", new ArrayList());
-                    dbf.removeByPrimaryKeys(qinqUuids, QinqVO.class);
-                }
+
                 trigger.rollback();
             }
         }).then(new Flow() {
@@ -681,13 +668,22 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(FlowTrigger trigger, Map data) {
                 if (isUsed) {
-                    UpdateQuery.New(TunnelSwitchPortVO.class)
-                            .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
-                            .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
-                            .set(TunnelSwitchPortVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
-                            .set(TunnelSwitchPortVO_.ownerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO).getUuid())
-                            .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
-                            .update();
+                    if(msg.getNetworkType().equals(iface.getType())){
+                        UpdateQuery.New(TunnelSwitchPortVO.class)
+                                .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
+                                .set(TunnelSwitchPortVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
+                                .set(TunnelSwitchPortVO_.ownerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO).getUuid())
+                                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
+                                .update();
+                    }else{
+                        UpdateQuery.New(TunnelSwitchPortVO.class)
+                                .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
+                                .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
+                                .set(TunnelSwitchPortVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
+                                .set(TunnelSwitchPortVO_.ownerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO).getUuid())
+                                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
+                                .update();
+                    }
 
                     UpdateQuery.New(TunnelSwitchPortVO.class)
                             .set(TunnelSwitchPortVO_.peerMplsSwitchUuid, tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO).getUuid())
@@ -713,10 +709,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(FlowTrigger trigger, Map data) {
                  if (isUsed){
-                    TunnelVO tunnel = Q.New(TunnelVO.class)
-                            .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
-                            .find();
-                    taskBase.taskModifyTunnelPortsZK(tunnel.getUuid());
+
+                    taskBase.taskModifyTunnelPortsZK(tsPort.getTunnelUuid());
 
                 }
 
@@ -937,10 +931,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         if(tunnelType == TunnelType.CHINA2ABROAD){     //跨国互联
-            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,vlanA,vlanZ,interfaceVOA,interfaceVOZ,switchPortVOA,switchPortVOZ,vo);
+            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,vlanA,vlanZ,interfaceVOA,interfaceVOZ,switchPortVOA,switchPortVOZ,false,false,vo);
         }else{
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,switchPortVOZ.getUuid(),vlanA,"A");
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,switchPortVOA.getUuid(),vlanZ,"Z");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,switchPortVOZ.getUuid(),vlanA,"A",false);
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,switchPortVOA.getUuid(),vlanZ,"Z",false);
         }
 
         return vo.getUuid();
@@ -954,6 +948,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                           InterfaceVO interfaceVOZ,
                           SwitchPortVO switchPortVOA,
                           SwitchPortVO switchPortVOZ,
+                          boolean isQinqA,
+                          boolean isQinqZ,
                           TunnelVO vo){
         TunnelBase tunnelBase = new TunnelBase();
         TunnelStrategy ts = new TunnelStrategy();
@@ -992,8 +988,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
             tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),switchPortVOA.getUuid(),vlanBC,"B");
             tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),switchPortVOZ.getUuid(),vlanBC,"C");
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,innerSwitchPort.getUuid(),vlanA,"A");
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,outerSwitchPort.getUuid(),vlanZ,"Z");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,innerSwitchPort.getUuid(),vlanA,"A",isQinqA);
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,outerSwitchPort.getUuid(),vlanZ,"Z",isQinqZ);
         }else{                                  //A端国外Z端国内
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOZ,innerSwitchPort)){
                 vlanBC = vlanZ;
@@ -1008,8 +1004,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }
 
             }
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,outerSwitchPort.getUuid(),vlanA,"A");
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,innerSwitchPort.getUuid(),vlanZ,"Z");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,outerSwitchPort.getUuid(),vlanA,"A",isQinqA);
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,innerSwitchPort.getUuid(),vlanZ,"Z",isQinqZ);
             tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),switchPortVOA.getUuid(),vlanBC,"B");
             tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),switchPortVOZ.getUuid(),vlanBC,"C");
         }
@@ -1142,14 +1138,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         dbf.getEntityManager().persist(vo);
 
         if(tunnelType == TunnelType.CHINA2ABROAD){     //跨国互联
-            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,msg.getaVlan(),msg.getzVlan(),interfaceVOA,interfaceVOZ,switchPortVOA,switchPortVOZ,vo);
+            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,msg.getaVlan(),msg.getzVlan(),interfaceVOA,interfaceVOZ,switchPortVOA,switchPortVOZ,msg.isQinqA(),msg.isQinqZ(),vo);
         }else{
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,switchPortVOZ.getUuid(),msg.getaVlan(),"A");
-            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,switchPortVOA.getUuid(),msg.getzVlan(),"Z");
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,switchPortVOZ.getUuid(),msg.getaVlan(),"A",msg.isQinqA());
+            tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,switchPortVOA.getUuid(),msg.getzVlan(),"Z",msg.isQinqZ());
         }
 
         //如果开启Qinq,需要指定内部vlan段
-        if (interfaceVOA.getType() == NetworkType.QINQ || interfaceVOZ.getType() == NetworkType.QINQ) {
+        if (msg.isQinqA() || msg.isQinqZ()) {
             List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
             for (InnerVlanSegment vlanSegment : vlanSegments) {
                 QinqVO qvo = new QinqVO();
@@ -1975,105 +1971,182 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     /**
-     * QINQ专线新增内部VLAN段
-     **/
-    private void handle(APICreateQinqMsg msg) {
-        APICreateQinqEvent evt = new APICreateQinqEvent(msg.getId());
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+     * 设置QINQ
+     * */
+    private void handle(APIUpdateQinqMsg msg){
+        APIUpdateQinqEvent evt = new APIUpdateQinqEvent(msg.getId());
 
-        String uuid = Platform.getUuid();
-        QinqVO qinqVO = new QinqVO();
-        qinqVO.setUuid(uuid);
-        qinqVO.setTunnelUuid(msg.getUuid());
-        qinqVO.setStartVlan(msg.getStartVlan());
-        qinqVO.setEndVlan(msg.getEndVlan());
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceUuidA(), InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceUuidZ(), InterfaceVO.class);
 
-        FlowChain createQinq = FlowChainBuilder.newSimpleFlowChain();
-        createQinq.setName(String.format("create-tunnel-%s-innervlan", msg.getUuid()));
-        createQinq.then(new Flow() {
+        //将内部VLAN段转为QinqVO
+        List<QinqVO> qinqVOList = new ArrayList<>();
+        if(msg.getVlanSegment() != null && !msg.getVlanSegment().isEmpty()){
+            for(InnerVlanSegment innerVlanSegment : msg.getVlanSegment()){
+                String uuid = Platform.getUuid();
+                QinqVO qinqVO = new QinqVO();
+                qinqVO.setUuid(uuid);
+                qinqVO.setTunnelUuid(msg.getUuid());
+                qinqVO.setStartVlan(innerVlanSegment.getStartVlan());
+                qinqVO.setEndVlan(innerVlanSegment.getEndVlan());
+
+                qinqVOList.add(qinqVO);
+            }
+        }
+
+        //修改前的TunnelSwitchPortVO
+        TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag, "A")
+                .find();
+        TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                .find();
+
+        //修改前的QinqVO
+        List<QinqVO> qinqVOs = Q.New(QinqVO.class)
+                .eq(QinqVO_.tunnelUuid,msg.getUuid())
+                .list();
+
+        FlowChain updateQinq = FlowChainBuilder.newSimpleFlowChain();
+        updateQinq.setName(String.format("update-tunnel-%s-innervlan", msg.getUuid()));
+        updateQinq.then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
+                logger.info("修改TunnelSwitchPortVO-A");
 
-                dbf.persistAndRefresh(qinqVO);
+                if(msg.isQinqA()){
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.type,NetworkType.QINQ)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "A")
+                            .update();
+                }else{
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.type,NetworkType.TRUNK)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "A")
+                            .update();
+                }
 
-                logger.info("新增一段QINQ");
                 trigger.next();
             }
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                UpdateQuery.New(QinqVO.class)
-                        .eq(QinqVO_.uuid, uuid)
-                        .hardDelete();
+                logger.info("还原TunnelSwitchPortVO-A");
+                dbf.updateAndRefresh(tunnelSwitchPortA);
 
-                logger.info("回滚QINQ");
                 trigger.rollback();
             }
-        }).done(new FlowDoneHandler(null) {
-            @Override
-            public void handle(Map data) {
-
-                new TunnelJobAndTaskBase().taskModifyTunnelPortsZK(vo.getUuid());
-
-                evt.setInventory(QinqInventory.valueOf(qinqVO));
-                bus.publish(evt);
-            }
-        }).error(new FlowErrorHandler(null) {
-            @Override
-            public void handle(ErrorCode errCode, Map data) {
-                evt.setError(errf.stringToOperationError("create innervlan failed!"));
-                bus.publish(evt);
-            }
-        }).start();
-
-    }
-
-    /**
-     * QINQ专线删除内部VLAN段
-     **/
-    private void handle(APIDeleteQinqMsg msg) {
-        APIDeleteQinqEvent evt = new APIDeleteQinqEvent(msg.getId());
-
-        QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
-        TunnelVO vo = dbf.findByUuid(qinqVO.getTunnelUuid(), TunnelVO.class);
-
-        FlowChain deleteQinq = FlowChainBuilder.newSimpleFlowChain();
-        deleteQinq.setName(String.format("delete-tunnel-%s-innervlan", vo.getUuid()));
-        deleteQinq.then(new Flow() {
+        }).then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                dbf.remove(qinqVO);
+                logger.info("修改TunnelSwitchPortVO-Z");
 
-                logger.info("删除一段QINQ");
+                if(msg.isQinqZ()){
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.type,NetworkType.QINQ)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                            .update();
+                }else{
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.type,NetworkType.TRUNK)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                            .update();
+                }
+
                 trigger.next();
             }
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                dbf.persistAndRefresh(qinqVO);
+                logger.info("还原TunnelSwitchPortVO-Z");
+                dbf.updateAndRefresh(tunnelSwitchPortZ);
 
-                logger.info("回滚QINQ");
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                logger.info("删除QINQ配置");
+                if(!qinqVOs.isEmpty()){
+                    dbf.removeCollection(qinqVOs,QinqVO.class);
+                }
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                logger.info("还原QINQ配置");
+                if(!qinqVOs.isEmpty()){
+                    dbf.persistCollection(qinqVOs);
+                }
+
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                logger.info("更新QINQ配置前的验证");
+                if(msg.getVlanSegment() != null && !msg.getVlanSegment().isEmpty()){
+                    new TunnelValidateBase().validateInnerVlan(msg.isQinqA(),
+                            interfaceVOA.getSwitchPortUuid(),
+                            msg.isQinqZ(),
+                            interfaceVOZ.getSwitchPortUuid(),
+                            msg.getVlanSegment());
+                }
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                logger.info("保存更新QINQ配置");
+
+                if(msg.getVlanSegment() != null && !msg.getVlanSegment().isEmpty()){
+                    dbf.persistCollection(qinqVOList);
+                }
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                logger.info("取消更新QINQ配置");
+
+                if(msg.getVlanSegment() != null && !msg.getVlanSegment().isEmpty()){
+                    dbf.removeCollection(qinqVOList, QinqVO.class);
+                }
+
                 trigger.rollback();
             }
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
+                new TunnelJobAndTaskBase().taskModifyTunnelPortsZK(msg.getUuid());
 
-                new TunnelJobAndTaskBase().taskModifyTunnelPortsZK(vo.getUuid());
-
-                evt.setInventory(QinqInventory.valueOf(qinqVO));
+                if(msg.getVlanSegment() != null && !msg.getVlanSegment().isEmpty()){
+                    evt.setInventories(QinqInventory.valueOf(qinqVOList));
+                }
                 bus.publish(evt);
-
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
-                evt.setError(errf.stringToOperationError("delete innervlan failed!"));
+                evt.setError(errf.stringToOperationError("update QINQ failed!"));
                 bus.publish(evt);
             }
         }).start();
-
-
     }
 
     /*****************************  Get/Query/List Message For Interface and Tunnel **************************/
@@ -2727,10 +2800,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelValidateBase.validate((APIEnableTunnelMsg) msg);
         } else if (msg instanceof APIDisableTunnelMsg) {
             tunnelValidateBase.validate((APIDisableTunnelMsg) msg);
-        } else if (msg instanceof APICreateQinqMsg) {
-            tunnelValidateBase.validate((APICreateQinqMsg) msg);
-        } else if (msg instanceof APIDeleteQinqMsg) {
-            tunnelValidateBase.validate((APIDeleteQinqMsg) msg);
+        } else if (msg instanceof APIUpdateQinqMsg) {
+            tunnelValidateBase.validate((APIUpdateQinqMsg) msg);
         } else if (msg instanceof APIUpdateTunnelVlanMsg) {
             tunnelValidateBase.validate((APIUpdateTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateInterfacePortMsg) {

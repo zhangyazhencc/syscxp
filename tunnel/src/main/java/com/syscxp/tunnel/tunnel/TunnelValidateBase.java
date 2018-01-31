@@ -77,36 +77,10 @@ public class TunnelValidateBase {
                     argerr("接口类型暂时不支持改成ACCESS！"));
         }
 
-
-
         if (msg.getSwitchPortUuid().equals(iface.getSwitchPortUuid())) {
             if (msg.getNetworkType() == iface.getType()) {
                 throw new ApiMessageInterceptionException(
                         argerr("The type or Interface must be different！"));
-            }
-
-            if (msg.getNetworkType() == NetworkType.QINQ) {
-                if (msg.getSegments() == null || msg.getSegments().isEmpty()) {
-                    throw new ApiMessageInterceptionException(
-                            argerr("The InnerVlans cannot be empty！"));
-                }
-                //判断同一个switchPort下内部VLAN段是否有重叠
-                String sql = "select count(a.uuid) from QinqVO a " +
-                        "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
-                        "and ((a.startVlan between :startVlan and :endVlan) " +
-                        "or (a.endVlan between :startVlan and :endVlan) " +
-                        "or (:startVlan between a.startVlan and a.endVlan) " +
-                        "or (:endVlan between a.startVlan and a.endVlan))";
-                for (InnerVlanSegment segment : msg.getSegments()) {
-                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("switchPortUuid", msg.getSwitchPortUuid());
-                    vq.setParameter("startVlan", segment.getStartVlan());
-                    vq.setParameter("endVlan", segment.getEndVlan());
-                    Long count = vq.getSingleResult();
-                    if (count > 0) {
-                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                    }
-                }
             }
         }
     }
@@ -360,8 +334,15 @@ public class TunnelValidateBase {
             }
         }
 
-        //BOSS创建验证物理接口的账户是否一致
+        //接口只有是Trunk时才能开启QINQ
+        if(interfaceVOA.getType() != NetworkType.TRUNK && msg.isQinqA()){
+            throw new ApiMessageInterceptionException(argerr("接口A不是Trunk类型,不能开启QINQ！"));
+        }
+        if(interfaceVOZ.getType() != NetworkType.TRUNK && msg.isQinqZ()){
+            throw new ApiMessageInterceptionException(argerr("接口Z不是Trunk类型,不能开启QINQ！"));
+        }
 
+        //BOSS创建验证物理接口的账户是否一致
         if (!Objects.equals(msg.getAccountUuid(), interfaceVOA.getAccountUuid())) {
             throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
         }
@@ -432,59 +413,26 @@ public class TunnelValidateBase {
             validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
         }
 
-        //如果是ACCESS或是QINQ的物理接口，判断该物理接口是否已经开通通道
-        if (interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ) {
+        //如果是ACCESS物理接口，判断该物理接口是否已经开通通道
+        if (interfaceVOA.getType() == NetworkType.ACCESS) {
             boolean exists = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceAUuid())
                     .isExists();
             if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
+                throw new ApiMessageInterceptionException(argerr("该物理接口A是ACCESS口，不可复用"));
             }
         }
-        if (interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ) {
+        if (interfaceVOZ.getType() == NetworkType.ACCESS) {
             boolean exists = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceZUuid())
                     .isExists();
             if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
+                throw new ApiMessageInterceptionException(argerr("该物理接口Z是ACCESS口，不可复用"));
             }
         }
 
         //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
-                "and ((a.startVlan between :startVlan and :endVlan) " +
-                "or (a.endVlan between :startVlan and :endVlan) " +
-                "or (:startVlan between a.startVlan and a.endVlan) " +
-                "or (:endVlan between a.startVlan and a.endVlan))";
-        if (msg.getVlanSegment() != null) {
-            if (interfaceVOA.getType() == NetworkType.QINQ) {
-                List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
-                for (InnerVlanSegment vlanSegment : vlanSegments) {
-                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("switchPortUuid", interfaceVOA.getSwitchPortUuid());
-                    vq.setParameter("startVlan", vlanSegment.getStartVlan());
-                    vq.setParameter("endVlan", vlanSegment.getEndVlan());
-                    Long count = vq.getSingleResult();
-                    if (count > 0) {
-                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                    }
-                }
-            }
-            if (interfaceVOZ.getType() == NetworkType.QINQ) {
-                List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
-                for (InnerVlanSegment vlanSegment : vlanSegments) {
-                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("switchPortUuid", interfaceVOZ.getSwitchPortUuid());
-                    vq.setParameter("startVlan", vlanSegment.getStartVlan());
-                    vq.setParameter("endVlan", vlanSegment.getEndVlan());
-                    Long count = vq.getSingleResult();
-                    if (count > 0) {
-                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                    }
-                }
-            }
-        }
+        validateInnerVlan(msg.isQinqA(), interfaceVOA.getSwitchPortUuid(), msg.isQinqZ(), interfaceVOZ.getSwitchPortUuid(), msg.getVlanSegment());
 
         //判断账户金额是否充足
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
@@ -496,6 +444,66 @@ public class TunnelValidateBase {
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+    }
+
+    public void validateInnerVlan(boolean isQinqA, String switchPortUuidA, boolean isQinqZ, String switchPortUuidZ, List<InnerVlanSegment> vlanSegments){
+
+        String sql = "select count(a.uuid) from QinqVO a " +
+                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
+                "and ((a.startVlan between :startVlan and :endVlan) " +
+                "or (a.endVlan between :startVlan and :endVlan) " +
+                "or (:startVlan between a.startVlan and a.endVlan) " +
+                "or (:endVlan between a.startVlan and a.endVlan))";
+        if (vlanSegments != null) {
+            if (isQinqA) {
+                for (InnerVlanSegment vlanSegment : vlanSegments) {
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("switchPortUuid", switchPortUuidA);
+                    vq.setParameter("startVlan", vlanSegment.getStartVlan());
+                    vq.setParameter("endVlan", vlanSegment.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if (count > 0) {
+                        throw new ApiMessageInterceptionException(argerr("A接口的内部VLAN段在A端口有冲突"));
+                    }
+                }
+            }
+            if (isQinqZ) {
+                for (InnerVlanSegment vlanSegment : vlanSegments) {
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("switchPortUuid", switchPortUuidZ);
+                    vq.setParameter("startVlan", vlanSegment.getStartVlan());
+                    vq.setParameter("endVlan", vlanSegment.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if (count > 0) {
+                        throw new ApiMessageInterceptionException(argerr("Z接口的内部VLAN段在Z端口有冲突"));
+                    }
+                }
+            }
+        }
+    }
+
+    public void validateInnerVlan(boolean isQinq, String switchPortUuid, List<QinqVO> qinqVOs){
+
+        String sql = "select count(a.uuid) from QinqVO a " +
+                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
+                "and ((a.startVlan between :startVlan and :endVlan) " +
+                "or (a.endVlan between :startVlan and :endVlan) " +
+                "or (:startVlan between a.startVlan and a.endVlan) " +
+                "or (:endVlan between a.startVlan and a.endVlan))";
+        if (qinqVOs != null) {
+            if (isQinq) {
+                for (QinqVO qinqVO : qinqVOs) {
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("switchPortUuid", switchPortUuid);
+                    vq.setParameter("startVlan", qinqVO.getStartVlan());
+                    vq.setParameter("endVlan", qinqVO.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if (count > 0) {
+                        throw new ApiMessageInterceptionException(argerr("要切换端口的内部VLAN有冲突，不能切换。"));
+                    }
+                }
+            }
+        }
     }
 
     public void validate(APIUpdateTunnelMsg msg) {
@@ -593,12 +601,11 @@ public class TunnelValidateBase {
         }
     }
 
-    public void validate(APICreateQinqMsg msg) {
-
+    public void validate(APIUpdateQinqMsg msg){
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         //判断该专线是否中止
         if(vo.getState() == TunnelState.Enabled){
-            throw new ApiMessageInterceptionException(argerr("添加QINQ，请先断开连接！"));
+            throw new ApiMessageInterceptionException(argerr("设置QINQ，请先断开连接！"));
         }
 
         //判断该专线是否还有未完成任务
@@ -606,64 +613,24 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
         }
 
-        //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
-                "and ((a.startVlan between :startVlan and :endVlan) " +
-                "or (a.endVlan between :startVlan and :endVlan) " +
-                "or (:startVlan between a.startVlan and a.endVlan) " +
-                "or (:endVlan between a.startVlan and a.endVlan))";
-        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "A")
-                .find();
-        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                .find();
-        if (tunnelSwitchPortVOA.getType() == NetworkType.QINQ) {
-            TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-            vq.setParameter("switchPortUuid", tunnelSwitchPortVOA.getSwitchPortUuid());
-            vq.setParameter("startVlan", msg.getStartVlan());
-            vq.setParameter("endVlan", msg.getEndVlan());
-            Long count = vq.getSingleResult();
-            if (count > 0) {
-                throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-            }
+        //只有Trunk的物理接口才能设置QINQ
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceUuidA(), InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceUuidZ(), InterfaceVO.class);
+
+        if(interfaceVOA.getType() != NetworkType.TRUNK && msg.isQinqA()){
+            throw new ApiMessageInterceptionException(argerr("接口A不是Trunk类型,不能设置QINQ！"));
         }
-        if (tunnelSwitchPortVOZ.getType() == NetworkType.QINQ) {
-            TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-            vq.setParameter("switchPortUuid", tunnelSwitchPortVOZ.getSwitchPortUuid());
-            vq.setParameter("startVlan", msg.getStartVlan());
-            vq.setParameter("endVlan", msg.getEndVlan());
-            Long count = vq.getSingleResult();
-            if (count > 0) {
-                throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+        if(interfaceVOZ.getType() != NetworkType.TRUNK && msg.isQinqZ()){
+            throw new ApiMessageInterceptionException(argerr("接口Z不是Trunk类型,不能设置QINQ！"));
+        }
+
+        //检查内部VLAN段
+        if(msg.isQinqA() || msg.isQinqZ()){
+            if(msg.getVlanSegment() == null || msg.getVlanSegment().isEmpty()){
+                throw new ApiMessageInterceptionException(argerr("设置QINQ专线,内部VLAN段不能为空！"));
             }
         }
 
-    }
-
-    public void validate(APIDeleteQinqMsg msg) {
-        QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
-
-        TunnelVO vo = dbf.findByUuid(qinqVO.getTunnelUuid(), TunnelVO.class);
-        //判断该专线是否中止
-        if(vo.getState() == TunnelState.Enabled){
-            throw new ApiMessageInterceptionException(argerr("删除QINQ，请先断开连接！"));
-        }
-
-        //判断该专线是否还有未完成任务
-        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, qinqVO.getTunnelUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
-            throw new ApiMessageInterceptionException(argerr("该专线有未完成任务，请稍后再操作！"));
-        }
-
-        Long count = Q.New(QinqVO.class)
-                .eq(QinqVO_.tunnelUuid, qinqVO.getTunnelUuid())
-                .count();
-        if (count == 1) {
-            throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 至少要有一个内部VLAN段，不能删！ ", qinqVO.getTunnelUuid()));
-        }
     }
 
     public void validate(APIGetVlanAutoMsg msg){
@@ -696,6 +663,7 @@ public class TunnelValidateBase {
         InterfaceVO oldInterfaceVOA = dbf.findByUuid(msg.getOldInterfaceAUuid(),InterfaceVO.class);
         InterfaceVO oldInterfaceVOZ = dbf.findByUuid(msg.getOldInterfaceZUuid(),InterfaceVO.class);
 
+        //验证共点和VLAN
         if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
             if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
@@ -752,11 +720,12 @@ public class TunnelValidateBase {
 
         }
 
+        //验证ACCESS接口
         if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())){
             if(interfaceVOA.getType() == oldInterfaceVOA.getType()){
-                if((interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ)
+                if((interfaceVOA.getType() == NetworkType.ACCESS)
                         && Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,interfaceVOA.getUuid()).isExists()){
-                    throw new ApiMessageInterceptionException(argerr("ACCESS或QINQ的物理接口已经开通了专线，不能切换成该物理接口！！"));
+                    throw new ApiMessageInterceptionException(argerr("ACCESS的物理接口已经开通了专线，不能切换成该物理接口！！"));
                 }
             }else{
                 throw new ApiMessageInterceptionException(argerr("切换物理接口，不能切换接口模式！！"));
@@ -765,12 +734,36 @@ public class TunnelValidateBase {
 
         if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())){
             if(interfaceVOZ.getType() == oldInterfaceVOZ.getType()){
-                if((interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ)
+                if((interfaceVOZ.getType() == NetworkType.ACCESS)
                         && Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,interfaceVOZ.getUuid()).isExists()){
-                    throw new ApiMessageInterceptionException(argerr("ACCESS或QINQ的物理接口已经开通了专线，不能切换成该物理接口！！"));
+                    throw new ApiMessageInterceptionException(argerr("ACCESS的物理接口已经开通了专线，不能切换成该物理接口！！"));
                 }
             }else{
                 throw new ApiMessageInterceptionException(argerr("切换物理接口，不能切换接口模式！！"));
+            }
+        }
+
+        //验证QINQ接口
+        List<QinqVO> qinqVOs = Q.New(QinqVO.class)
+                .eq(QinqVO_.tunnelUuid,vo.getUuid())
+                .list();
+        if(!interfaceVOA.getSwitchPortUuid().equals(oldInterfaceVOA.getSwitchPortUuid())){
+            TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag, "A")
+                    .find();
+            if(tunnelSwitchPortVOA.getType() == NetworkType.QINQ){
+                validateInnerVlan(true, interfaceVOA.getSwitchPortUuid(), qinqVOs);
+            }
+        }
+
+        if(!interfaceVOZ.getSwitchPortUuid().equals(oldInterfaceVOZ.getSwitchPortUuid())){
+            TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                    .find();
+            if(tunnelSwitchPortVOZ.getType() == NetworkType.QINQ){
+                validateInnerVlan(true, interfaceVOZ.getSwitchPortUuid(), qinqVOs);
             }
         }
 

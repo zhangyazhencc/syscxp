@@ -38,6 +38,10 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private ProductChargeModel productChargeModel;
     @APIParam(emptyString = false, required = false)
     private String description;
+    @APIParam
+    private boolean isQinqA;
+    @APIParam
+    private boolean isQinqZ;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegment;
     @APIParam(emptyString = false, required = false, maxLength = 32, resourceType = EndpointVO.class)
@@ -138,6 +142,22 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
         this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
+    }
+
+    public boolean isQinqA() {
+        return isQinqA;
+    }
+
+    public void setQinqA(boolean qinqA) {
+        isQinqA = qinqA;
+    }
+
+    public boolean isQinqZ() {
+        return isQinqZ;
+    }
+
+    public void setQinqZ(boolean qinqZ) {
+        isQinqZ = qinqZ;
     }
 
     public ApiNotification __notification__() {

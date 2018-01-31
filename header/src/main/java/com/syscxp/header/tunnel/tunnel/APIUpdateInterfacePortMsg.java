@@ -19,10 +19,8 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
     private String uuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = SwitchPortVO.class)
     private String switchPortUuid;
-    @APIParam
+    @APIParam(validValues = {"TRUNK", "ACCESS"})
     private NetworkType networkType;
-    @APIParam(required = false)
-    private List<InnerVlanSegment> segments;
 
     public String getUuid() {
         return uuid;
@@ -46,14 +44,6 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
 
     public void setNetworkType(NetworkType networkType) {
         this.networkType = networkType;
-    }
-
-    public List<InnerVlanSegment> getSegments() {
-        return segments;
-    }
-
-    public void setSegments(List<InnerVlanSegment> segments) {
-        this.segments = segments;
     }
 
     public ApiNotification __notification__() {

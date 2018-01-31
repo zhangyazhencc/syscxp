@@ -100,11 +100,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APICreateQinqMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIDeleteQinqMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateQinqMsg</name>
     </message>
 
     <message>
