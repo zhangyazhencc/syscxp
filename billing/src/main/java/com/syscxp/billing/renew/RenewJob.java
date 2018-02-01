@@ -1,5 +1,7 @@
-package com.syscxp.billing.header.renew;
+package com.syscxp.billing.renew;
 
+import com.syscxp.billing.header.renew.RenewVO;
+import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.billing.header.sla.ProductCaller;
 import com.syscxp.core.Platform;
 import com.syscxp.core.identity.InnerMessageHelper;
@@ -28,8 +30,6 @@ import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -51,7 +51,7 @@ public class RenewJob {
         template = RESTFacade.createRestTemplate(3000, 3000);
     }
 
-    @Scheduled(cron = "0 0/5 * * * ? ")
+    @Scheduled(cron = "0 0 0/2 * * ? ")
     @Transactional
     protected void autoRenew() {
 
