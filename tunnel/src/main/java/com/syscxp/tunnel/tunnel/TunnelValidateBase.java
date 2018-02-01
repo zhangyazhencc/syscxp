@@ -35,6 +35,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -237,20 +238,27 @@ public class TunnelValidateBase {
         //两个相同接口的专线不允许存在共点
         if (msg.getCrossTunnelUuid() != null) {
             if (msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null) {
-                String crossInterfaceAUuid = Q.New(TunnelSwitchPortVO.class)
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getCrossTunnelUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "A")
-                        .select(TunnelSwitchPortVO_.interfaceUuid)
-                        .findValue();
-                String crossInterfaceZUuid = Q.New(TunnelSwitchPortVO.class)
-                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getCrossTunnelUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                        .select(TunnelSwitchPortVO_.interfaceUuid)
-                        .findValue();
-                if ((msg.getInterfaceAUuid().equals(crossInterfaceAUuid) && msg.getInterfaceZUuid().equals(crossInterfaceZUuid))
-                        || (msg.getInterfaceAUuid().equals(crossInterfaceZUuid) && msg.getInterfaceZUuid().equals(crossInterfaceAUuid))) {
-                    throw new ApiMessageInterceptionException(argerr("该通道已使用相同的接口创建过，不能使用共点！"));
+
+                List<String> tunnelUuids = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getCrossInterfaceUuid())
+                        .select(TunnelSwitchPortVO_.tunnelUuid)
+                        .groupBy(TunnelSwitchPortVO_.tunnelUuid)
+                        .listValues();
+
+                List<String> interfaceUuids = new ArrayList<>();
+                interfaceUuids.add(msg.getInterfaceAUuid());
+                interfaceUuids.add(msg.getInterfaceZUuid());
+
+                for(String tunnelUuid : tunnelUuids){
+                    if(Q.New(TunnelSwitchPortVO.class)
+                            .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid)
+                            .in(TunnelSwitchPortVO_.interfaceUuid, interfaceUuids)
+                            .count().equals(2L)
+                            ){
+                        throw new ApiMessageInterceptionException(argerr("该通道已使用相同的接口创建过，不能使用共点！"));
+                    }
                 }
+
             }
         }
         //判断通道两端的连接点是否相同，不允许相同
