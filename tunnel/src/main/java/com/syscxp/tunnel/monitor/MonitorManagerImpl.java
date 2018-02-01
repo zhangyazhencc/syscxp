@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.StoredProcedureQuery;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -56,6 +57,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
+import static com.syscxp.core.Platform.err;
 
 /**
  * Created by DCY on 2017-09-07
@@ -99,6 +101,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIStopTunnelMonitorMsg) msg);
         } else if (msg instanceof APIRestartTunnelMonitorMsg) {
             handle((APIRestartTunnelMonitorMsg) msg);
+        } else if (msg instanceof APIInitTunnelMonitorMsg) {
+            handle((APIInitTunnelMonitorMsg) msg);
         } else if (msg instanceof APIQuerySpeedTestTunnelNodeMsg) {
             handle((APIQuerySpeedTestTunnelNodeMsg) msg);
         } else if (msg instanceof APICreateSpeedRecordsMsg) {
@@ -235,6 +239,52 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
+    @Transactional
+    private void handle(APIInitTunnelMonitorMsg msg){
+        /*
+        - 导入falcon_portal.tunnel_icmp 至 syscxp_tunnel
+        - 调用存储过程，按 tunnel_icmp更新tunnel的monitorCidr
+        - 调用初始化监控数据消息（APIInitTunnelMonitorMsg）
+        - 循环 TunnelVO，初始化监控数据
+        - 执行存储过程修改监控ip
+        - 循环 TunnelVO ，下发控制器（仅保存zookeeper），成功后修改TunnelVO.tunnelMonitorState,TunnelVO.TunnelStatus
+        - agent不下发，让监控机自动获取
+        - 数据检查
+            - 检查 TunnelVO， TunnelMonitorVO数据
+            - 检查agent数据
+            - 检查zk数据
+        - 检查数据有问题，需要再次调用消息（考虑原下发数据的清除或更新）
+        */
+
+        // 更新TunnelVO的monitorCidr，monitorState
+        StoredProcedureQuery q =  dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnel");
+        q.execute();
+
+        // 初始化TunnelMonitorVO数据
+        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+                .notNull(TunnelVO_.monitorCidr)
+                .list();
+        for(TunnelVO tunnelVO : tunnelVOS) {
+            try {
+                initTunnelMonitor(tunnelVO.getUuid());
+            }catch (Exception e){
+                throw new RuntimeException(String.format("初始化失败【TunnelUuid: %s】,Error: %s",tunnelVO.getUuid(),e.getMessage()));
+            }
+        }
+
+        //调用存储过程修改监控ip
+        dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnelmonitor");
+
+        //下发控制器（仅保存zk）
+        for(TunnelVO tunnelVO : tunnelVOS) {
+            // 异步下发控制器
+
+            // 更新状态
+            tunnelVO.setStatus(TunnelStatus.Connected);
+            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
+            dbf.getEntityManager().merge(tunnelVO);
+        }
+    }
     /***
      * 创建专线监控通道
      * @param tunnelVO
