@@ -213,7 +213,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         APICreateOrderReply reply = new APICreateOrderReply();
 
-        GLock lock = new GLock(String.format("autorenew-%s", msg.getProductType().toString()), 10);
+        GLock lock = new GLock(String.format("autorenew-%s", msg.getProductUuid()), 10);
         lock.lock();
         try {
 
