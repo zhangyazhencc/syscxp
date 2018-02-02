@@ -703,24 +703,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }
                 trigger.rollback();
             }
-        }).then(new Flow() {
-            String __name__ = "send-tunnelMsg";
-
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                 if (isUsed){
-
-                    taskBase.taskModifyTunnelPortsZK(tsPort.getTunnelUuid());
-
-                }
-
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                trigger.rollback();
-            }
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
@@ -1413,21 +1395,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
                     logger.info("回滚Z端物理接口或VLAN");
                 }
-                trigger.rollback();
-            }
-        }).then(new Flow() {
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-
-                    if(updateTunnel){
-                        taskBase.taskModifyTunnelPortsZK(vo.getUuid());
-                    }
-
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
                 trigger.rollback();
             }
         }).done(new FlowDoneHandler(null) {
@@ -2133,7 +2100,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                new TunnelJobAndTaskBase().taskModifyTunnelPortsZK(msg.getUuid());
 
                 if(msg.getVlanSegment() != null && !msg.getVlanSegment().isEmpty()){
                     evt.setInventories(QinqInventory.valueOf(qinqVOList));
