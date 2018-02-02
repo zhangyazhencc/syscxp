@@ -46,7 +46,12 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+import org.springframework.web.client.AsyncRestTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.StoredProcedureQuery;
 import java.net.UnknownHostException;
@@ -184,7 +189,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
 
-        tunnelVO.setStatus(TunnelStatus.Connected);
+        if (tunnelVO.getState() == TunnelState.Enabled) {
+            tunnelVO.setStatus(TunnelStatus.Connected);
+        }
         tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
         tunnelVO.setMonitorCidr("");
         tunnelVO = dbf.getEntityManager().merge(tunnelVO);
@@ -239,52 +246,136 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
+//    @Transactional
+//    private void handle(APIInitTunnelMonitorMsg msg) {
+//        List<String> list = new ArrayList<>();
+//        list.add("175435e158374b32a3cd091ecec1979e");
+//        list.add("1a98ea1376584841ad67bd4556a3aae3");
+//
+//        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+//        String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR_ZK);
+//        for (String tunnelUuid : list) {
+//            UpdateQuery.New(TunnelVO.class).set(TunnelVO_.monitorCidr, "192.168.0.0/24").eq(TunnelVO_.uuid, tunnelUuid).update();
+//
+//            List<TunnelMonitorVO> tunnelMonitorVOS = initTunnelMonitor(tunnelUuid);
+//            TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+//            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelVO.getUuid(), false, tunnelMonitorVOS);
+//
+//            //异步下发控制器（仅保存zk）
+//            HttpHeaders headers = new HttpHeaders();
+//            MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+//            headers.setContentType(type);
+//            HttpEntity<String> entity = new HttpEntity<String>(JSON.toJSONString(cmd), headers);
+//
+//            ListenableFuture<ResponseEntity<String>> futureEntity =
+//                    restTemplate.postForEntity(url, entity, String.class);
+//            futureEntity.addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+//                @Override
+//                public void onSuccess(ResponseEntity<String> entity) {
+//                    logger.debug(String.format("===【TunnelUuid: %s】控制器返回：%s！", tunnelVO.getUuid(), entity.getBody()));
+//
+//                    if (entity.getStatusCode() == HttpStatus.OK) {
+//                        ControllerCommands.ControllerRestResponse response =
+//                                JSON.parseObject(entity.getBody(), ControllerCommands.ControllerRestResponse.class);
+//
+//                        if (response.isSuccess()) {
+//                            // 更新状态
+//                            tunnelVO.setStatus(TunnelStatus.Connected);
+//                            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
+//                            dbf.getEntityManager().merge(tunnelVO);
+//
+//                            logger.debug(String.format("===【TunnelUuid: %s】发送控制器成功！", tunnelVO.getUuid()));
+//                        } else {
+//                            throw new RuntimeException(String.format("===【TunnelUuid: %s】控制器处理失败！Error: %s", tunnelVO.getUuid(), response.getMsg()));
+//                        }
+//
+//                    } else {
+//                        throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败！【StatusCode: %s】", tunnelVO.getUuid(), entity.getStatusCode()));
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Throwable t) {
+//                    throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败,Error: %s", tunnelVO.getUuid(), t.getMessage()));
+//                }
+//            });
+//
+//        }
+//    }
+
     @Transactional
-    private void handle(APIInitTunnelMonitorMsg msg){
-        /*
-        - 导入falcon_portal.tunnel_icmp 至 syscxp_tunnel
-        - 调用存储过程，按 tunnel_icmp更新tunnel的monitorCidr
-        - 调用初始化监控数据消息（APIInitTunnelMonitorMsg）
-        - 循环 TunnelVO，初始化监控数据
-        - 执行存储过程修改监控ip
-        - 循环 TunnelVO ，下发控制器（仅保存zookeeper），成功后修改TunnelVO.tunnelMonitorState,TunnelVO.TunnelStatus
-        - agent不下发，让监控机自动获取
-        - 数据检查
-            - 检查 TunnelVO， TunnelMonitorVO数据
-            - 检查agent数据
-            - 检查zk数据
-        - 检查数据有问题，需要再次调用消息（考虑原下发数据的清除或更新）
-        */
-
+    private void handle(APIInitTunnelMonitorMsg msg) {
         // 更新TunnelVO的monitorCidr，monitorState
-        StoredProcedureQuery q =  dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnel");
-        q.execute();
+        StoredProcedureQuery procUpdateTunnel = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnel");
+        procUpdateTunnel.execute();
 
-        // 初始化TunnelMonitorVO数据
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
                 .notNull(TunnelVO_.monitorCidr)
+                .eq(TunnelVO_.monitorState, TunnelMonitorState.Disabled)
                 .list();
-        for(TunnelVO tunnelVO : tunnelVOS) {
+        // 初始化TunnelMonitorVO数据
+        for (TunnelVO tunnelVO : tunnelVOS) {
             try {
                 initTunnelMonitor(tunnelVO.getUuid());
-            }catch (Exception e){
-                throw new RuntimeException(String.format("初始化失败【TunnelUuid: %s】,Error: %s",tunnelVO.getUuid(),e.getMessage()));
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("===【TunnelUuid: %s】初始化失败,Error: %s", tunnelVO.getUuid(), e.getMessage()));
             }
         }
 
         //调用存储过程修改监控ip
-        dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnelmonitor");
+        StoredProcedureQuery procUpdateMonitor = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnelmonitor");
+        procUpdateMonitor.execute();
 
-        //下发控制器（仅保存zk）
-        for(TunnelVO tunnelVO : tunnelVOS) {
-            // 异步下发控制器
+        //异步下发控制器（仅保存zk）
+        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+        String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR_ZK);
+        for (TunnelVO tunnelVO : tunnelVOS) {
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                    .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
+                    .list();
+            ControllerCommands.TunnelMonitorCommand cmd =
+                    getControllerMonitorCommand(tunnelVO.getUuid(), false, tunnelMonitorVOS);
 
-            // 更新状态
-            tunnelVO.setStatus(TunnelStatus.Connected);
-            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
-            dbf.getEntityManager().merge(tunnelVO);
+            HttpHeaders headers = new HttpHeaders();
+            MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+            headers.setContentType(type);
+            HttpEntity<String> entity = new HttpEntity<String>(JSON.toJSONString(cmd), headers);
+
+            ListenableFuture<ResponseEntity<String>> futureEntity =
+                    restTemplate.postForEntity(url, entity, String.class);
+            futureEntity.addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+                @Override
+                public void onSuccess(ResponseEntity<String> entity) {
+                    logger.debug(String.format("===【TunnelUuid: %s】控制器返回：%s！", tunnelVO.getUuid(), entity.getBody()));
+
+                    if (entity.getStatusCode() == HttpStatus.OK) {
+                        ControllerCommands.ControllerRestResponse response =
+                                JSON.parseObject(entity.getBody(), ControllerCommands.ControllerRestResponse.class);
+
+                        if (response.isSuccess()) {
+                            // 更新状态
+                            tunnelVO.setStatus(TunnelStatus.Connected);
+                            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
+                            dbf.getEntityManager().merge(tunnelVO);
+
+                            logger.debug(String.format("===【TunnelUuid: %s】控制器开启监控成功！", tunnelVO.getUuid()));
+                        } else {
+                            throw new RuntimeException(String.format("===【TunnelUuid: %s】控制器处理失败！Error: %s", tunnelVO.getUuid(), response.getMsg()));
+                        }
+
+                    } else {
+                        throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败！【StatusCode: %s】", tunnelVO.getUuid(), entity.getStatusCode()));
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败,Error: %s", tunnelVO.getUuid(), t.getMessage()));
+                }
+            });
         }
     }
+
     /***
      * 创建专线监控通道
      * @param tunnelVO
@@ -738,6 +829,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private String generateMonitorIp(TunnelMonitorVO tunnelMonitorVO, String monitorCidr) {
         String ip = null;
+
+        if (StringUtils.isEmpty(monitorCidr))
+            throw new RuntimeException(String.format("fial to generate monitor, monitr cidr is empty! [TunnelUuid: %s]"
+                    , tunnelMonitorVO.getTunnelUuid()));
 
         List<String> locatedIps = getLocatedIps(tunnelMonitorVO.getTunnelUuid(), monitorCidr);
 

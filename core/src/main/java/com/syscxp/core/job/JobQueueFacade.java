@@ -29,4 +29,6 @@ public interface JobQueueFacade {
    boolean startQueueIfPendingJob(String queueName, String owner);
    
    boolean startQueueIfPendingJob(String queueName, String owner, boolean newThread);
+
+   boolean isExist(String resourceUuid,  final Class<?> jobClass);
 }
