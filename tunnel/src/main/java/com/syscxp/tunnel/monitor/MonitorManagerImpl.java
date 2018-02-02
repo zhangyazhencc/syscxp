@@ -46,8 +46,14 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+import org.springframework.web.client.AsyncRestTemplate;
+import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.StoredProcedureQuery;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -56,6 +62,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
+import static com.syscxp.core.Platform.err;
 
 /**
  * Created by DCY on 2017-09-07
@@ -99,6 +106,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIStopTunnelMonitorMsg) msg);
         } else if (msg instanceof APIRestartTunnelMonitorMsg) {
             handle((APIRestartTunnelMonitorMsg) msg);
+        } else if (msg instanceof APIInitTunnelMonitorMsg) {
+            handle((APIInitTunnelMonitorMsg) msg);
         } else if (msg instanceof APIQuerySpeedTestTunnelNodeMsg) {
             handle((APIQuerySpeedTestTunnelNodeMsg) msg);
         } else if (msg instanceof APICreateSpeedRecordsMsg) {
@@ -180,7 +189,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
 
-        tunnelVO.setStatus(TunnelStatus.Connected);
+        if (tunnelVO.getState() == TunnelState.Enabled) {
+            tunnelVO.setStatus(TunnelStatus.Connected);
+        }
         tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
         tunnelVO.setMonitorCidr("");
         tunnelVO = dbf.getEntityManager().merge(tunnelVO);
@@ -233,6 +244,136 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
         logger.info(String.format("%s reset cidr success!", tunnelVO.getName()));
         bus.publish(event);
+    }
+
+//    @Transactional
+//    private void handle(APIInitTunnelMonitorMsg msg) {
+//        List<String> list = new ArrayList<>();
+//        list.add("175435e158374b32a3cd091ecec1979e");
+//        list.add("1a98ea1376584841ad67bd4556a3aae3");
+//
+//        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+//        String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR_ZK);
+//        for (String tunnelUuid : list) {
+//            UpdateQuery.New(TunnelVO.class).set(TunnelVO_.monitorCidr, "192.168.0.0/24").eq(TunnelVO_.uuid, tunnelUuid).update();
+//
+//            List<TunnelMonitorVO> tunnelMonitorVOS = initTunnelMonitor(tunnelUuid);
+//            TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+//            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelVO.getUuid(), false, tunnelMonitorVOS);
+//
+//            //异步下发控制器（仅保存zk）
+//            HttpHeaders headers = new HttpHeaders();
+//            MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+//            headers.setContentType(type);
+//            HttpEntity<String> entity = new HttpEntity<String>(JSON.toJSONString(cmd), headers);
+//
+//            ListenableFuture<ResponseEntity<String>> futureEntity =
+//                    restTemplate.postForEntity(url, entity, String.class);
+//            futureEntity.addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+//                @Override
+//                public void onSuccess(ResponseEntity<String> entity) {
+//                    logger.debug(String.format("===【TunnelUuid: %s】控制器返回：%s！", tunnelVO.getUuid(), entity.getBody()));
+//
+//                    if (entity.getStatusCode() == HttpStatus.OK) {
+//                        ControllerCommands.ControllerRestResponse response =
+//                                JSON.parseObject(entity.getBody(), ControllerCommands.ControllerRestResponse.class);
+//
+//                        if (response.isSuccess()) {
+//                            // 更新状态
+//                            tunnelVO.setStatus(TunnelStatus.Connected);
+//                            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
+//                            dbf.getEntityManager().merge(tunnelVO);
+//
+//                            logger.debug(String.format("===【TunnelUuid: %s】发送控制器成功！", tunnelVO.getUuid()));
+//                        } else {
+//                            throw new RuntimeException(String.format("===【TunnelUuid: %s】控制器处理失败！Error: %s", tunnelVO.getUuid(), response.getMsg()));
+//                        }
+//
+//                    } else {
+//                        throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败！【StatusCode: %s】", tunnelVO.getUuid(), entity.getStatusCode()));
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Throwable t) {
+//                    throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败,Error: %s", tunnelVO.getUuid(), t.getMessage()));
+//                }
+//            });
+//
+//        }
+//    }
+
+    @Transactional
+    private void handle(APIInitTunnelMonitorMsg msg) {
+        // 更新TunnelVO的monitorCidr，monitorState
+        StoredProcedureQuery procUpdateTunnel = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnel");
+        procUpdateTunnel.execute();
+
+        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+                .notNull(TunnelVO_.monitorCidr)
+                .eq(TunnelVO_.monitorState, TunnelMonitorState.Disabled)
+                .list();
+        // 初始化TunnelMonitorVO数据
+        for (TunnelVO tunnelVO : tunnelVOS) {
+            try {
+                initTunnelMonitor(tunnelVO.getUuid());
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("===【TunnelUuid: %s】初始化失败,Error: %s", tunnelVO.getUuid(), e.getMessage()));
+            }
+        }
+
+        //调用存储过程修改监控ip
+        StoredProcedureQuery procUpdateMonitor = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_tunnelmonitor");
+        procUpdateMonitor.execute();
+
+        //异步下发控制器（仅保存zk）
+        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+        String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR_ZK);
+        for (TunnelVO tunnelVO : tunnelVOS) {
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                    .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
+                    .list();
+            ControllerCommands.TunnelMonitorCommand cmd =
+                    getControllerMonitorCommand(tunnelVO.getUuid(), false, tunnelMonitorVOS);
+
+            HttpHeaders headers = new HttpHeaders();
+            MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+            headers.setContentType(type);
+            HttpEntity<String> entity = new HttpEntity<String>(JSON.toJSONString(cmd), headers);
+
+            ListenableFuture<ResponseEntity<String>> futureEntity =
+                    restTemplate.postForEntity(url, entity, String.class);
+            futureEntity.addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+                @Override
+                public void onSuccess(ResponseEntity<String> entity) {
+                    logger.debug(String.format("===【TunnelUuid: %s】控制器返回：%s！", tunnelVO.getUuid(), entity.getBody()));
+
+                    if (entity.getStatusCode() == HttpStatus.OK) {
+                        ControllerCommands.ControllerRestResponse response =
+                                JSON.parseObject(entity.getBody(), ControllerCommands.ControllerRestResponse.class);
+
+                        if (response.isSuccess()) {
+                            // 更新状态
+                            tunnelVO.setStatus(TunnelStatus.Connected);
+                            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
+                            dbf.getEntityManager().merge(tunnelVO);
+
+                            logger.debug(String.format("===【TunnelUuid: %s】控制器开启监控成功！", tunnelVO.getUuid()));
+                        } else {
+                            throw new RuntimeException(String.format("===【TunnelUuid: %s】控制器处理失败！Error: %s", tunnelVO.getUuid(), response.getMsg()));
+                        }
+
+                    } else {
+                        throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败！【StatusCode: %s】", tunnelVO.getUuid(), entity.getStatusCode()));
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败,Error: %s", tunnelVO.getUuid(), t.getMessage()));
+                }
+            });
+        }
     }
 
     /***
@@ -688,6 +829,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private String generateMonitorIp(TunnelMonitorVO tunnelMonitorVO, String monitorCidr) {
         String ip = null;
+
+        if (StringUtils.isEmpty(monitorCidr))
+            throw new RuntimeException(String.format("fial to generate monitor, monitr cidr is empty! [TunnelUuid: %s]"
+                    , tunnelMonitorVO.getTunnelUuid()));
 
         List<String> locatedIps = getLocatedIps(tunnelMonitorVO.getTunnelUuid(), monitorCidr);
 
