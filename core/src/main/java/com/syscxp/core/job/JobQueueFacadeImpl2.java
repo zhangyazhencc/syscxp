@@ -591,6 +591,17 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         execute(queueName, owner, job, new NopeCompletion());
     }
 
+    @Transactional(readOnly=true, propagation= Propagation.REQUIRES_NEW)
+    public boolean isExist(String resourceUuid,  final Class<?> jobClass){
+        String sql ="select count(*) from JobQueueEntryVO j where j.resourceUuid = :resourceUuid and j.name = :name";
+        TypedQuery<Long> q = dbf.getEntityManager().createQuery(sql, Long.class);
+        q.setParameter("resourceUuid", resourceUuid);
+        q.setParameter("name", jobClass.getName());
+        q.setMaxResults(1);
+        Long count = q.getSingleResult();
+        return count > 0;
+    }
+
     @Override
     public void deleteJobQueue(String queueName) {
 
