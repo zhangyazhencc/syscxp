@@ -720,17 +720,15 @@ public class TunnelControllerBase extends AbstractTunnel {
      * */
     public String[] getCrossPhysicalSwitchUuid(TunnelVO vo){
         TunnelBase tunnelBase = new TunnelBase();
-        String interfaceUuidA = Q.New(TunnelSwitchPortVO.class)
+        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag,"A")
-                .select(TunnelSwitchPortVO_.interfaceUuid)
-                .findValue();
-        String interfaceUuidZ = Q.New(TunnelSwitchPortVO.class)
+                .find();
+        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag,"Z")
-                .select(TunnelSwitchPortVO_.interfaceUuid)
-                .findValue();
-        if(isCross(vo.getUuid(),interfaceUuidA)){
+                .find();
+        if(isCross(vo.getUuid(),tunnelSwitchPortVOA.getInterfaceUuid(),tunnelSwitchPortVOA.getVlan())){
             String switchPortUuidA = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"A")
@@ -745,7 +743,7 @@ public class TunnelControllerBase extends AbstractTunnel {
             }else{
                 return new String[]{physicalSwitchVOA.getUuid()};
             }
-        }else if(isCross(vo.getUuid(),interfaceUuidZ)){
+        }else if(isCross(vo.getUuid(),tunnelSwitchPortVOZ.getInterfaceUuid(),tunnelSwitchPortVOZ.getVlan())){
             String switchPortUuidZ = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"Z")
@@ -768,7 +766,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     /**
      * 控制器下发的共点判断
      * */
-    public boolean isCross(String tunnelUuid, String interfaceUuid) {
+    public boolean isCross(String tunnelUuid, String interfaceUuid, Integer vlan) {
         TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
         Integer vsi = vo.getVsi();
 
@@ -777,11 +775,13 @@ public class TunnelControllerBase extends AbstractTunnel {
                 "and a.uuid != :tunnelUuid " +
                 "and a.state = 'Enabled' " +
                 "and a.vsi = :vsi " +
-                "and b.interfaceUuid = :interfaceUuid";
+                "and b.interfaceUuid = :interfaceUuid " +
+                "and b.vlan = :vlan";
         TypedQuery<TunnelSwitchPortVO> vq = dbf.getEntityManager().createQuery(sql, TunnelSwitchPortVO.class);
         vq.setParameter("tunnelUuid", tunnelUuid);
         vq.setParameter("vsi", vsi);
         vq.setParameter("interfaceUuid", interfaceUuid);
+        vq.setParameter("vlan", vlan);
         if (vq.getResultList().size() < 1) {
             return false;
         } else {

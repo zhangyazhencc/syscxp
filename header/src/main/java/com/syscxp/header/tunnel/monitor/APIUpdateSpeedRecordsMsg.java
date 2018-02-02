@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
@@ -21,6 +22,9 @@ public class APIUpdateSpeedRecordsMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = SpeedRecordsVO.class)
     private String uuid;
 
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String accountUuid;
+
     @APIParam(emptyString = false,maxLength = 11)
     private Integer avgSpeed;
 
@@ -39,6 +43,18 @@ public class APIUpdateSpeedRecordsMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getAccountUuid() {
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public Integer getAvgSpeed() {

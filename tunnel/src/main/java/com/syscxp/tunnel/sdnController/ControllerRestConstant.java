@@ -23,6 +23,9 @@ public interface ControllerRestConstant {
     static final String TUNNEL_TRACE = "/tunnel_trace";
 
     static final String START_TUNNEL_MONITOR = "/tunnel_monitor/start";
+    static final String START_TUNNEL_MONITOR_ZK = "/tunnel_monitor/start_zk";
     static final String STOP_TUNNEL_MONITOR = "/tunnel_monitor/stop";
+    static final String STOP_TUNNEL_MONITOR_ZK = "/tunnel_monitor/stop_zk";
     static final String MODIFY_TUNNEL_MONITOR = "/tunnel_monitor/modify";
+    static final String MODIFY_TUNNEL_MONITOR_ZK = "/tunnel_monitor/modify_zk";
 }
