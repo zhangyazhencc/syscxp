@@ -457,7 +457,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .notEq(TunnelVO_.uuid, tunnelVO.getUuid())
                 .list();
         if (!tunnelVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("monitor cidr %s has been used by tunnel %s, " +
+            throw new IllegalArgumentException(String.format("monitor cidr %s has been used by tunnel %smonitor cidr %s has been used by tunnel %s, " +
                     "plsase enter another cidr!", tunnelVO.getMonitorCidr(), tunnelVOS.get(0).getName()));
 
         // 删除遗留数据
@@ -867,7 +867,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     command, MonitorAgentCommands.RestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
-            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
+            response.setMsg(String.format("[MonitorAgent]unable to post %s. %s", url, e.getMessage()));
         }
 
         if (!response.isSuccess())
