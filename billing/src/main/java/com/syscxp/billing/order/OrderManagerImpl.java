@@ -113,8 +113,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (orderVO.getState() != OrderState.CANCELED) {
             validRefundOrder(orderVO.getProductUuid(), orderVO.getPayTime());
             AccountBalanceVO abvo = dbf.findByUuid(orderVO.getAccountUuid(), AccountBalanceVO.class);
-            abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash().negate()));
-            abvo.setPresentBalance(abvo.getPresentBalance().add(orderVO.getPayPresent().negate()));
+            abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash()));
+            abvo.setPresentBalance(abvo.getPresentBalance().add(orderVO.getPayPresent()));
             orderVO.setState(OrderState.CANCELED);
             RenewVO renewVO = getRenewVO(orderVO.getAccountUuid(), orderVO.getProductUuid());
             if (renewVO == null) {
