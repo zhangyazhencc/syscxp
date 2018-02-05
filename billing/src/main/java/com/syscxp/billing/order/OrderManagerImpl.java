@@ -109,6 +109,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private void handle(APIRefundOrderMsg msg) {
         OrderVO orderVO = dbf.findByUuid(msg.getOrderUuid(), OrderVO.class);
+<<<<<<< HEAD
         validRefundOrder(orderVO.getProductUuid(),orderVO.getPayTime());
         AccountBalanceVO abvo = dbf.findByUuid(orderVO.getAccountUuid(), AccountBalanceVO.class);
         abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash()));
@@ -129,6 +130,28 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().flush();
         saveDealDetail(orderVO, abvo);
 
+=======
+        if (orderVO.getState() != OrderState.CANCELED) {
+            validRefundOrder(orderVO.getProductUuid(), orderVO.getPayTime());
+            AccountBalanceVO abvo = dbf.findByUuid(orderVO.getAccountUuid(), AccountBalanceVO.class);
+            abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash().negate()));
+            abvo.setPresentBalance(abvo.getPresentBalance().add(orderVO.getPayPresent().negate()));
+            orderVO.setState(OrderState.CANCELED);
+            RenewVO renewVO = getRenewVO(orderVO.getAccountUuid(), orderVO.getProductUuid());
+            if (renewVO == null) {
+                throw new IllegalArgumentException("could not find the product purchased history ");
+            }
+            renewVO.setPriceOneMonth(orderVO.getLastPriceOneMonth());
+            if (orderVO.getType().equals(OrderType.BUY)) {
+                dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
+            } else if (orderVO.getType().equals(OrderType.UPGRADE) || orderVO.getType().equals(OrderType.DOWNGRADE)) {
+                dbf.getEntityManager().merge(renewVO);
+            }
+            dbf.getEntityManager().merge(abvo);
+            dbf.getEntityManager().merge(orderVO);
+            dbf.getEntityManager().flush();
+        }
+>>>>>>> c52a88f9cecea892b4d1695361feaf6014e3c415
         APIRefundOrderReply reply = new APIRefundOrderReply();
         reply.setSuccess(true);
         bus.reply(msg, reply);

@@ -77,4 +77,7 @@
         <name>com.syscxp.header.tunnel.monitor.APIInitTunnelMonitorMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APIInitTunnelMonitorRollbackMsg</name>
+    </message>
 </service>
