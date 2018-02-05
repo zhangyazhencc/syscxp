@@ -109,24 +109,26 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private void handle(APIRefundOrderMsg msg) {
         OrderVO orderVO = dbf.findByUuid(msg.getOrderUuid(), OrderVO.class);
-        validRefundOrder(orderVO.getProductUuid(),orderVO.getPayTime());
-        AccountBalanceVO abvo = dbf.findByUuid(orderVO.getAccountUuid(), AccountBalanceVO.class);
-        abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash().negate()));
-        abvo.setPresentBalance(abvo.getPresentBalance().add(orderVO.getPayPresent().negate()));
-        orderVO.setState(OrderState.CANCELED);
-        RenewVO renewVO = getRenewVO(orderVO.getAccountUuid(), orderVO.getProductUuid());
-        if (renewVO == null) {
-            throw new IllegalArgumentException("could not find the product purchased history ");
+        if (orderVO.getState() != OrderState.CANCELED) {
+            validRefundOrder(orderVO.getProductUuid(), orderVO.getPayTime());
+            AccountBalanceVO abvo = dbf.findByUuid(orderVO.getAccountUuid(), AccountBalanceVO.class);
+            abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash().negate()));
+            abvo.setPresentBalance(abvo.getPresentBalance().add(orderVO.getPayPresent().negate()));
+            orderVO.setState(OrderState.CANCELED);
+            RenewVO renewVO = getRenewVO(orderVO.getAccountUuid(), orderVO.getProductUuid());
+            if (renewVO == null) {
+                throw new IllegalArgumentException("could not find the product purchased history ");
+            }
+            renewVO.setPriceOneMonth(orderVO.getLastPriceOneMonth());
+            if (orderVO.getType().equals(OrderType.BUY)) {
+                dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
+            } else if (orderVO.getType().equals(OrderType.UPGRADE) || orderVO.getType().equals(OrderType.DOWNGRADE)) {
+                dbf.getEntityManager().merge(renewVO);
+            }
+            dbf.getEntityManager().merge(abvo);
+            dbf.getEntityManager().merge(orderVO);
+            dbf.getEntityManager().flush();
         }
-        renewVO.setPriceOneMonth(orderVO.getLastPriceOneMonth());
-        if (orderVO.getType().equals(OrderType.BUY)) {
-            dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
-        }else if(orderVO.getType().equals(OrderType.UPGRADE)||orderVO.getType().equals(OrderType.DOWNGRADE)){
-            dbf.getEntityManager().merge(renewVO);
-        }
-        dbf.getEntityManager().merge(abvo);
-        dbf.getEntityManager().merge(orderVO);
-        dbf.getEntityManager().flush();
         APIRefundOrderReply reply = new APIRefundOrderReply();
         reply.setSuccess(true);
         bus.reply(msg, reply);
@@ -661,6 +663,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
         query.add(OrderVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
         query.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, productUuid);
+        query.add(OrderVO_.state, SimpleQuery.Op.EQ, OrderState.PAID);
         query.add(OrderVO_.productEffectTimeEnd, SimpleQuery.Op.GT, dbf.getCurrentSqlTime());
         query.orderBy(OrderVO_.createDate, SimpleQuery.Od.DESC);
         return query.list();
