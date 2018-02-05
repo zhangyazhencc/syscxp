@@ -45,7 +45,7 @@ CREATE TABLE `L3EndPointVO` (
 CREATE TABLE `L3RtVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `l3EndPointUuid` VARCHAR(32) COMMENT '分配账户',
-  `import` varchar(50) NOT NULL DEFAULT '1:1' COMMENT 'import',
+  `impor` varchar(50) NOT NULL DEFAULT '1:1' COMMENT 'import',
   `export` varchar(50) NOT NULL DEFAULT '1:1' COMMENT 'export',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,

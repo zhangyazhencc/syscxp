@@ -358,6 +358,7 @@ INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('ConnectedCloud','互联
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('VPN','VPN网关', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('InternetTools','网络工具', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('AlertManager','报警管理', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('EdgeLine','最后一公里','console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Others','其他','console');
 
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('cloudLine','申请云专线工单','officialWebsite');
