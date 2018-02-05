@@ -111,8 +111,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         OrderVO orderVO = dbf.findByUuid(msg.getOrderUuid(), OrderVO.class);
         validRefundOrder(orderVO.getProductUuid(),orderVO.getPayTime());
         AccountBalanceVO abvo = dbf.findByUuid(orderVO.getAccountUuid(), AccountBalanceVO.class);
-        abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash().negate()));
-        abvo.setPresentBalance(abvo.getPresentBalance().add(orderVO.getPayPresent().negate()));
+        abvo.setCashBalance(abvo.getCashBalance().add(orderVO.getPayCash()));
+        abvo.setPresentBalance(abvo.getPresentBalance().add(orderVO.getPayPresent()));
         orderVO.setState(OrderState.CANCELED);
         RenewVO renewVO = getRenewVO(orderVO.getAccountUuid(), orderVO.getProductUuid());
         if (renewVO == null) {
@@ -127,10 +127,37 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().merge(orderVO);
         dbf.getEntityManager().flush();
+        saveDealDetail(orderVO, abvo);
+
         APIRefundOrderReply reply = new APIRefundOrderReply();
         reply.setSuccess(true);
         bus.reply(msg, reply);
 
+    }
+
+    private void saveDealDetail(OrderVO orderVO, AccountBalanceVO abvo) {
+        int hash = orderVO.getAccountUuid().hashCode() < 0 ? ~orderVO.getAccountUuid().hashCode() : orderVO.getAccountUuid().hashCode();
+        String outTradeNO = dbf.getCurrentSqlTime().toString().replaceAll("\\D+", "").concat(String.valueOf(hash)) + atomicInteger.getAndIncrement();
+        DealType dealType = DealType.REFUND;
+        BigDecimal incomePresent = BigDecimal.ZERO;
+        BigDecimal expendPresent = BigDecimal.ZERO;
+        BigDecimal incomeCash = BigDecimal.ZERO;
+        BigDecimal expendCash = BigDecimal.ZERO;
+        if(orderVO.getType().equals(OrderType.DOWNGRADE) ){
+            dealType = DealType.DEDUCTION;
+            expendPresent = orderVO.getPayPresent();
+            expendCash = orderVO.getPayCash();
+        }else {
+            incomeCash = orderVO.getPayCash();
+            incomePresent = orderVO.getPayPresent();
+        }
+        int index = 1;
+        if (orderVO.getPayPresent().compareTo(BigDecimal.ZERO) != 0) {
+            new DealDetailVOHelper(dbf).saveDealDetailVO(orderVO.getAccountUuid(), DealWay.PRESENT_BILL, incomePresent, expendPresent, dbf.getCurrentSqlTime(), dealType, DealState.SUCCESS, abvo.getPresentBalance(), outTradeNO+"-"+(index++), orderVO.getUuid(), orderVO.getAccountUuid(), null, orderVO.getUuid(),null);
+        }
+        if (orderVO.getPayCash().compareTo(BigDecimal.ZERO) != 0) {
+            new DealDetailVOHelper(dbf).saveDealDetailVO(orderVO.getAccountUuid(), DealWay.CASH_BILL, incomeCash, expendCash, dbf.getCurrentSqlTime(), dealType, DealState.SUCCESS, abvo.getCashBalance(), outTradeNO+"-"+(index++), orderVO.getUuid(), orderVO.getAccountUuid(), null, orderVO.getUuid(),null);
+        }
     }
 
     private void validRefundOrder(String productUuid,Timestamp payTime) {
