@@ -661,6 +661,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
         query.add(OrderVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
         query.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, productUuid);
+        query.add(OrderVO_.state, SimpleQuery.Op.EQ, OrderState.PAID);
         query.add(OrderVO_.productEffectTimeEnd, SimpleQuery.Op.GT, dbf.getCurrentSqlTime());
         query.orderBy(OrderVO_.createDate, SimpleQuery.Od.DESC);
         return query.list();

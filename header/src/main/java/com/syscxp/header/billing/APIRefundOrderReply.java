@@ -6,13 +6,4 @@ import java.math.BigDecimal;
 
 public class APIRefundOrderReply extends APIReply{
 
-    private boolean isOK;
-
-    public boolean isOK() {
-        return isOK;
-    }
-
-    public void setOK(boolean OK) {
-        isOK = OK;
-    }
 }
