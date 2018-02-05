@@ -153,7 +153,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             incomeCash = orderVO.getPayCash();
             incomePresent = orderVO.getPayPresent();
         }
-        int index = 1;
+        int index = 0;
         if (orderVO.getPayPresent().compareTo(BigDecimal.ZERO) != 0) {
             new DealDetailVOHelper(dbf).saveDealDetailVO(orderVO.getAccountUuid(), DealWay.PRESENT_BILL, incomePresent, expendPresent, dbf.getCurrentSqlTime(), dealType, DealState.SUCCESS, abvo.getPresentBalance(), outTradeNO+"-"+(index++), orderVO.getUuid(), orderVO.getAccountUuid(), null, orderVO.getUuid(),null);
         }
