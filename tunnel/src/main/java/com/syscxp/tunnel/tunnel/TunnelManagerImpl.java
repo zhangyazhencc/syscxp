@@ -1452,7 +1452,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (update) {
             vo = dbf.updateAndRefresh(vo);
             if (nameChange)
-                RenameBillingProductNameJob.executeJob(jobf, vo.getUuid(), vo.getDescription());
+                RenameBillingProductNameJob.executeJob(jobf, vo.getUuid(), vo.getName());
         }
 
         APIUpdateTunnelEvent evt = new APIUpdateTunnelEvent(msg.getId());

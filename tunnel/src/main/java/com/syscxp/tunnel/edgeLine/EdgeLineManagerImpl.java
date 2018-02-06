@@ -25,7 +25,6 @@ import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.BillingRESTCaller;
 import com.syscxp.tunnel.tunnel.TunnelValidateBase;
 import com.syscxp.tunnel.tunnel.job.DeleteRenewVOAfterDeleteResourceJob;
-import com.syscxp.tunnel.tunnel.job.RenameBillingProductNameJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
