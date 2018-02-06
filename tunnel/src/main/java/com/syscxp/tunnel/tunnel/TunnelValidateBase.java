@@ -35,9 +35,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -639,7 +637,31 @@ public class TunnelValidateBase {
             }
         }
 
+        //验证输入的内部VLAN是否冲突
+        if(msg.getVlanSegment() != null && !msg.getVlanSegment().isEmpty()){
+            List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
+            Set<Integer> s = new HashSet<>();
+            for(InnerVlanSegment innerVlanSegment : vlanSegments){
+                if(Objects.equals(innerVlanSegment.getStartVlan(), innerVlanSegment.getEndVlan())){
+                    boolean success = s.add(innerVlanSegment.getStartVlan());
+                    if(!success){
+                        throw new ApiMessageInterceptionException(argerr("所填的内部VLAN有冲突！"));
+                    }
+                }else{
+                    for(int i = innerVlanSegment.getStartVlan(); i <= innerVlanSegment.getEndVlan(); i++){
+                        boolean success = s.add(i);
+                        if(!success){
+                            throw new ApiMessageInterceptionException(argerr("所填的内部VLAN有冲突！"));
+                        }
+                    }
+                }
+
+            }
+
+        }
+
     }
+
 
     public void validate(APIGetVlanAutoMsg msg){
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceUuidA(), InterfaceVO.class);
