@@ -1242,7 +1242,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         @Override
         public long getInterval() {
-            return TimeUnit.DAYS.toSeconds(cleanExpiredVpnInterval);
+            return TimeUnit.HOURS.toSeconds(cleanExpiredVpnInterval);
         }
 
         @Override
@@ -1250,14 +1250,23 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             return "clean-expired-vpn-" + Platform.getManagementServerId();
         }
 
+        private Timestamp getCloseTime(){
+            Timestamp time = Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(expiredVpnCloseTime < expiredVpnDeleteTime ? expiredVpnCloseTime : expiredVpnDeleteTime));
+            return time;
+        }
+
         private List<VpnVO> getVpnVOs() {
             return Q.New(VpnVO.class)
-                    .lte(VpnVO_.expireDate, dbf.getCurrentSqlTime())
+                    .lte(VpnVO_.expireDate, getCloseTime())
                     .list();
         }
 
         @Override
         public void run() {
+            if (!VpnGlobalConfig.EXPIRED_VPN_CLEAN_RUN.value(Boolean.class)){
+                return;
+            }
+
             Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredVpnDeleteTime));
 
             try {
@@ -1288,18 +1297,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private Future<Void> cleanExpiredVpnThread = null;
     private int cleanExpiredVpnInterval;
     private int expiredVpnDeleteTime;
+    private int expiredVpnCloseTime;
 
     private void startCleanExpiredProduct() {
         cleanExpiredVpnInterval = VpnGlobalConfig.CLEAN_EXPIRED_VPN_INTERVAL.value(Integer.class);
         expiredVpnDeleteTime = VpnGlobalConfig.EXPIRED_VPN_DELETE_TIME.value(Integer.class);
+        expiredVpnCloseTime = VpnGlobalConfig.EXPIRED_VPN_CLOSE_TIME.value(Integer.class);
 
         if (cleanExpiredVpnThread != null) {
             cleanExpiredVpnThread.cancel(true);
         }
 
-        cleanExpiredVpnThread = thdf.submitPeriodicTask(new CleanExpiredVpnThread(), TimeUnit.SECONDS.toSeconds(60));
+        cleanExpiredVpnThread = thdf.submitPeriodicTask(new CleanExpiredVpnThread(), TimeUnit.SECONDS.toSeconds(1800));
         LOGGER.debug(String.format("security group cleanExpiredVpnThread " +
-                "starts[cleanExpiredVpnInterval: %s day]", cleanExpiredVpnInterval));
+                "starts[cleanExpiredVpnInterval: %s hours]", cleanExpiredVpnInterval));
     }
 
     private void restartCleanExpiredProduct() {

@@ -2565,9 +2565,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             cleanExpiredProductThread.cancel(true);
         }
 
-        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toSeconds(60));
+        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toSeconds(3600));
         logger.debug(String
-                .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
+                .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s hours]", cleanExpiredProductInterval));
     }
 
     private void restartCleanExpiredProduct() {
@@ -2609,7 +2609,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         @Override
         public long getInterval() {
-            return TimeUnit.DAYS.toSeconds(cleanExpiredProductInterval);
+            return TimeUnit.HOURS.toSeconds(cleanExpiredProductInterval);
         }
 
         @Override
@@ -2617,17 +2617,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             return "clean-expired-product-" + Platform.getManagementServerId();
         }
 
-        private List<TunnelVO> getTunnels() {
+        private Timestamp getCloseTime(){
+            Timestamp time = Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(expiredProductCloseTime < expiredProductDeleteTime ? expiredProductCloseTime : expiredProductDeleteTime));
+            return time;
+        }
 
+        private List<TunnelVO> getTunnels() {
             return Q.New(TunnelVO.class)
-                    .lte(TunnelVO_.expireDate, dbf.getCurrentSqlTime())
+                    .lte(TunnelVO_.expireDate, getCloseTime())
                     .list();
         }
 
         private List<InterfaceVO> getInterfaces() {
 
             return Q.New(InterfaceVO.class)
-                    .lte(InterfaceVO_.expireDate, dbf.getCurrentSqlTime())
+                    .lte(InterfaceVO_.expireDate, getCloseTime())
                     .list();
         }
 
@@ -2656,6 +2660,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         @Override
         public void run() {
+            if (!TunnelGlobalConfig.EXPIRED_PRODUCT_CLEAN_RUN.value(Boolean.class)){
+                return;
+            }
+
             TunnelBase tunnelBase = new TunnelBase();
             Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductCloseTime));
             Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductDeleteTime));
