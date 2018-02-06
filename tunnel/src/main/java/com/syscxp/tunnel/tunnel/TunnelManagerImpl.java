@@ -16,6 +16,7 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueEntryVO;
 import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.core.job.JobQueueFacade;
+import com.syscxp.core.keyvalue.Op;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -369,17 +370,30 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIUpdateInterfaceMsg msg) {
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         boolean update = false;
-        if (msg.getName() != null) {
+        boolean nameChange = false;
+        if (msg.getName() != null && !msg.getName().equals(vo.getName())) {
             vo.setName(msg.getName());
             update = true;
+            nameChange = true;
         }
         if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
             update = true;
         }
 
-        if (update)
+        if (update) {
             vo = dbf.updateAndRefresh(vo);
+            if (nameChange) {
+                RenameBillingProductNameJob.executeJob(jobf, vo.getUuid(), vo.getName());
+                SimpleQuery<EdgeLineVO> q = dbf.createQuery(EdgeLineVO.class);
+                q.add(EdgeLineVO_.interfaceUuid, SimpleQuery.Op.EQ, vo.getUuid());
+
+                EdgeLineVO eg = q.find();
+                if (eg != null){
+                    RenameBillingProductNameJob.executeJob(jobf, eg.getUuid(), "最后一公里-" + vo.getName());
+                }
+            }
+        }
 
         APIUpdateInterfaceEvent evt = new APIUpdateInterfaceEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -1422,11 +1436,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIUpdateTunnelMsg msg) {
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         boolean update = false;
+        boolean nameChange = false;
 
-
-        if (msg.getName() != null) {
+        if (msg.getName() != null && !msg.getName().equals(vo.getName())) {
             vo.setName(msg.getName());
             update = true;
+            nameChange = true;
         }
 
         if (msg.getDescription() != null) {
@@ -1434,8 +1449,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             update = true;
         }
 
-        if (update)
+        if (update) {
             vo = dbf.updateAndRefresh(vo);
+            if (nameChange)
+                RenameBillingProductNameJob.executeJob(jobf, vo.getUuid(), vo.getName());
+        }
 
         APIUpdateTunnelEvent evt = new APIUpdateTunnelEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -2565,9 +2583,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             cleanExpiredProductThread.cancel(true);
         }
 
-        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toSeconds(60));
+        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toSeconds(3600));
         logger.debug(String
-                .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
+                .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s hours]", cleanExpiredProductInterval));
     }
 
     private void restartCleanExpiredProduct() {
@@ -2609,7 +2627,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         @Override
         public long getInterval() {
-            return TimeUnit.DAYS.toSeconds(cleanExpiredProductInterval);
+            return TimeUnit.HOURS.toSeconds(cleanExpiredProductInterval);
         }
 
         @Override
@@ -2617,17 +2635,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             return "clean-expired-product-" + Platform.getManagementServerId();
         }
 
-        private List<TunnelVO> getTunnels() {
+        private Timestamp getCloseTime(){
+            Timestamp time = Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(expiredProductCloseTime < expiredProductDeleteTime ? expiredProductCloseTime : expiredProductDeleteTime));
+            return time;
+        }
 
+        private List<TunnelVO> getTunnels() {
             return Q.New(TunnelVO.class)
-                    .lte(TunnelVO_.expireDate, dbf.getCurrentSqlTime())
+                    .lte(TunnelVO_.expireDate, getCloseTime())
                     .list();
         }
 
         private List<InterfaceVO> getInterfaces() {
 
             return Q.New(InterfaceVO.class)
-                    .lte(InterfaceVO_.expireDate, dbf.getCurrentSqlTime())
+                    .lte(InterfaceVO_.expireDate, getCloseTime())
                     .list();
         }
 
@@ -2656,6 +2678,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         @Override
         public void run() {
+            if (!TunnelGlobalConfig.EXPIRED_PRODUCT_CLEAN_RUN.value(Boolean.class)){
+                return;
+            }
+
             TunnelBase tunnelBase = new TunnelBase();
             Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductCloseTime));
             Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductDeleteTime));

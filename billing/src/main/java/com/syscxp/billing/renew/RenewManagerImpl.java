@@ -7,10 +7,7 @@ import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.core.Platform;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.header.billing.APICreateOrderMsg;
-import com.syscxp.header.billing.APIDeleteExpiredRenewReply;
-import com.syscxp.header.billing.APIDeleteExpiredRenewMsg;
-import com.syscxp.header.billing.BillingConstant;
+import com.syscxp.header.billing.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.billing.header.renew.*;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -29,6 +26,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class RenewManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 
@@ -67,9 +65,18 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
             handle((APIUpdateRenewPriceMsg) msg);
         }  else if (msg instanceof APIDeleteExpiredRenewMsg) {
             handle((APIDeleteExpiredRenewMsg) msg);
+        }  else if (msg instanceof APIRenameProductNameMsg) {
+            handle((APIRenameProductNameMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIRenameProductNameMsg msg) {
+        UpdateQuery.New(RenewVO.class).condAnd(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid()).set(RenewVO_.productName, msg.getProductName()).update();
+        APIRenameProductNameReply reply = new APIRenameProductNameReply();
+        reply.setSuccess(true);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIDeleteExpiredRenewMsg msg) {
