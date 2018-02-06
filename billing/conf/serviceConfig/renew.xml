@@ -16,6 +16,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.billing.APIRenameProductNameMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.renew.APIQueryRenewMsg</name>
         <serviceId>query</serviceId>
     </message>
