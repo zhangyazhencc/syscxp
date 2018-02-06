@@ -146,8 +146,12 @@ CREATE TABLE `ComparisonRuleVO` (
 
 /*Data for the table `ComparisonRuleVO` */
 
-insert  into `ComparisonRuleVO`(`uuid`,`productType`,`comparisonName`,`comparisonValue`,`createDate`,`lastOpDate`) values ('7e577d2ab4a111e79e8e525400c2a7e2','TUNNEL','大于等于','>=','2017-10-19 15:51:58','2017-10-19 15:45:36');
-insert  into `ComparisonRuleVO`(`uuid`,`productType`,`comparisonName`,`comparisonValue`,`createDate`,`lastOpDate`) values ('86f5b551b4a111e79e8e525400c2a7e2','TUNNEL','小于等于','<=','2017-10-19 15:52:00','2017-10-19 15:45:36');
+insert  into `ComparisonRuleVO`(`uuid`,`productType`,`comparisonName`,`comparisonValue`,`createDate`,`lastOpDate`)
+values ('57feaa13025b11e89fd700e0b4506238', 'TUNNEL', '大于', '>', '2018-01-26 13:41:23', '2018-01-26 13:41:11'),
+('68660555025b11e89fd700e0b4506238', 'TUNNEL', '小于', '<', '2018-01-26 13:41:11', '2018-01-26 13:41:11'),
+('7e577d2ab4a111e79e8e525400c2a7e2', 'TUNNEL', '大于等于', '>=', '2017-10-19 15:51:58', '2017-10-19 15:45:36'),
+('86f5b551b4a111e79e8e525400c2a7e2', 'TUNNEL', '小于等于', '<=', '2017-10-19 15:52:00', '2017-10-19 15:45:36');
+
 
 /*Table structure for table `ContactNotifyWayRefVO` */
 DROP TABLE IF EXISTS `ContactNotifyWayRefVO`;
@@ -181,19 +185,24 @@ CREATE TABLE `ContactVO` (
 DROP TABLE IF EXISTS `MonitorTargetVO`;
 
 CREATE TABLE `MonitorTargetVO` (
-  `uuid` varchar(32) DEFAULT NULL,
+  `uuid` varchar(32) NOT NULL,
   `productType` varchar(255) DEFAULT NULL,
   `targetName` varchar(128) DEFAULT NULL,
   `targetValue` varchar(127) DEFAULT NULL,
+  `unit` varchar(50) DEFAULT NULL,
+  `defaultValue` varchar(100) DEFAULT NULL,
+  `range` varchar(100) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `MonitorTargetVO` */
 
-insert  into `MonitorTargetVO`(`uuid`,`productType`,`targetName`,`targetValue`,`createDate`,`lastOpDate`) values ('1601ddcbb4a211e79e8e525400c2a7e2','TUNNEL','丢包','loss-package','2017-10-19 15:51:45','2017-10-19 15:49:50');
-insert  into `MonitorTargetVO`(`uuid`,`productType`,`targetName`,`targetValue`,`createDate`,`lastOpDate`) values ('406589bdb4a211e79e8e525400c2a7e2','TUNNEL','宽带使用率','net-usage-percent','2017-10-19 15:51:46','2017-10-19 15:49:50');
-insert  into `MonitorTargetVO`(`uuid`,`productType`,`targetName`,`targetValue`,`createDate`,`lastOpDate`) values ('5312c4d0b4a211e79e8e525400c2a7e2','TUNNEL','延迟','delay','2017-10-19 15:51:49','2017-10-19 15:49:50');
+insert  into `MonitorTargetVO`(`uuid`,`productType`,`targetName`,`targetValue`,`unit`,`defaultValue`,`range`,`lastOpDate`,`createDate`)
+values ('6612c4d0b4a211e79e8e525400c2a777', 'TUNNEL', '丢包', 'packetlost_percent', '%', '5', '1-100', '2017-11-28 16:57:39', '2017-10-19 15:49:50'),
+('406589bdb4a211e79e8e525400c2a7e2', 'TUNNEL', '带宽使用率', 'bandwidth_percent', '%', '80', '1-100', '2018-01-08 18:15:48', '2017-10-19 15:49:50'),
+('5312c4d0b4a211e79e8e525400c2a7e2', 'TUNNEL', '延迟', 'rtt', 'ms', '20', '0.1-1000', '2018-02-05 17:59:51', '2017-10-19 15:49:50');
 
 /*Table structure for table `NotifyWayVO` */
 DROP TABLE IF EXISTS `NotifyWayVO`;
@@ -211,8 +220,8 @@ CREATE TABLE `NotifyWayVO` (
 
 /*Data for the table `NotifyWayVO` */
 
-insert  into `NotifyWayVO`(`uuid`,`code`,`name`,`createDate`,`lastOpDate`) values ('8d72774bb30311e78816525400c2a7e2','email','邮件','2017-10-17 15:53:17','2017-10-17 14:22:29');
-insert  into `NotifyWayVO`(`uuid`,`code`,`name`,`createDate`,`lastOpDate`) values ('9a0c922db30311e78816525400c2a7e2','mobile','手机','2017-10-17 15:53:18','2017-10-17 14:22:29');
+insert  into `NotifyWayVO`(`uuid`,`code`,`name`,`createDate`,`lastOpDate`) values ('email','email','邮件','2017-10-17 15:53:17','2017-10-17 14:22:29');
+insert  into `NotifyWayVO`(`uuid`,`code`,`name`,`createDate`,`lastOpDate`) values ('mobile','mobile','手机','2017-10-17 15:53:18','2017-10-17 14:22:29');
 
 /*Table structure for table `PolicyVO` */
 DROP TABLE IF EXISTS `PolicyVO`;
