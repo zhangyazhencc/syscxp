@@ -62,6 +62,7 @@ import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.job.DeleteVpnJob;
 import com.syscxp.vpn.job.DestroyVpnJob;
+import com.syscxp.vpn.job.RenameBillingProductNameJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
 import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
@@ -729,9 +730,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     public void handle(APIUpdateVpnMsg msg) {
         VpnVO vpn = dbf.getEntityManager().find(VpnVO.class, msg.getUuid());
         boolean update = false;
-        if (!StringUtils.isEmpty(msg.getName())) {
+        boolean changeName = false;
+        if (!StringUtils.isEmpty(msg.getName()) && !msg.getName().equals(vpn.getName())) {
             vpn.setName(msg.getName());
             update = true;
+            changeName = true;
         }
         if (!StringUtils.isEmpty(msg.getDescription())) {
             vpn.setDescription(msg.getDescription());
@@ -743,6 +746,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         if (update) {
             vpn = dbf.getEntityManager().merge(vpn);
+            if (changeName)
+                RenameBillingProductNameJob.executeJob(jobf, vpn.getUuid(), vpn.getName());
         }
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));

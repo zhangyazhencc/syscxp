@@ -16,6 +16,7 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueEntryVO;
 import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.core.job.JobQueueFacade;
+import com.syscxp.core.keyvalue.Op;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -369,17 +370,30 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIUpdateInterfaceMsg msg) {
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         boolean update = false;
-        if (msg.getName() != null) {
+        boolean nameChange = false;
+        if (msg.getName() != null && !msg.getName().equals(vo.getName())) {
             vo.setName(msg.getName());
             update = true;
+            nameChange = true;
         }
         if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
             update = true;
         }
 
-        if (update)
+        if (update) {
             vo = dbf.updateAndRefresh(vo);
+            if (nameChange) {
+                RenameBillingProductNameJob.executeJob(jobf, vo.getUuid(), vo.getName());
+                SimpleQuery<EdgeLineVO> q = dbf.createQuery(EdgeLineVO.class);
+                q.add(EdgeLineVO_.interfaceUuid, SimpleQuery.Op.EQ, vo.getUuid());
+
+                EdgeLineVO eg = q.find();
+                if (eg != null){
+                    RenameBillingProductNameJob.executeJob(jobf, eg.getUuid(), "最后一公里-" + vo.getName());
+                }
+            }
+        }
 
         APIUpdateInterfaceEvent evt = new APIUpdateInterfaceEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -1422,11 +1436,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIUpdateTunnelMsg msg) {
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         boolean update = false;
+        boolean nameChange = false;
 
-
-        if (msg.getName() != null) {
+        if (msg.getName() != null && !msg.getName().equals(vo.getName())) {
             vo.setName(msg.getName());
             update = true;
+            nameChange = true;
         }
 
         if (msg.getDescription() != null) {
@@ -1434,8 +1449,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             update = true;
         }
 
-        if (update)
+        if (update) {
             vo = dbf.updateAndRefresh(vo);
+            if (nameChange)
+                RenameBillingProductNameJob.executeJob(jobf, vo.getUuid(), vo.getDescription());
+        }
 
         APIUpdateTunnelEvent evt = new APIUpdateTunnelEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));

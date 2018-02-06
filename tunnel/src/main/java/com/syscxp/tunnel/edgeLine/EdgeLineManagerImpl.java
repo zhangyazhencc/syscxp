@@ -25,6 +25,7 @@ import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.BillingRESTCaller;
 import com.syscxp.tunnel.tunnel.TunnelValidateBase;
 import com.syscxp.tunnel.tunnel.job.DeleteRenewVOAfterDeleteResourceJob;
+import com.syscxp.tunnel.tunnel.job.RenameBillingProductNameJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,8 +140,10 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
             update = true;
         }
 
-        if(update)
+        if(update) {
             vo = dbf.updateAndRefresh(vo);
+        }
+
 
         evt.setInventory(EdgeLineInventory.valueOf(vo));
         bus.publish(evt);
@@ -287,7 +290,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
                 new APICreateSLACompensationOrderMsg();
         slaCompensationOrderMsg.setSlaUuid(msg.getSlaUuid());
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
-        slaCompensationOrderMsg.setProductName("最后一公里-"+vo.getInterfaceVO().getName());
+        slaCompensationOrderMsg.setProductName("最后一公里-" + vo.getInterfaceVO().getName());
         slaCompensationOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForEdgeLine(vo));
         slaCompensationOrderMsg.setProductType(ProductType.EDGELINE);
         slaCompensationOrderMsg.setDuration(msg.getDuration());
