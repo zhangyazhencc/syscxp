@@ -2109,7 +2109,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
-                evt.setError(errf.stringToOperationError("update QINQ failed!"));
+                evt.setError(errf.stringToOperationError("内部VLAN段有冲突!"));
                 bus.publish(evt);
             }
         }).start();
