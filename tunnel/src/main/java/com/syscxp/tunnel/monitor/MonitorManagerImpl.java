@@ -52,7 +52,6 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
-import sun.security.util.Length;
 
 import javax.persistence.StoredProcedureQuery;
 import java.net.UnknownHostException;
