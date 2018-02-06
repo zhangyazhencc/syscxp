@@ -400,7 +400,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .notEq(TunnelVO_.uuid, tunnelVO.getUuid())
                 .list();
         if (!tunnelVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("monitor cidr %s has been used by tunnel %smonitor cidr %s has been used by tunnel %s, " +
+            throw new IllegalArgumentException(String.format("monitor cidr %s has been used by tunnel %s, " +
                     "plsase enter another cidr!", tunnelVO.getMonitorCidr(), tunnelVOS.get(0).getName()));
 
         // 判断是否为同交换机
