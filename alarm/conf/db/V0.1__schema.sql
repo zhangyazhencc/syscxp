@@ -200,7 +200,7 @@ CREATE TABLE `MonitorTargetVO` (
 /*Data for the table `MonitorTargetVO` */
 
 insert  into `MonitorTargetVO`(`uuid`,`productType`,`targetName`,`targetValue`,`unit`,`defaultValue`,`range`,`lastOpDate`,`createDate`)
-values ('6612c4d0b4a211e79e8e525400c2a777', 'TUNNEL', '丢包', 'packetlost_percent', '%', '5', '1-100', '2017-11-28 16:57:39', '2017-10-19 15:49:50'),
+values ('6612c4d0b4a211e79e8e525400c2a777', 'TUNNEL', '丢包率', 'packetlost_percent', '%', '5', '1-100', '2017-11-28 16:57:39', '2017-10-19 15:49:50'),
 ('406589bdb4a211e79e8e525400c2a7e2', 'TUNNEL', '带宽使用率', 'bandwidth_percent', '%', '80', '1-100', '2018-01-08 18:15:48', '2017-10-19 15:49:50'),
 ('5312c4d0b4a211e79e8e525400c2a7e2', 'TUNNEL', '延迟', 'rtt', 'ms', '20', '0.1-1000', '2018-02-05 17:59:51', '2017-10-19 15:49:50');
 

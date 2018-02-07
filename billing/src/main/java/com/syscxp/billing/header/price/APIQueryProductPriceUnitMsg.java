@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 
-@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE, names = {"read"})
 @AutoQuery(replyClass = APIQueryProductPriceUnitReply.class, inventoryClass = ProductPriceUnitInventory.class)
 public class APIQueryProductPriceUnitMsg extends APIQueryMessage{
 

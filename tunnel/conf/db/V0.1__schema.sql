@@ -596,8 +596,11 @@ CREATE TABLE `syscxp_tunnel`.`CloudVO` (
 INSERT INTO `syscxp_tunnel`.`CloudVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
 VALUES ('Syscloud','犀思互联云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('AliYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Tencent','腾讯云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('Huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
-  ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
+  ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Ksyun','金山云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('JD','京东云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
 
 CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 	`uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',

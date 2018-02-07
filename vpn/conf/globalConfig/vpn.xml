@@ -18,15 +18,30 @@
     <config>
         <category>vpn</category>
         <name>expiredVpn.deleteInterval</name>
-        <description>expired vpn delete interval</description>
-        <defaultValue>7</defaultValue>
+        <description>expired vpn delete interval, in days</description>
+        <defaultValue>10</defaultValue>
         <type>java.lang.Integer</type>
     </config>
     <config>
         <category>vpn</category>
+        <name>expiredVpn.closeInterval</name>
+        <description>expired product close interval, in days</description>
+        <defaultValue>5</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>vpn</category>
+        <name>expiredVpnClean.run</name>
+        <description>A boolean value, enabled expired vpn clean</description>
+        <defaultValue>false</defaultValue>
+        <type>java.lang.Boolean</type>
+    </config>
+
+    <config>
+        <category>vpn</category>
         <name>expiredVpn.cleanInterval</name>
-        <description>expired vpn clean interval</description>
-        <defaultValue>1</defaultValue>
+        <description>expired vpn clean process run interval, in hours</description>
+        <defaultValue>12</defaultValue>
         <type>java.lang.Integer</type>
     </config>
 </globalConfig>
