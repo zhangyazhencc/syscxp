@@ -63,6 +63,7 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -810,13 +811,22 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (!isIfaceANew){
             interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         } else {
-            interfaceVOA = tunnelBase.createInterfaceByTunnel(msg.getEndpointAUuid(),msg);
+            interfaceVOA = tunnelBase.createInterfaceByTunnel(msg.getEndpointAUuid(), msg);
         }
         if (!isIfaceZNew){
             interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         } else {
-            interfaceVOZ = tunnelBase.createInterfaceByTunnel(msg.getEndpointZUuid(),msg);
+            interfaceVOZ = tunnelBase.createInterfaceByTunnel(msg.getEndpointZUuid(), msg);
         }
+
+        if (msg.getCrossTunnelUuid() != null) {
+            if (msg.getCrossInterfaceUuid().equals(msg.getInterfaceAUuid())){
+                validateDuplicateVsiVlan(interfaceVOZ.getUuid(), vsi);
+            }else{
+                validateDuplicateVsiVlan(interfaceVOA.getUuid(), vsi);
+            }
+        }
+
         SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
         SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
 
@@ -934,6 +944,29 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         return vo.getUuid();
+    }
+
+    private void validateDuplicateVsiVlan(String interfaceUuid, Integer vsi){
+        //两个相同接口的专线不允许存在共点
+        InterfaceVO iface = dbf.findByUuid(interfaceUuid, InterfaceVO.class);
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(iface.getSwitchPortVO().getSwitchs().getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
+                    .find();
+            physicalSwitchVO = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        }
+
+        String sql = "select count(*) from TunnelSwitchPortVO tp, TunnelVO t" +
+                " where tp.tunnelUuid = t.uuid" +
+                " and tp.ownerMplsSwitchUuid = :ownerMplsSwitchUuid" +
+                " and t.vsi = :vsi";
+        TypedQuery<Long> tq = dbf.getEntityManager().createQuery(sql, Long.class);
+        tq.setParameter("ownerMplsSwitchUuid", physicalSwitchVO.getUuid());
+        tq.setParameter("vsi", vsi);
+        if (tq.getSingleResult() > 0){
+            throw new ApiMessageInterceptionException(argerr("同一设备下VSI只允许绑定一个Vlan"));
+        }
     }
 
     private void doAbroad(String innerConnectedEndpointUuid,
