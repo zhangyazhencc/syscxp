@@ -13,7 +13,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2018/1/12
  */
-@Action(services = {EdgeLineConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewEdgeLineMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false, resourceType = EdgeLineVO.class, checkAccount = true)

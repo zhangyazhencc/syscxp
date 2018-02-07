@@ -215,6 +215,8 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `mIP` varchar(128) NOT NULL COMMENT '管理IP',
   `localIP` varchar(128) NOT NULL COMMENT '本地IP',
+  `protocol` varchar(32) NOT NULL COMMENT '远程协议',
+  `port` INT(11) NOT NULL COMMENT '协议端口号',
   `username` varchar(128) NOT NULL COMMENT '用户名',
   `password` varchar(128) NOT NULL COMMENT '密码',
   `deleted` varchar(255) DEFAULT NULL,
@@ -223,7 +225,7 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, accessType, rack, description, mIP, localIP, username, password, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, accessType, rack, description, mIP, localIP, protocol, port, username, password, lastOpDate, createDate
                                           FROM `PhysicalSwitchEO` WHERE deleted IS NULL;
 
 ##物理交换机上联
@@ -596,8 +598,12 @@ CREATE TABLE `syscxp_tunnel`.`CloudVO` (
 INSERT INTO `syscxp_tunnel`.`CloudVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
 VALUES ('Syscloud','犀思互联云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('AliYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Tencent','腾讯云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('Huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
-  ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
+  ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Ksyun','金山云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('JD','京东云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('UCloud','UCloud','','2017-11-01 13:51:31','2017-11-01 13:51:31');
 
 CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 	`uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',

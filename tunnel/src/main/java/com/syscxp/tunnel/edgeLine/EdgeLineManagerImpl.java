@@ -139,8 +139,10 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
             update = true;
         }
 
-        if(update)
+        if(update) {
             vo = dbf.updateAndRefresh(vo);
+        }
+
 
         evt.setInventory(EdgeLineInventory.valueOf(vo));
         bus.publish(evt);
@@ -287,7 +289,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
                 new APICreateSLACompensationOrderMsg();
         slaCompensationOrderMsg.setSlaUuid(msg.getSlaUuid());
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
-        slaCompensationOrderMsg.setProductName("最后一公里-"+vo.getInterfaceVO().getName());
+        slaCompensationOrderMsg.setProductName("最后一公里-" + vo.getInterfaceVO().getName());
         slaCompensationOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForEdgeLine(vo));
         slaCompensationOrderMsg.setProductType(ProductType.EDGELINE);
         slaCompensationOrderMsg.setDuration(msg.getDuration());
