@@ -8,5 +8,6 @@ public enum PermissionType {
         billing,
         tunnel,
         vpn,
-        ecp
+        ecp,
+        alarm
 }
