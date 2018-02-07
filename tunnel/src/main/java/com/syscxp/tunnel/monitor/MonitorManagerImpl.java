@@ -1928,10 +1928,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
                     endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
                             tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                    endpointTunnel.setEndpointAVlan(tunnelSwitchPort.getVlan());
                 } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
                     endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
                     endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
                             tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                    endpointTunnel.setEndpointZVlan(tunnelSwitchPort.getVlan());
                 }
             }
 
