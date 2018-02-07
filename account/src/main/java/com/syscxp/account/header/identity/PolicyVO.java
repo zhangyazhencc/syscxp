@@ -1,7 +1,7 @@
 package com.syscxp.account.header.identity;
 
 import com.syscxp.header.identity.AccountType;
-import com.syscxp.header.identity.PermissionType;
+import com.syscxp.header.identity.PolicyType;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -31,7 +31,7 @@ public class PolicyVO {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private PermissionType type;
+    private PolicyType type;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -104,11 +104,11 @@ public class PolicyVO {
         this.sortId = sortId;
     }
 
-    public PermissionType getType() {
+    public PolicyType getType() {
         return type;
     }
 
-    public void setType(PermissionType type) {
+    public void setType(PolicyType type) {
         this.type = type;
     }
 
