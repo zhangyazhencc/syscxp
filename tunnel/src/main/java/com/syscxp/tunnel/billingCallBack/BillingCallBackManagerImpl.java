@@ -116,14 +116,6 @@ public class BillingCallBackManagerImpl extends AbstractService implements Billi
         InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
         new TunnelBillingBase().saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
         dbf.remove(vo);
-
-        //删除续费表
-        logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
-        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
-        job.setAccountUuid(vo.getOwnerAccountUuid());
-        job.setResourceType(vo.getClass().getSimpleName());
-        job.setResourceUuid(vo.getUuid());
-        jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
     }
 
     private void unsubcribeTunnel(OrderCallbackCmd cmd, DeleteTunnelCallBack message) {
@@ -221,8 +213,6 @@ public class BillingCallBackManagerImpl extends AbstractService implements Billi
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
     }
 
-
-
     private void unsubcribeEdgeLine(OrderCallbackCmd cmd){
         EdgeLineVO vo = dbf.findByUuid(cmd.getPorductUuid(), EdgeLineVO.class);
         new TunnelBillingBase().saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
@@ -231,14 +221,6 @@ public class BillingCallBackManagerImpl extends AbstractService implements Billi
         InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
         interfaceVO.setState(InterfaceState.Down);
         dbf.updateAndRefresh(interfaceVO);
-
-        //删除续费表
-        logger.info("删除最后一公里成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
-        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
-        job.setAccountUuid(vo.getAccountUuid());
-        job.setResourceType(vo.getClass().getSimpleName());
-        job.setResourceUuid(vo.getUuid());
-        jobf.execute("删除最后一公里-删除续费表", Platform.getManagementServerId(), job);
     }
 
     @Override
