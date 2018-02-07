@@ -255,6 +255,8 @@ public class MonitorAgentCommands {
         private String endpoingZMip;
         private String nodeA;
         private String nodeZ;
+        private Integer endpointAVlan;
+        private Integer endpointZVlan;
         private long bandwidth;
         private String accountUuid;
 
@@ -288,6 +290,22 @@ public class MonitorAgentCommands {
 
         public void setNodeZ(String nodeZ) {
             this.nodeZ = nodeZ;
+        }
+
+        public Integer getEndpointAVlan() {
+            return endpointAVlan;
+        }
+
+        public void setEndpointAVlan(Integer endpointAVlan) {
+            this.endpointAVlan = endpointAVlan;
+        }
+
+        public Integer getEndpointZVlan() {
+            return endpointZVlan;
+        }
+
+        public void setEndpointZVlan(Integer endpointZVlan) {
+            this.endpointZVlan = endpointZVlan;
         }
 
         public long getBandwidth() {

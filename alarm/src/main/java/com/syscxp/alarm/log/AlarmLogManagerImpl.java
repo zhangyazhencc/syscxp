@@ -36,6 +36,7 @@ import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -409,12 +410,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void recalculateBandwidth(AlarmEventVO eventVO, List<TunnelAlarmCmd.TunnelInfo> tunnelInfos) {
         try {
             String metric = eventVO.getExpression().getMetric();
+
             if ("switch.if.In".equals(metric)) {
                 long sumBandwidth = 0;
                 for (TunnelAlarmCmd.TunnelInfo tunnelInfo : tunnelInfos) {
-                    sumBandwidth += tunnelInfo.getBandwidth();
+                    if (isSharePoint(eventVO, tunnelInfo))
+                        sumBandwidth += tunnelInfo.getBandwidth();
                 }
-
                 long rightValue = (long) (Long.valueOf(eventVO.getExpression().getRightValue()) * 1.0 / sumBandwidth * 100);
                 eventVO.getExpression().setRightValue(String.valueOf(rightValue));
 
@@ -427,6 +429,28 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     , eventVO.getProductUuid(), eventVO.getExpression().getMetric()
                     , eventVO.getExpression().getRightValue(), eventVO.getLeftValue()));
         }
+    }
+
+    private boolean isSharePoint(AlarmEventVO eventVO, TunnelAlarmCmd.TunnelInfo tunnelInfo) {
+        boolean isSharePoint = false;
+        Map tags = eventVO.getExpression().getTags();
+
+        if(!tags.isEmpty()){
+            String endpoint = tags.get("endpoint").toString();
+            Integer vlan = Integer.valueOf(tags.get("ifName").toString());
+
+            if(StringUtils.equals(endpoint,tunnelInfo.getEndpointAMip())){
+                if(vlan.intValue() == tunnelInfo.getEndpointAVlan().intValue())
+                    isSharePoint = true;
+            }else if(StringUtils.equals(endpoint,tunnelInfo.getEndpointZMip())) {
+                if (vlan.intValue() == tunnelInfo.getEndpointZVlan().intValue())
+                    isSharePoint = true;
+            }
+        }
+        else
+            throw new RuntimeException("[isSharePoint] eventVO.getExpression().getTags() 数据为空！");
+
+        return isSharePoint;
     }
 
     /**
