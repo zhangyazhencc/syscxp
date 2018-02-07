@@ -16,7 +16,9 @@ public class SwitchPortInventory {
 
     private String switchUuid;
 
-    private SwitchInventory switchs;
+    private String switchCode;
+
+    private String switchName;
 
     private Integer portNum;
 
@@ -39,7 +41,8 @@ public class SwitchPortInventory {
 
         inv.setUuid(vo.getUuid());
         inv.setSwitchUuid(vo.getSwitchUuid());
-        inv.setSwitchs(SwitchInventory.valueOf(vo.getSwitchs()));
+        inv.setSwitchName(vo.getSwitchs().getName());
+        inv.setSwitchCode(vo.getSwitchs().getCode());
         inv.setPortNum(vo.getPortNum());
         inv.setPortName(vo.getPortName());
         inv.setPortType(vo.getPortType());
@@ -116,13 +119,6 @@ public class SwitchPortInventory {
         this.portType = portType;
     }
 
-    public SwitchInventory getSwitchs() {
-        return switchs;
-    }
-
-    public void setSwitchs(SwitchInventory switchs) {
-        this.switchs = switchs;
-    }
 
     public String getState() {
         return state;
@@ -146,5 +142,21 @@ public class SwitchPortInventory {
 
     public void setPortAttribute(String portAttribute) {
         this.portAttribute = portAttribute;
+    }
+
+    public String getSwitchName() {
+        return switchName;
+    }
+
+    public void setSwitchName(String switchName) {
+        this.switchName = switchName;
+    }
+
+    public String getSwitchCode() {
+        return switchCode;
+    }
+
+    public void setSwitchCode(String switchCode) {
+        this.switchCode = switchCode;
     }
 }
