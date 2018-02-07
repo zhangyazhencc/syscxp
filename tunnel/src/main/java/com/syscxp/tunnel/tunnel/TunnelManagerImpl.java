@@ -813,9 +813,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         if (msg.getCrossTunnelUuid() != null) {
             if (msg.getCrossInterfaceUuid().equals(msg.getInterfaceAUuid())){
-                validateDuplicateVsiVlan(interfaceVOZ.getUuid(), vsi);
+                validateDuplicateVsiVlan(interfaceVOZ.getSwitchPortUuid(), vsi);
             }else{
-                validateDuplicateVsiVlan(interfaceVOA.getUuid(), vsi);
+                validateDuplicateVsiVlan(interfaceVOA.getSwitchPortUuid(), vsi);
             }
         }
 
@@ -938,16 +938,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return vo.getUuid();
     }
 
-    private void validateDuplicateVsiVlan(String interfaceUuid, Integer vsi){
-        //两个相同接口的专线不允许存在共点
-        InterfaceVO iface = dbf.findByUuid(interfaceUuid, InterfaceVO.class);
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(iface.getSwitchPortVO().getSwitchs().getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
-            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
-                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
-                    .find();
-            physicalSwitchVO = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        }
+    private void validateDuplicateVsiVlan(String switchPortUuid, Integer vsi){
+        TunnelBase tunnelBase = new TunnelBase();
+        PhysicalSwitchVO physicalSwitchVO = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuid);
+
+        physicalSwitchVO = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO);
 
         String sql = "select count(*) from TunnelSwitchPortVO tp, TunnelVO t" +
                 " where tp.tunnelUuid = t.uuid" +
