@@ -1,19 +1,16 @@
 package com.syscxp.header.tunnel.network;
 
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APIEvent;
 
-public class APIDeleteL3NetworkMsg extends APIMessage{
+public class APIDeleteL3NetworkEvent extends APIEvent {
 
-    @APIParam
-    private String uuid;
-
-    public String getUuid() {
-        return uuid;
+    public APIDeleteL3NetworkEvent() {
+        super(null);
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public APIDeleteL3NetworkEvent(String apiId) {
+        super(apiId);
     }
-    
+
+
 }
