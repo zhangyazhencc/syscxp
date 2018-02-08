@@ -60,8 +60,10 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
+import com.syscxp.vpn.job.DeleteRenewVOAfterDeleteResourceJob;
 import com.syscxp.vpn.job.DeleteVpnJob;
 import com.syscxp.vpn.job.DestroyVpnJob;
+import com.syscxp.vpn.job.RenameBillingProductNameJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
 import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
@@ -729,9 +731,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     public void handle(APIUpdateVpnMsg msg) {
         VpnVO vpn = dbf.getEntityManager().find(VpnVO.class, msg.getUuid());
         boolean update = false;
-        if (!StringUtils.isEmpty(msg.getName())) {
+        boolean changeName = false;
+        if (!StringUtils.isEmpty(msg.getName()) && !msg.getName().equals(vpn.getName())) {
             vpn.setName(msg.getName());
             update = true;
+            changeName = true;
         }
         if (!StringUtils.isEmpty(msg.getDescription())) {
             vpn.setDescription(msg.getDescription());
@@ -743,6 +747,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         if (update) {
             vpn = dbf.getEntityManager().merge(vpn);
+            if (changeName)
+                RenameBillingProductNameJob.executeJob(jobf, vpn.getUuid(), vpn.getName());
         }
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
@@ -1084,33 +1090,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-vpn-%s", msg.getVpnUuid()));
         chain.then(new NoRollbackFlow() {
-            String __name__ = "delete-renew";
-
-            @Override
-            public void run(final FlowTrigger trigger, Map data) {
-                if (msg.isExpired()) {
-                    APIDeleteExpiredRenewMsg deleteExpiredRenewMsg = new APIDeleteExpiredRenewMsg();
-                    deleteExpiredRenewMsg.setAccountUuid(vpn.getAccountUuid());
-                    deleteExpiredRenewMsg.setProductUuid(vpn.getUuid());
-                    createOrder(deleteExpiredRenewMsg, new Completion(trigger) {
-                        @Override
-                        public void success() {
-                            LOGGER.debug(String.format("VPN[UUID:%s] 清楚续费成功", vpn.getUuid()));
-                            trigger.next();
-                        }
-
-                        @Override
-                        public void fail(ErrorCode errorCode) {
-                            LOGGER.debug(String.format("VPN[UUID:%s] 清楚续费失败", vpn.getUuid()));
-                            trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "清楚续费失败", errorCode));
-                        }
-                    });
-                } else {
-                    trigger.next();
-                }
-            }
-
-        }).then(new NoRollbackFlow() {
             String __name__ = "detach-vpn-cert";
 
             @Override
@@ -1147,6 +1126,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         chain.done(new FlowDoneHandler(msg) {
             @Override
             public void handle(Map data) {
+                DeleteRenewVOAfterDeleteResourceJob.execute(jobf, vpn.getUuid(), vpn.getAccountUuid());
                 dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
                 bus.reply(msg, reply);
             }
@@ -1242,7 +1222,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         @Override
         public long getInterval() {
-            return TimeUnit.DAYS.toSeconds(cleanExpiredVpnInterval);
+            return TimeUnit.HOURS.toSeconds(cleanExpiredVpnInterval);
         }
 
         @Override
@@ -1250,14 +1230,23 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             return "clean-expired-vpn-" + Platform.getManagementServerId();
         }
 
+        private Timestamp getCloseTime(){
+            Timestamp time = Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(expiredVpnCloseTime < expiredVpnDeleteTime ? expiredVpnCloseTime : expiredVpnDeleteTime));
+            return time;
+        }
+
         private List<VpnVO> getVpnVOs() {
             return Q.New(VpnVO.class)
-                    .lte(VpnVO_.expireDate, dbf.getCurrentSqlTime())
+                    .lte(VpnVO_.expireDate, getCloseTime())
                     .list();
         }
 
         @Override
         public void run() {
+            if (!VpnGlobalConfig.EXPIRED_VPN_CLEAN_RUN.value(Boolean.class)){
+                return;
+            }
+
             Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredVpnDeleteTime));
 
             try {
@@ -1288,18 +1277,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private Future<Void> cleanExpiredVpnThread = null;
     private int cleanExpiredVpnInterval;
     private int expiredVpnDeleteTime;
+    private int expiredVpnCloseTime;
 
     private void startCleanExpiredProduct() {
         cleanExpiredVpnInterval = VpnGlobalConfig.CLEAN_EXPIRED_VPN_INTERVAL.value(Integer.class);
         expiredVpnDeleteTime = VpnGlobalConfig.EXPIRED_VPN_DELETE_TIME.value(Integer.class);
+        expiredVpnCloseTime = VpnGlobalConfig.EXPIRED_VPN_CLOSE_TIME.value(Integer.class);
 
         if (cleanExpiredVpnThread != null) {
             cleanExpiredVpnThread.cancel(true);
         }
 
-        cleanExpiredVpnThread = thdf.submitPeriodicTask(new CleanExpiredVpnThread(), TimeUnit.SECONDS.toSeconds(60));
+        cleanExpiredVpnThread = thdf.submitPeriodicTask(new CleanExpiredVpnThread(), TimeUnit.SECONDS.toSeconds(1800));
         LOGGER.debug(String.format("security group cleanExpiredVpnThread " +
-                "starts[cleanExpiredVpnInterval: %s day]", cleanExpiredVpnInterval));
+                "starts[cleanExpiredVpnInterval: %s hours]", cleanExpiredVpnInterval));
     }
 
     private void restartCleanExpiredProduct() {

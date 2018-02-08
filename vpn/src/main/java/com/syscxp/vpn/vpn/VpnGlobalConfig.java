@@ -19,5 +19,11 @@ public class VpnGlobalConfig {
     public static GlobalConfig CLEAN_EXPIRED_VPN_INTERVAL = new GlobalConfig(CATEGORY, "expiredVpn.cleanInterval");
 
     @GlobalConfigValidation(numberGreaterThan = 0)
+    public static GlobalConfig EXPIRED_VPN_CLOSE_TIME = new GlobalConfig(CATEGORY, "expiredVpn.closeInterval");
+
+    @GlobalConfigValidation(numberGreaterThan = 0)
     public static GlobalConfig EXPIRED_VPN_DELETE_TIME = new GlobalConfig(CATEGORY, "expiredVpn.deleteInterval");
+
+    @GlobalConfigValidation
+    public static GlobalConfig EXPIRED_VPN_CLEAN_RUN = new GlobalConfig(CATEGORY, "expiredVpnClean.run");
 }

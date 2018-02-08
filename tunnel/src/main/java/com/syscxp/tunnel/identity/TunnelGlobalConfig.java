@@ -27,5 +27,9 @@ public class TunnelGlobalConfig {
     public static GlobalConfig EXPIRED_PRODUCT_DELETE_TIME = new GlobalConfig(CATEGORY, "expiredProduct.deleteInterval");
 
     @GlobalConfigValidation
+    public static GlobalConfig EXPIRED_PRODUCT_CLEAN_RUN = new GlobalConfig(CATEGORY, "expiredProductClean.run");
+
+
+    @GlobalConfigValidation
     public static GlobalConfig TRANSFER_RPC_IP = new GlobalConfig(CATEGORY, "transferRpcIp");
 }

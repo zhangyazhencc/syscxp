@@ -6,7 +6,7 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.*;
 import com.syscxp.core.rest.RESTApiDecoder;
-import com.syscxp.header.billing.APIDeleteExpiredRenewMsg;
+import com.syscxp.header.billing.APIRenameProductNameMsg;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.rest.RESTConstant;
@@ -19,23 +19,20 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-/**
- * Create by DCY on 2018/1/5
- */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 @UniqueResourceJob
-public class DeleteRenewVOAfterDeleteResourceJob implements Job {
-    private static final CLogger logger = Utils.getLogger(DeleteRenewVOAfterDeleteResourceJob.class);
+public class RenameBillingProductNameJob implements Job {
+    private static final CLogger logger = Utils.getLogger(RenameBillingProductNameJob.class);
 
     @JobContext
     private String resourceUuid;
 
     @JobContext
-    private String resourceType;
+    private String resourceName;
 
     @JobContext
-    private String accountUuid;
+    private String resourceType;
 
     @Autowired
     private ErrorFacade errf;
@@ -45,30 +42,26 @@ public class DeleteRenewVOAfterDeleteResourceJob implements Job {
 
     @Override
     public void run(ReturnValueCompletion<Object> completion) {
-
         try {
-            logger.info("开始执行JOB【清除RenewVO】");
 
-            APIDeleteExpiredRenewMsg msg = new APIDeleteExpiredRenewMsg();
+            APIRenameProductNameMsg msg = new APIRenameProductNameMsg();
             msg.setProductUuid(resourceUuid);
-            msg.setAccountUuid(accountUuid);
+            msg.setProductName(resourceName);
 
             String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.BILLING_SERVER_URL, RESTConstant.REST_API_CALL);
             InnerMessageHelper.setMD5(msg);
 
-            RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
+            RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class, 0);
             APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
 
-            if (!reply.isSuccess()){
-                logger.warn("【清除RenewVO】失败");
-                completion.fail(reply.getError());
-            }else{
+            if (reply.isSuccess()){
                 completion.success(null);
+            }else{
+                completion.fail(reply.getError());
             }
 
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
-
             completion.fail(errf.throwableToInternalError(e));
         }
 
@@ -91,21 +84,21 @@ public class DeleteRenewVOAfterDeleteResourceJob implements Job {
         this.resourceType = resourceType;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getResourceName() {
+        return resourceName;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
     }
 
-    public static DeleteRenewVOAfterDeleteResourceJob execute(JobQueueFacade jobf, String resourceUuid, String accountUuid){
-        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
-        job.setAccountUuid(accountUuid);
+    public static RenameBillingProductNameJob executeJob(JobQueueFacade jobf, String resourceUuid, String resourceName){
+        RenameBillingProductNameJob job = new RenameBillingProductNameJob();
         job.setResourceUuid(resourceUuid);
-        jobf.execute("deleteBillingRenewVO", Platform.getManagementServerId(), job);
+        job.setResourceName(resourceName);
+
+        jobf.execute("updateBillingRenewName", Platform.getManagementServerId(), job);
 
         return job;
     }
-
 }

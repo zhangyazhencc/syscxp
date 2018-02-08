@@ -139,8 +139,10 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
             update = true;
         }
 
-        if(update)
+        if(update) {
             vo = dbf.updateAndRefresh(vo);
+        }
+
 
         evt.setInventory(EdgeLineInventory.valueOf(vo));
         bus.publish(evt);
@@ -287,7 +289,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
                 new APICreateSLACompensationOrderMsg();
         slaCompensationOrderMsg.setSlaUuid(msg.getSlaUuid());
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
-        slaCompensationOrderMsg.setProductName("最后一公里-"+vo.getInterfaceVO().getName());
+        slaCompensationOrderMsg.setProductName("最后一公里-" + vo.getInterfaceVO().getName());
         slaCompensationOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForEdgeLine(vo));
         slaCompensationOrderMsg.setProductType(ProductType.EDGELINE);
         slaCompensationOrderMsg.setDuration(msg.getDuration());
@@ -324,7 +326,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
 
         EdgeLineVO vo = dbf.findByUuid(msg.getUuid(), EdgeLineVO.class);
 
-        if(vo.getExpireDate() ==null || (vo.getExpireDate() != null && !vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))){
+        if(vo.getExpireDate() == null || (vo.getExpireDate() != null && !vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))){
             dbf.remove(vo);
 
             InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
@@ -368,14 +370,6 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
                 InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
                 interfaceVO.setState(InterfaceState.Down);
                 dbf.updateAndRefresh(interfaceVO);
-
-                //删除续费表
-                logger.info("删除最后一公里成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
-                DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
-                job.setAccountUuid(vo.getAccountUuid());
-                job.setResourceType(vo.getClass().getSimpleName());
-                job.setResourceUuid(vo.getUuid());
-                jobf.execute("删除最后一公里-删除续费表", Platform.getManagementServerId(), job);
 
                 evt.setInventory(EdgeLineInventory.valueOf(vo));
             } else {

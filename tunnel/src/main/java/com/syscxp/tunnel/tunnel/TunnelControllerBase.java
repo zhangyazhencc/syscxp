@@ -814,6 +814,8 @@ public class TunnelControllerBase extends AbstractTunnel {
         tmc.setM_ip(mplsPhysicalSwitchVO.getmIP());
         tmc.setUsername(mplsPhysicalSwitchVO.getUsername());
         tmc.setPassword(mplsPhysicalSwitchVO.getPassword());
+        tmc.setProtocol(mplsPhysicalSwitchVO.getProtocol().toString());
+        tmc.setPort(mplsPhysicalSwitchVO.getPort());
         tmc.setSortTag(sortTag);
 
         if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
@@ -853,6 +855,8 @@ public class TunnelControllerBase extends AbstractTunnel {
                     .find();
             tsc.setUuid(physicalSwitchVO.getUuid());
             tsc.setM_ip(physicalSwitchVO.getmIP());
+            tsc.setProtocol(physicalSwitchVO.getProtocol().toString());
+            tsc.setPort(physicalSwitchVO.getPort());
             tsc.setVlan_id(tunnelSwitchPortVO.getVlan());
             tsc.setIn_port(switchPortVO.getPortName());
             tsc.setUplink(physicalSwitchUpLinkRefVO.getPortName());

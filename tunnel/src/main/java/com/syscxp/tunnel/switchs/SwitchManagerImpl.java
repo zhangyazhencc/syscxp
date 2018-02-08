@@ -3,8 +3,7 @@ package com.syscxp.tunnel.switchs;
 import com.syscxp.core.db.*;
 import com.syscxp.header.tunnel.SwitchConstant;
 import com.syscxp.header.tunnel.switchs.*;
-import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
-import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +18,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.host.HostSwitchMonitorVO;
 import com.syscxp.header.tunnel.host.HostSwitchMonitorVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
-import com.syscxp.header.tunnel.tunnel.InterfaceVO;
-import com.syscxp.header.tunnel.tunnel.InterfaceVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
@@ -194,6 +191,8 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         vo.setRack(msg.getRack());
         vo.setmIP(msg.getmIP());
         vo.setLocalIP(msg.getLocalIP());
+        vo.setProtocol(msg.getProtocol());
+        vo.setPort(msg.getPort());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
         vo.setDescription(msg.getDescription());
@@ -245,6 +244,14 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         }
         if (msg.getLocalIP() != null) {
             vo.setLocalIP(msg.getLocalIP());
+            update = true;
+        }
+        if (msg.getProtocol() != null) {
+            vo.setProtocol(msg.getProtocol());
+            update = true;
+        }
+        if (msg.getPort() != null) {
+            vo.setPort(msg.getPort());
             update = true;
         }
         if (msg.getUsername() != null) {
@@ -383,6 +390,21 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         boolean update = false;
         if (msg.getState() != null) {
             vo.setState(msg.getState());
+            update = true;
+        }
+
+        if(msg.getPortAttribute() != null){
+            vo.setPortAttribute(msg.getPortAttribute());
+            update = true;
+        }
+
+        if(msg.getAutoAllot() != null){
+            vo.setAutoAllot(msg.getAutoAllot());
+            update = true;
+        }
+
+        if(msg.getPortOfferingUuid() != null){
+            vo.setPortType(msg.getPortOfferingUuid());
             update = true;
         }
 
@@ -705,6 +727,27 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
     }
 
     private void validate(APIUpdateSwitchPortMsg msg) {
+        if(msg.getPortOfferingUuid() != null){
+
+            if(msg.getPortOfferingUuid().equals("SHARE")){
+                //独享改共享的验证
+                if(Q.New(InterfaceVO.class)
+                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                        .eq(InterfaceVO_.type, NetworkType.ACCESS)
+                        .isExists()){
+                    throw new ApiMessageInterceptionException(argerr("该端口已经被用户作为ACCESS模式接口，不可再共享！"));
+                }
+            }else{
+                //共享改独享的验证
+                if(Q.New(InterfaceVO.class)
+                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                        .select(InterfaceVO_.ownerAccountUuid)
+                        .groupBy(InterfaceVO_.ownerAccountUuid)
+                        .count() > 1){
+                    throw new ApiMessageInterceptionException(argerr("该端口已经被不同的用户使用，不可再独享！"));
+                }
+            }
+        }
     }
 
     private void validate(APIDeleteSwitchPortMsg msg) {

@@ -53,6 +53,13 @@ public class PhysicalSwitchAO {
     private String localIP;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private RemoteProtocol protocol;
+
+    @Column
+    private Integer port;
+
+    @Column
     private String username;
 
     @Column
@@ -195,5 +202,21 @@ public class PhysicalSwitchAO {
 
     public void setAccessType(PhysicalSwitchAccessType accessType) {
         this.accessType = accessType;
+    }
+
+    public RemoteProtocol getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(RemoteProtocol protocol) {
+        this.protocol = protocol;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }

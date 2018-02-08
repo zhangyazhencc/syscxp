@@ -28,6 +28,8 @@ public class PhysicalSwitchInventory {
     private String description;
     private String mIP;
     private String localIP;
+    private String protocol;
+    private Integer port;
     @NoJsonSchema
     private String username;
     @NoJsonSchema
@@ -52,6 +54,8 @@ public class PhysicalSwitchInventory {
         inv.setDescription(vo.getDescription());
         inv.setmIP(vo.getmIP());
         inv.setLocalIP(vo.getLocalIP());
+        inv.setProtocol(vo.getProtocol().toString());
+        inv.setPort(vo.getPort());
         inv.setUsername(vo.getUsername());
         inv.setPassword(vo.getPassword());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -210,5 +214,21 @@ public class PhysicalSwitchInventory {
 
     public void setAccessType(String accessType) {
         this.accessType = accessType;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }

@@ -13,6 +13,8 @@ public class TunnelAlarmCmd {
         private long bandwidth;
         private String nodeA;
         private String nodeZ;
+        private Integer endpointAVlan;
+        private Integer endpointZVlan;
 
         public String getTunnelUuid() {
             return tunnelUuid;
@@ -76,6 +78,22 @@ public class TunnelAlarmCmd {
 
         public void setNodeZ(String nodeZ) {
             this.nodeZ = nodeZ;
+        }
+
+        public Integer getEndpointAVlan() {
+            return endpointAVlan;
+        }
+
+        public void setEndpointAVlan(Integer endpointAVlan) {
+            this.endpointAVlan = endpointAVlan;
+        }
+
+        public Integer getEndpointZVlan() {
+            return endpointZVlan;
+        }
+
+        public void setEndpointZVlan(Integer endpointZVlan) {
+            this.endpointZVlan = endpointZVlan;
         }
     }
 

@@ -32,7 +32,7 @@
         <category>host</category>
         <name>ping.interval</name>
         <description>The interval management server sends ping command to host, in seconds</description>
-        <defaultValue>60</defaultValue>
+        <defaultValue>300</defaultValue>
         <type>java.lang.Integer</type>
     </config>
     <config>

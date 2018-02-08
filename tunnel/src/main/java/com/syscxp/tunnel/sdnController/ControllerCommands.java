@@ -415,6 +415,8 @@ public class ControllerCommands {
         private String inner_vlan_id;
         private String username;
         private String password;
+        private String protocol;
+        private Integer port;
         private String network_type;
         private Long bandwidth;
         private String sortTag;
@@ -530,6 +532,22 @@ public class ControllerCommands {
         public void setSortTag(String sortTag) {
             this.sortTag = sortTag;
         }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
     }
 
     /**
@@ -544,6 +562,8 @@ public class ControllerCommands {
         private String in_port;
         private String uplink;
         private String network_type;
+        private String protocol;
+        private Integer port;
         private Long bandwidth;
         private String sortTag;
 
@@ -617,6 +637,22 @@ public class ControllerCommands {
 
         public void setSortTag(String sortTag) {
             this.sortTag = sortTag;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
         }
     }
 
