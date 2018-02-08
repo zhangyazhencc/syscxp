@@ -68,7 +68,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
             List<MonetaryOrderType> monetaries = getMonetaryOrderType(vo.getAccountUuid(), startTime, endTime);
             for (MonetaryOrderType monetary : monetaries) {
                 MonetaryResult result = map.get(monetary.getType().name());
-                if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.UPGRADE) {
+                if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.AUTORENEW|| monetary.getOrderType() == OrderType.UPGRADE) {
                     result.setDeductionCash((result.getDeductionCash() == null ? BigDecimal.ZERO : result.getDeductionCash()).add(monetary.getPayCashTotal()));
                     result.setDeductionPresent((result.getDeductionPresent() == null ? BigDecimal.ZERO : result.getDeductionPresent()).add(monetary.getPayPresentTotal()));
                 } else if (monetary.getOrderType() == OrderType.UN_SUBCRIBE || monetary.getOrderType() == OrderType.DOWNGRADE) {

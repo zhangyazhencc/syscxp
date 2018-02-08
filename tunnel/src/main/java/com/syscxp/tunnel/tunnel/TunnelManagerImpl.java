@@ -550,14 +550,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     //删除产品
                     dbf.remove(vo);
 
-                    //删除续费表
-                    logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
-                    DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
-                    job.setAccountUuid(vo.getOwnerAccountUuid());
-                    job.setResourceType(vo.getClass().getSimpleName());
-                    job.setResourceUuid(vo.getUuid());
-                    jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
-
                     evt.setInventory(InterfaceInventory.valueOf(vo));
                 } else {
                     //退订失败
@@ -2744,7 +2736,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             for (InterfaceVO vo : ifaces) {
                 if (vo.getExpireDate().before(delete)) {
                     if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists()
-                            && !Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid, vo.getUuid()).isExists()){
+                            && !Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid, vo.getUuid()).isExists()) {
                         dbf.remove(vo);
                         //删除续费表
                         logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
@@ -2755,8 +2747,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
                     }
 
-                }
-                if (vo.getExpireDate().before(close) && vo.getState() == InterfaceState.Unpaid) {
+                }else if (vo.getExpireDate().before(close) && vo.getState() == InterfaceState.Unpaid) {
                     dbf.remove(vo);
                 }
             }

@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.tunnel.job;
+package com.syscxp.vpn.job;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
