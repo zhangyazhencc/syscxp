@@ -42,7 +42,7 @@ public class BillJob {
 
     private static final CLogger logger = Utils.getLogger(BillJob.class);
 
-    @Scheduled(cron = "0 0 10 1 * ? ")
+    @Scheduled(cron = "0 0 10 1 * ?")
     public void generateBill() {
 
         GLock lock = new GLock(String.format("id-%s", "generateBill"), 1);
