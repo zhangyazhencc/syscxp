@@ -180,7 +180,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         APIAttachPolicyToResourceEvent event = new APIAttachPolicyToResourceEvent(msg.getId());
 
         if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
-            resourceBindPolicy(msg);
+            PolicyVO policyVO = resourceBindPolicy(msg);
+            event.setInventory(PolicyInventory.valueOf(policyVO));
         } else
             resourceUnbindPolicy(msg);
 
@@ -188,7 +189,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     @Transactional
-    private void resourceBindPolicy(APIAttachPolicyToResourceMsg msg) {
+    private PolicyVO resourceBindPolicy(APIAttachPolicyToResourceMsg msg) {
         ResourcePolicyRefVO refVO = Q.New(ResourcePolicyRefVO.class)
                 .eq(ResourcePolicyRefVO_.resourceUuid, msg.getResourceUuid())
                 .find();
@@ -206,9 +207,11 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
         policyVO.setBindResources(policyVO.getBindResources() + 1);
-        dbf.getEntityManager().merge(policyVO);
+        policyVO = dbf.getEntityManager().merge(policyVO);
 
         updateFalconByResource(msg.getResourceUuid());
+
+        return policyVO;
     }
 
     @Transactional
