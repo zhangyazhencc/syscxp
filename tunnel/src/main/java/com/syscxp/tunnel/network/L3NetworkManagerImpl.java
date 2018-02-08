@@ -37,11 +37,40 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             handle((APIUpdateL3EndPointMsg) msg);
         }else if(msg instanceof APIDeleteL3EndPointMsg){
             handle((APIDeleteL3EndPointMsg) msg);
+        }else if(msg instanceof APICreateL3RouteMsg){
+            handle((APICreateL3RouteMsg) msg);
+        }else if(msg instanceof APIUpdateL3RouteMsg){
+            handle((APIUpdateL3RouteMsg) msg);
+        }else if(msg instanceof APIDeleteL3RouteMsg){
+            handle((APIDeleteL3RouteMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
+
+    private void handle(APIDeleteL3RouteMsg msg) {
+        APIDeleteL3RouteEvent event = new APIDeleteL3RouteEvent(msg.getId());
+        UpdateQuery.New(L3RouteVO.class).condAnd(L3RouteVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+        bus.publish(event);
+    }
+
+    private void handle(APIUpdateL3RouteMsg msg) {
+        APIUpdateL3RouteEvent event = new APIUpdateL3RouteEvent(msg.getId());
+        L3RouteVO vo = dbf.findByUuid(msg.getUuid(),L3RouteVO.class);
+        vOAddAllOfMsg.addAll(msg,vo);
+        event.setInventory(L3RouteInventory.valueOf(dbf.updateAndRefresh(vo)));
+        bus.publish(event);
+    }
+
+    private void handle(APICreateL3RouteMsg msg) {
+
+        APICreateL3RouteEvent event = new APICreateL3RouteEvent(msg.getId());
+        L3RouteVO vo = new L3RouteVO();
+        vo.setUuid(Platform.getUuid());
+        vOAddAllOfMsg.addAll(msg,vo);
+        bus.publish(event);
     }
 
     private void handle(APIDeleteL3EndPointMsg msg) {
@@ -54,7 +83,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         APIUpdateL3EndPointEvent event = new APIUpdateL3EndPointEvent(msg.getId());
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(),L3EndPointVO.class);
         vOAddAllOfMsg.addAll(msg,vo);
-        event.setInventory(L3EndPointInventory.valueOf(dbf.persistAndRefresh(vo)));
+        event.setInventory(L3EndPointInventory.valueOf(dbf.updateAndRefresh(vo)));
         bus.publish(event);
     }
 
@@ -102,7 +131,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         APIUpdateL3NetworkEvent event = new APIUpdateL3NetworkEvent(msg.getId());
         L3NetworkVO vo = dbf.findByUuid(msg.getUuid(),L3NetworkVO.class);
         vOAddAllOfMsg.addAll(msg,vo);
-        event.setInventory(L3NetworkInventory.valueOf(dbf.persistAndRefresh(vo)));
+        event.setInventory(L3NetworkInventory.valueOf(dbf.updateAndRefresh(vo)));
         bus.publish(event);
     }
 
