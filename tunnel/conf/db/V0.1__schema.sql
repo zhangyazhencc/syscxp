@@ -257,7 +257,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, type, description, state, status, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, code, name, type, description, state, status, lastOpDate, createDate
                                             FROM `SwitchEO` WHERE deleted IS NULL;
 
 

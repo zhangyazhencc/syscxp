@@ -190,7 +190,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIGetRenewTunnelPriceMsg) msg);
         } else if (msg instanceof APIGetModifyBandwidthNumMsg) {
             handle((APIGetModifyBandwidthNumMsg) msg);
-        } else {
+        } else if (msg instanceof APIRunDataForTunnelTypeMsg) {
+            handle((APIRunDataForTunnelTypeMsg) msg);
+        } else if (msg instanceof APIRunDataForTunnelZKMsg) {
+            handle((APIRunDataForTunnelZKMsg) msg);
+        }  else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -2593,6 +2597,60 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         reply.setLeftModifies((int) (maxModifies - times));
 
         bus.reply(msg, reply);
+    }
+
+    /**
+     * 数据迁移--跑 tunnelType
+     */
+    private void handle(APIRunDataForTunnelTypeMsg msg){
+        TunnelBase tunnelBase = new TunnelBase();
+        APIRunDataForTunnelTypeReply reply = new APIRunDataForTunnelTypeReply();
+
+        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+                .notEq(TunnelVO_.type, TunnelType.CHINA1ABROAD)
+                .list();
+        for(TunnelVO tunnelVO : tunnelVOS){
+            String endpointUuidA = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag, "A")
+                    .select(TunnelSwitchPortVO_.endpointUuid)
+                    .findValue();
+            String endpointUuidZ = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                    .select(TunnelSwitchPortVO_.endpointUuid)
+                    .findValue();
+            EndpointVO evoA = dbf.findByUuid(endpointUuidA, EndpointVO.class);
+            EndpointVO evoZ = dbf.findByUuid(endpointUuidZ, EndpointVO.class);
+            NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+            NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
+
+            TunnelType tunnelType = tunnelBase.getTunnelType(nvoA, nvoZ, null);
+
+            tunnelVO.setType(tunnelType);
+
+            dbf.updateAndRefresh(tunnelVO);
+        }
+
+        bus.reply(msg, reply);
+    }
+
+    /**
+     * 数据迁移--下发ZK
+     */
+    private void handle(APIRunDataForTunnelZKMsg msg){
+        APIRunDataForTunnelZKEvent evt = new APIRunDataForTunnelZKEvent(msg.getId());
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+
+        List<String> uuids = Q.New(TunnelVO.class)
+                .eq(TunnelVO_.state, TunnelState.Enabled)
+                .select(TunnelVO_.uuid)
+                .listValues();
+        for(String uuid : uuids){
+            taskBase.taskCreateTunnelZK(uuid);
+        }
+
+        bus.publish(evt);
     }
 
     /**************************************** The following clean the expired Products **************************************************/
