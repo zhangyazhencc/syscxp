@@ -1,11 +1,13 @@
 package com.syscxp.header.tunnel.network;
 
 
+import com.syscxp.header.vo.ForeignKey;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 @Entity
 @Table
@@ -16,6 +18,7 @@ public class L3RtVO {
     private String uuid;
 
     @Column
+    @ForeignKey(parentEntityClass = L3EndPointVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
     private String l3EndPointUuid;
 
     @Column
@@ -29,6 +32,17 @@ public class L3RtVO {
 
     @Column
     private Timestamp createDate;
+
+    public L3RtVO() {}
+
+    public L3RtVO(String uuid, String l3EndPointUuid, String impor, String export, Timestamp lastOpDate, Timestamp createDate) {
+        this.uuid = uuid;
+        this.l3EndPointUuid = l3EndPointUuid;
+        this.impor = impor;
+        this.export = export;
+        this.lastOpDate = lastOpDate;
+        this.createDate = createDate;
+    }
 
     public String getUuid() {
         return uuid;

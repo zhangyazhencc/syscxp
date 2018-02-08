@@ -1,60 +1,35 @@
 package com.syscxp.header.tunnel.network;
 
-import com.syscxp.header.vo.ForeignKey;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIParam;
 
-import javax.persistence.*;
-import java.sql.Timestamp;
-import java.util.Set;
 
-@Entity
-@Table
-public class L3EndPointVO {
+public class APIUpdateL3EndPointMsg extends APIMessage {
 
-    @Id
-    @Column
+    @APIParam
     private String uuid;
-    @Column
-    @ForeignKey(parentEntityClass = L3NetworkVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
-    private String l3NetworkUuid;
-    @Column
-    private String endpointUuid;
-    @Column
+    @APIParam(required = false)
     private Long bandwidth;
-    @Column
+    @APIParam(required = false)
     private String routeType;
-    @Column
+    @APIParam(required = false)
     private String status;
-    @Column
+    @APIParam(required = false)
     private Long maxRouteNum;
-    @Column
+    @APIParam(required = false)
     private String localIP;
-    @Column
+    @APIParam(required = false)
     private String remoteIp;
-    @Column
+    @APIParam(required = false)
     private String netmask;
-    @Column
+    @APIParam(required = false)
     private String interfaceUuid;
-    @Column
+    @APIParam(required = false)
     private String switchPortUuid;
-    @Column
+    @APIParam(required = false)
     private Long vlan;
-    @Column
+    @APIParam(required = false)
     private String rd;
-    @Column
-    private Timestamp lastOpDate;
-    @Column
-    private Timestamp createDate;
-
-    @OneToMany(targetEntity = L3RouteVO.class,orphanRemoval=true)
-    private Set<L3RouteVO> l3RouteVOs;
-
-    @OneToMany(targetEntity = L3RtVO.class,orphanRemoval=true)
-    private Set<L3RtVO> l3RtVOs;
-
-    @PreUpdate
-    private void preUpdate() {
-        lastOpDate = null;
-    }
 
     public String getUuid() {
         return uuid;
@@ -62,22 +37,6 @@ public class L3EndPointVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getL3NetworkUuid() {
-        return l3NetworkUuid;
-    }
-
-    public void setL3NetworkUuid(String l3NetworkUuid) {
-        this.l3NetworkUuid = l3NetworkUuid;
-    }
-
-    public String getEndpointUuid() {
-        return endpointUuid;
-    }
-
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
     }
 
     public Long getBandwidth() {
@@ -166,37 +125,5 @@ public class L3EndPointVO {
 
     public void setRd(String rd) {
         this.rd = rd;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
-    public Set<L3RouteVO> getL3RouteVOs() {
-        return l3RouteVOs;
-    }
-
-    public void setL3RouteVOs(Set<L3RouteVO> l3RouteVOs) {
-        this.l3RouteVOs = l3RouteVOs;
-    }
-
-    public Set<L3RtVO> getL3RtVOs() {
-        return l3RtVOs;
-    }
-
-    public void setL3RtVOs(Set<L3RtVO> l3RtVOs) {
-        this.l3RtVOs = l3RtVOs;
     }
 }

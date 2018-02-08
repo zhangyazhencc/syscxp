@@ -18,13 +18,9 @@ public class APIUpdateL3NetworkMsg extends APIMessage {
     @APIParam(required = false)
     private String code;
     @APIParam(required = false)
-    private Long vid;
-    @APIParam(required = false)
     private String type;
     @APIParam(required = false)
     private String status;
-    @APIParam(required = false)
-    private Long endPointNum;
     @APIParam(required = false)
     private String description;
     @APIParam(required = false)
@@ -76,13 +72,6 @@ public class APIUpdateL3NetworkMsg extends APIMessage {
         this.code = code;
     }
 
-    public Long getVid() {
-        return vid;
-    }
-
-    public void setVid(Long vid) {
-        this.vid = vid;
-    }
 
     public String getType() {
         return type;
@@ -98,14 +87,6 @@ public class APIUpdateL3NetworkMsg extends APIMessage {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Long getEndPointNum() {
-        return endPointNum;
-    }
-
-    public void setEndPointNum(Long endPointNum) {
-        this.endPointNum = endPointNum;
     }
 
     public String getDescription() {

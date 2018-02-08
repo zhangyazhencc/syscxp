@@ -1,5 +1,7 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.vo.ForeignKey;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -15,6 +17,7 @@ public class L3RouteVO {
     private String uuid;
 
     @Column
+    @ForeignKey(parentEntityClass = L3EndPointVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
     private String l3EndPointUuid;
 
     @Column
