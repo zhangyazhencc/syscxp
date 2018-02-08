@@ -30,6 +30,10 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
     private String mIP;
     @APIParam(emptyString = false,maxLength = 128)
     private String localIP;
+    @APIParam(emptyString = false,validValues = {"SSH", "TELNET"})
+    private RemoteProtocol protocol;
+    @APIParam
+    private Integer port;
     @APIParam(emptyString = false,maxLength = 128)
     private String username;
     @APIParam(emptyString = false,maxLength = 128)
@@ -172,5 +176,21 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
 
     public void setUplinkPhysicalSwitchPortName(String uplinkPhysicalSwitchPortName) {
         this.uplinkPhysicalSwitchPortName = uplinkPhysicalSwitchPortName;
+    }
+
+    public RemoteProtocol getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(RemoteProtocol protocol) {
+        this.protocol = protocol;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }

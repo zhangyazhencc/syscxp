@@ -386,7 +386,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      * 创建专线监控通道
-     * @param tunnelVO
+     * @param
      * @return 创建通道监控
      */
     @Transactional
@@ -776,7 +776,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         icmp.setVlan(tunnelSwitchPortVO.getVlan());
 
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(), SwitchPortVO.class);
-        icmp.setSwitch_mip(switchPortVO.getSwitchs().getPhysicalSwitch().getmIP());
+        PhysicalSwitchVO physicalSwitch = dbf.findByUuid(switchPortVO.getSwitchs().getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        icmp.setSwitch_mip(physicalSwitch.getmIP());
 
         HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorByHostUuid(tunnelMonitorVO.getHostUuid());
         icmp.setInterface_name(hostSwitchMonitorVO.getInterfaceName());

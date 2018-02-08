@@ -191,6 +191,8 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         vo.setRack(msg.getRack());
         vo.setmIP(msg.getmIP());
         vo.setLocalIP(msg.getLocalIP());
+        vo.setProtocol(msg.getProtocol());
+        vo.setPort(msg.getPort());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
         vo.setDescription(msg.getDescription());
@@ -242,6 +244,14 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         }
         if (msg.getLocalIP() != null) {
             vo.setLocalIP(msg.getLocalIP());
+            update = true;
+        }
+        if (msg.getProtocol() != null) {
+            vo.setProtocol(msg.getProtocol());
+            update = true;
+        }
+        if (msg.getPort() != null) {
+            vo.setPort(msg.getPort());
             update = true;
         }
         if (msg.getUsername() != null) {

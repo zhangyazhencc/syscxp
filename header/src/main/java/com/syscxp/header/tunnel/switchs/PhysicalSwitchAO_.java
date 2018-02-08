@@ -21,6 +21,8 @@ public class PhysicalSwitchAO_ {
     public static volatile SingularAttribute<PhysicalSwitchAO, String> description;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> mIP;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> localIP;
+    public static volatile SingularAttribute<PhysicalSwitchAO, RemoteProtocol> protocol;
+    public static volatile SingularAttribute<PhysicalSwitchAO, Integer> port;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> username;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> password;
     public static volatile SingularAttribute<PhysicalSwitchAO, Timestamp> createDate;
