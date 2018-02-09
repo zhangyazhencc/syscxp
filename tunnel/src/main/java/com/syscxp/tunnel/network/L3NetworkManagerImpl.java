@@ -5,10 +5,12 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
+import com.syscxp.core.keyvalue.Op;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.network.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
@@ -73,11 +75,14 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         bus.publish(event);
     }
 
+    @Transactional(propagation = Propagation.NESTED)
     private void handle(APIDeleteL3EndPointMsg msg) {
         APIDeleteL3EndPointEvent event = new APIDeleteL3EndPointEvent(msg.getId());
         UpdateQuery.New(L3EndPointVO.class).condAnd(L3EndPointVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+        updateEndPointNum(msg.getUuid());
         bus.publish(event);
     }
+
 
     private void handle(APIUpdateL3EndPointMsg msg) {
         APIUpdateL3EndPointEvent event = new APIUpdateL3EndPointEvent(msg.getId());
@@ -87,7 +92,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         bus.publish(event);
     }
 
-    @Transactional
+    @Transactional(propagation=Propagation.NESTED)
     private void handle(APICreateL3EndPointMsg msg) {
         APICreateL3EndPointEvent event = new APICreateL3EndPointEvent(msg.getId());
         L3EndPointVO vo = new L3EndPointVO();
@@ -115,6 +120,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         dbf.getEntityManager().persist(vo);
         dbf.getEntityManager().persist(rtVo);
+        updateEndPointNum(vo.getUuid());
         dbf.getEntityManager().flush();
 
         event.setInventory(L3EndPointInventory.valueOf(vo));
@@ -154,6 +160,16 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         event.setInventory(L3NetworkInventory.valueOf(dbf.persistAndRefresh(vo)));
         bus.publish(event);
+    }
+
+    private void updateEndPointNum(String l3Networkuuid){
+        TypedQuery<Long> num_q = dbf.getEntityManager().createQuery(
+                "SELECT COUNT(*) from L3EndPointVO where  l3NetworkUuid = :l3Uuid ", Long.class);
+        num_q.setParameter("l3Uuid",l3Networkuuid);
+
+        UpdateQuery.New(L3NetworkVO.class).condAnd(L3NetworkVO_.uuid, SimpleQuery.Op.EQ,l3Networkuuid).
+                set(L3NetworkVO_.endPointNum,num_q.getSingleResult()).update();
+
     }
 
     @Override
