@@ -277,7 +277,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     }
 
     /***
-     * 从tunnel获取专线数据（含共点专线）
+     * 从tunnel获取专线数据(含共点专线)
+     * 查询条件:tunnel.vsi=当前tunnel.vsi && tunnel.statte = Enabled
      * @param tunnelUuid
      * @return
      */
@@ -304,8 +305,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     , tunnelUuid, e.getMessage()));
         }
 
-        if (response.getInventories() == null)
-            throw new RuntimeException(String.format("no tunnel existed [tunnelUuid: %s]! ", tunnelUuid));
+        if (response.getInventories() == null || response.getInventories().size() == 0)
+            throw new RuntimeException(String.format("no tunnel existed or tunnel is not Enabled [tunnelUuid: %s]! ", tunnelUuid));
 
         return response.getInventories();
     }
@@ -431,23 +432,29 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         }
     }
 
+    /**
+     * 共点判断
+     * 同交换机、同vlan视为共点（同策略同步判断共点逻辑）
+     * @param eventVO
+     * @param tunnelInfo
+     * @return
+     */
     private boolean isSharePoint(AlarmEventVO eventVO, TunnelAlarmCmd.TunnelInfo tunnelInfo) {
         boolean isSharePoint = false;
         Map tags = eventVO.getExpression().getTags();
 
-        if(!tags.isEmpty()){
+        if (!tags.isEmpty()) {
             String endpoint = tags.get("endpoint").toString();
             Integer vlan = Integer.valueOf(tags.get("ifName").toString());
 
-            if(StringUtils.equals(endpoint,tunnelInfo.getEndpointAMip())){
-                if(vlan.intValue() == tunnelInfo.getEndpointAVlan().intValue())
+            if (StringUtils.equals(endpoint, tunnelInfo.getEndpointAMip())) {
+                if (vlan.intValue() == tunnelInfo.getEndpointAVlan().intValue())
                     isSharePoint = true;
-            }else if(StringUtils.equals(endpoint,tunnelInfo.getEndpointZMip())) {
+            } else if (StringUtils.equals(endpoint, tunnelInfo.getEndpointZMip())) {
                 if (vlan.intValue() == tunnelInfo.getEndpointZVlan().intValue())
                     isSharePoint = true;
             }
-        }
-        else
+        } else
             throw new RuntimeException("[isSharePoint] eventVO.getExpression().getTags() 数据为空！");
 
         return isSharePoint;
