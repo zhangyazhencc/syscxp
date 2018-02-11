@@ -504,6 +504,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /***
      * 获取已存在的告警事件
+     * -
      * @param eventVO
      * @return
      */

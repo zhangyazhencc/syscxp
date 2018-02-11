@@ -120,7 +120,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     /**
      * 初始化策略与规则
-     *
+     * -
      * @param msg
      */
     private void handle(APIInitAlarmStrategyMsg msg) {
