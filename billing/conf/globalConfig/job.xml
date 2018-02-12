@@ -4,7 +4,7 @@
         <category>job</category>
         <name>billJob.cron</name>
         <description>generate bill cron expression</description>
-        <defaultValue>0 */1 * * * ?</defaultValue>
+        <defaultValue>0 0 3 1 * ?</defaultValue>
         <type>java.lang.String</type>
     </config>
 </globalConfig>
