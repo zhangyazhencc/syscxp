@@ -97,5 +97,9 @@
         </syscxp:plugin>
     </bean>
 
+    <bean id="jobFactory" class="com.syscxp.billing.header.bill.MyJobFactory"></bean>
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="jobFactory" ref="jobFactory"></property>
+    </bean>
 </beans>
 
