@@ -263,7 +263,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     continue;
             }
             // 仅处理导入tunnel
-            if(tunnelVO.getUuid().length() == 32)
+            if (tunnelVO.getUuid().length() == 32)
                 continue;
 
             cmd.put("tunnel_id", tunnelVO.getUuid());
@@ -316,7 +316,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void handle(APIInitTunnelMonitorMsg msg) {
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
                 .notNull(TunnelVO_.monitorCidr)
-                .notEq(TunnelVO_.monitorCidr,"")
+                .notEq(TunnelVO_.monitorCidr, "")
                 .eq(TunnelVO_.monitorState, TunnelMonitorState.Disabled)
                 .list();
         // 初始化TunnelMonitorVO数据
@@ -418,7 +418,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         String physicalSwitchUuid = "";
         for (TunnelSwitchPortVO tunnelSwitchPortVO : portVOS) {
-            if(tunnelSwitchPortVO.getPhysicalSwitchUuid().equals(physicalSwitchUuid))
+            if (tunnelSwitchPortVO.getPhysicalSwitchUuid().equals(physicalSwitchUuid))
                 throw new RuntimeException(String.format("can't start monitor for tunnel on the same switch!"));
             else
                 physicalSwitchUuid = tunnelSwitchPortVO.getPhysicalSwitchUuid();
@@ -1921,6 +1921,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.vsi, cmdTunnel.getVsi())
+                .eq(TunnelVO_.state, TunnelState.Enabled)
                 .list();
         for (TunnelVO tunnelVO : tunnelVOS) {
             MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
@@ -1951,6 +1952,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      * 按监控机ip获取所有icmp数据
+     * -
      * @param monitorHostIp
      * @return
      */
@@ -1970,8 +1972,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         for (TunnelMonitorVO hostTunnelMonitorVO : hostTunnelMonitorVOS) {
             TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
-            if (tunnelVO != null && tunnelVO.getMonitorState().equals(TunnelMonitorState.Enabled)) {
-                // logger.info("tunnelUuid: " + tunnelVO.getUuid());
+            if (tunnelVO != null
+                    && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled
+                    && tunnelVO.getState() == TunnelState.Enabled) {
                 MonitorAgentCommands.AgentIcmp agentIcmp = getAgentIcmp(hostTunnelMonitorVO);
                 if (agentIcmp != null)
                     icmps.add(agentIcmp);
