@@ -10,7 +10,9 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.apimediator.ResourceHavingAccountReference;
+import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.message.*;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.utils.StringDSL;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,6 +179,10 @@ public class NotificationManager extends AbstractService {
                 return;
             }
 
+            if (msg instanceof APICreateNotificationMsg) {
+                return;
+            }
+
 //            if (!msg.getServiceId().endsWith(Platform.getManagementServerId())) {
 //                // a message to api portal
 //                return;
@@ -295,7 +301,7 @@ public class NotificationManager extends AbstractService {
                     msg.setOpaque(builder.opaque);
 
                     msg.setAccountUuid(builder.accountUuid);
-                    if (msg.getAccountUuid() == null && msg.getResourceType() != null && msg.getResourceUuid() != null){
+                    if (msg.getAccountUuid() == null && msg.getResourceType() != null && msg.getResourceUuid() != null) {
                         if (resourceHavingAccountReference.isResourceHavingAccountReference(builder.resourceClass)) {
                             String sql = String.format("select accountUuid from %s where uuid = :resourceUuid ", msg.getResourceType());
                             String accountUuid = SQL.New(sql, String.class).param("resourceUuid", msg.getResourceUuid()).find();
@@ -323,18 +329,12 @@ public class NotificationManager extends AbstractService {
     @AsyncThread
     private void callWebhook(APIMessage msg) {
 
-        restf.asyncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(msg), new AsyncRESTCallback(msg) {
+        RestAPIResponse rsp = restf.syncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(msg), RestAPIResponse.class);
 
-            @Override
-            public void fail(ErrorCode err) {
-                logger.debug(err.toString());
-            }
-
-            @Override
-            public void success(HttpEntity<String> responseEntity) {
-                logger.debug(responseEntity.getBody());
-            }
-        });
+        APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        if (!apiReply.isSuccess()){
+            logger.debug(String.format("Message[%s]:保存日志失败", msg.getClass().getSimpleName()));
+        }
     }
 
     @Override
@@ -380,10 +380,10 @@ public class NotificationManager extends AbstractService {
     private void handle(APICreateNotificationMsg msg) {
         NotificationVO vo = saveNotificationVO(msg);
 
-        APICreateNotificationsEvent evt = new APICreateNotificationsEvent(msg.getId());
+        /*APICreateNotificationsEvent evt = new APICreateNotificationsEvent(msg.getId());
         NotificationInventory inv = NotificationInventory.valueOf(vo);
         evt.setInventory(inv);
-        bus.publish(evt);
+        bus.publish(evt);*/
     }
 
     private void handleApiMessage(APIMessage msg) {
