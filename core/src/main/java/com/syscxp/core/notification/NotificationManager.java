@@ -380,10 +380,10 @@ public class NotificationManager extends AbstractService {
     private void handle(APICreateNotificationMsg msg) {
         NotificationVO vo = saveNotificationVO(msg);
 
-        /*APICreateNotificationsEvent evt = new APICreateNotificationsEvent(msg.getId());
+        APICreateNotificationsEvent evt = new APICreateNotificationsEvent(msg.getId());
         NotificationInventory inv = NotificationInventory.valueOf(vo);
         evt.setInventory(inv);
-        bus.publish(evt);*/
+        bus.publish(evt);
     }
 
     private void handleApiMessage(APIMessage msg) {
