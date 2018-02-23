@@ -1,9 +1,13 @@
 package com.syscxp.billing.bill;
 
+import com.syscxp.billing.BillingGlobalConfig;
 import com.syscxp.billing.header.bill.*;
+import com.syscxp.core.config.GlobalConfigFacadeImpl;
+import com.syscxp.core.config.GlobalConfigVO;
 import com.syscxp.core.db.GLock;
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.OrderType;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.syscxp.core.cloudbus.CloudBus;
@@ -32,6 +36,14 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
+
+    @Autowired
+    private Scheduler scheduler;
+
+    @Autowired
+    private GlobalConfigFacadeImpl globalConfigFacadeImpl;
+    private static final String billName="bill";
+    private static final String billGroup="bill";
 
     @Override
     @MessageSafe
@@ -68,7 +80,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
             List<MonetaryOrderType> monetaries = getMonetaryOrderType(vo.getAccountUuid(), startTime, endTime);
             for (MonetaryOrderType monetary : monetaries) {
                 MonetaryResult result = map.get(monetary.getType().name());
-                if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.AUTORENEW|| monetary.getOrderType() == OrderType.UPGRADE) {
+                if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.AUTORENEW || monetary.getOrderType() == OrderType.UPGRADE) {
                     result.setDeductionCash((result.getDeductionCash() == null ? BigDecimal.ZERO : result.getDeductionCash()).add(monetary.getPayCashTotal()));
                     result.setDeductionPresent((result.getDeductionPresent() == null ? BigDecimal.ZERO : result.getDeductionPresent()).add(monetary.getPayPresentTotal()));
                 } else if (monetary.getOrderType() == OrderType.UN_SUBCRIBE || monetary.getOrderType() == OrderType.DOWNGRADE) {
@@ -132,29 +144,75 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
 
     @Override
     public boolean start() {
-        GLock lock = new GLock(String.format("id-%s", "initBill"), 120);
-        lock.lock();
-        try {
-            new BillJob(dbf).generateBill();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        } finally {
-            lock.unlock();
+
+        startGenerateBillJob();
+        BillingGlobalConfig.BILL_JOB.installUpdateExtension((oldConfig, newConfig) -> {
+            updateCron(oldConfig.value(), newConfig.value());
+        });
+            return true;
         }
-        return true;
+
+        private void startGenerateBillJob(){
+            GLock lock = new GLock(String.format("id-%s", "initBill"), 120);
+            lock.lock();
+            try {
+                scheduler.start();
+                String value = globalConfigFacadeImpl.getConfigValue(BillingGlobalConfig.CATEGORY, BillingGlobalConfig.BILLJOBEXPRESSION, String.class);
+                CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(value);
+                JobDetail job = JobBuilder.newJob(BillJob.class)
+                        .withIdentity(billName, billGroup)
+                        .build();
+                Trigger trigger = TriggerBuilder.newTrigger()
+                        .withIdentity(billName, billGroup)
+                        .withSchedule(
+                                scheduleBuilder)
+                        .build();
+                // JobDataMap map =  job.getJobDataMap();
+                scheduler.scheduleJob(job, trigger);
+            } catch (SchedulerException e) {
+                e.printStackTrace();
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        private void updateCron(String oldValue,String  newValue) {
+            TriggerKey triggerKey = TriggerKey.triggerKey(billName, billGroup);
+            CronTrigger trigger = null;
+            try {
+                trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
+            } catch (SchedulerException e) {
+                e.printStackTrace();
+            }
+            if (trigger == null) {
+                return;
+            }
+            String oldTime = trigger.getCronExpression();
+            if (!oldTime.equalsIgnoreCase(newValue)) {
+                TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
+                triggerBuilder.withIdentity(billName, billGroup);
+                triggerBuilder.startNow();
+                triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(newValue));
+                trigger = (CronTrigger) triggerBuilder.build();
+                try {
+                    scheduler.rescheduleJob(triggerKey, trigger);
+                } catch (SchedulerException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+        @Override
+        public boolean stop () {
+            return true;
+        }
+
+        @Override
+        public APIMessage intercept (APIMessage msg) throws ApiMessageInterceptionException {
+
+            return msg;
+        }
+
+
     }
-
-
-    @Override
-    public boolean stop() {
-        return true;
-    }
-
-    @Override
-    public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-
-        return msg;
-    }
-
-
-}
