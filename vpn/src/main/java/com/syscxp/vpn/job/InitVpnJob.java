@@ -1,12 +1,10 @@
 package com.syscxp.vpn.job;
 
+import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.job.Job;
-import com.syscxp.core.job.JobContext;
-import com.syscxp.core.job.RestartableJob;
-import com.syscxp.core.job.UniqueResourceJob;
+import com.syscxp.core.job.*;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.vpn.agent.InitVpnMsg;
@@ -71,5 +69,12 @@ public class InitVpnJob implements Job {
     @Override
     public String getResourceUuid() {
         return vpnUuid;
+    }
+
+    public static InitVpnJob executeJob(JobQueueFacade jobf, String vpnUuid){
+        InitVpnJob job = new InitVpnJob();
+        job.setVpnUuid(vpnUuid);
+        jobf.execute("初始化VPN服务", Platform.getManagementServerId(), job);
+        return job;
     }
 }

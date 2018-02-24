@@ -4,15 +4,15 @@ package com.syscxp.header.vpn.agent;
 import com.syscxp.header.message.NeedReplyMessage;
 
 public class DeleteVpnMsg extends NeedReplyMessage {
-    private boolean expired;
+    private boolean deleteRenew;
     private String vpnUuid;
 
-    public boolean isExpired() {
-        return expired;
+    public boolean isDeleteRenew() {
+        return deleteRenew;
     }
 
-    public void setExpired(boolean expired) {
-        this.expired = expired;
+    public void setDeleteRenew(boolean deleteRenew) {
+        this.deleteRenew = deleteRenew;
     }
 
     public String getVpnUuid() {
