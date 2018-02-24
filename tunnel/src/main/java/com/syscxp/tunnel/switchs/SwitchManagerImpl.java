@@ -131,9 +131,9 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         reply.setBandwidthUsed(sum2);
 
         //带宽使用率
-        if(sum2 == 0 || sum2 == null){
+        if(sum2 == null || sum2 == 0){
             reply.setBandwidthUsage((double)0);
-        }else if(sum1 == 0 || sum1 == null){
+        }else if(sum1 == null || sum1 == 0){
             reply.setBandwidthUsage((double)0);
         }else{
             reply.setBandwidthUsage(sum2/(double)sum1);
