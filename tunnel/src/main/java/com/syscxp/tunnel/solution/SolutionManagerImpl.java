@@ -43,7 +43,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.syscxp.utils.CollectionDSL.e;
 import static com.syscxp.utils.CollectionDSL.list;
 
 
@@ -125,7 +124,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     }
 
     private void handle(APIGetShareSolutionMsg msg) {
-        APIGetShareSolutionEvent event = new APIGetShareSolutionEvent(msg.getId());
+        APIGetShareSolutionReply reply = new APIGetShareSolutionReply();
         List<SolutionInventory> solutionInventories = new ArrayList<>();
 
         SimpleQuery<ShareSolutionVO> query = dbf.createQuery(ShareSolutionVO.class);
@@ -136,8 +135,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             solutionInventories.add(SolutionInventory.valueOf(dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class)));
         }
 
-        event.setSolutionInventories(solutionInventories);
-        bus.publish(event);
+        reply.setSolutionInventories(solutionInventories);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIDeleteShareSolutionMsg msg) {

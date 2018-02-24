@@ -1,18 +1,12 @@
 package com.syscxp.header.tunnel.solution;
 
-import com.syscxp.header.message.APIEvent;
+
+import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;
 
-public class APIGetShareSolutionEvent extends APIEvent {
+public class APIGetShareSolutionReply extends APIQueryReply {
     private List<SolutionInventory> solutionInventories;
-
-    public APIGetShareSolutionEvent() {
-    }
-
-    public APIGetShareSolutionEvent(String apiId) {
-        super(apiId);
-    }
 
     public List<SolutionInventory> getSolutionInventories() {
         return solutionInventories;
