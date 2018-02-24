@@ -1,0 +1,116 @@
+DELIMITER $$
+
+
+USE `syscxp_billing`$$
+
+DROP PROCEDURE IF EXISTS `generateOrder4vmOfEcp`$$
+
+CREATE
+    /*[DEFINER = { user | CURRENT_USER }]*/
+    PROCEDURE `syscxp_billing`.`generateOrder4vmOfEcp`()
+
+    BEGIN
+     DECLARE exitFlag INT DEFAULT 1;
+     DECLARE pd VARCHAR(32);
+     DECLARE exd TIMESTAMP;
+     DECLARE pcm VARCHAR(128);
+     DECLARE acUuid VARCHAR(64);
+     DECLARE pn VARCHAR(255);
+     DECLARE ina VARCHAR(255);
+     DECLARE lna VARCHAR(255);
+     DECLARE bandw INT;
+     DECLARE ouid VARCHAR(32);
+     DECLARE up INT;
+     DECLARE description VARCHAR(511);
+     DECLARE priceInfo VARCHAR(511);
+     DECLARE totpri  DECIMAL(12,4) DEFAULT 0;
+     DECLARE pri INT;
+     DECLARE cona VARCHAR(128);
+     DECLARE l3id VARCHAR(32);
+     DECLARE zoneid VARCHAR(32);
+     DECLARE bpri INT;
+     DECLARE bcona VARCHAR(128);
+
+     DECLARE generateOrder CURSOR FOR SELECT
+     v.`uuid`,
+     v.`expireDate`,
+      v.`productChargeModel`,
+      v.`name`,
+      a.`accountUuid`,
+      i.`uuid`,
+      i.`name` AS ina,
+      l3.`name` AS lna,
+      n.`bandwidth`/1024/1024,
+      l3.`uuid`,
+      v.`zoneUuid`
+      FROM zstack.`VmInstanceEO` v
+INNER JOIN zstack.`AccountResourceRefVO` a ON a.`resourceUuid` = v.`uuid`
+INNER JOIN zstack.`InstanceOfferingEO` i ON v.`instanceOfferingUuid` = i.`uuid`
+INNER JOIN zstack.`VmNicVO` n ON v.`uuid`=n.`vmInstanceUuid`
+INNER JOIN zstack.`L3NetworkEO` l3 ON v.`defaultL3NetworkUuid` =  l3.`uuid`
+AND v.`defaultL3NetworkUuid` = n.`l3NetworkUuid`
+AND  v.hostType ='Public' AND a.`resourceType`='VmInstanceVO';
+
+     DECLARE EXIT HANDLER FOR NOT FOUND SET exitFlag:=0;
+     OPEN generateOrder;
+	 REPEAT
+     FETCH generateOrder INTO pd,exd,pcm,pn,acUuid,ouid,ina,lna,bandw,l3id,zoneid;
+     SELECT unitPrice,configName INTO pri,cona FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'HOST' AND areaCode = 'DEFAULT' AND lineCode='DEFAULT' AND configCode=ouid;
+     SET totpri = pri;
+     SET description=CONCAT_WS('','{"datas":[{"name":"配置","value":"',lna);
+     SET description = CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',description,'"},{"name":"网络","value":'),ina),bandw),'M');
+      SELECT unitPrice,configName INTO bpri,bcona FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'BANDWIDTH' AND areaCode = zoneid AND lineCode=l3id AND configCode='1M';
+      SET totpri =totpri+bpri*bandw;
+     SET priceInfo ='[{"configName":"';
+     SET priceInfo = CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,cona),'","originalPrice":'),pri),',"realPayPrice":'),pri),',"discount:100},{"configName":"1M","originalPrice":');
+     SET priceInfo = CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,bpri),'realPayPrice:'),bpri),'discount:100}]');
+     SET totpri = totpri*6;
+      INSERT INTO syscxp_billing.`OrderVO` VALUES(
+         REPLACE(UUID(),'-',''),
+         'BUY',
+         CURRENT_TIMESTAMP(),
+         'PAID',
+         totpri,
+         totpri,
+         totpri,
+         0,
+         acUuid,
+         CURRENT_TIMESTAMP(),
+         exd,
+         CURRENT_TIMESTAMP(),
+         CURRENT_TIMESTAMP(),
+         pd,
+         pn,
+         'HOST',
+         description,
+         pcm,
+         6,
+         1,
+         '{"com.syscxp.header.tunnel.billingCallBack.CreateTunnelCallBack":{}}',
+         priceInfo,
+         0
+         );
+
+     INSERT INTO syscxp_billing.`RenewVO` VALUES(
+           REPLACE(UUID(),'-',''),
+           acUuid,
+           1,
+           pd,
+           pn ,
+           'HOST',
+            description,
+            pcm,
+            CURRENT_TIMESTAMP(),
+            CURRENT_TIMESTAMP(),
+            totpri,
+            exd,
+            totpri
+     );
+
+     UNTIL exitFlag=0 END REPEAT;
+     CLOSE generateOrder;
+
+
+    END$$
+
+DELIMITER ;
