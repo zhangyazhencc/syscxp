@@ -14,7 +14,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Create by DCY on 2018/1/12
  */
 @InnerCredentialCheck
-@Action(services = {EdgeLineConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"})
 public class APISLAEdgeLineMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false, resourceType = EdgeLineVO.class)

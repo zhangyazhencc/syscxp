@@ -16,6 +16,7 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
@@ -36,6 +37,7 @@ import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -162,18 +164,24 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelAlarm(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Alarm] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        AlarmEventVO existedEvent = getExistedEvents(eventVO);
-        if (existedEvent == null)
-            dbf.persistAndRefresh(eventVO);
+        GLock gLock = new GLock("TunnelAlarm.lock",60);
+        gLock.lock();
+        try {
+            AlarmEventVO existedEvent = getExistedEvents(eventVO);
+            if (existedEvent == null)
+                dbf.persistAndRefresh(eventVO);
 
-        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
-        if (logVO == null) {
-            processTunnelEvent(eventVO);
+            AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+            if (logVO == null) {
+                processTunnelEvent(eventVO);
 
-            logVO = generateAlarmLog(eventVO);
-            dbf.persistAndRefresh(logVO);
+                logVO = generateAlarmLog(eventVO);
+                dbf.persistAndRefresh(logVO);
 
-            sendMessage(logVO);
+                sendMessage(logVO);
+            }
+        }finally {
+            gLock.unlock();
         }
     }
 
@@ -185,23 +193,29 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelRecover(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Recover] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        AlarmEventVO existedEvent = getExistedEvents(eventVO);
-        if (existedEvent != null) {
-            existedEvent.setStatus(AlarmStatus.OK);
-            dbf.updateAndRefresh(existedEvent);
-        } else
-            dbf.persist(eventVO);
+        GLock gLock = new GLock("TunnelRecover.lock",60);
+        gLock.lock();
+        try {
+            AlarmEventVO existedEvent = getExistedEvents(eventVO);
+            if (existedEvent != null) {
+                existedEvent.setStatus(AlarmStatus.OK);
+                dbf.updateAndRefresh(existedEvent);
+            } else
+                dbf.persist(eventVO);
 
-        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
-        if (logVO != null) {
-            if (isRecovered(eventVO)) {
-                processTunnelEvent(eventVO);
+            AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+            if (logVO != null) {
+                if (isRecovered(eventVO)) {
+                    processTunnelEvent(eventVO);
 
-                logVO = generateAlarmLog(eventVO);
-                dbf.updateAndRefresh(logVO);
+                    logVO = generateAlarmLog(eventVO);
+                    dbf.updateAndRefresh(logVO);
 
-                sendMessage(logVO);
+                    sendMessage(logVO);
+                }
             }
+        }finally {
+            gLock.unlock();
         }
     }
 
@@ -276,7 +290,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     }
 
     /***
-     * 从tunnel获取专线数据（含共点专线）
+     * 从tunnel获取专线数据(含共点专线)
+     * 查询条件:tunnel.vsi=当前tunnel.vsi && tunnel.statte = Enabled
      * @param tunnelUuid
      * @return
      */
@@ -303,8 +318,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     , tunnelUuid, e.getMessage()));
         }
 
-        if (response.getInventories() == null)
-            throw new RuntimeException(String.format("no tunnel existed [tunnelUuid: %s]! ", tunnelUuid));
+        if (response.getInventories() == null || response.getInventories().size() == 0)
+            throw new RuntimeException(String.format("no tunnel existed or tunnel is not Enabled [tunnelUuid: %s]! ", tunnelUuid));
 
         return response.getInventories();
     }
@@ -409,12 +424,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void recalculateBandwidth(AlarmEventVO eventVO, List<TunnelAlarmCmd.TunnelInfo> tunnelInfos) {
         try {
             String metric = eventVO.getExpression().getMetric();
+
             if ("switch.if.In".equals(metric)) {
                 long sumBandwidth = 0;
                 for (TunnelAlarmCmd.TunnelInfo tunnelInfo : tunnelInfos) {
-                    sumBandwidth += tunnelInfo.getBandwidth();
+                    if (isSharePoint(eventVO, tunnelInfo))
+                        sumBandwidth += tunnelInfo.getBandwidth();
                 }
-
                 long rightValue = (long) (Long.valueOf(eventVO.getExpression().getRightValue()) * 1.0 / sumBandwidth * 100);
                 eventVO.getExpression().setRightValue(String.valueOf(rightValue));
 
@@ -427,6 +443,34 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     , eventVO.getProductUuid(), eventVO.getExpression().getMetric()
                     , eventVO.getExpression().getRightValue(), eventVO.getLeftValue()));
         }
+    }
+
+    /**
+     * 共点判断
+     * 同交换机、同vlan视为共点（同策略同步判断共点逻辑）
+     * @param eventVO
+     * @param tunnelInfo
+     * @return
+     */
+    private boolean isSharePoint(AlarmEventVO eventVO, TunnelAlarmCmd.TunnelInfo tunnelInfo) {
+        boolean isSharePoint = false;
+        Map tags = eventVO.getExpression().getTags();
+
+        if (!tags.isEmpty()) {
+            String endpoint = tags.get("endpoint").toString();
+            Integer vlan = Integer.valueOf(tags.get("ifName").toString());
+
+            if (StringUtils.equals(endpoint, tunnelInfo.getEndpointAMip())) {
+                if (vlan.intValue() == tunnelInfo.getEndpointAVlan().intValue())
+                    isSharePoint = true;
+            } else if (StringUtils.equals(endpoint, tunnelInfo.getEndpointZMip())) {
+                if (vlan.intValue() == tunnelInfo.getEndpointZVlan().intValue())
+                    isSharePoint = true;
+            }
+        } else
+            throw new RuntimeException("[isSharePoint] eventVO.getExpression().getTags() 数据为空！");
+
+        return isSharePoint;
     }
 
     /**
@@ -473,10 +517,11 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /***
      * 获取已存在的告警事件
+     * -
      * @param eventVO
      * @return
      */
-    private AlarmEventVO getExistedEvents(AlarmEventVO eventVO) {
+    private AlarmEventVO  getExistedEvents(AlarmEventVO eventVO) {
         List<AlarmEventVO> existedEvents = Q.New(AlarmEventVO.class)
                 .eq(AlarmEventVO_.endpoint, eventVO.getEndpoint())
                 .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())

@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.util.StringUtils;
-
 import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -233,32 +232,7 @@ public class TunnelValidateBase {
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
         }
-        //两个相同接口的专线不允许存在共点
-        if (msg.getCrossTunnelUuid() != null) {
-            if (msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null) {
 
-                List<String> tunnelUuids = Q.New(TunnelSwitchPortVO.class)
-                        .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getCrossInterfaceUuid())
-                        .select(TunnelSwitchPortVO_.tunnelUuid)
-                        .groupBy(TunnelSwitchPortVO_.tunnelUuid)
-                        .listValues();
-
-                List<String> interfaceUuids = new ArrayList<>();
-                interfaceUuids.add(msg.getInterfaceAUuid());
-                interfaceUuids.add(msg.getInterfaceZUuid());
-
-                for(String tunnelUuid : tunnelUuids){
-                    if(Q.New(TunnelSwitchPortVO.class)
-                            .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid)
-                            .in(TunnelSwitchPortVO_.interfaceUuid, interfaceUuids)
-                            .count().equals(2L)
-                            ){
-                        throw new ApiMessageInterceptionException(argerr("该通道已使用相同的接口创建过，不能使用共点！"));
-                    }
-                }
-
-            }
-        }
         //判断通道两端的连接点是否相同，不允许相同
         if (Objects.equals(msg.getEndpointAUuid(), msg.getEndpointZUuid())) {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));

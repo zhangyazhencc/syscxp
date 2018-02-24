@@ -4,6 +4,9 @@ import com.syscxp.billing.header.balance.DealType;
 import com.syscxp.billing.header.balance.DealWay;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.header.billing.AccountBalanceVO_;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -26,10 +29,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@Component
-@EnableScheduling
-@Lazy(false)
-public class BillJob {
+public class BillJob implements Job {
 
     @Autowired
     private DatabaseFacade dbf;
@@ -42,8 +42,9 @@ public class BillJob {
 
     private static final CLogger logger = Utils.getLogger(BillJob.class);
 
-    @Scheduled(cron = "0 0 10 1 * ? ")
-    public void generateBill() {
+
+    @Override
+    public void execute(JobExecutionContext context) throws JobExecutionException{
 
         GLock lock = new GLock(String.format("id-%s", "generateBill"), 1);
         lock.lock();
@@ -95,13 +96,14 @@ public class BillJob {
             }
             logger.info("generate Bill end ..............");
         } catch (Exception e) {
-            e.printStackTrace();
-//            try {
-//                TimeUnit.HOURS.sleep(1);
-//            } catch (InterruptedException e1) {
-//                e1.printStackTrace();
-//            }
-//            generateBill();
+            JobExecutionException e2 = new JobExecutionException(e);
+            try {
+                TimeUnit.MINUTES.sleep(10);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
+            e2.setRefireImmediately(true);
+            throw e2;
         } finally {
             lock.unlock();
         }

@@ -9,7 +9,7 @@ import com.syscxp.header.configuration.PythonClass;
 public interface EdgeLineConstant {
 
     String SERVICE_ID = "edgeLine";
-    String ACTION_SERVICE = "edgeLine";
+
     String ACTION_CATEGORY = "edgeLine";
 
 }

@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2018/1/11
  */
-@Action(services = {EdgeLineConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateEdgeLineMsg extends APIMessage {
 
     @APIParam(emptyString = false, resourceType = EdgeLineVO.class)

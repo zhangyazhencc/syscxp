@@ -13,7 +13,7 @@ import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 /**
  * Create by DCY on 2018/1/11
  */
-@Action(services = {EdgeLineConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"create"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateEdgeLineMsg extends APIMessage {
 
     @APIParam(required = false, maxLength = 32)

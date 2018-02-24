@@ -9,6 +9,5 @@ import com.syscxp.header.configuration.PythonClass;
 public interface BillingCallBackConstant {
 
     String SERVICE_ID = "billingCallBack";
-    String ACTION_SERVICE = "billingCallBack";
-    String ACTION_CATEGORY = "billingCallBack";
+
 }

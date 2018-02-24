@@ -23,7 +23,7 @@ public class SwitchPortVO {
 
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="switchUuid", insertable=false, updatable=false)
-    private SwitchVO switchs;
+    private SwitchEO switchs;
 
     @Column
     private Integer portNum;
@@ -103,11 +103,11 @@ public class SwitchPortVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public SwitchVO getSwitchs() {
+    public SwitchEO getSwitchs() {
         return switchs;
     }
 
-    public void setSwitchs(SwitchVO switchs) {
+    public void setSwitchs(SwitchEO switchs) {
         this.switchs = switchs;
     }
 
