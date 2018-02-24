@@ -1,12 +1,10 @@
 package com.syscxp.vpn.job;
 
+import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.job.Job;
-import com.syscxp.core.job.JobContext;
-import com.syscxp.core.job.RestartableJob;
-import com.syscxp.core.job.UniqueResourceJob;
+import com.syscxp.core.job.*;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.vpn.agent.DeleteVpnMsg;
@@ -42,7 +40,7 @@ public class DeleteVpnJob implements Job {
             LOGGER.info("开始执行JOB【Delete Vpn】");
             DeleteVpnMsg deleteVpnMsg = new DeleteVpnMsg();
             deleteVpnMsg.setVpnUuid(vpnUuid);
-            deleteVpnMsg.setExpired(deleteRenew);
+            deleteVpnMsg.setDeleteRenew(deleteRenew);
             bus.makeLocalServiceId(deleteVpnMsg, VpnConstant.SERVICE_ID);
             bus.send(deleteVpnMsg, new CloudBusCallBack(completion) {
                 @Override
@@ -82,5 +80,13 @@ public class DeleteVpnJob implements Job {
     @Override
     public String getResourceUuid() {
         return vpnUuid;
+    }
+
+    public static DeleteVpnJob executeJob(JobQueueFacade jobf, String vpnUuid, boolean deleteRenew){
+        DeleteVpnJob job = new DeleteVpnJob();
+        job.setVpnUuid(vpnUuid);
+        job.setDeleteRenew(deleteRenew);
+        jobf.execute("删除VPN", Platform.getManagementServerId(), job);
+        return job;
     }
 }
