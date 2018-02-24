@@ -88,9 +88,53 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
             handle((APIQuerySwitchPortAvailableMsg) msg);
         } else if (msg instanceof APIQueryVlanUsedMsg) {
             handle((APIQueryVlanUsedMsg) msg);
+        } else if (msg instanceof APIGetSwitchPortDetailMsg) {
+            handle((APIGetSwitchPortDetailMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetSwitchPortDetailMsg msg){
+        APIGetSwitchPortDetailReply reply = new APIGetSwitchPortDetailReply();
+
+        String swicthPortUuid = msg.getUuid();
+
+        //已开通专线数量
+        String sql1 = "select count(b.uuid) from TunnelSwitchPortVO a,TunnelVO b " +
+                "where a.tunnelUuid = b.uuid " +
+                "and a.switchPortUuid = :swicthPortUuid " +
+                "and b.state = 'Enabled'";
+        TypedQuery<Long> vq1 = dbf.getEntityManager().createQuery(sql1, Long.class);
+        vq1.setParameter("swicthPortUuid", swicthPortUuid);
+        Long count = vq1.getSingleResult();
+        reply.setTunnelNumEnabled(count.intValue());
+
+        //已售带宽
+        String sql2 = "select sum(b.bandwidth) from TunnelSwitchPortVO a,TunnelVO b " +
+                "where a.tunnelUuid = b.uuid " +
+                "and a.switchPortUuid = :swicthPortUuid " +
+                "and b.state != 'Unpaid'";
+        TypedQuery<Long> vq2 = dbf.getEntityManager().createQuery(sql2, Long.class);
+        vq2.setParameter("swicthPortUuid", swicthPortUuid);
+        Long sum1 = vq2.getSingleResult();
+        reply.setBandwidthPaid(sum1);
+
+        //已使用带宽
+        String sql3 = "select sum(b.bandwidth) from TunnelSwitchPortVO a,TunnelVO b " +
+                "where a.tunnelUuid = b.uuid " +
+                "and a.switchPortUuid = :swicthPortUuid " +
+                "and b.state = 'Enabled'";
+        TypedQuery<Long> vq3 = dbf.getEntityManager().createQuery(sql3, Long.class);
+        vq3.setParameter("swicthPortUuid", swicthPortUuid);
+        Long sum2 = vq3.getSingleResult();
+        reply.setBandwidthUsed(sum2);
+
+        //带宽使用率
+        reply.setBandwidthUsage(sum2/(double)sum1);
+
+        bus.reply(msg, reply);
+
     }
 
     private void handle(APIQueryVlanUsedMsg msg) {
