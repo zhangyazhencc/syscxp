@@ -402,9 +402,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("monitor cidr %s has been used by tunnel %s, " +
                     "plsase enter another cidr!", tunnelVO.getMonitorCidr(), tunnelVOS.get(0).getName()));
 
-        // 判断是否为同交换机
-
-
         // 删除遗留数据
         List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())

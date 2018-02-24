@@ -16,6 +16,7 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
@@ -163,18 +164,24 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelAlarm(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Alarm] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        AlarmEventVO existedEvent = getExistedEvents(eventVO);
-        if (existedEvent == null)
-            dbf.persistAndRefresh(eventVO);
+        GLock gLock = new GLock("TunnelAlarm.lock",60);
+        gLock.lock();
+        try {
+            AlarmEventVO existedEvent = getExistedEvents(eventVO);
+            if (existedEvent == null)
+                dbf.persistAndRefresh(eventVO);
 
-        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
-        if (logVO == null) {
-            processTunnelEvent(eventVO);
+            AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+            if (logVO == null) {
+                processTunnelEvent(eventVO);
 
-            logVO = generateAlarmLog(eventVO);
-            dbf.persistAndRefresh(logVO);
+                logVO = generateAlarmLog(eventVO);
+                dbf.persistAndRefresh(logVO);
 
-            sendMessage(logVO);
+                sendMessage(logVO);
+            }
+        }finally {
+            gLock.unlock();
         }
     }
 
@@ -186,23 +193,29 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelRecover(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Recover] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        AlarmEventVO existedEvent = getExistedEvents(eventVO);
-        if (existedEvent != null) {
-            existedEvent.setStatus(AlarmStatus.OK);
-            dbf.updateAndRefresh(existedEvent);
-        } else
-            dbf.persist(eventVO);
+        GLock gLock = new GLock("TunnelRecover.lock",60);
+        gLock.lock();
+        try {
+            AlarmEventVO existedEvent = getExistedEvents(eventVO);
+            if (existedEvent != null) {
+                existedEvent.setStatus(AlarmStatus.OK);
+                dbf.updateAndRefresh(existedEvent);
+            } else
+                dbf.persist(eventVO);
 
-        AlarmLogVO logVO = getExistedAlarmLog(eventVO);
-        if (logVO != null) {
-            if (isRecovered(eventVO)) {
-                processTunnelEvent(eventVO);
+            AlarmLogVO logVO = getExistedAlarmLog(eventVO);
+            if (logVO != null) {
+                if (isRecovered(eventVO)) {
+                    processTunnelEvent(eventVO);
 
-                logVO = generateAlarmLog(eventVO);
-                dbf.updateAndRefresh(logVO);
+                    logVO = generateAlarmLog(eventVO);
+                    dbf.updateAndRefresh(logVO);
 
-                sendMessage(logVO);
+                    sendMessage(logVO);
+                }
             }
+        }finally {
+            gLock.unlock();
         }
     }
 
@@ -508,7 +521,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
      * @param eventVO
      * @return
      */
-    private AlarmEventVO getExistedEvents(AlarmEventVO eventVO) {
+    private AlarmEventVO  getExistedEvents(AlarmEventVO eventVO) {
         List<AlarmEventVO> existedEvents = Q.New(AlarmEventVO.class)
                 .eq(AlarmEventVO_.endpoint, eventVO.getEndpoint())
                 .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())
