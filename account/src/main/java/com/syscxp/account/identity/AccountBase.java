@@ -161,8 +161,6 @@ public class AccountBase extends AbstractAccount {
             handle((APIGetSecretKeyMsg)msg);
         } else if (msg instanceof APILogInBySecretIdMsg) {
             handle((APILogInBySecretIdMsg)msg);
-        } else if (msg instanceof APIGetAccountForShareMsg) {
-            handle((APIGetAccountForShareMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -170,31 +168,6 @@ public class AccountBase extends AbstractAccount {
 
     }
 
-    private void handle(APIGetAccountForShareMsg msg) {
-
-        APIGetAccountForShareReply reply = new APIGetAccountForShareReply();
-
-        AccountVO account = null;
-        if(msg.getAccountName() != null){
-            account = dbf.createQuery(AccountVO.class).add(AccountVO_.name, SimpleQuery.Op.EQ,msg.getAccountName()).find();
-        }else if(msg.getAccountPhone() != null){
-            account = dbf.createQuery(AccountVO.class).add(AccountVO_.phone, SimpleQuery.Op.EQ,msg.getAccountPhone()).find();
-        }else {
-            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "params is all null"));
-        }
-
-        if(account != null){
-            reply.setName(account.getName());
-            reply.setUuid(account.getUuid());
-            reply.setPhone(account.getPhone());
-        }else{
-            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "no find this account"));
-        }
-
-        bus.reply(msg,reply);
-    }
 
     private void handle(APILogInBySecretIdMsg msg) {
         APILogInReply reply = new APILogInReply();

@@ -5,7 +5,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
 @SuppressCredentialCheck
-public class APIGetAccountForShareMsg extends APISyncCallMessage implements  AccountMessage {
+public class APIGetAccountForShareMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,required = false)
     private String accountName;
@@ -29,8 +29,4 @@ public class APIGetAccountForShareMsg extends APISyncCallMessage implements  Acc
         this.accountPhone = accountPhone;
     }
 
-    @Override
-    public String getAccountUuid() {
-        return getSession().getAccountUuid();
-    }
 }
