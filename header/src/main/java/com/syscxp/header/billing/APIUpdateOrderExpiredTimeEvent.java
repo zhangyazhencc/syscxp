@@ -1,4 +1,4 @@
-package com.syscxp.billing.header.order;
+package com.syscxp.header.billing;
 
 import com.syscxp.header.billing.OrderInventory;
 import com.syscxp.header.message.APIEvent;
