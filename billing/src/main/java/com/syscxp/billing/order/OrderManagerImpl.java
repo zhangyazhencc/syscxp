@@ -2,7 +2,7 @@ package com.syscxp.billing.order;
 
 import com.syscxp.billing.balance.DealDetailVOHelper;
 import com.syscxp.billing.header.balance.*;
-import com.syscxp.header.billing.APIUpdateOrderExpiredTimeEvent;
+import com.syscxp.header.billing.APIUpdateOrderExpiredTimeReply;
 import com.syscxp.billing.header.renew.PriceRefRenewVO;
 import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
@@ -248,9 +248,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVO);
         dbf.getEntityManager().flush();
-        APIUpdateOrderExpiredTimeEvent event = new APIUpdateOrderExpiredTimeEvent();
-        event.setInventory(OrderInventory.valueOf(orderVO));
-        bus.publish(event);
+        APIUpdateOrderExpiredTimeReply reply = new APIUpdateOrderExpiredTimeReply();
+        reply.setInventory(OrderInventory.valueOf(orderVO));
+        bus.reply(msg,reply);
     }
 
     @Transactional
