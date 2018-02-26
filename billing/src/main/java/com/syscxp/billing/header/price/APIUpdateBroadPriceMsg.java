@@ -7,7 +7,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE, adminOnly = true)
 public class APIUpdateBroadPriceMsg extends APIMessage {
 
     @APIParam

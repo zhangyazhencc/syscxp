@@ -130,7 +130,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIQueryNettoolMonitorHostMsg) msg);
         } else if (msg instanceof APIQueryMonitorResultMsg) {
             handle((APIQueryMonitorResultMsg) msg);
-        } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
+        } else if (msg instanceof APIQuerySwitchPortTrafficMsg) {
+            handle((APIQuerySwitchPortTrafficMsg) msg);
+        }else if (msg instanceof APICreateSpeedTestTunnelMsg) {
             handle((APICreateSpeedTestTunnelMsg) msg);
         } else if (msg instanceof APIDeleteSpeedTestTunnelMsg) {
             handle((APIDeleteSpeedTestTunnelMsg) msg);
@@ -1233,7 +1235,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.reply(msg, reply);
     }
 
-
     /***
      * 获取OpenTSDB查询条件
      * @param msg
@@ -1271,6 +1272,41 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         condition.setQueries(queries);
 
         return JSONObjectUtil.toJsonString(condition);
+    }
+
+    private void handle(APIQuerySwitchPortTrafficMsg msg) {
+        APIQuerySwitchPortTrafficReply reply = new APIQuerySwitchPortTrafficReply();
+
+        PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(msg.getSwitchPortUuid());
+        SwitchPortVO switchPortVO = dbf.findByUuid(msg.getSwitchPortUuid(), SwitchPortVO.class);
+
+        List<OpenTSDBCommands.Query> queries = new ArrayList<>();
+        for (String metric : msg.getMetrics()) {
+            OpenTSDBCommands.Tags tags = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                    , switchPortVO.getPortName());
+
+            OpenTSDBCommands.Query query = new OpenTSDBCommands.Query("avg", metric, tags);
+            queries.add(query);
+        }
+        OpenTSDBCommands.QueryCondition condition = new OpenTSDBCommands.QueryCondition();
+        condition.setStart(msg.getStart());
+        condition.setEnd(msg.getEnd());
+        condition.setQueries(queries);
+
+        String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
+        String resp = "";
+        try {
+            resp = restf.getRESTTemplate().postForObject(url, JSONObjectUtil.toJsonString(condition), String.class);
+        } catch (Exception e) {
+            resp = "";
+        }
+
+        List<OpenTSDBCommands.QueryResult> results = new ArrayList<>();
+        if (!StringUtils.isEmpty(resp))
+            results = JSON.parseArray(resp, OpenTSDBCommands.QueryResult.class);
+
+        reply.setInventories(OpenTSDBResultInventory.valueOf(results));
+        bus.reply(msg, reply);
     }
 
     private void handle(APICreateSpeedTestTunnelMsg msg) {

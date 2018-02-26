@@ -8,7 +8,6 @@ import com.syscxp.header.tunnel.SwitchConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
-@AutoQuery(replyClass = APIQueryVlanUsedReply.class, inventoryClass = VlanUsedInventory.class)
 public class APIQueryVlanUsedMsg extends APISyncCallMessage {
     @APIParam
     private String uuid;
