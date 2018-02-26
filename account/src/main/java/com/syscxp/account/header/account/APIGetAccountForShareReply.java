@@ -11,6 +11,8 @@ public class APIGetAccountForShareReply extends APIReply {
 
     private String phone;
 
+    private String company;
+
     public String getUuid() {
         return uuid;
     }
@@ -35,4 +37,11 @@ public class APIGetAccountForShareReply extends APIReply {
         this.phone = phone;
     }
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 }

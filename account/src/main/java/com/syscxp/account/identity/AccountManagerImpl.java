@@ -166,6 +166,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             reply.setName(account.getName());
             reply.setUuid(account.getUuid());
             reply.setPhone(account.getPhone());
+            reply.setCompany(account.getCompany());
         }else{
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "no find this account"));
