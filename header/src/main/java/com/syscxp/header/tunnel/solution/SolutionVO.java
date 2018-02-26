@@ -32,6 +32,9 @@ public class SolutionVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private boolean isShare;
+
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
@@ -91,5 +94,13 @@ public class SolutionVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public boolean isShare() {
+        return isShare;
+    }
+
+    public void setShare(boolean share) {
+        isShare = share;
     }
 }

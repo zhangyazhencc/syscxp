@@ -60,6 +60,7 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
+import com.syscxp.vpn.job.DeleteRenewVOAfterDeleteResourceJob;
 import com.syscxp.vpn.job.DeleteVpnJob;
 import com.syscxp.vpn.job.DestroyVpnJob;
 import com.syscxp.vpn.job.RenameBillingProductNameJob;
@@ -239,9 +240,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .update();
 
         for (String vpnUuid : vpnUuids) {
-            DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
-            destroyVpnJob.setVpnUuid(vpnUuid);
-            jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
+            DestroyVpnJob.executeJob(jobf, vpnUuid);
         }
         bus.reply(msg, reply);
 
@@ -824,10 +823,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(final FlowTrigger trigger, Map data) {
                 LOGGER.debug(String.format("创建VPN[UUID:%s]删除任务", vpn.getUuid()));
-                DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
-                deleteVpnJob.setVpnUuid(vpn.getUuid());
-                deleteVpnJob.setDeleteRenew(!unsubcribe);
-                jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
+                DeleteVpnJob.executeJob(jobf, vpn.getUuid(), !unsubcribe);
                 trigger.next();
             }
         });
@@ -1089,33 +1085,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-vpn-%s", msg.getVpnUuid()));
         chain.then(new NoRollbackFlow() {
-            String __name__ = "delete-renew";
-
-            @Override
-            public void run(final FlowTrigger trigger, Map data) {
-                if (msg.isExpired()) {
-                    APIDeleteExpiredRenewMsg deleteExpiredRenewMsg = new APIDeleteExpiredRenewMsg();
-                    deleteExpiredRenewMsg.setAccountUuid(vpn.getAccountUuid());
-                    deleteExpiredRenewMsg.setProductUuid(vpn.getUuid());
-                    createOrder(deleteExpiredRenewMsg, new Completion(trigger) {
-                        @Override
-                        public void success() {
-                            LOGGER.debug(String.format("VPN[UUID:%s] 清楚续费成功", vpn.getUuid()));
-                            trigger.next();
-                        }
-
-                        @Override
-                        public void fail(ErrorCode errorCode) {
-                            LOGGER.debug(String.format("VPN[UUID:%s] 清楚续费失败", vpn.getUuid()));
-                            trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "清楚续费失败", errorCode));
-                        }
-                    });
-                } else {
-                    trigger.next();
-                }
-            }
-
-        }).then(new NoRollbackFlow() {
             String __name__ = "detach-vpn-cert";
 
             @Override
@@ -1152,6 +1121,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         chain.done(new FlowDoneHandler(msg) {
             @Override
             public void handle(Map data) {
+                if (msg.isDeleteRenew()) {
+                    DeleteRenewVOAfterDeleteResourceJob.execute(jobf, vpn.getUuid(), vpn.getAccountUuid());
+                }
                 dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
                 bus.reply(msg, reply);
             }
@@ -1283,12 +1255,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     if (vo.getExpireDate().before(deleteTime)) {
                         LOGGER.debug(String.format("The Vpn[name:%s, UUID:%s] has expired, start to delete it.", vo.getName(), vo.getUuid()));
 
-                        DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
-                        deleteVpnJob.setVpnUuid(vo.getUuid());
-                        // 未支付的和退订未完成的不需要清楚续费表
-                        deleteVpnJob.setDeleteRenew(vo.getPayment() == Payment.PAID && vo.getAccountUuid() != null);
-                        jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
-
+                        DeleteVpnJob.executeJob(jobf, vo.getUuid(),
+                                vo.getPayment() == Payment.PAID && vo.getAccountUuid() != null);
                     }
                 }
             } catch (Throwable t) {
@@ -1345,9 +1313,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     VpnVO vpn = updateVpnFromOrder(cmd);
                     if (message instanceof UnsubcribeVpnCallBack) {
                         if (vpn != null) {
-                            DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
-                            deleteVpnJob.setVpnUuid(vpn.getUuid());
-                            jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
+                            DeleteVpnJob.executeJob(jobf, vpn.getUuid(), false);
                         }
                     } else if (message instanceof UpdateVpnBandwidthCallBack) {
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected) {

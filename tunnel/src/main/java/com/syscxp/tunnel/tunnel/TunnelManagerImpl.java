@@ -63,6 +63,7 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -189,7 +190,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIGetRenewTunnelPriceMsg) msg);
         } else if (msg instanceof APIGetModifyBandwidthNumMsg) {
             handle((APIGetModifyBandwidthNumMsg) msg);
-        } else {
+        } else if (msg instanceof APIRunDataForTunnelTypeMsg) {
+            handle((APIRunDataForTunnelTypeMsg) msg);
+        } else if (msg instanceof APIRunDataForTunnelZKMsg) {
+            handle((APIRunDataForTunnelZKMsg) msg);
+        }  else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -545,14 +550,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     //删除产品
                     dbf.remove(vo);
 
-                    //删除续费表
-                    logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
-                    DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
-                    job.setAccountUuid(vo.getOwnerAccountUuid());
-                    job.setResourceType(vo.getClass().getSimpleName());
-                    job.setResourceUuid(vo.getUuid());
-                    jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
-
                     evt.setInventory(InterfaceInventory.valueOf(vo));
                 } else {
                     //退订失败
@@ -810,13 +807,22 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (!isIfaceANew){
             interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         } else {
-            interfaceVOA = tunnelBase.createInterfaceByTunnel(msg.getEndpointAUuid(),msg);
+            interfaceVOA = tunnelBase.createInterfaceByTunnel(msg.getEndpointAUuid(), msg);
         }
         if (!isIfaceZNew){
             interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         } else {
-            interfaceVOZ = tunnelBase.createInterfaceByTunnel(msg.getEndpointZUuid(),msg);
+            interfaceVOZ = tunnelBase.createInterfaceByTunnel(msg.getEndpointZUuid(), msg);
         }
+
+        if (msg.getCrossTunnelUuid() != null) {
+            if (msg.getCrossInterfaceUuid().equals(msg.getInterfaceAUuid())){
+                validateDuplicateVsiVlan(interfaceVOZ.getSwitchPortUuid(), vsi);
+            }else{
+                validateDuplicateVsiVlan(interfaceVOA.getSwitchPortUuid(), vsi);
+            }
+        }
+
         SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
         SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
 
@@ -934,6 +940,24 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         return vo.getUuid();
+    }
+
+    private void validateDuplicateVsiVlan(String switchPortUuid, Integer vsi){
+        TunnelBase tunnelBase = new TunnelBase();
+        PhysicalSwitchVO physicalSwitchVO = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuid);
+
+        physicalSwitchVO = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO);
+
+        String sql = "select count(*) from TunnelSwitchPortVO tp, TunnelVO t" +
+                " where tp.tunnelUuid = t.uuid" +
+                " and tp.ownerMplsSwitchUuid = :ownerMplsSwitchUuid" +
+                " and t.vsi = :vsi";
+        TypedQuery<Long> tq = dbf.getEntityManager().createQuery(sql, Long.class);
+        tq.setParameter("ownerMplsSwitchUuid", physicalSwitchVO.getUuid());
+        tq.setParameter("vsi", vsi);
+        if (tq.getSingleResult() > 0){
+            throw new ApiMessageInterceptionException(argerr("同一设备下VSI只允许绑定一个Vlan"));
+        }
     }
 
     private void doAbroad(String innerConnectedEndpointUuid,
@@ -2567,6 +2591,60 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.reply(msg, reply);
     }
 
+    /**
+     * 数据迁移--跑 tunnelType
+     */
+    private void handle(APIRunDataForTunnelTypeMsg msg){
+        TunnelBase tunnelBase = new TunnelBase();
+        APIRunDataForTunnelTypeReply reply = new APIRunDataForTunnelTypeReply();
+
+        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+                .notEq(TunnelVO_.type, TunnelType.CHINA1ABROAD)
+                .list();
+        for(TunnelVO tunnelVO : tunnelVOS){
+            String endpointUuidA = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag, "A")
+                    .select(TunnelSwitchPortVO_.endpointUuid)
+                    .findValue();
+            String endpointUuidZ = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                    .select(TunnelSwitchPortVO_.endpointUuid)
+                    .findValue();
+            EndpointVO evoA = dbf.findByUuid(endpointUuidA, EndpointVO.class);
+            EndpointVO evoZ = dbf.findByUuid(endpointUuidZ, EndpointVO.class);
+            NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+            NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
+
+            TunnelType tunnelType = tunnelBase.getTunnelType(nvoA, nvoZ, null);
+
+            tunnelVO.setType(tunnelType);
+
+            dbf.updateAndRefresh(tunnelVO);
+        }
+
+        bus.reply(msg, reply);
+    }
+
+    /**
+     * 数据迁移--下发ZK
+     */
+    private void handle(APIRunDataForTunnelZKMsg msg){
+        APIRunDataForTunnelZKEvent evt = new APIRunDataForTunnelZKEvent(msg.getId());
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+
+        List<String> uuids = Q.New(TunnelVO.class)
+                .eq(TunnelVO_.state, TunnelState.Enabled)
+                .select(TunnelVO_.uuid)
+                .listValues();
+        for(String uuid : uuids){
+            taskBase.taskCreateTunnelZK(uuid);
+        }
+
+        bus.publish(evt);
+    }
+
     /**************************************** The following clean the expired Products **************************************************/
 
     private Future<Void> cleanExpiredProductThread = null;
@@ -2658,7 +2736,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             for (InterfaceVO vo : ifaces) {
                 if (vo.getExpireDate().before(delete)) {
                     if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists()
-                            && !Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid, vo.getUuid()).isExists()){
+                            && !Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid, vo.getUuid()).isExists()) {
                         dbf.remove(vo);
                         //删除续费表
                         logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
@@ -2669,8 +2747,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
                     }
 
-                }
-                if (vo.getExpireDate().before(close) && vo.getState() == InterfaceState.Unpaid) {
+                }else if (vo.getExpireDate().before(close) && vo.getState() == InterfaceState.Unpaid) {
                     dbf.remove(vo);
                 }
             }

@@ -19,4 +19,5 @@ public class SolutionVO_ {
     public static volatile SingularAttribute<SolutionVO, BigDecimal> totalCost;
     public static volatile SingularAttribute<SolutionVO, Timestamp> createDate;
     public static volatile SingularAttribute<SolutionVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<SolutionVO, Integer> shareTotal;
 }

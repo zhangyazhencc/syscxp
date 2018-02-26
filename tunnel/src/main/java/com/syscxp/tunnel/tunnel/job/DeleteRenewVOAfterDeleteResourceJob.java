@@ -1,12 +1,10 @@
 package com.syscxp.tunnel.tunnel.job;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.Platform;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
-import com.syscxp.core.job.Job;
-import com.syscxp.core.job.JobContext;
-import com.syscxp.core.job.RestartableJob;
-import com.syscxp.core.job.UniqueResourceJob;
+import com.syscxp.core.job.*;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.APIDeleteExpiredRenewMsg;
 import com.syscxp.header.core.ReturnValueCompletion;
@@ -55,7 +53,7 @@ public class DeleteRenewVOAfterDeleteResourceJob implements Job {
             msg.setProductUuid(resourceUuid);
             msg.setAccountUuid(accountUuid);
 
-            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.BILLING_SERVER_URL,RESTConstant.REST_API_CALL);
+            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.BILLING_SERVER_URL, RESTConstant.REST_API_CALL);
             InnerMessageHelper.setMD5(msg);
 
             RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
@@ -99,6 +97,15 @@ public class DeleteRenewVOAfterDeleteResourceJob implements Job {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public static DeleteRenewVOAfterDeleteResourceJob execute(JobQueueFacade jobf, String resourceUuid, String accountUuid){
+        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
+        job.setAccountUuid(accountUuid);
+        job.setResourceUuid(resourceUuid);
+        jobf.execute("deleteBillingRenewVO", Platform.getManagementServerId(), job);
+
+        return job;
     }
 
 }

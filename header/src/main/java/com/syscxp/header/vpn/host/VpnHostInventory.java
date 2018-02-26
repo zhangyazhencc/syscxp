@@ -18,7 +18,6 @@ public class VpnHostInventory extends HostInventory{
     private String nodeUuid;
     private Integer startPort;
     private Integer endPort;
-    private List<HostInterfaceInventory> hostInterfaceInventories;
 
     public VpnHostInventory(VpnHostVO vo) {
         super(vo);
@@ -28,7 +27,6 @@ public class VpnHostInventory extends HostInventory{
         this.setStartPort(vo.getStartPort());
         this.setNodeUuid(vo.getNodeUuid());
         this.setEndPort(vo.getEndPort());
-        this.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
     }
 
     public static VpnHostInventory valueOf(VpnHostVO vo){
@@ -65,14 +63,6 @@ public class VpnHostInventory extends HostInventory{
 
     public void setEndPort(Integer endPort) {
         this.endPort = endPort;
-    }
-
-    public List<HostInterfaceInventory> getHostInterfaceInventories() {
-        return hostInterfaceInventories;
-    }
-
-    public void setHostInterfaceInventories(List<HostInterfaceInventory> hostInterfaceInventories) {
-        this.hostInterfaceInventories = hostInterfaceInventories;
     }
 
     public String getPublicIp() {
