@@ -2,7 +2,7 @@ package com.syscxp.billing.order;
 
 import com.syscxp.billing.balance.DealDetailVOHelper;
 import com.syscxp.billing.header.balance.*;
-import com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeEvent;
+import com.syscxp.header.billing.APIUpdateOrderExpiredTimeReply;
 import com.syscxp.billing.header.renew.PriceRefRenewVO;
 import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
@@ -17,7 +17,7 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeMsg;
+import com.syscxp.header.billing.APIUpdateOrderExpiredTimeMsg;
 import com.syscxp.billing.BillingErrors;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -240,7 +240,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVO.setProductEffectTimeEnd(msg.getEndTime());
         orderVO.setProductStatus(1);
 
-        RenewVO renewVO = getRenewVO(msg.getSession().getAccountUuid(), msg.getProductUuid());
+        RenewVO renewVO = getRenewVO(orderVO.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
@@ -248,9 +248,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVO);
         dbf.getEntityManager().flush();
-        APIUpdateOrderExpiredTimeEvent event = new APIUpdateOrderExpiredTimeEvent();
-        event.setInventory(OrderInventory.valueOf(orderVO));
-        bus.publish(event);
+        APIUpdateOrderExpiredTimeReply reply = new APIUpdateOrderExpiredTimeReply();
+        reply.setInventory(OrderInventory.valueOf(orderVO));
+        bus.reply(msg,reply);
     }
 
     @Transactional
