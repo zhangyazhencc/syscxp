@@ -706,7 +706,8 @@ CREATE TABLE  `ShareSolutionVO` (
     `solutionUuid` varchar(32) NOT NULL,
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
     `createDate` timestamp,
-    PRIMARY KEY  (`uuid`)
+    PRIMARY KEY  (`uuid`),
+    UNIQUE KEY `ukShareSolutionVO` (`accountUuid`,`ownerAccountUuid`,`solutionUuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `SolutionVO` ADD COLUMN `isShare` tinyint(1) unsigned DEFAULT 0 COMMENT '是否共享';
