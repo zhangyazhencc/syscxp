@@ -9,7 +9,7 @@ import java.util.List;
 @SuppressCredentialCheck
 public class APIListAccountByUuidMsg extends APISyncCallMessage {
 
-    @APIParam(nonempty = false)
+    @APIParam(nonempty = true)
     private List<String> accountUuidList;
 
     public List<String> getAccountUuidList() {
