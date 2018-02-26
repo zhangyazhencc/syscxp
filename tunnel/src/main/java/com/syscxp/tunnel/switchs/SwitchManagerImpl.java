@@ -118,6 +118,9 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         TypedQuery<Long> vq2 = dbf.getEntityManager().createQuery(sql2, Long.class);
         vq2.setParameter("swicthPortUuid", swicthPortUuid);
         Long sum1 = vq2.getSingleResult();
+        if(sum1 == null){
+            sum1 = 0L;
+        }
         reply.setBandwidthPaid(sum1);
 
         //已使用带宽
@@ -128,6 +131,9 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         TypedQuery<Long> vq3 = dbf.getEntityManager().createQuery(sql3, Long.class);
         vq3.setParameter("swicthPortUuid", swicthPortUuid);
         Long sum2 = vq3.getSingleResult();
+        if(sum2 == null){
+            sum2 = 0L;
+        }
         reply.setBandwidthUsed(sum2);
 
         //带宽使用率
