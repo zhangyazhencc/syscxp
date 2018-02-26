@@ -1,8 +1,10 @@
 package com.syscxp.account.header.account;
 
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
+@SuppressCredentialCheck
 public class APIGetAccountForShareMsg extends APISyncCallMessage implements  AccountMessage {
 
     @APIParam(emptyString = false,required = false)
