@@ -140,10 +140,33 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIValidateAccountWithProxyMsg) msg);
         } else if (msg instanceof APIGetAccountForShareMsg) {
             handle((APIGetAccountForShareMsg)msg);
+        } else if (msg instanceof APIListAccountByUuidMsg) {
+            handle((APIListAccountByUuidMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
+
+    private void handle(APIListAccountByUuidMsg msg) {
+
+        APIListAccountByUuidReply reply = new APIListAccountByUuidReply();
+
+        List<Map<String,String>> lists = new ArrayList<>();
+        for(String uuid: msg.getAccountUuidList()){
+            Map<String,String> map = new HashMap<>();
+            AccountVO vo = dbf.findByUuid(uuid,AccountVO.class);
+            if(vo != null){
+                map.put("uuid",vo.getUuid());
+                map.put("name",vo.getName());
+                map.put("phone",vo.getPhone());
+                map.put("company",vo.getCompany());
+                lists.add(map);
+            }
+        }
+
+        reply.setAccountList(lists);
+        bus.reply(msg,reply);
 
     }
 
