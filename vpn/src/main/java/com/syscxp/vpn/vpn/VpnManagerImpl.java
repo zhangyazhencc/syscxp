@@ -240,9 +240,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .update();
 
         for (String vpnUuid : vpnUuids) {
-            DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
-            destroyVpnJob.setVpnUuid(vpnUuid);
-            jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
+            DestroyVpnJob.executeJob(jobf, vpnUuid);
         }
         bus.reply(msg, reply);
 
@@ -825,10 +823,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(final FlowTrigger trigger, Map data) {
                 LOGGER.debug(String.format("创建VPN[UUID:%s]删除任务", vpn.getUuid()));
-                DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
-                deleteVpnJob.setVpnUuid(vpn.getUuid());
-                deleteVpnJob.setDeleteRenew(!unsubcribe);
-                jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
+                DeleteVpnJob.executeJob(jobf, vpn.getUuid(), !unsubcribe);
                 trigger.next();
             }
         });
@@ -1126,7 +1121,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         chain.done(new FlowDoneHandler(msg) {
             @Override
             public void handle(Map data) {
-                DeleteRenewVOAfterDeleteResourceJob.execute(jobf, vpn.getUuid(), vpn.getAccountUuid());
+                if (msg.isDeleteRenew()) {
+                    DeleteRenewVOAfterDeleteResourceJob.execute(jobf, vpn.getUuid(), vpn.getAccountUuid());
+                }
                 dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
                 bus.reply(msg, reply);
             }
@@ -1258,12 +1255,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     if (vo.getExpireDate().before(deleteTime)) {
                         LOGGER.debug(String.format("The Vpn[name:%s, UUID:%s] has expired, start to delete it.", vo.getName(), vo.getUuid()));
 
-                        DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
-                        deleteVpnJob.setVpnUuid(vo.getUuid());
-                        // 未支付的和退订未完成的不需要清楚续费表
-                        deleteVpnJob.setDeleteRenew(vo.getPayment() == Payment.PAID && vo.getAccountUuid() != null);
-                        jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
-
+                        DeleteVpnJob.executeJob(jobf, vo.getUuid(),
+                                vo.getPayment() == Payment.PAID && vo.getAccountUuid() != null);
                     }
                 }
             } catch (Throwable t) {
@@ -1320,9 +1313,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     VpnVO vpn = updateVpnFromOrder(cmd);
                     if (message instanceof UnsubcribeVpnCallBack) {
                         if (vpn != null) {
-                            DeleteVpnJob deleteVpnJob = new DeleteVpnJob();
-                            deleteVpnJob.setVpnUuid(vpn.getUuid());
-                            jobf.execute("删除VPN", Platform.getManagementServerId(), deleteVpnJob);
+                            DeleteVpnJob.executeJob(jobf, vpn.getUuid(), false);
                         }
                     } else if (message instanceof UpdateVpnBandwidthCallBack) {
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected) {

@@ -17,6 +17,7 @@ public class SolutionInventory {
     private BigDecimal totalCost;
     private Timestamp lastOpDate;
     private Timestamp createDate;
+    private boolean isShare;
 
     public static SolutionInventory valueOf(SolutionVO vo) {
         SolutionInventory inv = new SolutionInventory();
@@ -27,6 +28,7 @@ public class SolutionInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setShare(vo.isShare());
         return inv;
     }
 
@@ -92,5 +94,13 @@ public class SolutionInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public boolean isShare() {
+        return isShare;
+    }
+
+    public void setShare(boolean share) {
+        isShare = share;
     }
 }

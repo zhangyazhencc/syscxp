@@ -229,6 +229,9 @@
         <name>com.syscxp.account.header.identity.APILogInBySecretIdMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.account.header.account.APIGetAccountForShareMsg</name>
+    </message>
 
 
 </service>

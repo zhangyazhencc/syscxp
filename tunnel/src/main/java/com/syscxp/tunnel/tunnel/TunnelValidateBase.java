@@ -616,20 +616,23 @@ public class TunnelValidateBase {
             List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
             Set<Integer> s = new HashSet<>();
             for(InnerVlanSegment innerVlanSegment : vlanSegments){
-                if(Objects.equals(innerVlanSegment.getStartVlan(), innerVlanSegment.getEndVlan())){
-                    boolean success = s.add(innerVlanSegment.getStartVlan());
-                    if(!success){
-                        throw new ApiMessageInterceptionException(argerr("所填的内部VLAN有冲突！"));
-                    }
+                if(innerVlanSegment.getEndVlan() < innerVlanSegment.getStartVlan()){
+                    throw new ApiMessageInterceptionException(argerr("所填的内部起始VLAN要小于等于结束VLAN！"));
                 }else{
-                    for(int i = innerVlanSegment.getStartVlan(); i <= innerVlanSegment.getEndVlan(); i++){
-                        boolean success = s.add(i);
+                    if(Objects.equals(innerVlanSegment.getStartVlan(), innerVlanSegment.getEndVlan())){
+                        boolean success = s.add(innerVlanSegment.getStartVlan());
                         if(!success){
                             throw new ApiMessageInterceptionException(argerr("所填的内部VLAN有冲突！"));
                         }
+                    }else{
+                        for(int i = innerVlanSegment.getStartVlan(); i <= innerVlanSegment.getEndVlan(); i++){
+                            boolean success = s.add(i);
+                            if(!success){
+                                throw new ApiMessageInterceptionException(argerr("所填的内部VLAN有冲突！"));
+                            }
+                        }
                     }
                 }
-
             }
 
         }

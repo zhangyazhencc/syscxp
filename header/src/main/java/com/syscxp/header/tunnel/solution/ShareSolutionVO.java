@@ -1,15 +1,12 @@
 package com.syscxp.header.tunnel.solution;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-/**
- * Created by wangwg on 2017/11/20.
- */
 @Entity
 @Table
-public class SolutionVO {
+public class ShareSolutionVO {
+
     @Id
     @Column
     private String uuid;
@@ -18,22 +15,15 @@ public class SolutionVO {
     private String accountUuid;
 
     @Column
-    private String name;
+    private String ownerAccountUuid;
 
     @Column
-    private String description;
-
-    @Column
-    private BigDecimal totalCost;
-
+    private String solutionUuid;
     @Column
     private Timestamp createDate;
 
     @Column
     private Timestamp lastOpDate;
-
-    @Column
-    private boolean isShare;
 
     @PreUpdate
     private void preUpdate() {
@@ -56,28 +46,20 @@ public class SolutionVO {
         this.accountUuid = accountUuid;
     }
 
-    public String getName() {
-        return name;
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 
-    public String getDescription() {
-        return description;
+    public String getSolutionUuid() {
+        return solutionUuid;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getTotalCost() {
-        return totalCost;
-    }
-
-    public void setTotalCost(BigDecimal totalCost) {
-        this.totalCost = totalCost;
+    public void setSolutionUuid(String solutionUuid) {
+        this.solutionUuid = solutionUuid;
     }
 
     public Timestamp getCreateDate() {
@@ -94,13 +76,5 @@ public class SolutionVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public boolean isShare() {
-        return isShare;
-    }
-
-    public void setShare(boolean share) {
-        isShare = share;
     }
 }

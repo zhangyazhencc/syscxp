@@ -693,3 +693,20 @@ ALTER TABLE SolutionVpnVO ADD CONSTRAINT fkSolutionVpnVOSolutionTunnelVO FOREIGN
 ########################################################
 
 CREATE INDEX idxTaskResourceVOcreateDate ON TaskResourceVO (lastOpDate);
+
+
+#######################################################
+
+DROP TABLE IF EXISTS `ShareSolutionVO`;
+#分享方案#
+CREATE TABLE  `ShareSolutionVO` (
+    `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+    `accountUuid` varchar(32) NOT NULL,
+    `ownerAccountUuid` varchar(32) NOT NULL,
+    `solutionUuid` varchar(32) NOT NULL,
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `SolutionVO` ADD COLUMN `isShare` tinyint(1) unsigned DEFAULT 0 COMMENT '是否共享';
