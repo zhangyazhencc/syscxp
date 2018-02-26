@@ -376,7 +376,19 @@ CREATE TABLE `ProductCategoryVO` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 LOCK TABLES `ProductCategoryVO` WRITE;
-INSERT INTO `ProductCategoryVO` VALUES ('ABROAD','ABROAD','跨国','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 09:18:12'),('BANDWIDTH','BANDWIDTH','公网带宽','ECP','互联云','enable','2018-01-18 05:21:54','2017-10-30 09:18:12'),('CITY','CITY','同城','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('DISK','DISK','数据盘','ECP','互联云','enable','2018-01-02 01:43:41','2017-10-30 07:46:12'),('EXCLUSIVE','EXCLUSIVE','独享端口','PORT','端口','enable','2018-01-10 07:59:59','2017-10-30 07:46:12'),('HOST','HOST','云服务器','ECP','互联云','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('LONG','LONG','长传','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('POOLNETWORK','POOLNETWORK','资源池网络','ECP','互联云','enable','2018-01-18 05:21:54','2018-01-02 01:42:29'),('REGION','REGION','区域','TUNNEL','专线网络','enable','2018-01-18 05:21:54','2017-10-30 07:46:12'),('RESOURCEPOOL','RESOURCEPOOL','资源池','ECP','互联云','enable','2018-01-02 01:46:37','2017-10-30 07:46:12'),('SHARE','SHARE','共享端口','PORT','端口','enable','2018-01-10 08:00:28','2017-10-30 07:46:12'),('VPN','VPN','VPN','VPN','VPN','enable','2018-01-02 01:42:29','2017-10-30 07:46:12');
+INSERT INTO `ProductCategoryVO` (uuid, code, name, productTypeCode, productTypeName, status, lastOpDate, createDate)
+VALUES ('VPN', 'VPN', 'VPN', 'VPN', 'VPN', 'enable', '2018-01-02 09:42:29', '2017-10-30 15:46:12'),
+('ABROAD', 'ABROAD', '跨国', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 17:18:12'),
+('CITY', 'CITY', '同城', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
+('LONG', 'LONG', '长传', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'
+('REGION', 'REGION', '区域', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
+('EXCLUSIVE', 'EXCLUSIVE', '独享端口', 'PORT', '端口', 'enable', '2018-01-10 15:59:59', '2017-10-30 15:46:12'),
+('SHARE', 'SHARE', '共享端口', 'PORT', '端口', 'enable', '2018-01-10 16:00:28', '2017-10-30 15:46:12'),
+('BANDWIDTH', 'BANDWIDTH', '公网带宽', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 17:18:12'),
+('DISK', 'DISK', '数据盘', 'ECP', '互联云', 'enable', '2018-01-02 09:43:41', '2017-10-30 15:46:12'),
+('HOST', 'HOST', '云服务器', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
+('POOLNETWORK', 'POOLNETWORK', '资源池网络', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2018-01-02 09:42:29'),
+('RESOURCEPOOL', 'RESOURCEPOOL', '资源池', 'ECP', '互联云', 'enable', '2018-01-02 09:46:37', '2017-10-30 15:46:12');
 UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `ProductPriceUnitVO`;
@@ -473,6 +485,13 @@ VALUES ('996ba83db7dd11e7be460242ac110003', 'EXCLUSIVE', 'DEFAULT', '默认', 'D
 ('8fe292e4b7dd11e7be460242ac110003', 'EXCLUSIVE', 'DEFAULT', '默认', 'DEFAULT', '默认', 'SFP_1G', '光口千兆', '1000', '2018-01-18 13:44:14', '2017-10-23 10:33:08'),
 ('30d3720cb7d211e7aae30242ac110002', 'EXCLUSIVE', 'DEFAULT', '默认', 'DEFAULT', '默认', 'SHARE', '共享端口', '0', '2018-01-18 13:44:14', '2017-10-23 09:11:44'),
 ('6d56ddc2b7dd11e7be460242ac110003', 'EXCLUSIVE', 'DEFAULT', '默认', 'DEFAULT', '默认', 'RJ45_1G', '电口千兆', '500', '2018-01-18 13:44:14', '2017-10-23 10:32:10');
+## 共享端口
+INSERT INTO `ProductPriceUnitVO` ( uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
+VALUES
+('b93ead68966a4f799db2446f20d63e54', 'SHARE', 'DEFAULT', '默认（勿删除）', 'DEFAULT', '默认', 'GT2G', '大于2G', '0', '2018-02-26 13:31:14', '2018-01-24 10:47:30'),
+('3f41f26718104698b519e57ef7e5a48a', 'SHARE', 'DEFAULT', '默认（勿删除）', 'DEFAULT', '默认', 'GT500MLT2G', '500M~2G', '0', '2018-02-26 13:31:14', '2018-01-24 10:47:30'),
+('9a0a0e381eff45e3abc8c11fea8ba31d', 'SHARE', 'DEFAULT', '默认（勿删除）', 'DEFAULT', '默认', 'LT500M', '小于500M', '0', '2018-02-26 13:31:14', '2018-01-24 10:47:30');
+
 ## 互联云 默认 每M带宽价格
 INSERT INTO `ProductPriceUnitVO` ( uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
 VALUES ('b1db71b17d684f6eb1759c9bdf4df4b8', 'BANDWIDTH', 'DEFAULT', '默认', 'DEFAULT', '默认', '1M', '1M', '100', '2018-01-18 14:39:47', '2018-01-12 17:41:46');
