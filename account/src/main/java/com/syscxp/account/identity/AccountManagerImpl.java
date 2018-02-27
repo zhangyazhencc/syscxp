@@ -138,11 +138,64 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetAccountUuidListByProxyMsg) msg);
         } else if (msg instanceof APIValidateAccountWithProxyMsg) {
             handle((APIValidateAccountWithProxyMsg) msg);
+        } else if (msg instanceof APIGetAccountForShareMsg) {
+            handle((APIGetAccountForShareMsg)msg);
+        } else if (msg instanceof APIListAccountByUuidMsg) {
+            handle((APIListAccountByUuidMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
 
+    private void handle(APIListAccountByUuidMsg msg) {
+
+        APIListAccountByUuidReply reply = new APIListAccountByUuidReply();
+
+        List<Map<String,String>> lists = new ArrayList<>();
+        for(String uuid: msg.getAccountUuidList()){
+            Map<String,String> map = new HashMap<>();
+            AccountVO vo = dbf.findByUuid(uuid,AccountVO.class);
+            if(vo != null){
+                map.put("uuid",vo.getUuid());
+                map.put("name",vo.getName());
+                map.put("phone",vo.getPhone());
+                map.put("company",vo.getCompany());
+                lists.add(map);
+            }
+        }
+
+        reply.setAccountList(lists);
+        bus.reply(msg,reply);
+
+    }
+
+
+    private void handle(APIGetAccountForShareMsg msg) {
+
+        APIGetAccountForShareReply reply = new APIGetAccountForShareReply();
+
+        AccountVO account = null;
+        if(msg.getAccountName() != null){
+            account = dbf.createQuery(AccountVO.class).add(AccountVO_.name, SimpleQuery.Op.EQ, msg.getAccountName()).find();
+        }else if(msg.getAccountPhone() != null){
+            account = dbf.createQuery(AccountVO.class).add(AccountVO_.phone, SimpleQuery.Op.EQ, msg.getAccountPhone()).find();
+        }else {
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.ACCOUNT_NOT_FOUND,
+                    "params is all null"));
+        }
+
+        if(account != null){
+            reply.setName(account.getName());
+            reply.setUuid(account.getUuid());
+            reply.setPhone(account.getPhone());
+            reply.setCompany(account.getCompany());
+        }else{
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.ACCOUNT_NOT_FOUND,
+                    "no find this account"));
+        }
+
+        bus.reply(msg,reply);
     }
 
     private void handle(APIAccountPWDBackByEmailMsg msg) {

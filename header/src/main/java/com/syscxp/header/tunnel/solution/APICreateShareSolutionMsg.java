@@ -11,9 +11,7 @@ import java.util.List;
 public class APICreateShareSolutionMsg extends APIMessage {
     @APIParam(maxLength = 32)
     private List<String> accountUuids;
-    @APIParam(maxLength = 32)
-    private String ownerAccountUuid;
-    @APIParam(maxLength = 32, resourceType = SolutionVO.class)
+    @APIParam(maxLength = 32, resourceType = SolutionVO.class, checkAccount = true)
     private String solutionUuid;
 
     public List<String> getAccountUuids() {
@@ -22,14 +20,6 @@ public class APICreateShareSolutionMsg extends APIMessage {
 
     public void setAccountUuids(List<String> accountUuids) {
         this.accountUuids = accountUuids;
-    }
-
-    public String getOwnerAccountUuid() {
-        return ownerAccountUuid;
-    }
-
-    public void setOwnerAccountUuid(String ownerAccountUuid) {
-        this.ownerAccountUuid = ownerAccountUuid;
     }
 
     public String getSolutionUuid() {

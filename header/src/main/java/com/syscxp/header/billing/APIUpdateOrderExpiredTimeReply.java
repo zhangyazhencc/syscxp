@@ -1,14 +1,14 @@
-package com.syscxp.billing.header.order;
+package com.syscxp.header.billing;
 
 import com.syscxp.header.billing.OrderInventory;
 import com.syscxp.header.message.APIEvent;
+import com.syscxp.header.message.APIReply;
 
-public class APIUpdateOrderExpiredTimeEvent   extends APIEvent {
+public class APIUpdateOrderExpiredTimeReply extends APIReply {
     private OrderInventory inventory;
 
-    public APIUpdateOrderExpiredTimeEvent(){}
+    public APIUpdateOrderExpiredTimeReply(){}
 
-    public APIUpdateOrderExpiredTimeEvent(String apiId){super(apiId);}
 
     public OrderInventory getInventory() {
         return inventory;

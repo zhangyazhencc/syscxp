@@ -1,14 +1,15 @@
-package com.syscxp.billing.header.order;
+package com.syscxp.header.billing;
 
-import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APISyncCallMessage;
 
 import java.sql.Timestamp;
-
+@InnerCredentialCheck
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER, adminOnly = true)
-public class APIUpdateOrderExpiredTimeMsg extends APIMessage {
+public class APIUpdateOrderExpiredTimeMsg extends APISyncCallMessage {
 
     @APIParam
     private String productUuid;
