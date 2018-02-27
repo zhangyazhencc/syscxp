@@ -116,14 +116,14 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APICreateShareSolutionMsg) msg);
         } else if(msg instanceof APIDeleteShareSolutionMsg){
             handle((APIDeleteShareSolutionMsg) msg);
-        }else if(msg instanceof APIGetShareSolutionMsg){
-            handle((APIGetShareSolutionMsg) msg);
+        }else if(msg instanceof APIListShareSolutionMsg){
+            handle((APIListShareSolutionMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIGetShareSolutionMsg msg) {
+    private void handle(APIListShareSolutionMsg msg) {
         APIGetShareSolutionReply reply = new APIGetShareSolutionReply();
         List<SolutionInventory> solutionInventories = new ArrayList<>();
 
@@ -136,6 +136,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         reply.setSolutionInventories(solutionInventories);
+        reply.setTotal(query.count());
         bus.reply(msg, reply);
     }
 

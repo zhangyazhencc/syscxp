@@ -90,7 +90,7 @@
         <name>com.syscxp.header.tunnel.solution.APIDeleteShareSolutionMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.tunnel.solution.APIGetShareSolutionMsg</name>
+        <name>com.syscxp.header.tunnel.solution.APIListShareSolutionMsg</name>
     </message>
 
     <message>
