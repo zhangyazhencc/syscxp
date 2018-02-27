@@ -141,6 +141,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     private void handle(APIDeleteShareSolutionMsg msg) {
         ShareSolutionVO vo = dbf.findByUuid(msg.getUuid(), ShareSolutionVO.class);
+        if(vo.getOwnerAccountUuid() != msg.getSession().getAccountUuid()){
+            throw  new RuntimeException(String.format("The solution[name: %s] is not yours", dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class).getName()));
+        }
         dbf.remove(vo);
 
         SimpleQuery<ShareSolutionVO> simpleQuery = dbf.createQuery(ShareSolutionVO.class);
@@ -165,7 +168,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             ShareSolutionVO vo = new ShareSolutionVO();
             vo.setUuid(Platform.getUuid());
             vo.setAccountUuid(accountUuid);
-            vo.setOwnerAccountUuid(msg.getOwnerAccountUuid());
+            vo.setOwnerAccountUuid(msg.getSession().getAccountUuid());
             vo.setSolutionUuid(msg.getSolutionUuid());
 
             shareSolutionVOS.add(vo);
