@@ -118,13 +118,21 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APIDeleteShareSolutionMsg) msg);
         }else if(msg instanceof APIListShareSolutionMsg){
             handle((APIListShareSolutionMsg) msg);
+        } else if(msg instanceof APIGetSolutionMsg){
+            handle((APIGetSolutionMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
+    private void handle(APIGetSolutionMsg msg) {
+        APIGetSolutionReply reply = new APIGetSolutionReply();
+        reply.setInventory(SolutionInventory.valueOf(dbf.findByUuid(msg.getUuid(), SolutionVO.class)));
+        bus.reply(msg, reply);
+    }
+
     private void handle(APIListShareSolutionMsg msg) {
-        APIGetShareSolutionReply reply = new APIGetShareSolutionReply();
+        APIListShareSolutionReply reply = new APIListShareSolutionReply();
         List<SolutionInventory> solutionInventories = new ArrayList<>();
 
         SimpleQuery<ShareSolutionVO> query = dbf.createQuery(ShareSolutionVO.class);

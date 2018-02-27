@@ -97,5 +97,9 @@
         <name>com.syscxp.header.tunnel.solution.APIQueryShareSolutionMsg</name>
         <serviceId>query</serviceId>
     </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIGetSolutionMsg</name>
+    </message>
+
 
 </service>
