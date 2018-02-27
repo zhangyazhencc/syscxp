@@ -177,9 +177,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         AccountVO account = null;
         if(msg.getAccountName() != null){
-            account = dbf.createQuery(AccountVO.class).add(AccountVO_.name, SimpleQuery.Op.EQ,msg.getAccountName()).find();
+            account = dbf.createQuery(AccountVO.class).add(AccountVO_.name, SimpleQuery.Op.EQ, msg.getAccountName()).find();
         }else if(msg.getAccountPhone() != null){
-            account = dbf.createQuery(AccountVO.class).add(AccountVO_.phone, SimpleQuery.Op.EQ,msg.getAccountPhone()).find();
+            account = dbf.createQuery(AccountVO.class).add(AccountVO_.phone, SimpleQuery.Op.EQ, msg.getAccountPhone()).find();
         }else {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.ACCOUNT_NOT_FOUND,
                     "params is all null"));
