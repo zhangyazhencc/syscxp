@@ -145,15 +145,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SimpleQuery<ShareSolutionVO> simpleQuery = dbf.createQuery(ShareSolutionVO.class);
         simpleQuery.add(ShareSolutionVO_.solutionUuid, SimpleQuery.Op.EQ, vo.getSolutionUuid());
-        List<ShareSolutionVO> shareSolutionVOS = simpleQuery.list();
 
-        if(shareSolutionVOS.size() == 0){
+        if(simpleQuery.count().longValue() == 0){
             SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
             solutionVO.setShare(false);
             dbf.updateAndRefresh(solutionVO);
         }
-
-
 
         APIDeleteShareSolutionEvent event = new APIDeleteShareSolutionEvent(msg.getId());
         bus.publish(event);

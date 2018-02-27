@@ -13,7 +13,7 @@ public class APICreateShareSolutionMsg extends APIMessage {
     private List<String> accountUuids;
     @APIParam(maxLength = 32)
     private String ownerAccountUuid;
-    @APIParam(maxLength = 32, resourceType = SolutionVO.class)
+    @APIParam(maxLength = 32, resourceType = SolutionVO.class, checkAccount = true)
     private String solutionUuid;
 
     public List<String> getAccountUuids() {
