@@ -1,5 +1,7 @@
 package com.syscxp.header.tunnel.node;
 
+import com.syscxp.header.vo.NoView;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -17,8 +19,18 @@ public class ZoneNodeRefVO {
     @Column
     private String nodeUuid;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "nodeUuid", insertable = false, updatable = false)
+    @NoView
+    private NodeEO node;
+
     @Column
     private String zoneUuid;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "zoneUuid", insertable = false, updatable = false)
+    @NoView
+    private ZoneVO zone;
 
     @Column
     private Timestamp createDate;
@@ -64,5 +76,21 @@ public class ZoneNodeRefVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public NodeEO getNode() {
+        return node;
+    }
+
+    public void setNode(NodeEO node) {
+        this.node = node;
+    }
+
+    public ZoneVO getZone() {
+        return zone;
+    }
+
+    public void setZone(ZoneVO zone) {
+        this.zone = zone;
     }
 }
