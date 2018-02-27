@@ -1,7 +1,7 @@
 package com.syscxp.tunnel.node;
 
 import com.alibaba.fastjson.JSONObject;
-import com.syscxp.core.db.Q;
+import com.syscxp.core.db.*;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.NodeConstant;
@@ -25,9 +25,6 @@ import com.syscxp.core.cloudbus.EventFacade;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -140,10 +137,39 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIUploadImageUrlMsg) msg);
         }else if(msg instanceof APIReconcileNodeExtensionInfoMsg){
             handle((APIReconcileNodeExtensionInfoMsg) msg);
+        }else if(msg instanceof APIAttachNodeToZoneMsg){
+            handle((APIAttachNodeToZoneMsg) msg);
+        }else if(msg instanceof APIDetachNodeFromZoneMsg){
+            handle((APIDetachNodeFromZoneMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIAttachNodeToZoneMsg msg){
+        APIAttachNodeToZoneEvent event = new APIAttachNodeToZoneEvent(msg.getId());
+
+        ZoneNodeRefVO refVO = Q.New(ZoneNodeRefVO.class).eq(ZoneNodeRefVO_.zoneUuid, msg.getZoneUuid())
+                .eq(ZoneNodeRefVO_.nodeUuid, msg.getNodeUuid()).find();
+        if (refVO == null){
+            refVO = new ZoneNodeRefVO();
+            refVO.setUuid(Platform.getUuid());
+            refVO.setZoneUuid(msg.getZoneUuid());
+            refVO.setNodeUuid(msg.getNodeUuid());
+
+            dbf.persistAndRefresh(refVO);
+            event.setInventory(ZoneNodeRefInventory.valueOf(refVO));
+        }
+
+        bus.publish(event);
+    }
+    private void handle(APIDetachNodeFromZoneMsg msg){
+        APIDetachNodeFromZoneEvent event = new APIDetachNodeFromZoneEvent(msg.getId());
+        UpdateQuery.New(ZoneNodeRefVO.class).eq(ZoneNodeRefVO_.zoneUuid, msg.getZoneUuid())
+                .eq(ZoneNodeRefVO_.nodeUuid, msg.getNodeUuid()).delete();
+
+        bus.publish(event);
     }
 
     private void handle(APIReconcileNodeExtensionInfoMsg msg) {
@@ -178,8 +204,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 date,NodeExtensionInfo.class);
 
         bus.publish(event);
-
-
     }
 
     private void handle(APIUploadImageUrlMsg msg) {

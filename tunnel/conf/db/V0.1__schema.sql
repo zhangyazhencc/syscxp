@@ -159,6 +159,9 @@ CREATE TABLE `syscxp_tunnel`.`ZoneNodeRefVO` (
   `createDate` timestamp
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `syscxp_tunnel`.`ZoneNodeRefVO` ADD CONSTRAINT fkZoneNodeRefVONodeEO FOREIGN KEY (nodeUuid) REFERENCES NodeEO (uuid) ON DELETE CASCADE;
+ALTER TABLE `syscxp_tunnel`.`ZoneNodeRefVO` ADD CONSTRAINT fkZoneNodeRefVOzoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE CASCADE;
+
 ## 连接点
 CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
