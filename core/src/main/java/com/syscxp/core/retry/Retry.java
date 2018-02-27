@@ -73,7 +73,7 @@ public abstract class Retry<T> {
 
                 count --;
 
-                if (count == 0) {
+                if (count <= 0) {
                     ErrorCode errorCode = new ErrorCode();
                     errorCode.setCode(SysErrors.OPERATION_ERROR.toString());
                     errorCode.setDescription(Platform.i18n("an operation[%s] fails after retrying %s times with the interval %s seconds",
