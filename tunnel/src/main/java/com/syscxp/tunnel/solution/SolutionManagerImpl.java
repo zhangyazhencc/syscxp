@@ -171,7 +171,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             simpleQuery.add(ShareSolutionVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
             simpleQuery.add(ShareSolutionVO_.ownerAccountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
             if(simpleQuery.count().longValue() != 0){
-                throw new RuntimeException(String.format("The slotion[name: %s] was Shared by the user[uuid: %s]",
+                throw new RuntimeException(String.format("The slotion[name: %s] has been Shared with this user[uuid: %s]",
                         dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class).getName(), accountUuid));
             }
 
