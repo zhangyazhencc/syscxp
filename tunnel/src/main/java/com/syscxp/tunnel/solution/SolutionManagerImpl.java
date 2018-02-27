@@ -136,6 +136,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         reply.setSolutionInventories(solutionInventories);
+        reply.setTotal(query.count());
         bus.reply(msg, reply);
     }
 
