@@ -5,7 +5,7 @@ import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;
 
-public class APIGetShareSolutionReply extends APIQueryReply {
+public class APIListShareSolutionReply extends APIQueryReply {
     private List<SolutionInventory> solutionInventories;
 
     public List<SolutionInventory> getSolutionInventories() {
