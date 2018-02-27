@@ -1,6 +1,5 @@
 package com.syscxp.vpn.host;
 
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.ansible.AnsibleGlobalProperty;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.operr;
 
