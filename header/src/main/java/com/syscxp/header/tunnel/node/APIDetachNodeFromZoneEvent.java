@@ -7,4 +7,7 @@ public class APIDetachNodeFromZoneEvent extends APIEvent{
     public APIDetachNodeFromZoneEvent(String apiId) {
         super(apiId);
     }
+
+    public APIDetachNodeFromZoneEvent() {
+    }
 }

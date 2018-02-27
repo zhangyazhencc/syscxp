@@ -17,4 +17,7 @@ public class APIAttachNodeToZoneEvent extends APIEvent{
     public void setInventory(ZoneNodeRefInventory inventory) {
         this.inventory = inventory;
     }
+
+    public APIAttachNodeToZoneEvent() {
+    }
 }

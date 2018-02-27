@@ -9,6 +9,8 @@ import java.util.List;
  * Created by wangwg on 2017/12/20
  */
 public class APIDeleteImageEvent extends APIEvent {
+    public APIDeleteImageEvent() {
+    }
 
     public APIDeleteImageEvent(String apiId) {
         super(apiId);
