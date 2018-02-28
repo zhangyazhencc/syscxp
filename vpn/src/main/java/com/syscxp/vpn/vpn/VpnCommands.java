@@ -59,22 +59,6 @@ public class VpnCommands {
     }
 
     /**
-     * 创建证书：/vpn/create_cert
-     */
-    public static class CreateCertCmd extends AgentCommand {
-    }
-
-    public static class CreateCertRsp extends AgentResponse {
-        public String ca_crt;
-        public String ca_key;
-        public String client_crt;
-        public String server_crt;
-        public String client_key;
-        public String server_key;
-        public String dh1024_pem;
-    }
-
-    /**
      * 上传证书：/vpn/push_cert
      */
     public static class PushCertCmd extends AgentCommand {

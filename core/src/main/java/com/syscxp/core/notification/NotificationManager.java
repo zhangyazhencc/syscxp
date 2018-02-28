@@ -3,39 +3,33 @@ package com.syscxp.core.notification;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.componentloader.PluginRegistry;
+import com.syscxp.core.config.GlobalConfigException;
+import com.syscxp.core.config.GlobalConfigValidatorExtensionPoint;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SQL;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
-import com.syscxp.core.thread.ThreadFacade;
-import com.syscxp.header.apimediator.ResourceHavingAccountReference;
-import com.syscxp.header.errorcode.SysErrors;
-import com.syscxp.header.message.*;
-import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.utils.StringDSL;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.config.GlobalConfigException;
-import com.syscxp.core.config.GlobalConfigValidatorExtensionPoint;
 import com.syscxp.core.thread.Task;
+import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
+import com.syscxp.header.apimediator.ResourceHavingAccountReference;
 import com.syscxp.header.core.ExceptionSafe;
-import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.identity.SessionInventory;
+import com.syscxp.header.message.*;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.notification.ApiNotificationFactory;
 import com.syscxp.header.notification.ApiNotificationFactoryExtensionPoint;
-import com.syscxp.header.rest.AsyncRESTCallback;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.validator.routines.UrlValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.Tuple;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -141,7 +135,7 @@ public class NotificationManager extends AbstractService {
 
             List<NotificationBuilder> lst = new ArrayList<>();
             for (ApiNotification.Inner inner : b.notification.getInners()) {
-                Map opaque = new HashMap();
+                Map<String, Object> opaque = new HashMap<>();
                 opaque.put("session", b.message.getSession());
                 opaque.put("success", aevt.isSuccess());
 
@@ -235,17 +229,13 @@ public class NotificationManager extends AbstractService {
         }
 
 
-        NotificationGlobalConfig.WEBHOOK_URL.installValidateExtension(new GlobalConfigValidatorExtensionPoint() {
-            @Override
-            public void validateGlobalConfig(String category, String name, String oldValue, String newValue) throws GlobalConfigException {
-                if (newValue == null || "null".equals(newValue)) {
-                    return;
-                }
+        NotificationGlobalConfig.WEBHOOK_URL.installValidateExtension((category, name, oldValue, newValue) -> {
+            if (newValue == null || "null".equals(newValue)) {
+                return;
+            }
 
-
-                if (!new UrlValidator().isValid(newValue)) {
-                    throw new OperationFailureException(Platform.argerr("%s is not a valid URL", newValue));
-                }
+            if (!new UrlValidator().isValid(newValue)) {
+                throw new OperationFailureException(Platform.argerr("%s is not a valid URL", newValue));
             }
         });
 

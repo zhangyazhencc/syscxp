@@ -1,8 +1,18 @@
 package com.syscxp.tunnel.node;
 
 import com.alibaba.fastjson.JSONObject;
+import com.syscxp.core.Platform;
+import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.header.message.APIParam;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
+import com.syscxp.header.AbstractService;
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.endpoint.*;
@@ -17,26 +27,10 @@ import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.header.tunnel.tunnel.TunnelVO_;
 import com.syscxp.utils.Digest;
-import com.syscxp.utils.gson.JSONObjectUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.syscxp.core.Platform;
-import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.cloudbus.EventFacade;
-import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.cloudbus.ResourceDestinationMaker;
-import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
-import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.thread.ThreadFacade;
-import com.syscxp.header.AbstractService;
-import com.syscxp.header.apimediator.ApiMessageInterceptionException;
-import com.syscxp.header.apimediator.ApiMessageInterceptor;
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.Message;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -45,11 +39,12 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -64,18 +59,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private EventFacade evtf;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -140,10 +123,41 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIUploadImageUrlMsg) msg);
         }else if(msg instanceof APIReconcileNodeExtensionInfoMsg){
             handle((APIReconcileNodeExtensionInfoMsg) msg);
+        }else if(msg instanceof APIAttachNodeToZoneMsg){
+            handle((APIAttachNodeToZoneMsg) msg);
+        }else if(msg instanceof APIDetachNodeFromZoneMsg){
+            handle((APIDetachNodeFromZoneMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIAttachNodeToZoneMsg msg){
+        APIAttachNodeToZoneEvent event = new APIAttachNodeToZoneEvent(msg.getId());
+
+        ZoneNodeRefVO refVO = Q.New(ZoneNodeRefVO.class).eq(ZoneNodeRefVO_.zoneUuid, msg.getZoneUuid())
+                .eq(ZoneNodeRefVO_.nodeUuid, msg.getNodeUuid()).find();
+        if (refVO == null){
+            refVO = new ZoneNodeRefVO();
+            refVO.setUuid(Platform.getUuid());
+            refVO.setZoneUuid(msg.getZoneUuid());
+            refVO.setNodeUuid(msg.getNodeUuid());
+
+            dbf.persistAndRefresh(refVO);
+            event.setInventory(ZoneNodeRefInventory.valueOf(refVO));
+        }else{
+            throw new ApiMessageInterceptionException(argerr("node is exist!"));
+        }
+
+        bus.publish(event);
+    }
+    private void handle(APIDetachNodeFromZoneMsg msg){
+        APIDetachNodeFromZoneEvent event = new APIDetachNodeFromZoneEvent(msg.getId());
+        UpdateQuery.New(ZoneNodeRefVO.class).eq(ZoneNodeRefVO_.zoneUuid, msg.getZoneUuid())
+                .eq(ZoneNodeRefVO_.nodeUuid, msg.getNodeUuid()).delete();
+
+        bus.publish(event);
     }
 
     private void handle(APIReconcileNodeExtensionInfoMsg msg) {
@@ -178,8 +192,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 date,NodeExtensionInfo.class);
 
         bus.publish(event);
-
-
     }
 
     private void handle(APIUploadImageUrlMsg msg) {

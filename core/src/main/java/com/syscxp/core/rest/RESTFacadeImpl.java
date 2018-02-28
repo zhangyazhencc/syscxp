@@ -12,26 +12,24 @@ import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.thread.ThreadFacadeImpl;
 import com.syscxp.core.timeout.ApiTimeoutManager;
 import com.syscxp.core.validation.ValidationFacade;
+import com.syscxp.header.core.Completion;
+import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.errorcode.SysErrors;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.rest.*;
 import com.syscxp.utils.DebugUtils;
 import com.syscxp.utils.ExceptionDSL;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
+import com.syscxp.utils.logging.CLogger;
 import org.apache.http.HttpStatus;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.syscxp.header.core.Completion;
-import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.errorcode.OperationFailureException;
-import com.syscxp.header.errorcode.SysErrors;
-import com.syscxp.header.exception.CloudRuntimeException;
-import com.syscxp.utils.*;
-import com.syscxp.utils.gson.JSONObjectUtil;
-import com.syscxp.utils.logging.CLogger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,9 +63,9 @@ public class RESTFacadeImpl implements RESTFacade {
     private String baseUrl;
     private String sendCommandUrl;
 
-    private Map<String, HttpCallStatistic> statistics = new ConcurrentHashMap<String, HttpCallStatistic>();
-    private Map<String, HttpCallHandlerWrapper> httpCallhandlers = new ConcurrentHashMap<String, HttpCallHandlerWrapper>();
-    private List<BeforeAsyncJsonPostInterceptor> interceptors = new ArrayList<BeforeAsyncJsonPostInterceptor>();
+    private Map<String, HttpCallStatistic> statistics = new ConcurrentHashMap<>();
+    private Map<String, HttpCallHandlerWrapper> httpCallhandlers = new ConcurrentHashMap<>();
+    private List<BeforeAsyncJsonPostInterceptor> interceptors = new ArrayList<>();
 
     private interface AsyncHttpWrapper {
         void fail(ErrorCode err);
@@ -81,12 +79,12 @@ public class RESTFacadeImpl implements RESTFacade {
         HttpCallHandler getHandler();
     }
 
-    private Map<String, AsyncHttpWrapper> wrappers = new ConcurrentHashMap<String, AsyncHttpWrapper>();
+    private Map<String, AsyncHttpWrapper> wrappers = new ConcurrentHashMap<>();
 
     void init() {
         //IptablesUtils.insertRuleToFilterTable(String.format("-A INPUT -p tcp -m state --state NEW -m tcp --dport %s -j ACCEPT", port));
 
-        String hname = null;
+        String hname;
         if ("AUTO".equals(hostname)) {
             hname = Platform.getManagementServerIp();
         } else {
@@ -336,7 +334,7 @@ public class RESTFacadeImpl implements RESTFacade {
                 }
             }
 
-            HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
+            HttpEntity<String> req = new HttpEntity<>(body, requestHeaders);
             if (logger.isTraceEnabled()) {
                 logger.trace(String.format("json post[%s], %s", url, req.toString()));
             }
@@ -405,7 +403,7 @@ public class RESTFacadeImpl implements RESTFacade {
                 header.add(name, req.getHeader(name));
             }
 
-            return new HttpEntity<String>(sb.toString(), header);
+            return new HttpEntity<>(sb.toString(), header);
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
             throw new CloudRuntimeException(e);
@@ -452,7 +450,7 @@ public class RESTFacadeImpl implements RESTFacade {
         }
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(body.length());
-        HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
+        HttpEntity<String> req = new HttpEntity<>(body, requestHeaders);
         if (logger.isTraceEnabled()) {
             logger.trace(String.format("json post[%s], %s", url, req.toString()));
         }

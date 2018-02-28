@@ -1,32 +1,24 @@
 package com.syscxp.billing.renew;
 
-import com.syscxp.billing.header.renew.APIUpdateRenewEvent;
-import com.syscxp.billing.header.renew.APIUpdateRenewMsg;
-import com.syscxp.billing.header.renew.RenewInventory;
-import com.syscxp.billing.header.renew.RenewVO;
-import com.syscxp.core.Platform;
-import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.header.billing.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.billing.header.renew.*;
+import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
-import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.billing.*;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public class RenewManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 
@@ -36,12 +28,6 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private RESTFacade restf;
 
     @Override
     @MessageSafe

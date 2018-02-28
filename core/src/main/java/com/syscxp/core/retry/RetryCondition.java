@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface RetryCondition {
     Class[] onExceptions() default {};
 
-    int times() default 5;
+    int times() default 1;
 
     int interval() default 1;
 }

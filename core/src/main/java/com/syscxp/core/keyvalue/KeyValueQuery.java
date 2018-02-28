@@ -37,11 +37,11 @@ public class KeyValueQuery<T> {
 
     private T entityProxy;
     private KeyValueEntityProxy<T> proxy;
-    private List<Bucket> opAndVals = new ArrayList<Bucket>();
+    private List<Bucket> opAndVals = new ArrayList<>();
     private Class entityClass;
     private int counter;
     private int entityNameCounter;
-    private List<Condition> conditions = new ArrayList<Condition>();
+    private List<Condition> conditions = new ArrayList<>();
     private String sql;
 
     public KeyValueQuery(Class<T> clz) {
@@ -95,9 +95,9 @@ public class KeyValueQuery<T> {
             }
         }
 
-        List<String> conds = new ArrayList<String>(opAndVals.size());
-        List<String> entityNameList = new ArrayList<String>();
-        List<String> joinConds = new ArrayList<String>();
+        List<String> conds = new ArrayList<>(opAndVals.size());
+        List<String> entityNameList = new ArrayList<>();
+        List<String> joinConds = new ArrayList<>();
         for (Condition c : conditions) {
             conds.add(c.sql);
             entityNameList.add(String.format("KeyValueVO %s", c.entityName));
@@ -123,7 +123,7 @@ public class KeyValueQuery<T> {
         }
         List<String> uuids = q.getResultList();
         if (uuids.isEmpty()) {
-            return new ArrayList<KeyValueBinaryVO>();
+            return new ArrayList<>();
         }
 
         TypedQuery<KeyValueBinaryVO> bq = dbf.getEntityManager().createQuery("select e from KeyValueBinaryVO e where e.uuid in (:uuids)", KeyValueBinaryVO.class);
@@ -138,14 +138,11 @@ public class KeyValueQuery<T> {
             return new ArrayList<T>();
         }
 
-        return CollectionUtils.transformToList(vos, new Function<T, KeyValueBinaryVO>() {
-            @Override
-            public T call(KeyValueBinaryVO arg) {
-                try {
-                    return SerializableHelper.readObject(arg.getContents());
-                } catch (Exception e) {
-                    throw new CloudRuntimeException(e);
-                }
+        return CollectionUtils.transformToList(vos, (Function<T, KeyValueBinaryVO>) arg -> {
+            try {
+                return SerializableHelper.readObject(arg.getContents());
+            } catch (Exception e) {
+                throw new CloudRuntimeException(e);
             }
         });
     }
@@ -166,7 +163,7 @@ public class KeyValueQuery<T> {
     }
 
     private void condNotIn(String key, Object[] vals) {
-        List<String> values = new ArrayList<String>(vals.length);
+        List<String> values = new ArrayList<>(vals.length);
         for (Object v : vals) {
             DebugUtils.Assert(v!=null, "values for condition 'NOT IN' cannot be null");
             values.add(v.toString());
@@ -181,7 +178,7 @@ public class KeyValueQuery<T> {
     }
 
     private void condIn(String key, Object[] vals) {
-        List<String> values = new ArrayList<String>(vals.length);
+        List<String> values = new ArrayList<>(vals.length);
         for (Object v : vals) {
             DebugUtils.Assert(v!=null, "values for condition 'IN' cannot be null");
             values.add(v.toString());

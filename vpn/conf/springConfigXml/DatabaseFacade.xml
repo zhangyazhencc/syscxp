@@ -82,6 +82,6 @@
         <property name="extraDataSource" ref="ExtraDataSource"/>
     </bean>
 
-    <bean id="DbEntityLister" class="com.syscxp.core.db.DbEntityListerImpl"/>
+    <!--<bean id="DbEntityLister" class="com.syscxp.core.db.DbEntityListerImpl"/>-->
 
 </beans>

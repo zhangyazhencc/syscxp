@@ -1,11 +1,14 @@
 package com.syscxp.account.header.account;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.SuppressCredentialCheck;
+import com.syscxp.header.identity.SuppressUserCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
-@SuppressCredentialCheck
-public class APIGetAccountForShareMsg extends APISyncCallMessage implements  AccountMessage {
+@SuppressUserCredentialCheck
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
+public class APIGetAccountForShareMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,required = false)
     private String accountName;
@@ -29,8 +32,4 @@ public class APIGetAccountForShareMsg extends APISyncCallMessage implements  Acc
         this.accountPhone = accountPhone;
     }
 
-    @Override
-    public String getAccountUuid() {
-        return getSession().getAccountUuid();
-    }
 }

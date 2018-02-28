@@ -1,13 +1,27 @@
 package com.syscxp.core.generate;
 
-import com.syscxp.core.cloudbus.CloudBusImpl2;
+import com.syscxp.core.Platform;
+import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigFacade;
-import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.rest.RESTApiJsonTemplateGenerator;
+import com.syscxp.header.AbstractService;
 import com.syscxp.header.configuration.*;
+import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.*;
+import com.syscxp.header.rest.APINoSee;
+import com.syscxp.header.search.APIGetMessage;
+import com.syscxp.header.search.APISearchMessage;
+import com.syscxp.header.search.Inventory;
+import com.syscxp.header.vo.EO;
+import com.syscxp.header.vo.NoView;
 import com.syscxp.utils.*;
+import com.syscxp.utils.function.Function;
+import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.path.PathUtil;
 import javassist.Modifier;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -19,23 +33,6 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import com.syscxp.core.Platform;
-import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.rest.RESTApiJsonTemplateGenerator;
-import com.syscxp.header.AbstractService;
-import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.exception.CloudRuntimeException;
-import com.syscxp.header.rest.APINoSee;
-import com.syscxp.header.search.APIGetMessage;
-import com.syscxp.header.search.APISearchMessage;
-import com.syscxp.header.search.Inventory;
-import com.syscxp.header.vo.EO;
-import com.syscxp.header.vo.NoView;
-import com.syscxp.utils.*;
-import com.syscxp.utils.function.Function;
-import com.syscxp.utils.logging.CLogger;
-import com.syscxp.utils.path.PathUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -50,8 +47,6 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
 
     @Autowired
     private CloudBus bus;
-    @Autowired
-    private DatabaseFacade dbf;
     @Autowired
     private PluginRegistry pluginRgty;
     @Autowired

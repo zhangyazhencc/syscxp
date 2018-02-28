@@ -15,9 +15,9 @@ import java.util.Map.Entry;
 /**
  */
 public class KeyValueSerializer {
-    private List<KeyValueStruct> ret = new ArrayList<KeyValueStruct>();
-    private Stack<String> trace = new Stack<String>();
-    private Stack<Object> paths = new Stack<Object>();
+    private List<KeyValueStruct> ret = new ArrayList<>();
+    private Stack<String> trace = new Stack<>();
+    private Stack<Object> paths = new Stack<>();
 
     private boolean canDeserialize(Class type) {
         return KeyValueUtils.isPrimitiveTypeForKeyValue(type);
@@ -134,7 +134,7 @@ public class KeyValueSerializer {
 
     private void buildMap(Field f, Object obj) throws IllegalAccessException {
         MapGenericType type = (MapGenericType) FieldUtils.inferGenericTypeOnMapOrCollectionField(f);
-        DebugUtils.Assert(type.isInferred(), String.format("Map must use Generic where key is type of String and value is not type of Map or Collection"));
+        DebugUtils.Assert(type.isInferred(), "Map must use Generic where key is type of String and value is not type of Map or Collection");
         DebugUtils.Assert(type.getKeyType() == String.class, String.format("Map must use String as key, but %s use %s", makePath(), type.getKeyType().getName()));
         DebugUtils.Assert(type.getNestedGenericValue() == null, String.format("Map cannot have nested map or collection, %s", makePath()));
 

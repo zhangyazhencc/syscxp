@@ -152,12 +152,7 @@ public class ProgressReportService extends AbstractService implements Management
             }
         });
 
-        ProgressGlobalConfig.CLEANUP_THREAD_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                startCleanupThread();
-            }
-        });
+        ProgressGlobalConfig.CLEANUP_THREAD_INTERVAL.installUpdateExtension((oldConfig, newConfig) -> startCleanupThread());
 
         startCleanupThread();
 

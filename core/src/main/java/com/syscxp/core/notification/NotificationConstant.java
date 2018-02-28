@@ -9,7 +9,4 @@ public interface NotificationConstant {
     String SYSTEM_SENDER = "system";
     String API_SENDER = "api";
 
-    public static final String CREATE_ACTION = "CREATE";
-    public static final String UPDATE_ACTION = "UPDATE";
-    public static final String DELETE_ACTION = "DELETE";
 }

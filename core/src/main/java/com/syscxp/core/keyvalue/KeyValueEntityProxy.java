@@ -16,7 +16,7 @@ import java.util.*;
 /**
  */
 public class KeyValueEntityProxy<T> {
-    private static Map<Class, Enhancer> enhancers = new HashMap<Class, Enhancer>();
+    private static Map<Class, Enhancer> enhancers = new HashMap<>();
 
     public class KeyValueMapProxy {
         private Object proxyMap;
@@ -190,8 +190,8 @@ public class KeyValueEntityProxy<T> {
     }
 
     public KeyValueEntityProxy(Class<T> entityClass) {
-        paths = new ArrayList<String>();
-        trace = new Stack<String>();
+        paths = new ArrayList<>();
+        trace = new Stack<>();
         createEnhancer(entityClass);
     }
 

@@ -20,7 +20,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.vpn.host.*;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.utils.Utils;
@@ -52,8 +51,6 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     private ResourceDestinationMaker destMaker;
     @Autowired
     private CloudBus bus;
-    @Autowired
-    private RESTFacade restf;
 
     @Override
     public HostVO createHost(HostVO vo, AddHostMessage msg) {

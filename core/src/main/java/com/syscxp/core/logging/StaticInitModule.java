@@ -27,7 +27,7 @@ public class StaticInitModule {
     public static void init() throws IllegalAccessException, IOException {
         Reflections reflections = Platform.getReflections();
 
-        Map<String, Map<String, String>> localeMsgs = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> localeMsgs = new HashMap<>();
 
         Set<Field> fields = reflections.getFieldsAnnotatedWith(LogLabel.class);
         for (Field f : fields) {

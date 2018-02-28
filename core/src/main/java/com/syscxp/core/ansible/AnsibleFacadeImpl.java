@@ -4,7 +4,6 @@ import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.SyncTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -13,7 +12,6 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.DebugUtils;
 import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.StringDSL;
@@ -49,11 +47,7 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
     @Autowired
     private CloudBus bus;
     @Autowired
-    private ErrorFacade errf;
-    @Autowired
     private ThreadFacade thdf;
-    @Autowired
-    private RESTFacade restf;
 
     private String publicKey;
     private String privateKey;
