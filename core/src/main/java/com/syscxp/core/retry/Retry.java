@@ -42,7 +42,9 @@ public abstract class Retry<T> {
 
         RetryCondition cond = m.getAnnotation(RetryCondition.class);
         if (cond != null) {
-            times = cond.times();
+            if (times < cond.times()) {
+                times = cond.times();
+            }
             interval = cond.interval();
             onExceptions = cond.onExceptions();
         }
