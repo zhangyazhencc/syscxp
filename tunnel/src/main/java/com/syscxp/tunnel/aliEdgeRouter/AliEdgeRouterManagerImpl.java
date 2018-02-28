@@ -7,15 +7,9 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.cloudbus.EventFacade;
-import com.syscxp.core.cloudbus.ResourceDestinationMaker;
-import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -23,9 +17,9 @@ import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
+import com.syscxp.header.tunnel.aliEdgeRouter.*;
 import com.syscxp.header.tunnel.tunnel.TunnelEO;
 import com.syscxp.header.tunnel.tunnel.TunnelState;
-import com.syscxp.header.tunnel.aliEdgeRouter.*;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
@@ -34,14 +28,14 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
 
-public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdgeRouterManager,ApiMessageInterceptor {
+public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdgeRouterManager, ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(AliEdgeRouterManagerImpl.class);
 
@@ -49,20 +43,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private EventFacade evtf;
-
-
 
     @Override
     public void handleMessage(Message msg) {
@@ -75,33 +55,33 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if(msg instanceof APICreateAliEdgeRouterMsg){
+        if (msg instanceof APICreateAliEdgeRouterMsg) {
             handle((APICreateAliEdgeRouterMsg) msg);
-        }else if(msg instanceof APIUpdateAliEdgeRouterMsg){
+        } else if (msg instanceof APIUpdateAliEdgeRouterMsg) {
             handle((APIUpdateAliEdgeRouterMsg) msg);
-        }else if(msg instanceof APIDeleteAliEdgeRouterMsg){
+        } else if (msg instanceof APIDeleteAliEdgeRouterMsg) {
             handle((APIDeleteAliEdgeRouterMsg) msg);
-        }else if(msg instanceof APIGetAliEdgeRouterMsg){
+        } else if (msg instanceof APIGetAliEdgeRouterMsg) {
             handle((APIGetAliEdgeRouterMsg) msg);
-        }else if(msg instanceof APISaveAliUserMsg){
+        } else if (msg instanceof APISaveAliUserMsg) {
             handle((APISaveAliUserMsg) msg);
-        }else if(msg instanceof APIUpdateAliUserMsg){
+        } else if (msg instanceof APIUpdateAliUserMsg) {
             handle((APIUpdateAliUserMsg) msg);
-        }else if(msg instanceof APIDeleteAliUserMsg){
+        } else if (msg instanceof APIDeleteAliUserMsg) {
             handle((APIDeleteAliUserMsg) msg);
-        }else if(msg instanceof APICreateAliEdgeRouterConfigMsg){
+        } else if (msg instanceof APICreateAliEdgeRouterConfigMsg) {
             handle((APICreateAliEdgeRouterConfigMsg) msg);
-        }else if(msg instanceof APIUpdateAliEdgeRouterConfigMsg){
+        } else if (msg instanceof APIUpdateAliEdgeRouterConfigMsg) {
             handle((APIUpdateAliEdgeRouterConfigMsg) msg);
-        }else if(msg instanceof APIDeleteAliEdgeRouterConfigMsg){
+        } else if (msg instanceof APIDeleteAliEdgeRouterConfigMsg) {
             handle((APIDeleteAliEdgeRouterConfigMsg) msg);
-        } else if(msg instanceof APIListAliTunnelMsg){
+        } else if (msg instanceof APIListAliTunnelMsg) {
             handle((APIListAliTunnelMsg) msg);
-        }else if(msg instanceof APIListAliRegionMsg){
+        } else if (msg instanceof APIListAliRegionMsg) {
             handle((APIListAliRegionMsg) msg);
-        } else if(msg instanceof APITerminateAliEdgeRouterMsg){
+        } else if (msg instanceof APITerminateAliEdgeRouterMsg) {
             handle((APITerminateAliEdgeRouterMsg) msg);
-        } else if(msg instanceof APIRecoverAliEdgeRouterMsg){
+        } else if (msg instanceof APIRecoverAliEdgeRouterMsg) {
             handle((APIRecoverAliEdgeRouterMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -112,10 +92,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     private void handle(APIRecoverAliEdgeRouterMsg msg) {
 
         boolean flag = true;
-        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
-        TunnelVO tunnelVO = dbf.findByUuid(vo.getTunnelUuid(),TunnelVO.class);
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(), AliEdgeRouterVO.class);
+        TunnelVO tunnelVO = dbf.findByUuid(vo.getTunnelUuid(), TunnelVO.class);
 
-        if(tunnelVO == null){
+        if (tunnelVO == null) {
             throw new ApiMessageInterceptionException(argerr("该边界路由器不能恢复，专线已经被删除"));
         }
 
@@ -125,31 +105,31 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         RecoverVirtualBorderRouterRequest request = new RecoverVirtualBorderRouterRequest();
         request.setVbrId(vo.getVbrUuid());
 
         RecoverVirtualBorderRouterResponse response;
-        try{
+        try {
             response = client.getAcsResponse(request);
             vo.setStatus(AliEdgeRouterStatus.normal);
             dbf.updateAndRefresh(vo);
-        }catch (ClientException e){
+        } catch (ClientException e) {
             e.printStackTrace();
-            if(e.getErrCode().equals("InvalidOperation.OperationNotAllowedInState")){
+            if (e.getErrCode().equals("InvalidOperation.OperationNotAllowedInState")) {
                 flag = false;
-            } else{
+            } else {
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
         }
 
         APIRecoverAliEdgeRouterEvent evt = new APIRecoverAliEdgeRouterEvent(msg.getId());
-        if(flag){
+        if (flag) {
             evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
             evt.setRecoverFlag(false);
-        }else{
+        } else {
             evt.setRecoverFlag(true);
         }
 
@@ -157,7 +137,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     //tunnel删除，把边界路由器终止
-    public void TerminateAliEdgeRouter(String aliEdgeRouterUuid){
+    public void TerminateAliEdgeRouter(String aliEdgeRouterUuid) {
 
         AliEdgeRouterVO vo = dbf.findByUuid(aliEdgeRouterUuid, AliEdgeRouterVO.class);
 
@@ -166,7 +146,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         TerminateVirtualBorderRouterRequest request = new TerminateVirtualBorderRouterRequest();
@@ -174,12 +154,12 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         TerminateVirtualBorderRouterResponse response;
 
-        try{
+        try {
             response = client.getAcsResponse(request);
             vo.setStatus(AliEdgeRouterStatus.Terminate);
             dbf.updateAndRefresh(vo);
 
-        }catch(ClientException e){
+        } catch (ClientException e) {
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
         }
 
@@ -188,14 +168,14 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     private void handle(APITerminateAliEdgeRouterMsg msg) {
 
         boolean flag = true;
-        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(), AliEdgeRouterVO.class);
 
         String RegionId = vo.getAliRegionId();
         String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
         String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         TerminateVirtualBorderRouterRequest request = new TerminateVirtualBorderRouterRequest();
@@ -203,26 +183,26 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         TerminateVirtualBorderRouterResponse response;
 
-        try{
+        try {
             response = client.getAcsResponse(request);
             vo.setStatus(AliEdgeRouterStatus.Terminate);
             dbf.updateAndRefresh(vo);
 
-        }catch(ClientException e){
+        } catch (ClientException e) {
             e.printStackTrace();
 
-            if(e.getErrCode().equals("InvalidOperation.OperationNotAllowedInState")){
+            if (e.getErrCode().equals("InvalidOperation.OperationNotAllowedInState")) {
                 flag = false;
-            } else{
+            } else {
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
         }
 
         APITerminateAliEdgeRouterEvent evt = new APITerminateAliEdgeRouterEvent(msg.getId());
-        if(flag){
+        if (flag) {
             evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
             evt.setTerminateFlag(false);
-        }else{
+        } else {
             evt.setTerminateFlag(true);
         }
 
@@ -244,11 +224,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }
         APIListAliRegionReply reply = new APIListAliRegionReply();
         reply.setAliRegionInventories(regions);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     @Transactional
-    private void handle(APIListAliTunnelMsg msg){
+    private void handle(APIListAliTunnelMsg msg) {
         List<AliTunnelInventory> tunnelQueryList = new ArrayList<AliTunnelInventory>();
 
         String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionId = :aliRegionId";
@@ -294,14 +274,14 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         APIListAliTunnelReply reply = new APIListAliTunnelReply();
         reply.setInventory(tunnelQueryList);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
     }
 
-    private void handle(APIDeleteAliEdgeRouterConfigMsg msg){
-        AliEdgeRouterConfigVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterConfigVO.class);
+    private void handle(APIDeleteAliEdgeRouterConfigMsg msg) {
+        AliEdgeRouterConfigVO vo = dbf.findByUuid(msg.getUuid(), AliEdgeRouterConfigVO.class);
 
-        if(vo !=null){
+        if (vo != null) {
             dbf.remove(vo);
         }
 
@@ -310,26 +290,26 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateAliEdgeRouterConfigMsg msg){
-        AliEdgeRouterConfigVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterConfigVO.class);
+    private void handle(APIUpdateAliEdgeRouterConfigMsg msg) {
+        AliEdgeRouterConfigVO vo = dbf.findByUuid(msg.getUuid(), AliEdgeRouterConfigVO.class);
         Boolean update = false;
-        if(msg.getAliRegionId() != null){
+        if (msg.getAliRegionId() != null) {
             vo.setAliRegionId(msg.getAliRegionId());
             vo.setAliRegionName(msg.getAliRegionName());
             update = true;
         }
 
-        if(msg.getPhysicalLineUuid()!= null){
+        if (msg.getPhysicalLineUuid() != null) {
             vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
             update = true;
         }
 
-        if(msg.getSwitchPortUuid() != null){
+        if (msg.getSwitchPortUuid() != null) {
             vo.setSwitchPortUuid(msg.getSwitchPortUuid());
             update = true;
         }
 
-        if(update)
+        if (update)
             vo = dbf.updateAndRefresh(vo);
 
         APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent(msg.getId());
@@ -338,7 +318,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
     }
 
-    private void handle(APICreateAliEdgeRouterConfigMsg msg){
+    private void handle(APICreateAliEdgeRouterConfigMsg msg) {
         AliEdgeRouterConfigVO vo = new AliEdgeRouterConfigVO();
 
         vo.setUuid(Platform.getUuid());
@@ -354,9 +334,9 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         bus.publish(evt);
     }
 
-    private void handle(APIDeleteAliUserMsg msg){
-        AliUserVO vo = dbf.findByUuid(msg.getUuid(),AliUserVO.class);
-        if(vo != null){
+    private void handle(APIDeleteAliUserMsg msg) {
+        AliUserVO vo = dbf.findByUuid(msg.getUuid(), AliUserVO.class);
+        if (vo != null) {
             dbf.remove(vo);
         }
         APIDeleteAliUserEvent evt = new APIDeleteAliUserEvent(msg.getId());
@@ -366,38 +346,38 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
 
-    private void handle(APIUpdateAliUserMsg msg){
-        AliUserVO vo = dbf.findByUuid(msg.getUuid(),AliUserVO.class);
+    private void handle(APIUpdateAliUserMsg msg) {
+        AliUserVO vo = dbf.findByUuid(msg.getUuid(), AliUserVO.class);
         boolean update = false;
 
-        if(msg.getAliAccessKeyID() != null){
+        if (msg.getAliAccessKeyID() != null) {
             vo.setAliAccessKeyID(msg.getAliAccessKeyID());
             update = true;
         }
 
-        if(msg.getAliAccessKeySecret() != null){
+        if (msg.getAliAccessKeySecret() != null) {
             vo.setAliAccessKeySecret(msg.getAliAccessKeySecret());
             update = true;
         }
 
-        if(update)
+        if (update)
             vo = dbf.updateAndRefresh(vo);
 
-        APIUpdateAliUserEvent evt =  new APIUpdateAliUserEvent(msg.getId());
+        APIUpdateAliUserEvent evt = new APIUpdateAliUserEvent(msg.getId());
         evt.setInventory(AliUserInventory.valueOf(vo));
         bus.publish(evt);
 
     }
 
-    private void handle(APISaveAliUserMsg msg){
+    private void handle(APISaveAliUserMsg msg) {
         AliUserVO vo = new AliUserVO();
 
         SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
-        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,msg.getAliAccountUuid());
+        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, msg.getAliAccountUuid());
         AliUserVO user = q.find();
 
-        if(user != null){
+        if (user != null) {
             dbf.remove(user);
         }
 
@@ -415,29 +395,29 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
     }
 
-    private void handle(APIGetAliEdgeRouterMsg msg){
+    private void handle(APIGetAliEdgeRouterMsg msg) {
 
         AliEdgeRouterInformationInventory inventory = new AliEdgeRouterInformationInventory();
         AliEdgeRouterInventory routerInventory = new AliEdgeRouterInventory();
-        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(), AliEdgeRouterVO.class);
 
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
         boolean flag = true;
 
-        if(msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
+        if (msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null) {
             AliAccessKeyId = msg.getAliAccessKeyID();
             AliAccessKeySecret = msg.getAliAccessKeySecret();
-        }else{
+        } else {
             AliUserVO user = findAliUser(vo);
-            if(user != null){
+            if (user != null) {
                 AliAccessKeyId = user.getAliAccessKeyID();
                 AliAccessKeySecret = user.getAliAccessKeySecret();
             }
         }
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(vo.getAliRegionId(),AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(vo.getAliRegionId(), AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         // 创建API请求并设置参数
@@ -454,11 +434,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         request.setFilters(list);
 
-        DescribeVirtualBorderRoutersResponse response ;
-        try{
+        DescribeVirtualBorderRoutersResponse response;
+        try {
             response = client.getAcsResponse(request);
 
-            if(response.getVirtualBorderRouterSet().size() != 0){
+            if (response.getVirtualBorderRouterSet().size() != 0) {
                 DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType virtualBorderRouterType = response.getVirtualBorderRouterSet().get(0);
 
                 routerInventory.setName(virtualBorderRouterType.getName());
@@ -479,40 +459,40 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
 
                 //更新数据，我们本地消息同阿里那边的消息一致
-                if(virtualBorderRouterType.getName() != null || virtualBorderRouterType.getName() != ""){
+                if (virtualBorderRouterType.getName() != null || virtualBorderRouterType.getName() != "") {
                     vo.setName(virtualBorderRouterType.getName());
                     vo.setCreateFlag(true);
                 }
-                if(virtualBorderRouterType.getDescription() != null || virtualBorderRouterType.getDescription() != ""){
+                if (virtualBorderRouterType.getDescription() != null || virtualBorderRouterType.getDescription() != "") {
                     vo.setDescription(virtualBorderRouterType.getDescription());
                     vo.setCreateFlag(true);
                 }
 
-                if("active".equals(virtualBorderRouterType.getStatus())){
+                if ("active".equals(virtualBorderRouterType.getStatus())) {
                     vo.setStatus(AliEdgeRouterStatus.normal);
                 }
 
                 dbf.updateAndRefresh(vo);
             }
-        }catch (ClientException e){
+        } catch (ClientException e) {
             e.printStackTrace();
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
-                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
+            if (e.getErrCode().equals("InvalidAccessKeyId.NotFound") || e.getErrCode().equals("IncompleteSignature")) {
+                DeleteAliUser(AliAccessKeyId, AliAccessKeySecret);
                 flag = false;
-            }else{
+            } else {
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
         }
 
         APIGetAliEdgeRouterReply reply = new APIGetAliEdgeRouterReply();
 
-        if(flag){
+        if (flag) {
             reply.setInventory(inventory);
             reply.setRouterInventory(routerInventory);
-        }else {
+        } else {
             reply.setAliIdentityFailure(true);
         }
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     private void DeleteAliUser(String aliAccessKeyId, String aliAccessKeySecret) {
@@ -522,7 +502,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         q.delete();
     }
 
-    private AliUserVO findAliUser(AliEdgeRouterVO vo){
+    private AliUserVO findAliUser(AliEdgeRouterVO vo) {
         SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
         q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
         q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
@@ -531,32 +511,32 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         return user;
     }
 
-    private void handle(APIDeleteAliEdgeRouterMsg msg){
-        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+    private void handle(APIDeleteAliEdgeRouterMsg msg) {
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(), AliEdgeRouterVO.class);
 
         boolean flag = true;
         String RegionId = vo.getAliRegionId();
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
 
-        if(vo.isCreateFlag()){
-            if(msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
+        if (vo.isCreateFlag()) {
+            if (msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null) {
                 AliUserVO user = findAliUser(vo);
-                if(user != null){
+                if (user != null) {
                     AliAccessKeyId = user.getAliAccessKeyID();
                     AliAccessKeySecret = user.getAliAccessKeySecret();
                 }
-            }else{
+            } else {
                 AliAccessKeyId = msg.getAliAccessKeyID();
                 AliAccessKeySecret = msg.getAliAccessKeySecret();
             }
-        }else{
+        } else {
             AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
             AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
         }
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         // 创建API请求并设置参数
@@ -565,23 +545,23 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         DeleteVirtualBorderRouterResponse response;
 
-        try{
+        try {
             response = client.getAcsResponse(request);
             dbf.remove(vo);
-        }catch (ClientException e){
+        } catch (ClientException e) {
             e.printStackTrace();
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
-                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
+            if (e.getErrCode().equals("InvalidAccessKeyId.NotFound") || e.getErrCode().equals("IncompleteSignature")) {
+                DeleteAliUser(AliAccessKeyId, AliAccessKeySecret);
                 flag = false;
-            } else{
+            } else {
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
         }
 
         APIDeleteAliEdgeRouterEvent evt = new APIDeleteAliEdgeRouterEvent(msg.getId());
-        if(flag){
+        if (flag) {
             evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
-        }else {
+        } else {
             evt.setAliIdentityFailure(true);
         }
 
@@ -589,11 +569,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
     }
 
-    private void handle(APIUpdateAliEdgeRouterMsg msg){
-        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+    private void handle(APIUpdateAliEdgeRouterMsg msg) {
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(), AliEdgeRouterVO.class);
         Boolean flag = true;
 
-        if(vo.getStatus() == AliEdgeRouterStatus.Terminate){
+        if (vo.getStatus() == AliEdgeRouterStatus.Terminate) {
             throw new CloudRuntimeException("边界路由器处于终止状态，不可以修改");
         }
 
@@ -601,27 +581,27 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         APIUpdateAliEdgeRouterEvent evt = new APIUpdateAliEdgeRouterEvent(msg.getId());
         boolean update = false;
 
-        if(msg.getName() !=null){
+        if (msg.getName() != null) {
             vo.setName(msg.getName());
             update = true;
         }
 
-        if(msg.getDescription() != null){
+        if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
             update = true;
         }
 
-        if(msg.getLocalGatewayIp() != null && msg.getPeerGatewayIp() != null && msg.getPeeringSubnetMask() != null){
+        if (msg.getLocalGatewayIp() != null && msg.getPeerGatewayIp() != null && msg.getPeeringSubnetMask() != null) {
             update = true;
         }
 
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
 
-        if(msg.getAliAccessKeyID()!= null && msg.getAliAccessKeySecret() != null){
+        if (msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null) {
             AliAccessKeyId = msg.getAliAccessKeyID();
             AliAccessKeySecret = msg.getAliAccessKeySecret();
-        }else{
+        } else {
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
@@ -650,7 +630,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         request.setDescription(vo.getDescription());
 
         ModifyVirtualBorderRouterAttributeResponse response;
-        try{
+        try {
             response = client.getAcsResponse(request);
             logger.info(response.toString());
 
@@ -668,7 +648,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
             requestGet.setFilters(list);
             DescribeVirtualBorderRoutersResponse responseGet = client.getAcsResponse(requestGet);
-            if(responseGet.getVirtualBorderRouterSet().size() != 0){
+            if (responseGet.getVirtualBorderRouterSet().size() != 0) {
                 DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType virtualBorderRouterType = responseGet.getVirtualBorderRouterSet().get(0);
 
                 inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());
@@ -679,27 +659,27 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
             }
 
-            if (update){
+            if (update) {
                 vo.setCreateFlag(true);
                 vo.setStatus(AliEdgeRouterStatus.normal);
                 vo = dbf.updateAndRefresh(vo);
             }
 
-        }catch (ClientException e){
+        } catch (ClientException e) {
             e.printStackTrace();
 
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
-                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
+            if (e.getErrCode().equals("InvalidAccessKeyId.NotFound") || e.getErrCode().equals("IncompleteSignature")) {
+                DeleteAliUser(AliAccessKeyId, AliAccessKeySecret);
                 flag = false;
-            }else{
+            } else {
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
         }
 
-        if(flag){
+        if (flag) {
             evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
             evt.setInventory(inventory);
-        }else {
+        } else {
             evt.setAliIdentityFailure(true);
         }
 
@@ -708,7 +688,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     @Transactional
-    private void handle(APICreateAliEdgeRouterMsg msg){
+    private void handle(APICreateAliEdgeRouterMsg msg) {
         AliEdgeRouterVO vo = new AliEdgeRouterVO();
 
         vo.setUuid(Platform.getUuid());
@@ -726,7 +706,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         // 创建API请求并设置参数
@@ -736,13 +716,13 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         VBR.setVlanId(msg.getVlan());
         VBR.setClientToken(msg.getAliAccountUuid());
         CreateVirtualBorderRouterResponse response;
-        try{
+        try {
             response = client.getAcsResponse(VBR);
             vo.setVbrUuid(response.getVbrId());
 //            dbf.persistAndRefresh(vo);
             dbf.getEntityManager().persist(vo);
             dbf.getEntityManager().flush();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
         }
