@@ -40,7 +40,7 @@
     <import resource="springConfigXml/CascadeFacade.xml"/>
     <import resource="springConfigXml/CloudBus.xml"/>
     <import resource="springConfigXml/DatabaseFacade.xml"/>
-    <import resource="springConfigXml/encrypt.xml"/>
+    <!--<import resource="springConfigXml/encrypt.xml"/>-->
     <import resource="springConfigXml/Error.xml"/>
     <import resource="springConfigXml/GlobalConfigFacade.xml"/>
     <import resource="springConfigXml/jmx.xml"/>
@@ -50,7 +50,7 @@
     <import resource="springConfigXml/RESTFacade.xml"/>
     <import resource="springConfigXml/ThreadFacade.xml"/>
     <import resource="springConfigXml/validation.xml"/>
-    <import resource="springConfigXml/logFacade.xml"/>
+    <!--<import resource="springConfigXml/logFacade.xml"/>-->
     <import resource="springConfigXml/NotificationManager.xml"/>
-    <import resource="springConfigXml/rest.xml"/>
+    <!--<import resource="springConfigXml/rest.xml"/>-->
 </beans>

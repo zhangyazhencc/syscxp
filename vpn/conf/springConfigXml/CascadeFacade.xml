@@ -12,10 +12,10 @@
     http://syscxp.com/schema/syscxp/plugin.xsd"
     default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="CascadeFacade" class="com.syscxp.core.cascade.CascadeFacadeImpl">
-        <syscxp:plugin>
-            <syscxp:extension interface="com.syscxp.header.Component" />
-        </syscxp:plugin>
-    </bean>
+    <!--<bean id="CascadeFacade" class="com.syscxp.core.cascade.CascadeFacadeImpl">-->
+        <!--<syscxp:plugin>-->
+            <!--<syscxp:extension interface="com.syscxp.header.Component" />-->
+        <!--</syscxp:plugin>-->
+    <!--</bean>-->
 
 </beans>

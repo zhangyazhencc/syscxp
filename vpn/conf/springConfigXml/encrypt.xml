@@ -24,10 +24,10 @@
         </syscxp:plugin>
     </bean>
 
-    <bean id="EncryptApiInterceptor" class="com.syscxp.core.encrypt.EncryptApiInterceptor">
-        <syscxp:plugin>
-            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor" />
-        </syscxp:plugin>
-    </bean>
+    <!--<bean id="EncryptApiInterceptor" class="com.syscxp.core.encrypt.EncryptApiInterceptor">-->
+        <!--<syscxp:plugin>-->
+            <!--<syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor" />-->
+        <!--</syscxp:plugin>-->
+    <!--</bean>-->
 
 </beans>

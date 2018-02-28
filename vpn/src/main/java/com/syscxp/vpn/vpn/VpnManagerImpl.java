@@ -73,7 +73,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Base64;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -98,7 +97,6 @@ import static com.syscxp.utils.CollectionDSL.list;
 /**
  * @author wangjie
  */
-@Component
 public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMessageInterceptor, ReportQuotaExtensionPoint {
     private static final CLogger LOGGER = Utils.getLogger(VpnManagerImpl.class);
 
@@ -114,8 +112,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private JobQueueFacade jobf;
     @Autowired
     private ThreadFacade thdf;
-
-    private static String NO_TUNNEL = "";
 
     @Override
     @MessageSafe
@@ -235,7 +231,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         UpdateQuery.New(VpnVO.class)
                 .in(VpnVO_.uuid, vpnUuids)
-                .set(VpnVO_.tunnelUuid, NO_TUNNEL)
+                .set(VpnVO_.tunnelUuid, "")
                 .set(VpnVO_.state, VpnState.Disabled)
                 .update();
 
