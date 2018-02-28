@@ -60,10 +60,7 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
-import com.syscxp.vpn.job.DeleteRenewVOAfterDeleteResourceJob;
-import com.syscxp.vpn.job.DeleteVpnJob;
-import com.syscxp.vpn.job.DestroyVpnJob;
-import com.syscxp.vpn.job.RenameBillingProductNameJob;
+import com.syscxp.vpn.job.*;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
 import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
@@ -1241,6 +1238,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             }
 
             Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredVpnDeleteTime));
+            Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredVpnCloseTime));
 
             try {
                 List<VpnVO> vpnVOS = getVpnVOs();
@@ -1248,6 +1246,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 if (vpnVOS.isEmpty())
                     return;
                 for (VpnVO vo : vpnVOS) {
+                    if (vo.getExpireDate().before(closeTime)) {
+                        LOGGER.debug(String.format("The Vpn[name:%s, UUID:%s] has expired, start to delete it.", vo.getName(), vo.getUuid()));
+                        CloseVpnJob.executeJob(jobf, vo.getUuid());
+                    }
                     if (vo.getExpireDate().before(deleteTime)) {
                         LOGGER.debug(String.format("The Vpn[name:%s, UUID:%s] has expired, start to delete it.", vo.getName(), vo.getUuid()));
 
@@ -1578,6 +1580,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void changeVpnStateByAPI(final VpnVO vpn, VpnState next, final Completion complete) {
         if (vpn.getState() == next) {
             complete.success();
+            return;
+        }
+        if (VpnState.Enabled == next && vpn.getExpireDate().before(dbf.getCurrentSqlTime())) {
+            complete.fail(operr("vpn[%s]已过期，请续费后，再开启。", vpn.getUuid()));
             return;
         }
         VpnMessage vpnMessage = VpnState.Enabled == next ? new StartVpnMsg() : new StopVpnMsg();
