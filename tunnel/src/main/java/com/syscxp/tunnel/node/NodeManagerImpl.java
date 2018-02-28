@@ -146,6 +146,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
             dbf.persistAndRefresh(refVO);
             event.setInventory(ZoneNodeRefInventory.valueOf(refVO));
+        }else{
+            throw new ApiMessageInterceptionException(argerr("node is exist!"));
         }
 
         bus.publish(event);
