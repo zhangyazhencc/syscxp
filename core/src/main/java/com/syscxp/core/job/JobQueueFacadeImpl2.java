@@ -108,8 +108,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         }
 
         public Job loads(String jsonStr) {
-            Job job = gson.fromJson(jsonStr, Job.class);
-            return job;
+            return gson.fromJson(jsonStr, Job.class);
         }
 
         public String dumpJob(Job job) {
@@ -461,7 +460,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             private void process(final JobQueueVO qvo) {
 
                 if (stopped) {
-                    logger.warn(String.format("[Job Facade Stopped]: stop processing job"));
+                    logger.warn("[Job Facade Stopped]: stop processing job");
                     return;
                 }
 
@@ -513,7 +512,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
                 try {
                     GLock lock = new GLock(LOCK_NAME, LOCK_TIMEOUT);
-                    JobQueueVO qvo = null;
+                    JobQueueVO qvo;
                     lock.lock();
                     try {
                         qvo = saveJob();

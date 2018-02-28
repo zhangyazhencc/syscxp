@@ -135,7 +135,7 @@ public class NotificationManager extends AbstractService {
 
             List<NotificationBuilder> lst = new ArrayList<>();
             for (ApiNotification.Inner inner : b.notification.getInners()) {
-                Map opaque = new HashMap();
+                Map<String, Object> opaque = new HashMap<>();
                 opaque.put("session", b.message.getSession());
                 opaque.put("success", aevt.isSuccess());
 
@@ -229,17 +229,13 @@ public class NotificationManager extends AbstractService {
         }
 
 
-        NotificationGlobalConfig.WEBHOOK_URL.installValidateExtension(new GlobalConfigValidatorExtensionPoint() {
-            @Override
-            public void validateGlobalConfig(String category, String name, String oldValue, String newValue) throws GlobalConfigException {
-                if (newValue == null || "null".equals(newValue)) {
-                    return;
-                }
+        NotificationGlobalConfig.WEBHOOK_URL.installValidateExtension((category, name, oldValue, newValue) -> {
+            if (newValue == null || "null".equals(newValue)) {
+                return;
+            }
 
-
-                if (!new UrlValidator().isValid(newValue)) {
-                    throw new OperationFailureException(Platform.argerr("%s is not a valid URL", newValue));
-                }
+            if (!new UrlValidator().isValid(newValue)) {
+                throw new OperationFailureException(Platform.argerr("%s is not a valid URL", newValue));
             }
         });
 

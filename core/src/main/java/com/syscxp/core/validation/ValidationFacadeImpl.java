@@ -60,11 +60,12 @@ public class ValidationFacadeImpl implements ValidationFacade, Component {
     private void populateExtensions() {
         for (Validator ext : pluginRgty.getExtensionList(Validator.class)) {
             for (Class clazz : ext.supportedClasses()) {
-                List<Validator> vs = validators.get(clazz);
+                /*List<Validator> vs = validators.get(clazz);
                 if (vs == null) {
-                    vs = new ArrayList<Validator>();
+                    vs = new ArrayList<>();
                     validators.put(clazz, vs);
-                }
+                }*/
+                List<Validator> vs = validators.computeIfAbsent(clazz, k -> new ArrayList<>());
                 vs.add(ext);
             }
         }

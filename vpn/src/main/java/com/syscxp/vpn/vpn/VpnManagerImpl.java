@@ -1221,8 +1221,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
         private Timestamp getCloseTime(){
-            Timestamp time = Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(expiredVpnCloseTime < expiredVpnDeleteTime ? expiredVpnCloseTime : expiredVpnDeleteTime));
-            return time;
+            return Timestamp.valueOf(LocalDateTime.now().minusDays(Math.min(expiredVpnCloseTime,expiredVpnDeleteTime)));
         }
 
         private List<VpnVO> getVpnVOs() {
