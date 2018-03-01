@@ -1,6 +1,5 @@
 package com.syscxp.core.host;
 
-import com.syscxp.core.cascade.CascadeFacade;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.EventFacade;

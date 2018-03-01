@@ -53,8 +53,8 @@ public class SqlIndexGenerator {
     private String outputPath;
     private List<String> basePkgs;
 
-    private List<Class> entityClass = new ArrayList<Class>();
-    private Map<Class, List<IndexInfo>> indexMap = new HashMap<Class, List<IndexInfo>>();
+    private List<Class> entityClass = new ArrayList<>();
+    private Map<Class, List<IndexInfo>> indexMap = new HashMap<>();
     private StringBuilder writer = new StringBuilder();
 
     public SqlIndexGenerator(APIGenerateSqlIndexMsg msg) {
@@ -64,7 +64,7 @@ public class SqlIndexGenerator {
         }
         basePkgs = msg.getBasePackageNames();
         if (basePkgs == null) {
-            basePkgs = Arrays.asList("com.syscxp");
+            basePkgs = Collections.singletonList("com.syscxp");
         }
     }
 
@@ -82,14 +82,8 @@ public class SqlIndexGenerator {
     }
 
     private void generateIndex() {
-        List<Class> classes = new ArrayList<Class>();
-        classes.addAll(indexMap.keySet());
-        Collections.sort(classes, new Comparator<Class>() {
-            @Override
-            public int compare(Class o1, Class o2) {
-                return o1.getSimpleName().compareTo(o2.getSimpleName());
-            }
-        });
+        List<Class> classes = new ArrayList<>(indexMap.keySet());
+        classes.sort(Comparator.comparing(Class::getSimpleName));
         
         for (Class clz : classes) {
             generateIndexForEntity(indexMap.get(clz));
@@ -125,12 +119,12 @@ public class SqlIndexGenerator {
         } else {
             fs = FieldUtils.getAnnotatedFields(Index.class, entity);
         }
-
-        List<IndexInfo> keyInfos = indexMap.get(entity);
+        List<IndexInfo> keyInfos = indexMap.computeIfAbsent(entity, k -> new ArrayList<>());
+        /*List<IndexInfo> keyInfos = indexMap.get(entity);
         if (keyInfos == null) {
-            keyInfos = new ArrayList<IndexInfo>();
+            keyInfos = new ArrayList<>();
             indexMap.put(entity, keyInfos);
-        }
+        }*/
 
         for (Field f : fs) {
             keyInfos.add(new IndexInfo(entity, f));
