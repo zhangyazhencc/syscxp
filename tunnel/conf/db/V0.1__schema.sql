@@ -140,7 +140,8 @@ CREATE TABLE `syscxp_tunnel`.`ZoneVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `name` varchar(128) NOT NULL COMMENT '区域名称',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `syscxp_tunnel`.`ZoneVO` (`uuid`,`name`,`lastOpDate`,`createDate`)
@@ -155,7 +156,8 @@ CREATE TABLE `syscxp_tunnel`.`ZoneNodeRefVO` (
   `nodeUuid` varchar(32) NOT NULL COMMENT '节点UUID',
   `zoneUuid` varchar(32) NOT NULL COMMENT '区域UUID',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
