@@ -141,7 +141,7 @@ CREATE TABLE `ComparisonRuleVO` (
   `comparisonName` varchar(127) DEFAULT NULL,
   `comparisonValue` varchar(127) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
-  `createDate` timestamp,
+  `createDate` timestamp
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `ComparisonRuleVO` */
