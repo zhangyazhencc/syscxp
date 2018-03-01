@@ -13,6 +13,7 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.rest.*;
 import com.syscxp.header.tunnel.edgeLine.APIRenewAutoEdgeLineMsg;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.header.vpn.vpn.APIRenewAutoVpnMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -30,6 +31,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -64,96 +66,117 @@ public class RenewJob {
             q.add(RenewVO_.expiredTime, SimpleQuery.Op.LT, dbf.getCurrentSqlTime());
             q.add(RenewVO_.expiredTime, SimpleQuery.Op.GT, Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(7)));
             List<RenewVO> renewVOs = q.list();
-            if (renewVOs == null || renewVOs.size()==0) {
+            if (renewVOs == null || renewVOs.size() == 0) {
                 logger.info("there is no activity renew product");
                 return;
             }
             logger.info("the demon thread was going to autoRenew");
             ListIterator<RenewVO> ite = renewVOs.listIterator();
             while (ite.hasNext()) {
+
                 RenewVO renewVO = ite.next();
 
-                ProductCaller caller = new ProductCaller(renewVO.getProductType());
+                GLock lockid = new GLock(String.format("id-%s-%s", "createRenew", renewVO.getUuid()), 600);
+                lockid.lock();
 
-                if (renewVO.getProductType().equals(ProductType.TUNNEL)) {
-                    APIRenewAutoTunnelMsg aMsg = new APIRenewAutoTunnelMsg();
+                try {
+                    RenewVO renew = dbf.findByUuid(renewVO.getUuid(), RenewVO.class);
+                    if (renew.getExpiredTime().after(Timestamp.valueOf(LocalDateTime.now()))) {
+                        continue;
+                    }
+                    ProductCaller caller = new ProductCaller(renewVO.getProductType());
 
-                    aMsg.setUuid(renewVO.getProductUuid());
-                    aMsg.setDuration(1);
-                    aMsg.setProductChargeModel(renewVO.getProductChargeModel());
-                    InnerMessageHelper.setMD5(aMsg);
-                    String gstr = RESTApiDecoder.dump(aMsg);
-                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class,null);
+                    if (renewVO.getProductType().equals(ProductType.TUNNEL)) {
+                        APIRenewAutoTunnelMsg aMsg = new APIRenewAutoTunnelMsg();
 
-//                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
-//                        throw new RuntimeException("unknown mistake");
-//                    }
-                }else if(renewVO.getProductType().equals(ProductType.EDGELINE)){
-                    APIRenewAutoEdgeLineMsg msg = new APIRenewAutoEdgeLineMsg();
-                    msg.setUuid(renewVO.getProductUuid());
-                    msg.setDuration(1);
-                    msg.setProductChargeModel(renewVO.getProductChargeModel());
-                    InnerMessageHelper.setMD5(msg);
-                    String gstr = RESTApiDecoder.dump(msg);
-                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class,null);
+                        aMsg.setUuid(renewVO.getProductUuid());
+                        aMsg.setDuration(1);
+                        aMsg.setProductChargeModel(renewVO.getProductChargeModel());
+                        InnerMessageHelper.setMD5(aMsg);
+                        String gstr = RESTApiDecoder.dump(aMsg);
+                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
 
-                } else if (renewVO.getProductType().equals(ProductType.PORT)) {
-                    APIRenewAutoInterfaceMsg aMsg = new APIRenewAutoInterfaceMsg();
+                        //                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
+                        //                        throw new RuntimeException("unknown mistake");
+                        //                    }
+                    } else if (renewVO.getProductType().equals(ProductType.EDGELINE)) {
+                        APIRenewAutoEdgeLineMsg msg = new APIRenewAutoEdgeLineMsg();
+                        msg.setUuid(renewVO.getProductUuid());
+                        msg.setDuration(1);
+                        msg.setProductChargeModel(renewVO.getProductChargeModel());
+                        InnerMessageHelper.setMD5(msg);
+                        String gstr = RESTApiDecoder.dump(msg);
+                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
 
-                    aMsg.setUuid(renewVO.getProductUuid());
-                    aMsg.setDuration(1);
-                    aMsg.setProductChargeModel(renewVO.getProductChargeModel());
-                    InnerMessageHelper.setMD5(aMsg);
-                    String gstr = RESTApiDecoder.dump(aMsg);
-                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class,null);
+                    } else if (renewVO.getProductType().equals(ProductType.VPN)) {
+                        APIRenewAutoVpnMsg msg = new APIRenewAutoVpnMsg();
+                        msg.setUuid(renewVO.getProductUuid());
+                        msg.setDuration(1);
+                        msg.setProductChargeModel(renewVO.getProductChargeModel());
+                        InnerMessageHelper.setMD5(msg);
+                        String gstr = RESTApiDecoder.dump(msg);
+                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
 
-//                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
-//                        throw new RuntimeException("unknown mistake");
-//                    }
-                } else if (renewVO.getProductType().equals(ProductType.DISK)) {
-                    Map<String, String> header = new HashMap<>();
-                    header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpDisk");
-                    RenewCmd renewCmd = new RenewCmd();
-                    renewCmd.setAccountUuid(renewVO.getAccountUuid());
-                    renewCmd.setDuration(1);
-                    renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
-                    renewCmd.setUuid(renewVO.getProductUuid());
-                    String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
-                }else if (renewVO.getProductType().equals(ProductType.HOST)) {
-                    Map<String, String> header = new HashMap<>();
-                    header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpHost");
-                    RenewCmd renewCmd = new RenewCmd();
-                    renewCmd.setAccountUuid(renewVO.getAccountUuid());
-                    renewCmd.setDuration(1);
-                    renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
-                    renewCmd.setUuid(renewVO.getProductUuid());
-                    String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
-                }else if (renewVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
-                    Map<String, String> header = new HashMap<>();
-                    header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpResourcePool");
-                    RenewCmd renewCmd = new RenewCmd();
-                    renewCmd.setAccountUuid(renewVO.getAccountUuid());
-                    renewCmd.setDuration(1);
-                    renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
-                    renewCmd.setUuid(renewVO.getProductUuid());
-                    String body = JSONObjectUtil.toJsonString(renewCmd);
-                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                    } else if (renewVO.getProductType().equals(ProductType.PORT)) {
+                        APIRenewAutoInterfaceMsg aMsg = new APIRenewAutoInterfaceMsg();
+
+                        aMsg.setUuid(renewVO.getProductUuid());
+                        aMsg.setDuration(1);
+                        aMsg.setProductChargeModel(renewVO.getProductChargeModel());
+                        InnerMessageHelper.setMD5(aMsg);
+                        String gstr = RESTApiDecoder.dump(aMsg);
+                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
+
+                        //                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
+                        //                        throw new RuntimeException("unknown mistake");
+                        //                    }
+                    } else if (renewVO.getProductType().equals(ProductType.DISK)) {
+                        Map<String, String> header = new HashMap<>();
+                        header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpDisk");
+                        RenewCmd renewCmd = new RenewCmd();
+                        renewCmd.setAccountUuid(renewVO.getAccountUuid());
+                        renewCmd.setDuration(1);
+                        renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
+                        renewCmd.setUuid(renewVO.getProductUuid());
+                        String body = JSONObjectUtil.toJsonString(renewCmd);
+                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                    } else if (renewVO.getProductType().equals(ProductType.HOST)) {
+                        Map<String, String> header = new HashMap<>();
+                        header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpHost");
+                        RenewCmd renewCmd = new RenewCmd();
+                        renewCmd.setAccountUuid(renewVO.getAccountUuid());
+                        renewCmd.setDuration(1);
+                        renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
+                        renewCmd.setUuid(renewVO.getProductUuid());
+                        String body = JSONObjectUtil.toJsonString(renewCmd);
+                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                    } else if (renewVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
+                        Map<String, String> header = new HashMap<>();
+                        header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpResourcePool");
+                        RenewCmd renewCmd = new RenewCmd();
+                        renewCmd.setAccountUuid(renewVO.getAccountUuid());
+                        renewCmd.setDuration(1);
+                        renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
+                        renewCmd.setUuid(renewVO.getProductUuid());
+                        String body = JSONObjectUtil.toJsonString(renewCmd);
+                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                    }
+
+                } finally {
+                    lockid.unlock();
                 }
-
             }
 
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             lock.unlock();
         }
 
     }
 
 
-    public <T> T syncJsonPost(String url, String body, Class<T> returnClass,Map<String,String> headers) {
+    public <T> T syncJsonPost(String url, String body, Class<T> returnClass, Map<String, String> headers) {
         body = body == null ? "" : body;
 
         HttpHeaders requestHeaders = new HttpHeaders();

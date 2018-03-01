@@ -16,13 +16,13 @@ public class Defer {
     private static DeferStack<Runnable> getExceptionStack()  {
         Map<String, DeferStack<Runnable>> s = stack.get();
         if (s == null) {
-            s = new HashMap<String, DeferStack<Runnable>>();
+            s = new HashMap<>();
             stack.set(s);
         }
 
         DeferStack<Runnable> sg = s.get(EXCEPTION_STACK);
         if (sg == null) {
-            sg = new DeferStack<Runnable>();
+            sg = new DeferStack<>();
             s.put(EXCEPTION_STACK, sg);
         }
         return sg;
@@ -31,13 +31,13 @@ public class Defer {
     private static DeferStack<Runnable> getNonExceptionStack()  {
         Map<String, DeferStack<Runnable>> s = stack.get();
         if (s == null) {
-            s = new HashMap<String, DeferStack<Runnable>>();
+            s = new HashMap<>();
             stack.set(s);
         }
 
         DeferStack<Runnable> sg = s.get(NON_EXCEPTION_STACK);
         if (sg == null) {
-            sg = new DeferStack<Runnable>();
+            sg = new DeferStack<>();
             s.put(NON_EXCEPTION_STACK, sg);
         }
         return sg;

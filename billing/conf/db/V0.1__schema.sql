@@ -380,7 +380,7 @@ INSERT INTO `ProductCategoryVO` (uuid, code, name, productTypeCode, productTypeN
 VALUES ('VPN', 'VPN', 'VPN', 'VPN', 'VPN', 'enable', '2018-01-02 09:42:29', '2017-10-30 15:46:12'),
 ('ABROAD', 'ABROAD', '跨国', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 17:18:12'),
 ('CITY', 'CITY', '同城', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
-('LONG', 'LONG', '长传', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'
+('LONG', 'LONG', '长传', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
 ('REGION', 'REGION', '区域', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
 ('EXCLUSIVE', 'EXCLUSIVE', '独享端口', 'PORT', '端口', 'enable', '2018-01-10 15:59:59', '2017-10-30 15:46:12'),
 ('SHARE', 'SHARE', '共享端口', 'PORT', '端口', 'enable', '2018-01-10 16:00:28', '2017-10-30 15:46:12'),

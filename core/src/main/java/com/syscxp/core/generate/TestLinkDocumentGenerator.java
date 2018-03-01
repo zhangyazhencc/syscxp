@@ -28,7 +28,7 @@ public class TestLinkDocumentGenerator {
     
     private static String multiHtmlP(String str) {
         if (str == null) {
-            return htmlP(str);
+            return htmlP(null);
         }
         
         /*
@@ -143,7 +143,7 @@ public class TestLinkDocumentGenerator {
             String[] files = new File(folderUrl.toURI()).list();
             for (String f : files) {
                 if (!f.endsWith(".xml")) {
-                    logger.warn(String.format("skip file which is not ended with .xml", f));
+                    logger.warn(String.format("skip file[%s] which is not ended with .xml", f));
                     continue;
                 }
                 URL fileUrl = TestLinkDocumentGenerator.class.getClassLoader().getResource(Utils.getPathUtil().join(CONFIG_FOLDER, f));

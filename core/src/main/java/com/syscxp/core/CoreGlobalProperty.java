@@ -41,10 +41,6 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "consoleProxyPort", defaultValue = "4900")
     public static int CONSOLE_PROXY_PORT;
 
-
-    @GlobalProperty(name = "cleanExpiredProductInterval", defaultValue = "1")
-    public static int CLEAN_EXPIRED_PRODUCT_INTERVAL;
-
     @GlobalProperty(name = "innerMessageMD5Key", defaultValue = "asfdsghajsdgkasg")
     public static String INNER_MESSAGE_MD5_KEY;
     @GlobalProperty(name = "innerMessageExpire", defaultValue = "600")
@@ -64,12 +60,6 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "tunnelMaxMotifies", defaultValue = "5")
     public static Integer TUNNEL_MAX_MOTIFIES;
 
-    @GlobalProperty(name = "expiredProductCloseTime", defaultValue = "3")
-    public static Integer EXPIRED_PRODUCT_CLOSE_TIME;
-
-    @GlobalProperty(name = "expiredProductDeleteTime", defaultValue = "10")
-    public static Integer EXPIRED_PRODUCT_DELETE_TIME;
-
     @GlobalProperty(name = "controllerManagerUrl", defaultValue = "http://192.168.211.224:8080")
     public static String CONTROLLER_MANAGER_URL;
 
@@ -81,9 +71,6 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "startVsi", defaultValue = "200000")
     public static Integer START_VSI;
-
-    @GlobalProperty(name = "tunnelServerUrl", defaultValue = "http://192.168.211.185:8080/asyncrest/sendcommand")
-    public static String TUNNEL_SERVER_URL;
 
     @GlobalProperty(name = "openTSDBServerUrl", defaultValue = "http://192.168.211.6:4242")
     public static String OPENTSDB_SERVER_URL;

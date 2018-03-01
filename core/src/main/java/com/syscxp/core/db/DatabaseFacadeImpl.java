@@ -47,12 +47,12 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
     private DataSource extraDataSource = null;
     private List<TransactionalCallback> transactionAsyncCallbacks = null;
     private List<TransactionalSyncCallback> transactionSyncCallbacks = null;
-    private Map<Class, List<SoftDeleteEntityExtensionPoint>> softDeleteExtensions = new HashMap<Class, List<SoftDeleteEntityExtensionPoint>>();
-    private Map<Class, List<SoftDeleteEntityByEOExtensionPoint>> softDeleteByEOExtensions = new HashMap<Class, List<SoftDeleteEntityByEOExtensionPoint>>();
-    private List<SoftDeleteEntityExtensionPoint> softDeleteForAllExtensions = new ArrayList<SoftDeleteEntityExtensionPoint>();
-    private Map<Class, List<HardDeleteEntityExtensionPoint>> hardDeleteExtensions = new HashMap<Class, List<HardDeleteEntityExtensionPoint>>();
-    private List<HardDeleteEntityExtensionPoint> hardDeleteForAllExtensions = new ArrayList<HardDeleteEntityExtensionPoint>();
-    private Map<Class, EntityInfo> entityInfoMap = new HashMap<Class, EntityInfo>();
+    private Map<Class, List<SoftDeleteEntityExtensionPoint>> softDeleteExtensions = new HashMap<>();
+    private Map<Class, List<SoftDeleteEntityByEOExtensionPoint>> softDeleteByEOExtensions = new HashMap<>();
+    private List<SoftDeleteEntityExtensionPoint> softDeleteForAllExtensions = new ArrayList<>();
+    private Map<Class, List<HardDeleteEntityExtensionPoint>> hardDeleteExtensions = new HashMap<>();
+    private List<HardDeleteEntityExtensionPoint> hardDeleteForAllExtensions = new ArrayList<>();
+    private Map<Class, EntityInfo> entityInfoMap = new HashMap<>();
     private String dbVersion;
 
     class EntityInfo {
@@ -61,7 +61,7 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
         Field eoSoftDeleteColumn;
         Class eoClass;
         Class voClass;
-        Map<EntityEvent, EntityLifeCycleCallback> listeners = new HashMap<EntityEvent, EntityLifeCycleCallback>();
+        Map<EntityEvent, EntityLifeCycleCallback> listeners = new HashMap<>();
 
         EntityInfo(Class voClazz) {
             voClass = voClazz;
@@ -104,7 +104,7 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
 
                 List<SoftDeleteEntityExtensionPoint> exts = softDeleteExtensions.get(parent);
                 if (exts == null) {
-                    exts = new ArrayList<SoftDeleteEntityExtensionPoint>();
+                    exts = new ArrayList<>();
                     softDeleteExtensions.put(parent, exts);
                 }
 
@@ -145,7 +145,7 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
             if (!hasEO()) {
                 List<SoftDeleteEntityExtensionPoint> exts = softDeleteExtensions.get(parent);
                 if (exts == null) {
-                    exts = new ArrayList<SoftDeleteEntityExtensionPoint>();
+                    exts = new ArrayList<>();
                     softDeleteExtensions.put(parent, exts);
                 }
 
@@ -163,7 +163,7 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
             } else {
                 List<SoftDeleteEntityByEOExtensionPoint> exts = softDeleteByEOExtensions.get(eoClass);
                 if (exts == null) {
-                    exts = new ArrayList<SoftDeleteEntityByEOExtensionPoint>();
+                    exts = new ArrayList<>();
                     softDeleteByEOExtensions.put(eoClass, exts);
                 }
 

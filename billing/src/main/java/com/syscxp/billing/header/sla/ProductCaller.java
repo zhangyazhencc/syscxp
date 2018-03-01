@@ -22,6 +22,9 @@ public class ProductCaller {
             case PORT:
                 this.productUrl = AlipayGlobalProperty.TUNNEL_SERVER_URL;
                 break;
+            case VPN:
+                this.productUrl = AlipayGlobalProperty.VPN_SERVER_URL;
+                break;
             case EDGELINE:
                 this.productUrl = AlipayGlobalProperty.TUNNEL_SERVER_URL;
                 break;
