@@ -228,7 +228,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         UpdateQuery.New(VpnVO.class)
                 .in(VpnVO_.uuid, vpnUuids)
-                .set(VpnVO_.tunnelUuid, "")
+                .set(VpnVO_.tunnelUuid, RESTConstant.EMPTY_STRING)
                 .set(VpnVO_.state, VpnState.Disabled)
                 .update();
 
@@ -1425,7 +1425,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void checkTunnel(String tunnelUuid) {
-        if ("".equals(tunnelUuid)) {
+        if (RESTConstant.EMPTY_STRING.equals(tunnelUuid)) {
             throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, "VPN没有指定专线。"));
         }
     }

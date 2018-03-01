@@ -25,11 +25,11 @@ public class SimpleQueryImpl<T> implements SimpleQuery<T> {
     private static final CLogger _logger = CLoggerImpl.getLogger(SimpleQueryImpl.class);
     private final Class<T> _entityClass;
     private Root<T> _root;
-    private List<AttrInfo> _selects = new ArrayList<AttrInfo>();
-    private List<Condition> _conditions = new ArrayList<Condition>();
-    private List<OrderInfo> orderInfos = new ArrayList<OrderInfo>();
+    private List<AttrInfo> _selects = new ArrayList<>();
+    private List<Condition> _conditions = new ArrayList<>();
+    private List<OrderInfo> orderInfos = new ArrayList<>();
     private SingularAttribute groupByInfo = null;
-    private List<Path> _paths = new ArrayList<Path>();
+    private List<Path> _paths = new ArrayList<>();
     private CriteriaQuery _query;
     private final CriteriaBuilder _builder;
     private Integer limit;
