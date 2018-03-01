@@ -13,6 +13,7 @@ import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.tunnel.edgeLine.APISLAEdgeLineMsg;
 import com.syscxp.header.tunnel.tunnel.APISLAInterfaceMsg;
 import com.syscxp.header.tunnel.tunnel.APISLATunnelMsg;
+import com.syscxp.header.vpn.vpn.APISLAVpnMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
@@ -121,6 +122,18 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 }
             } else if (slaCompensateVO.getProductType().equals(ProductType.PORT)) {
                 APISLAInterfaceMsg aMsg = new APISLAInterfaceMsg();
+                aMsg.setUuid(slaCompensateVO.getProductUuid());
+                aMsg.setSlaUuid(slaCompensateVO.getUuid());
+                aMsg.setDuration(slaCompensateVO.getDuration());
+                aMsg.setSession(msg.getSession());
+                String gstr = RESTApiDecoder.dumpWithSession(aMsg);
+                RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
+
+                if (!rsp.getState().equals(RestAPIState.Done.toString())) {
+                    throw new IllegalArgumentException("the network is not fine ,try for a moment");
+                }
+            }else if (slaCompensateVO.getProductType().equals(ProductType.VPN)) {
+                APISLAVpnMsg aMsg = new APISLAVpnMsg();
                 aMsg.setUuid(slaCompensateVO.getProductUuid());
                 aMsg.setSlaUuid(slaCompensateVO.getUuid());
                 aMsg.setDuration(slaCompensateVO.getDuration());
