@@ -572,7 +572,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             evalThreadContextToMessage(msg);
 
             if (logger.isTraceEnabled() && logMessage(msg)) {
-                logger.trace(String.format("[msg send]: %s", wire.dumpMessage(msg)));
+                logger.trace(String.format("[msg send][%s]: %s", serviceId, wire.dumpMessage(msg)));
             }
 
 
