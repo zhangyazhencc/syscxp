@@ -348,7 +348,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             setThreadLoggingContext(msg);
 
             if (logger.isTraceEnabled() && wire.logMessage(msg))  {
-                logger.trace(String.format("[msg received]: %s", wire.dumpMessage(msg)));
+                logger.trace(String.format("[msg receive]: %s", wire.dumpMessage(msg)));
             }
 
             if (msg instanceof MessageReply) {
@@ -1992,7 +1992,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                             final Message msg = wire.toMessage(bytes, basicProperties);
 
                             if (logger.isTraceEnabled() && wire.logMessage(msg)) {
-                                logger.trace(String.format("[msg received]: %s", wire.dumpMessage(msg)));
+                                logger.trace(String.format("[msg received][%s]: %s", baseName, wire.dumpMessage(msg)));
                             }
 
                             SyncTask<Void> task = new SyncTask<Void>() {
@@ -2039,6 +2039,10 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                             */
                                         }
 
+                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
+                                            logger.trace(String.format("[handle message]: %s", msg.getClass(), msg.getId()));
+                                        }
+
                                         serv.handleMessage(msg);
                                     } catch (Throwable t) {
                                         logExceptionWithMessageDump(msg, t);
@@ -2053,6 +2057,8 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                     return null;
                                 }
                             };
+
+                            logger.trace(String.format("[syncLevel]: %s", syncLevel));
 
                             if (syncLevel == 0) {
                                 thdf.submit(task);
