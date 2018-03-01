@@ -2013,6 +2013,10 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
                                 @Override
                                 public Void call() throws Exception {
+                                    if (logger.isTraceEnabled() && wire.logMessage(msg)) {
+                                        logger.trace(String.format("[handle message enter]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
+                                    }
+
                                     setThreadLoggingContext(msg);
 
                                     try {
@@ -2040,10 +2044,14 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                         }
 
                                         if (logger.isTraceEnabled() && wire.logMessage(msg)) {
-                                            logger.trace(String.format("[handle message]: %s", msg.getClass(), msg.getId()));
+                                            logger.trace(String.format("[handle message]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
                                         }
 
                                         serv.handleMessage(msg);
+
+                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
+                                            logger.trace(String.format("[handle message over]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
+                                        }
                                     } catch (Throwable t) {
                                         logExceptionWithMessageDump(msg, t);
 
