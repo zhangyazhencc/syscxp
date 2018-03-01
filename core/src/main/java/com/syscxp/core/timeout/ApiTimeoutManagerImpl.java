@@ -1,11 +1,10 @@
 package com.syscxp.core.timeout;
 
 import com.syscxp.core.Platform;
-import com.syscxp.utils.*;
-import org.reflections.Reflections;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.utils.*;
 import com.syscxp.utils.logging.CLogger;
+import org.reflections.Reflections;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -16,13 +15,13 @@ import java.util.concurrent.TimeUnit;
 public class ApiTimeoutManagerImpl implements ApiTimeoutManager {
     private static final CLogger logger = Utils.getLogger(ApiTimeoutManagerImpl.class);
 
-    private Map<Class, ApiTimeout> apiTimeouts = new HashMap<Class, ApiTimeout>();
-    private Map<Class, Long> timeouts = new HashMap<Class, Long>();
+    private Map<Class, ApiTimeout> apiTimeouts = new HashMap<>();
+    private Map<Class, Long> timeouts = new HashMap<>();
 
     class Value {
         private String valueString;
         private String key;
-        private Map<String, String> values = new HashMap<String, String>();
+        private Map<String, String> values = new HashMap<>();
 
         public Value(String key, String valueString) {
             this.valueString = valueString;
@@ -78,7 +77,7 @@ public class ApiTimeoutManagerImpl implements ApiTimeoutManager {
     private void collectTimeoutForDerivedApi() {
         Reflections reflections = Platform.getReflections();
 
-        Map<Class, ApiTimeout> children = new HashMap<Class, ApiTimeout>();
+        Map<Class, ApiTimeout> children = new HashMap<>();
         for (Map.Entry<Class, ApiTimeout> e : apiTimeouts.entrySet()) {
             Class clz = e.getKey();
             ApiTimeout at = e.getValue();
@@ -99,16 +98,17 @@ public class ApiTimeoutManagerImpl implements ApiTimeoutManager {
     }
 
     private void collectTimeout() {
-        Map<Class, Set<Class>> m = new HashMap<Class, Set<Class>>();
+        Map<Class, Set<Class>> m = new HashMap<>();
         List<Class> subs = BeanUtils.scanClass("com.syscxp", com.syscxp.header.core.ApiTimeout.class);
         for (Class sub : subs) {
             com.syscxp.header.core.ApiTimeout at = (com.syscxp.header.core.ApiTimeout) sub.getAnnotation(com.syscxp.header.core.ApiTimeout.class);
             for (Class apiClz : at.apiClasses()) {
-                Set<Class> relatives = m.get(apiClz);
+                /*Set<Class> relatives = m.get(apiClz);
                 if (relatives == null) {
-                    relatives = new HashSet<Class>();
+                    relatives = new HashSet<>();
                     m.put(apiClz, relatives);
-                }
+                }*/
+                Set<Class> relatives = m.computeIfAbsent(apiClz, k -> new HashSet<>());
 
                 relatives.add(sub);
             }

@@ -42,6 +42,8 @@ public class AlipayGlobalProperty {
 
     @GlobalProperty(name = "tunnelServerUrl")
     public static String TUNNEL_SERVER_URL;
+    @GlobalProperty(name = "vpnServerUrl")
+    public static String VPN_SERVER_URL;
 
     @GlobalProperty(name = "ecpServerUrl")
     public static String ECP_SERVER_URL;

@@ -18,7 +18,7 @@ public enum Op {
 
     private String symbol;
 
-    private Op(String symbol) {
+    Op(String symbol) {
         this.symbol = symbol;
     }
 

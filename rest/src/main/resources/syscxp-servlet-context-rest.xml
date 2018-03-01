@@ -5,12 +5,8 @@
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-
-
          http://www.springframework.org/schema/context
          http://www.springframework.org/schema/context/spring-context-3.0.xsd
-
-
          http://www.springframework.org/schema/mvc
          http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd"
        default-init-method="init" default-destroy-method="destory" default-lazy-init="true">
@@ -18,7 +14,7 @@
 <!--
 	<context:component-scan base-package="com.syscxp" />
 -->
-    <context:annotation-config />
+   <!-- <context:annotation-config />
     <context:spring-configured />
 
     <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
@@ -33,5 +29,5 @@
 
     <bean name="restServerController" class="com.syscxp.rest.RestServerController" />
     <bean name="restFacadeController" class="com.syscxp.core.rest.AsyncRESTCallController"/>
-
+-->
 </beans>

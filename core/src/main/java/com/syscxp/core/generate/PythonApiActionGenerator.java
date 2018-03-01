@@ -1,14 +1,5 @@
 package com.syscxp.core.generate;
 
-import javassist.Modifier;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.core.type.filter.AssignableTypeFilter;
-import org.springframework.stereotype.Component;
 import com.syscxp.header.configuration.NoPython;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.APISessionMessage;
@@ -19,19 +10,29 @@ import com.syscxp.header.search.APIGetMessage;
 import com.syscxp.header.search.APISearchMessage;
 import com.syscxp.utils.TypeUtils;
 import com.syscxp.utils.path.PathUtil;
+import javassist.Modifier;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PythonApiActionGenerator {
     public static void generatePythonApiAction(List<String> basePkgs, String resultFolder) throws IOException {
         StringBuilder pysb = new StringBuilder();
-        pysb.append(String.format("from apibinding import inventory"));
-        pysb.append(String.format("\nfrom apibinding import api"));
-        pysb.append(String.format("\nfrom syscxplib.utils import jsonobject"));
+        pysb.append("from apibinding import inventory");
+        pysb.append("\nfrom apibinding import api");
+        pysb.append("\nfrom syscxplib.utils import jsonobject");
 
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AssignableTypeFilter(APIMessage.class));
@@ -56,9 +57,7 @@ public class PythonApiActionGenerator {
                 }
             }
             List<Class<?>> sortedClazzList = clazzList.stream().sorted(
-                    (c1, c2) -> {
-                        return populateActionName(c1).compareTo(populateActionName(c2));
-                    }
+                    Comparator.comparing(PythonApiActionGenerator::populateActionName)
             ).collect(Collectors.toList());
             for (Class<?> clazz : sortedClazzList) {
                 if (APIQueryMessage.class.isAssignableFrom(clazz)) {

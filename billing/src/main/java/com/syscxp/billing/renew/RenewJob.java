@@ -13,6 +13,7 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.rest.*;
 import com.syscxp.header.tunnel.edgeLine.APIRenewAutoEdgeLineMsg;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.header.vpn.vpn.APIRenewAutoVpnMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -90,6 +91,15 @@ public class RenewJob {
 //                    }
                 }else if(renewVO.getProductType().equals(ProductType.EDGELINE)){
                     APIRenewAutoEdgeLineMsg msg = new APIRenewAutoEdgeLineMsg();
+                    msg.setUuid(renewVO.getProductUuid());
+                    msg.setDuration(1);
+                    msg.setProductChargeModel(renewVO.getProductChargeModel());
+                    InnerMessageHelper.setMD5(msg);
+                    String gstr = RESTApiDecoder.dump(msg);
+                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class,null);
+
+                } else if(renewVO.getProductType().equals(ProductType.VPN)){
+                    APIRenewAutoVpnMsg msg = new APIRenewAutoVpnMsg();
                     msg.setUuid(renewVO.getProductUuid());
                     msg.setDuration(1);
                     msg.setProductChargeModel(renewVO.getProductChargeModel());

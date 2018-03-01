@@ -18,7 +18,7 @@ import java.util.*;
 
 public class RESTApiJsonTemplateGenerator {
     private static final CLogger logger = Utils.getLogger(RESTApiJsonTemplateGenerator.class);
-    private static List<Class<?>> primitiveTypes = new ArrayList<Class<?>>(10);
+    private static List<Class<?>> primitiveTypes = new ArrayList<>(10);
 
     static {
         primitiveTypes.add(int.class);
@@ -196,7 +196,7 @@ public class RESTApiJsonTemplateGenerator {
 
     public static String dump(Class<?> clazz) {
         try {
-            Stack<Class> hasDone = new Stack<Class>();
+            Stack<Class> hasDone = new Stack<>();
             JSONObject oj = dumpObject(clazz, hasDone);
             JSONObject root = nj();
             root.put(clazz.getName(), oj);

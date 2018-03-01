@@ -36,7 +36,7 @@ public class GLock {
         @Override
         protected List<String> initialValue()
         {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
     };
 

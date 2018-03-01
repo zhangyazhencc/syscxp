@@ -1,6 +1,5 @@
 package com.syscxp.core.job;
 
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 

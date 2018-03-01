@@ -51,7 +51,6 @@ public class SqlForeignKeyGenerator {
     }
 
     public List<Pair<String, String>> generateEORelations() {
-        List<Pair<String, String>> result = new ArrayList<>();
 
         for (String pkgName : basePkgs) {
             entityClass.addAll(BeanUtils.scanClass(pkgName, Entity.class));
@@ -61,8 +60,7 @@ public class SqlForeignKeyGenerator {
             collectForeignKeys(entity);
         }
 
-        List<Class> classes = new ArrayList<>();
-        classes.addAll(keyMap.keySet());
+        List<Class> classes = new ArrayList<>(keyMap.keySet());
         classes.sort(Comparator.comparing(Class::getSimpleName));
 
         Map<String, Pair<String, String>> m = new HashMap<>();
@@ -75,9 +73,7 @@ public class SqlForeignKeyGenerator {
             }
         }
 
-        result.addAll(m.values());
-
-        return result;
+        return new ArrayList<>(m.values());
     }
 
     private class ForeignKeyInfo {
@@ -161,12 +157,13 @@ public class SqlForeignKeyGenerator {
 
         private String makeForeignKeyName() {
             String noIndexKeyName = String.format("fk%s%s", entity.getSimpleName(), parentClass.getSimpleName());
-            List<String> keys = entityForeignKeyIndexMap.get(entity);
+            /*List<String> keys = entityForeignKeyIndexMap.get(entity);
             if (keys == null) {
-                keys = new ArrayList<String>();
+                keys = new ArrayList<>();
                 entityForeignKeyIndexMap.put(entity, keys);
-            }
+            }*/
 
+            List<String> keys = entityForeignKeyIndexMap.computeIfAbsent(entity, k -> new ArrayList<>());
             int count = 0;
             for (String key : keys) {
                 if (noIndexKeyName.equals(key)) {
@@ -206,14 +203,8 @@ public class SqlForeignKeyGenerator {
     }
 
     private void generateForeignKeys() {
-        List<Class> classes = new ArrayList<Class>();
-        classes.addAll(keyMap.keySet());
-        Collections.sort(classes, new Comparator<Class>() {
-            @Override
-            public int compare(Class o1, Class o2) {
-                return o1.getSimpleName().compareTo(o2.getSimpleName());
-            }
-        });
+        List<Class> classes = new ArrayList<>(keyMap.keySet());
+        classes.sort(Comparator.comparing(Class::getSimpleName));
 
         for (Class clz : classes) {
             generateForeignKeyForEntity(clz, keyMap.get(clz));
@@ -240,12 +231,7 @@ public class SqlForeignKeyGenerator {
             evaluateOrder(key);
         }
 
-        Collections.sort(keys, new Comparator<ForeignKeyInfo>() {
-            @Override
-            public int compare(ForeignKeyInfo o1, ForeignKeyInfo o2) {
-                return o1.order - o2.order;
-            }
-        });
+        keys.sort(Comparator.comparingInt(o -> o.order));
 
         writer.append(String.format("\n# Foreign keys for table %s\n", entity.getSimpleName()));
         for (ForeignKeyInfo key : keys) {
@@ -255,14 +241,8 @@ public class SqlForeignKeyGenerator {
     }
 
     private void orderAllKeys() {
-        List<ForeignKeyInfo> orderKeys = new ArrayList<ForeignKeyInfo>();
-        orderKeys.addAll(allKeys.values());
-        Collections.sort(orderKeys, new Comparator<ForeignKeyInfo>() {
-            @Override
-            public int compare(ForeignKeyInfo o1, ForeignKeyInfo o2) {
-                return o1.fullName.compareTo(o2.fullName);
-            }
-        });
+        List<ForeignKeyInfo> orderKeys = new ArrayList<>(allKeys.values());
+        orderKeys.sort(Comparator.comparing(o -> o.fullName));
 
         for (ForeignKeyInfo keyInfo : orderKeys) {
             keyInfo.order = orderKeys.indexOf(keyInfo);
@@ -281,11 +261,12 @@ public class SqlForeignKeyGenerator {
             fs = FieldUtils.getAnnotatedFields(ForeignKey.class, entity);
         }
 
-        List<ForeignKeyInfo> keyInfos = keyMap.get(entity);
+        /*List<ForeignKeyInfo> keyInfos = keyMap.get(entity);
         if (keyInfos == null) {
-            keyInfos = new ArrayList<ForeignKeyInfo>();
+            keyInfos = new ArrayList<>();
             keyMap.put(entity, keyInfos);
-        }
+        }*/
+        List<ForeignKeyInfo> keyInfos = keyMap.computeIfAbsent(entity, k -> new ArrayList<>());
 
         for (Field f : fs) {
             ForeignKeyInfo keyInfo = new ForeignKeyInfo(entity, f);
