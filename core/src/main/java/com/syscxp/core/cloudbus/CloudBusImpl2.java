@@ -2066,7 +2066,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                 }
                             };
 
-                            logger.trace(String.format("[syncLevel]: %s", syncLevel));
+                            logger.trace(String.format("[syncLevel]: %s [%s]", syncLevel, baseName));
 
                             if (syncLevel == 0) {
                                 thdf.submit(task);
