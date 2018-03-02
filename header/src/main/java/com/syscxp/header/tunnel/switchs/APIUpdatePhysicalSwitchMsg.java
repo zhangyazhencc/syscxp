@@ -31,9 +31,9 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
     private Integer port;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String username;
-    @APIParam(emptyString = false,required = false,maxLength = 128)
+    @APIParam(required = false,maxLength = 128)
     private String password;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
+    @APIParam(required = false,maxLength = 255)
     private String description;
 
     public String getUuid() {
