@@ -85,7 +85,7 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
             return;
         }
 
-        logger.trace(String.format("[dispatch message over]: %s [%s]", msg.getId(), msg.getClass().getName()));
+        logger.trace(String.format("[route message ]: %s to:%s", msg.getId(), msg.getServiceId()));
         bus.route(msg);
     }
 
