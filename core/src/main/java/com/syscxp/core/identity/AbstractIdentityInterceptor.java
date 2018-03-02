@@ -163,6 +163,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 ma.adminOnly = true;
                 ma.accountOnly = true;
                 ma.accountControl = false;
+                ma.actions = new ArrayList<>();
                 actions.put(clz, ma);
                 continue;
             }

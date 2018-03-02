@@ -314,7 +314,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
             vo.setUsername(msg.getUsername());
             update = true;
         }
-        if (msg.getPassword() != null) {
+        if (msg.getPassword() != null && !"".equals(msg.getPassword())) {
             vo.setPassword(msg.getPassword());
             update = true;
         }

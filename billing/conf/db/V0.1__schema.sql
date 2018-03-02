@@ -320,6 +320,7 @@ CREATE TABLE `SLACompensateVO` (
   `productUuid` varchar(32) DEFAULT NULL COMMENT '产品uuid',
   `productName` varchar(128) DEFAULT NULL,
   `reason` varchar(128) DEFAULT NULL COMMENT '赔偿原因',
+  `description` varchar(255) DEFAULT NULL,
   `comment` varchar(1000) DEFAULT NULL COMMENT '赔偿说明',
   `duration` int(11) DEFAULT 0 COMMENT '赔偿天数',
   `timeStart` timestamp NULL DEFAULT NULL COMMENT '赔偿起始时间',
@@ -505,6 +506,7 @@ VALUES ('b593934ee71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT
 ('b5939d4ee71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '2M', '2M', '1000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
 ('b5939f44e71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '50M', '50M', '5000', '2018-01-18 13:44:14', '2017-12-22 13:05:00'),
 ('b593a440e71811e799ff5254004b5c82', 'VPN', 'DEFAULT', '默认', 'DEFAULT', '默认', '5M', '5M', '2000', '2018-01-18 13:44:14', '2017-12-22 13:05:00');
+
 
 
 

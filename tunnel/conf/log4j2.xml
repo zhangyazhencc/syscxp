@@ -65,7 +65,7 @@
             <AppenderRef ref="ApiRequestLogger" level="TRACE" />
         </Logger>
 
-        <Logger name="com.syscxp" level="debug"/>
+        <Logger name="com.syscxp" level="trace"/>
 
         <Logger name="com.syscxp.utils" level="trace"/>
 

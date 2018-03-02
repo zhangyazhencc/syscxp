@@ -69,6 +69,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "vpnServerUrl", defaultValue = "http://192.168.211.99/vpn/api")
     public static String VPN_SERVER_URL;
 
+    @GlobalProperty(name = "tunnelMonitorServerUrl", defaultValue = "http://192.168.211.99/tunnel/asyncrest/sendcommand")
+    public static String TUNNEL_MONITOR_SERVER_URL;
+
     @GlobalProperty(name = "startVsi", defaultValue = "200000")
     public static Integer START_VSI;
 

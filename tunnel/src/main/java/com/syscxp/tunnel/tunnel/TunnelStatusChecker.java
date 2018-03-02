@@ -33,6 +33,8 @@ public class TunnelStatusChecker implements Component {
     @Autowired
     private ThreadFacade thdf;
 
+    private int index = 0;
+
     private Future<Void> checkTunnelStatusThread = null;
     private int checkTunnelStatusInterval;
     private boolean isCheckTunnelStatus;
@@ -94,11 +96,12 @@ public class TunnelStatusChecker implements Component {
             return "check-tunnel-status-" + Platform.getManagementServerId();
         }
 
-        private List<TunnelVO> getTunnels() {
+        private List<TunnelVO> getTunnels(int start) {
 
             return Q.New(TunnelVO.class)
                     .eq(TunnelVO_.state, TunnelState.Enabled)
                     .eq(TunnelVO_.monitorState, TunnelMonitorState.Enabled)
+                    .start(start).limit(50)
                     .list();
         }
 
@@ -107,12 +110,17 @@ public class TunnelStatusChecker implements Component {
             if (!isCheckTunnelStatus) {
                 return;
             }
-            List<TunnelVO> tunnelVOs = new ArrayList<>();
+            int start = index * 50;
+            index++;
+
+            List<TunnelVO> tunnelVOs;
             try {
-                tunnelVOs = getTunnels();
+                tunnelVOs = getTunnels(start);
                 logger.debug("tunnel status check.");
-                if (tunnelVOs.isEmpty())
+                if (tunnelVOs.isEmpty()) {
+                    index = 0;
                     return;
+                }
                 for (TunnelVO vo : tunnelVOs) {
                     Long endTime = Instant.now().getEpochSecond();
                     Long startTime = endTime - 5 * 30;
@@ -153,7 +161,6 @@ public class TunnelStatusChecker implements Component {
                 tunnelVOs.clear();
             } catch (Throwable t) {
                 logger.warn("unhandled exception", t);
-                tunnelVOs.clear();
             }
         }
 
@@ -203,5 +210,4 @@ public class TunnelStatusChecker implements Component {
     public boolean stop() {
         return true;
     }
-
 }
