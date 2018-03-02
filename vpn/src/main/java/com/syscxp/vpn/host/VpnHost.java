@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.operr;
 
@@ -147,7 +148,7 @@ public class VpnHost extends HostBase implements Host {
                             public Class<PingResponse> getReturnClass() {
                                 return PingResponse.class;
                             }
-                        });
+                        }, TimeUnit.SECONDS, 5);
                     }
                 });
 
