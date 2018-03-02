@@ -52,6 +52,7 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
     private int apiWorkerNum = 5;
 
     private void dispatchMessage(APIMessage msg) {
+        logger.trace(String.format("[dispatch message]: %s [%s]", msg.getId(), msg.getClass().getName()));
         ApiMessageDescriptor desc = processor.getApiMessageDescriptor(msg);
         if (desc == null) {
             Map message = map(e(msg.getClass().getName(), msg));
@@ -84,6 +85,7 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
             return;
         }
 
+        logger.trace(String.format("[dispatch message over]: %s [%s]", msg.getId(), msg.getClass().getName()));
         bus.route(msg);
     }
 
