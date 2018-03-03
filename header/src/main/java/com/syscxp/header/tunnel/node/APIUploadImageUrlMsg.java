@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by wangwg on 2017/12/27
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUploadImageUrlMsg extends APIMessage {
 
     @APIParam(emptyString = false)
