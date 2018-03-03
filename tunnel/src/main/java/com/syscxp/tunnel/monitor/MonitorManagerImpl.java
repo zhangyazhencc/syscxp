@@ -316,71 +316,77 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handle(APIInitTunnelMonitorMsg msg) {
+//        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+//                .notNull(TunnelVO_.monitorCidr)
+//                .notEq(TunnelVO_.monitorCidr, "")
+//                .eq(TunnelVO_.monitorState, TunnelMonitorState.Disabled)
+//                .list();
+        // 初始化TunnelMonitorVO数据
+//        for (TunnelVO tunnelVO : tunnelVOS) {
+//            try {
+//                initTunnelMonitor(tunnelVO.getUuid());
+//            } catch (Exception e) {
+//                throw new RuntimeException(String.format("===【TunnelUuid: %s】初始化失败,Error: %s", tunnelVO.getUuid(), e.getMessage()));
+//            }
+//        }
+//
+//        //调用存储过程修改监控ip
+//        StoredProcedureQuery procUpdateMonitor = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_monitor_ip");
+//        procUpdateMonitor.execute();
+
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
                 .notNull(TunnelVO_.monitorCidr)
                 .notEq(TunnelVO_.monitorCidr, "")
                 .eq(TunnelVO_.monitorState, TunnelMonitorState.Disabled)
                 .list();
-        // 初始化TunnelMonitorVO数据
+
+        // 异步下发控制器（仅保存zk）
+        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+        String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR_ZK);
         for (TunnelVO tunnelVO : tunnelVOS) {
-            try {
-                initTunnelMonitor(tunnelVO.getUuid());
-            } catch (Exception e) {
-                throw new RuntimeException(String.format("===【TunnelUuid: %s】初始化失败,Error: %s", tunnelVO.getUuid(), e.getMessage()));
-            }
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                    .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
+                    .list();
+            ControllerCommands.TunnelMonitorCommand cmd =
+                    getControllerMonitorCommand(tunnelVO.getUuid(), false, tunnelMonitorVOS);
+
+            HttpHeaders headers = new HttpHeaders();
+            MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+            headers.setContentType(type);
+            HttpEntity<String> entity = new HttpEntity<String>(JSON.toJSONString(cmd), headers);
+
+            ListenableFuture<ResponseEntity<String>> futureEntity =
+                    restTemplate.postForEntity(url, entity, String.class);
+            futureEntity.addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+                @Override
+                public void onSuccess(ResponseEntity<String> entity) {
+                    logger.debug(String.format("===【TunnelUuid: %s】控制器返回：%s！", tunnelVO.getUuid(), entity.getBody()));
+
+                    if (entity.getStatusCode() == HttpStatus.OK) {
+                        ControllerCommands.ControllerRestResponse response =
+                                JSON.parseObject(entity.getBody(), ControllerCommands.ControllerRestResponse.class);
+
+                        if (response.isSuccess()) {
+                            // 更新状态
+                            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
+                            dbf.update(tunnelVO);
+
+                            logger.debug(String.format("===【TunnelUuid: %s】添加ZK成功！", tunnelVO.getUuid()));
+                        } else {
+                            throw new RuntimeException(String.format("===【TunnelUuid: %s】添加ZK失败！Error: %s", tunnelVO.getUuid(), response.getMsg()));
+                        }
+
+                    } else {
+                        throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败！【StatusCode: %s】", tunnelVO.getUuid(), entity.getStatusCode()));
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败,Error: %s", tunnelVO.getUuid(), t.getMessage()));
+                }
+            });
         }
-
-        //调用存储过程修改监控ip
-        StoredProcedureQuery procUpdateMonitor = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_monitor_ip");
-        procUpdateMonitor.execute();
-
-        //异步下发控制器（仅保存zk）
-//        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
-//        String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR_ZK);
-//        for (TunnelVO tunnelVO : tunnelVOS) {
-//            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
-//                    .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
-//                    .list();
-//            ControllerCommands.TunnelMonitorCommand cmd =
-//                    getControllerMonitorCommand(tunnelVO.getUuid(), false, tunnelMonitorVOS);
-//
-//            HttpHeaders headers = new HttpHeaders();
-//            MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-//            headers.setContentType(type);
-//            HttpEntity<String> entity = new HttpEntity<String>(JSON.toJSONString(cmd), headers);
-//
-//            ListenableFuture<ResponseEntity<String>> futureEntity =
-//                    restTemplate.postForEntity(url, entity, String.class);
-//            futureEntity.addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
-//                @Override
-//                public void onSuccess(ResponseEntity<String> entity) {
-//                    logger.debug(String.format("===【TunnelUuid: %s】控制器返回：%s！", tunnelVO.getUuid(), entity.getBody()));
-//
-//                    if (entity.getStatusCode() == HttpStatus.OK) {
-//                        ControllerCommands.ControllerRestResponse response =
-//                                JSON.parseObject(entity.getBody(), ControllerCommands.ControllerRestResponse.class);
-//
-//                        if (response.isSuccess()) {
-//                            // 更新状态
-//                            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
-//                            dbf.update(tunnelVO);
-//
-//                            logger.debug(String.format("===【TunnelUuid: %s】添加ZK成功！", tunnelVO.getUuid()));
-//                        } else {
-//                            throw new RuntimeException(String.format("===【TunnelUuid: %s】添加ZK失败！Error: %s", tunnelVO.getUuid(), response.getMsg()));
-//                        }
-//
-//                    } else {
-//                        throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败！【StatusCode: %s】", tunnelVO.getUuid(), entity.getStatusCode()));
-//                    }
-//                }
-//
-//                @Override
-//                public void onFailure(Throwable t) {
-//                    throw new RuntimeException(String.format("===【TunnelUuid: %s】发送控制器失败,Error: %s", tunnelVO.getUuid(), t.getMessage()));
-//                }
-//            });
-//        }
 
         APIInitTunnelMonitorEvent event = new APIInitTunnelMonitorEvent(msg.getId());
         bus.publish(event);
