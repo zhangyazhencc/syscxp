@@ -73,6 +73,10 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
               SET concod = 'GT500MLT2G';
             END IF;
             SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'SHARE' AND lineCode = eUid AND configCode= concod;
+            select count(*)  INTO couA FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'SHARE' AND lineCode = eUid AND configCode= concod;
+            if(couA=0) THEN
+              SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'SHARE' AND lineCode = 'DEFAULT' AND configCode= concod;
+            END IF;
             # select ifnull(discount,100) into disc from syscxp_billing.`AccountDiscountVO` where accountUuid = acUuid and productCategoryUuid = 'SHARE'; 全部没有折扣
             SET priceInfo=CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,'{"configName":"'),CONCAT_WS('',connam,'","originalPrice":')),CONCAT_WS('',CONCAT_WS('',unitp,',"realPayPrice":'),CONCAT_WS('',unitp,',"discount":100},')));
 
