@@ -675,7 +675,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         ShellResult sret= ShellUtils.runAndReturn(cmd);
 
         sret.raiseExceptionIfFail();
-        if(sret.getStdout().equals("True")){
+        if(sret.getStdout().trim().equals("True")){
             return true;
         }
 
