@@ -645,7 +645,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     bus.reply(msg, reply);
                 }else{
                     vo.setPassword(DigestUtils.sha512Hex(msg.getPlaintext()));
-                    dbf.persistAndRefresh(vo);
+                    dbf.updateAndRefresh(vo);
                     reply.setInventory(identiyInterceptor.initSession(vo, null));
                 }
             }else{
