@@ -9,6 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-06
  */
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)

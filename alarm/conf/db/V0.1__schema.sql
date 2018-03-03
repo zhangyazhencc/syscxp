@@ -259,13 +259,13 @@ CREATE TABLE `RegulationVO` (
 DROP TABLE IF EXISTS `ResourcePolicyRefVO`;
 
 CREATE TABLE `ResourcePolicyRefVO` (
-  `uuid` varchar(32) NOT NULL,
+  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
   `resourceUuid` varchar(32) NOT NULL,
   `policyUuid` varchar(32) NOT NULL,
   `productType` varchar(50) NOT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique` (`resourceUuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

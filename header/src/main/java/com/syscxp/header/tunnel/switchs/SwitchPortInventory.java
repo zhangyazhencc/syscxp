@@ -20,6 +20,8 @@ public class SwitchPortInventory {
 
     private String switchName;
 
+    private String physicalSwitchUuid;
+
     private Integer portNum;
 
     private String portName;
@@ -43,6 +45,7 @@ public class SwitchPortInventory {
         inv.setSwitchUuid(vo.getSwitchUuid());
         inv.setSwitchName(vo.getSwitchs().getName());
         inv.setSwitchCode(vo.getSwitchs().getCode());
+        inv.setPhysicalSwitchUuid(vo.getSwitchs().getPhysicalSwitchUuid());
         inv.setPortNum(vo.getPortNum());
         inv.setPortName(vo.getPortName());
         inv.setPortType(vo.getPortType());
@@ -158,5 +161,13 @@ public class SwitchPortInventory {
 
     public void setSwitchCode(String switchCode) {
         this.switchCode = switchCode;
+    }
+
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
+    }
+
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
     }
 }

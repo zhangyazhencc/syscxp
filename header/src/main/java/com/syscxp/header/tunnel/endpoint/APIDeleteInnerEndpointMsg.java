@@ -9,6 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/11/1
  */
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteInnerEndpointMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = InnerConnectedEndpointVO.class)
     private String uuid;
