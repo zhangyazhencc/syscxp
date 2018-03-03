@@ -1,13 +1,17 @@
 package com.syscxp.header.tunnel.node;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.NodeConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 import java.util.List;
 
 /**
  * Created by wangwg on 2017/12/29
  */
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIReconcileNodeExtensionInfoMsg extends APIMessage {
 
     @APIParam(emptyString = false)

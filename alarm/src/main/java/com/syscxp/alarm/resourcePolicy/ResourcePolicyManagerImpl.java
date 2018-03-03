@@ -697,7 +697,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         Map<String, Object> map = getTunnelInfo(prameterlist);
 
         if (map.isEmpty())
-            throw new IllegalArgumentException("failed to get resource info !");
+            throw new RuntimeException(String.format("failed to get resource info ! TunnelUuid: %s",refList.get(0).getResourceUuid())); // IllegalArgumentException("failed to get resource info !");
 
         List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
         for (ResourcePolicyRefVO resource : refList) {
@@ -795,7 +795,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }
 
         if (!response.isSuccess())
-            throw new IllegalArgumentException(String.format("strategy sync fail! Error: %s", response.getMsg()));
+            throw new IllegalArgumentException(String.format("strategy sync fail! Error: %s , command: %s", response.getMsg(),command));
     }
 
     private Map getTunnelInfo(List<String> Resources) {

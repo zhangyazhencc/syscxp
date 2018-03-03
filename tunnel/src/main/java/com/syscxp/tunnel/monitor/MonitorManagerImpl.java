@@ -316,25 +316,31 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handle(APIInitTunnelMonitorMsg msg) {
+//        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+//                .notNull(TunnelVO_.monitorCidr)
+//                .notEq(TunnelVO_.monitorCidr, "")
+//                .eq(TunnelVO_.monitorState, TunnelMonitorState.Disabled)
+//                .list();
+        // 初始化TunnelMonitorVO数据
+//        for (TunnelVO tunnelVO : tunnelVOS) {
+//            try {
+//                initTunnelMonitor(tunnelVO.getUuid());
+//            } catch (Exception e) {
+//                throw new RuntimeException(String.format("===【TunnelUuid: %s】初始化失败,Error: %s", tunnelVO.getUuid(), e.getMessage()));
+//            }
+//        }
+//
+//        //调用存储过程修改监控ip
+//        StoredProcedureQuery procUpdateMonitor = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_monitor_ip");
+//        procUpdateMonitor.execute();
+
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
                 .notNull(TunnelVO_.monitorCidr)
                 .notEq(TunnelVO_.monitorCidr, "")
                 .eq(TunnelVO_.monitorState, TunnelMonitorState.Disabled)
                 .list();
-        // 初始化TunnelMonitorVO数据
-        for (TunnelVO tunnelVO : tunnelVOS) {
-            try {
-                initTunnelMonitor(tunnelVO.getUuid());
-            } catch (Exception e) {
-                throw new RuntimeException(String.format("===【TunnelUuid: %s】初始化失败,Error: %s", tunnelVO.getUuid(), e.getMessage()));
-            }
-        }
 
-        //调用存储过程修改监控ip
-        StoredProcedureQuery procUpdateMonitor = dbf.getEntityManager().createStoredProcedureQuery("proc_monitor_init_update_monitor_ip");
-        procUpdateMonitor.execute();
-
-        //异步下发控制器（仅保存zk）
+        // 异步下发控制器（仅保存zk）
         AsyncRestTemplate restTemplate = new AsyncRestTemplate();
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR_ZK);
         for (TunnelVO tunnelVO : tunnelVOS) {

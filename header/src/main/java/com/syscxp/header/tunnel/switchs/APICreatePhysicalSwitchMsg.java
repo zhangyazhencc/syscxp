@@ -10,6 +10,7 @@ import com.syscxp.header.tunnel.node.NodeVO;
 /**
  * Created by DCY on 2017-09-06
  */
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreatePhysicalSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = NodeVO.class)
