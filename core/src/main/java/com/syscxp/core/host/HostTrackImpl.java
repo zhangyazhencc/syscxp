@@ -110,6 +110,9 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
         @Override
         public void run() {
             try {
+                if (!HostGlobalConfig.PING_HOST_AUTO.value(Boolean.class)) {
+                    return;
+                }
                 List<PingHostMsg> msgs;
                 synchronized (hostUuids) {
                     msgs = new ArrayList<>();
@@ -238,13 +241,15 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
     private void setupTracker() {
         startTracker();
-        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
-                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startTracker();
-            }
+        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension((oldConfig, newConfig) -> {
+            logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            startTracker();
+        });
+        HostGlobalConfig.PING_HOST_AUTO.installUpdateExtension((oldConfig, newConfig) -> {
+            logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            startTracker();
         });
     }
 
