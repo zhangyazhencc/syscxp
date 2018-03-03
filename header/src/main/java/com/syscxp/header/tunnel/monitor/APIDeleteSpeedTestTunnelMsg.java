@@ -13,7 +13,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 删除测速专线.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteSpeedTestTunnelMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = SpeedTestTunnelVO.class)
     private String uuid;

@@ -14,7 +14,7 @@ import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
  * @Description: 更新监控主机与物理交换机关联.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)

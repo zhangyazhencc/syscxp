@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateMonitorHostMsg extends APIAddHostMsg {
     @APIParam(emptyString = false, resourceType = NodeVO.class)
     private String nodeUuid;
