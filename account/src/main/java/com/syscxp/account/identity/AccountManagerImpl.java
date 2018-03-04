@@ -645,7 +645,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     bus.reply(msg, reply);
                 }else{
                     vo.setPassword(DigestUtils.sha512Hex(msg.getPlaintext()));
-                    dbf.persistAndRefresh(vo);
+                    dbf.updateAndRefresh(vo);
                     reply.setInventory(identiyInterceptor.initSession(vo, null));
                 }
             }else{
@@ -675,7 +675,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         ShellResult sret= ShellUtils.runAndReturn(cmd);
 
         sret.raiseExceptionIfFail();
-        if(sret.getStdout().equals("True")){
+        if(sret.getStdout().trim().equals("True")){
             return true;
         }
 

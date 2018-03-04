@@ -13,7 +13,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 创建监控通道.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"update"})
 public class APIStopTunnelMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true, maxLength = 32)
     private String tunnelUuid;

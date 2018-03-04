@@ -9,6 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-06
  */
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
@@ -31,9 +32,9 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
     private Integer port;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String username;
-    @APIParam(emptyString = false,required = false,maxLength = 128)
+    @APIParam(required = false,maxLength = 128)
     private String password;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
+    @APIParam(required = false,maxLength = 255)
     private String description;
 
     public String getUuid() {

@@ -19,4 +19,7 @@ public class HostGlobalConfig {
     public static GlobalConfig HOST_TRACK_PARALLELISM_DEGREE = new GlobalConfig(CATEGORY, "ping.parallelismDegree");
     @GlobalConfigValidation
     public static GlobalConfig RECONNECT_ALL_ON_BOOT = new GlobalConfig(CATEGORY, "reconnectAllOnBoot");
+
+    @GlobalConfigValidation
+    public static GlobalConfig PING_HOST_AUTO = new GlobalConfig(CATEGORY, "ping.auto");
 }

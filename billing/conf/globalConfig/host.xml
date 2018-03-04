@@ -49,4 +49,11 @@
         <defaultValue>true</defaultValue>
         <type>java.lang.Boolean</type>
     </config>
+    <config>
+        <category>host</category>
+        <name>ping.auto</name>
+        <description>A boolean value indicating whether management server ping host auto</description>
+        <defaultValue>false</defaultValue>
+        <type>java.lang.Boolean</type>
+    </config>
 </globalConfig>

@@ -33,7 +33,7 @@
     </appender>
 
     <logger name="com.syscxp">
-        <level value="DEBUG"/>
+        <level value="TRACE"/>
     </logger>
 
     <logger name="com.syscxp.utils">
