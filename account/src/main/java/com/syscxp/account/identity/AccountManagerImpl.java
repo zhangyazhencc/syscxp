@@ -1087,9 +1087,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
 
-    private void loginLog(String type, String name,String uuid,APIMessage msg){
+    private void loginLog(String type, String name, String uuid, APIMessage msg){
 
-        LoginLogVO vo = dbf.findByUuid(uuid,LoginLogVO.class);
+        LoginLogVO vo = dbf.findByUuid(uuid, LoginLogVO.class);
 
         if(vo == null){
             vo = new LoginLogVO();
