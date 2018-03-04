@@ -599,6 +599,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         reply.setInventory(identiyInterceptor.initSession(account, user));
+        loginLog(user.getClass().getSimpleName(),user.getName(),msg);
         bus.reply(msg, reply);
     }
 
@@ -647,6 +648,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     vo.setPassword(DigestUtils.sha512Hex(msg.getPlaintext()));
                     dbf.updateAndRefresh(vo);
                     reply.setInventory(identiyInterceptor.initSession(vo, null));
+                    loginLog(vo.getClass().getSimpleName(),vo.getName(),msg);
                 }
             }else{
                 reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
@@ -655,6 +657,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         }else{
             reply.setInventory(identiyInterceptor.initSession(vo, null));
+            loginLog(vo.getClass().getSimpleName(),vo.getName(),msg);
         }
 
         bus.reply(msg, reply);
@@ -1081,5 +1084,27 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
 
         return list(quota);
+    }
+
+
+    private void loginLog(String type, String name,APIMessage msg){
+
+        LoginLogVO vo = dbf.findByUuid(msg.getSession().getUserUuid(),LoginLogVO.class);
+
+        if(vo == null){
+            vo = new LoginLogVO();
+            vo.setUuid(msg.getSession().getUserUuid());
+            vo.setName(name);
+            vo.setType(type);
+            vo.setLastLoginIp(msg.getIp());
+            vo.setLastLoginTime(dbf.getCurrentSqlTime());
+            vo.setCreateDate(dbf.getCurrentSqlTime());
+            dbf.persistAndRefresh(vo);
+        }else{
+            vo.setLastLoginIp(msg.getIp());
+            vo.setLastLoginTime(dbf.getCurrentSqlTime());
+            dbf.updateAndRefresh(vo);
+        }
+
     }
 }

@@ -59,7 +59,7 @@ public class TunnelJobAndTaskBase {
      * 专线恢复连接仅保存-下发保存ZK数据
      * */
     public void taskEnableTunnelZK(String tunnelUuid){
-        logger.info("下发保存ZK数据，创建任务：CreateTunnelControlZKJob");
+        logger.info("下发保存ZK数据，创建任务：EnabledOrDisabledTunnelControlZKJob");
         EnabledOrDisabledTunnelControlZKJob job = new EnabledOrDisabledTunnelControlZKJob();
         job.setTunnelUuid(tunnelUuid);
         job.setJobType(TunnelState.Enabled);
@@ -70,7 +70,7 @@ public class TunnelJobAndTaskBase {
      * 专线断开连接仅保存-下发删除ZK数据
      * */
     public void taskDisableTunnelZK(String tunnelUuid){
-        logger.info("下发保存ZK数据，创建任务：CreateTunnelControlZKJob");
+        logger.info("下发删除ZK数据，创建任务：EnabledOrDisabledTunnelControlZKJob");
         EnabledOrDisabledTunnelControlZKJob job = new EnabledOrDisabledTunnelControlZKJob();
         job.setTunnelUuid(tunnelUuid);
         job.setJobType(TunnelState.Disabled);

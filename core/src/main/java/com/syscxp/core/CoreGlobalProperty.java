@@ -48,7 +48,7 @@ public class CoreGlobalProperty {
 
     public static int SESSION_CLEANUP_INTERVAL = 3600;
 
-    @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082")
+    @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082/billing")
     public static String BILLING_SERVER_URL;
 
     @GlobalProperty(name = "alarmServerUrl", defaultValue = "http://192.168.211.99:8085")

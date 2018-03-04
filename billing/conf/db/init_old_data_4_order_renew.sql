@@ -2,9 +2,9 @@ DELIMITER $$
 
 USE `syscxp_billing`$$
 
-DROP PROCEDURE IF EXISTS `generateOrder`$$
+DROP PROCEDURE IF EXISTS `orderG`$$
 
-CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
+CREATE DEFINER=`root`@`%` PROCEDURE `orderG`()
   BEGIN
     DECLARE exitFlag INT DEFAULT 1;
     DECLARE pd VARCHAR(32);
@@ -34,7 +34,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
     DECLARE cityA VARCHAR(100);
     DECLARE cityB VARCHAR(100);
     DECLARE cityZ VARCHAR(100);
-    DECLARE generateOrder CURSOR FOR SELECT `uuid`,`accountUuid`,`name`,bandwidthOffering,bandwidth,`type`,duration,productChargeModel,expireDate FROM syscxp_tunnel.`TunnelEO` WHERE accountUuid IS NOT NULL AND deleted IS NULL ORDER BY TYPE;
+    DECLARE generateOrder CURSOR FOR SELECT `uuid`,`accountUuid`,`name`,bandwidthOffering,bandwidth,`type`,duration,productChargeModel,expireDate FROM syscxp_tunnel.`TunnelEO` WHERE  accountUuid IS NOT NULL AND deleted IS NULL ORDER BY TYPE ASC;
     DECLARE EXIT HANDLER FOR NOT FOUND SET exitFlag:=0;
     OPEN generateOrder;
     TRUNCATE TABLE syscxp_billing.`OrderVO`;
@@ -73,8 +73,8 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
               SET concod = 'GT500MLT2G';
             END IF;
             SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'SHARE' AND lineCode = eUid AND configCode= concod;
-            select count(*)  INTO couA FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'SHARE' AND lineCode = eUid AND configCode= concod;
-            if(couA=0) THEN
+            SELECT COUNT(*)  INTO couA FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'SHARE' AND lineCode = eUid AND configCode= concod;
+            IF(couA=0) THEN
               SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'SHARE' AND lineCode = 'DEFAULT' AND configCode= concod;
             END IF;
             # select ifnull(discount,100) into disc from syscxp_billing.`AccountDiscountVO` where accountUuid = acUuid and productCategoryUuid = 'SHARE'; 全部没有折扣
@@ -111,6 +111,8 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
         SELECT country INTO countri FROM syscxp_tunnel.`NodeEO` WHERE `uuid` IN(SELECT nodeUuid FROM syscxp_tunnel.`EndpointEO` WHERE `uuid` IN (SELECT endpointUuid FROM syscxp_tunnel.`TunnelSwitchPortVO` WHERE tunnelUuid = pd AND sortTag = 'A'));
 
         IF(countri='CHINA') THEN
+
+
           SELECT city INTO cityA FROM syscxp_tunnel.`NodeEO` WHERE `uuid` IN(SELECT nodeUuid FROM syscxp_tunnel.`EndpointEO` WHERE `uuid` IN (SELECT endpointUuid FROM syscxp_tunnel.`TunnelSwitchPortVO` WHERE tunnelUuid = pd AND sortTag = 'A'));
           SELECT city INTO cityB FROM syscxp_tunnel.`NodeEO` WHERE `uuid` IN(SELECT nodeUuid FROM syscxp_tunnel.`EndpointEO` WHERE `uuid` IN (SELECT innerEndpointUuid FROM syscxp_tunnel.`TunnelEO` WHERE `uuid` = pd ));
           SELECT COUNT(1) INTO couA FROM syscxp_tunnel.`ZoneNodeRefVO` WHERE nodeUuid =(SELECT nodeUuid FROM syscxp_tunnel.`EndpointEO` WHERE `uuid` IN (SELECT endpointUuid FROM syscxp_tunnel.`TunnelSwitchPortVO` WHERE tunnelUuid = pd AND sortTag = 'A'));
@@ -142,9 +144,27 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
           IF(cou=0 ) THEN
             SET lcode = CONCAT_WS('/',SUBSTRING_INDEX(lcode,'/',-1),SUBSTRING_INDEX(lcode,'/',1));
           END IF;
-          SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
-                                                                                                                            AND lineCode = lcode
-                                                                                                                            AND configCode= bandw;
+
+          SELECT COUNT(1) INTO cou FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                  AND lineCode = lcode
+                                                                                  AND configCode= bandw;
+          IF(cou>0) THEN
+            SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                                         AND lineCode = lcode
+                                                                                                         AND configCode= bandw;
+          END IF;
+
+
+
+
+
+          IF(cou=0)THEN
+            SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                                                              AND lineCode = 'DEFAULT'
+                                                                                                                              AND configCode= bandw;
+
+
+          END IF;
           SET totpri = totpri+unitp;
           SET priceInfo=CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,'{"configName":"'),CONCAT_WS('',connam,'","originalPrice":')),CONCAT_WS('',CONCAT_WS('',unitp,',"realPayPrice":'),CONCAT_WS('',unitp,',"discount":100},')));
         ELSE
@@ -179,11 +199,31 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
           IF(cou=0 ) THEN
             SET lcode = CONCAT_WS('/',SUBSTRING_INDEX(lcode,'/',-1),SUBSTRING_INDEX(lcode,'/',1));
           END IF;
-          SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
-                                                                                                                            AND lineCode = lcode
-                                                                                                                            AND configCode= bandw;
+
+
+          SELECT COUNT(1) INTO cou FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                  AND lineCode = lcode
+                                                                                  AND configCode= bandw;
+          IF(cou>0) THEN
+            SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                                         AND lineCode = lcode
+                                                                                                         AND configCode= bandw;
+          END IF;
+
+
+
+
+
+          IF(cou=0)THEN
+            SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                                                              AND lineCode = 'DEFAULT'
+                                                                                                                              AND configCode= bandw;
+
+          END IF;
+
           SET totpri = totpri+unitp;
           SET priceInfo=CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,'{"configName":"'),CONCAT_WS('',connam,'","originalPrice":')),CONCAT_WS('',CONCAT_WS('',unitp,',"realPayPrice":'),CONCAT_WS('',unitp,',"discount":100},')));
+
 
         END IF;
 
@@ -222,9 +262,26 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
           IF(cou=0 ) THEN
             SET lcode = CONCAT_WS('/',SUBSTRING_INDEX(lcode,'/',-1),SUBSTRING_INDEX(lcode,'/',1));
           END IF;
-          SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
-                                                                                                                            AND lineCode = lcode
-                                                                                                                            AND configCode= bandw;
+
+          SELECT COUNT(1) INTO cou FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                  AND lineCode = lcode
+                                                                                  AND configCode= bandw;
+          IF(cou>0) THEN
+            SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                                         AND lineCode = lcode
+                                                                                                         AND configCode= bandw;
+          END IF;
+
+
+
+
+
+          IF(cou=0)THEN
+            SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+                                                                                                                              AND lineCode = 'DEFAULT'
+                                                                                                                              AND configCode= bandw;
+
+          END IF;
           SET totpri = totpri+unitp;
           SET priceInfo=CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,'{"configName":"'),CONCAT_WS('',connam,'","originalPrice":')),CONCAT_WS('',CONCAT_WS('',unitp,',"realPayPrice":'),CONCAT_WS('',unitp,',"discount":100},')));
         ELSE
@@ -259,9 +316,18 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
           IF(cou=0 ) THEN
             SET lcode = CONCAT_WS('/',SUBSTRING_INDEX(lcode,'/',-1),SUBSTRING_INDEX(lcode,'/',1));
           END IF;
-          SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
+          SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='ABROAD'
                                                                                                                             AND lineCode = lcode
                                                                                                                             AND configCode= bandw;
+          SELECT COUNT(1) INTO cou FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='ABROAD'
+                                                                                  AND lineCode = lcode
+                                                                                  AND configCode= bandw;
+          IF(cou=0)THEN
+            SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='ABROAD'
+                                                                                                                              AND lineCode = 'DEFAULT'
+                                                                                                                              AND configCode= bandw;
+
+          END IF;
           SET totpri = totpri+unitp;
           SET priceInfo=CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,'{"configName":"'),CONCAT_WS('',connam,'","originalPrice":')),CONCAT_WS('',CONCAT_WS('',unitp,',"realPayPrice":'),CONCAT_WS('',unitp,',"discount":100},')));
 
@@ -275,9 +341,26 @@ CREATE DEFINER=`root`@`%` PROCEDURE `generateOrder`()
         IF(cou=0 ) THEN
           SET lcode = CONCAT_WS('/',SUBSTRING_INDEX(lcode,'/',-1),SUBSTRING_INDEX(lcode,'/',1));
         END IF;
-        SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='CHINA2ABROAD'
-                                                                                                                          AND lineCode = lcode
-                                                                                                                          AND configCode= bandw;
+
+        SELECT COUNT(1) INTO cou FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='ABROAD'
+                                                                                AND lineCode = lcode
+                                                                                AND configCode= bandw;
+        IF(cou>0) THEN
+          SELECT configName,unitPrice INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='ABROAD'
+                                                                                                       AND lineCode = lcode
+                                                                                                       AND configCode= bandw;
+        END IF;
+
+
+
+
+
+        IF(cou=0)THEN
+          SELECT IFNULL(configName,''),IFNULL(unitPrice,0) INTO connam,unitp FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'ABROAD' AND areaCode='ABROAD'
+                                                                                                                            AND lineCode = 'DEFAULT'
+                                                                                                                            AND configCode= bandw;
+
+        END IF;
         SET totpri = totpri+unitp;
         SET priceInfo=CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,'{"configName":"'),CONCAT_WS('',connam,'","originalPrice":')),CONCAT_WS('',CONCAT_WS('',unitp,',"realPayPrice":'),CONCAT_WS('',unitp,',"discount":100},')));
 
