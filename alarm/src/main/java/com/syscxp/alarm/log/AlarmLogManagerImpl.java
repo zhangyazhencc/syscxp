@@ -460,13 +460,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
             if (!tags.isEmpty()) {
                 String endpoint = tags.get("endpoint").toString();
-                Integer vlan = Integer.valueOf(tags.get("ifName").toString());
+                String vlan = tags.get("ifName").toString();
 
                 if (StringUtils.equals(endpoint, tunnelInfo.getEndpointAMip())) {
-                    if (tunnelInfo.getEndpointAVlan().equals("Vlanif" + vlan.intValue()))
+                    if (vlan.equals("Vlanif" + tunnelInfo.getEndpointAVlan()))
                         isSharePoint = true;
                 } else if (StringUtils.equals(endpoint, tunnelInfo.getEndpointZMip())) {
-                    if (tunnelInfo.getEndpointZVlan().equals("Vlanif" + vlan.intValue()))
+                    if (vlan.equals("Vlanif" + tunnelInfo.getEndpointZVlan()))
                         isSharePoint = true;
                 }
             } else
