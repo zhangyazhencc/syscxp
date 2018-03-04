@@ -599,7 +599,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         reply.setInventory(identiyInterceptor.initSession(account, user));
-        loginLog(user.getClass().getSimpleName(),user.getName(),msg);
+        loginLog(user.getClass().getSimpleName(),user.getName(),user.getUuid(), msg);
         bus.reply(msg, reply);
     }
 
@@ -648,7 +648,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     vo.setPassword(DigestUtils.sha512Hex(msg.getPlaintext()));
                     dbf.updateAndRefresh(vo);
                     reply.setInventory(identiyInterceptor.initSession(vo, null));
-                    loginLog(vo.getClass().getSimpleName(),vo.getName(),msg);
+                    loginLog(vo.getClass().getSimpleName(),vo.getName(),vo.getUuid(),msg);
                 }
             }else{
                 reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
@@ -657,7 +657,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         }else{
             reply.setInventory(identiyInterceptor.initSession(vo, null));
-            loginLog(vo.getClass().getSimpleName(),vo.getName(),msg);
+            loginLog(vo.getClass().getSimpleName(),vo.getName(),vo.getUuid(),msg);
         }
 
         bus.reply(msg, reply);
@@ -1087,13 +1087,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
 
-    private void loginLog(String type, String name,APIMessage msg){
+    private void loginLog(String type, String name,String uuid,APIMessage msg){
 
-        LoginLogVO vo = dbf.findByUuid(msg.getSession().getUserUuid(),LoginLogVO.class);
+        LoginLogVO vo = dbf.findByUuid(uuid,LoginLogVO.class);
 
         if(vo == null){
             vo = new LoginLogVO();
-            vo.setUuid(msg.getSession().getUserUuid());
+            vo.setUuid(uuid);
             vo.setName(name);
             vo.setType(type);
             vo.setLastLoginIp(msg.getIp());
