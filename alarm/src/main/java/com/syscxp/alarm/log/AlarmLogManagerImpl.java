@@ -291,7 +291,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /***
      * 从tunnel获取专线数据(含共点专线)
-     * 查询条件:tunnel.vsi=当前tunnel.vsi && tunnel.statte = Enabled
+     * 查询条件: vlan,vsi,port && tunnel.statte = Enabled
      * @param tunnelUuid
      * @return
      */
@@ -455,21 +455,25 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
      */
     private boolean isSharePoint(AlarmEventVO eventVO, TunnelAlarmCmd.TunnelInfo tunnelInfo) {
         boolean isSharePoint = false;
-        Map tags = eventVO.getExpression().getTags();
+        try {
+            Map tags = eventVO.getExpression().getTags();
 
-        if (!tags.isEmpty()) {
-            String endpoint = tags.get("endpoint").toString();
-            Integer vlan = Integer.valueOf(tags.get("ifName").toString());
+            if (!tags.isEmpty()) {
+                String endpoint = tags.get("endpoint").toString();
+                Integer vlan = Integer.valueOf(tags.get("ifName").toString());
 
-            if (StringUtils.equals(endpoint, tunnelInfo.getEndpointAMip())) {
-                if (vlan.intValue() == tunnelInfo.getEndpointAVlan().intValue())
-                    isSharePoint = true;
-            } else if (StringUtils.equals(endpoint, tunnelInfo.getEndpointZMip())) {
-                if (vlan.intValue() == tunnelInfo.getEndpointZVlan().intValue())
-                    isSharePoint = true;
-            }
-        } else
-            throw new RuntimeException("[isSharePoint] eventVO.getExpression().getTags() 数据为空！");
+                if (StringUtils.equals(endpoint, tunnelInfo.getEndpointAMip())) {
+                    if (tunnelInfo.getEndpointAVlan().equals("Vlanif" + vlan.intValue()))
+                        isSharePoint = true;
+                } else if (StringUtils.equals(endpoint, tunnelInfo.getEndpointZMip())) {
+                    if (tunnelInfo.getEndpointZVlan().equals("Vlanif" + vlan.intValue()))
+                        isSharePoint = true;
+                }
+            } else
+                throw new RuntimeException("[isSharePoint] eventVO.getExpression().getTags() 数据为空！");
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("[isSharePoint] Error: %s", e.getMessage()));
+        }
 
         return isSharePoint;
     }
