@@ -10,7 +10,7 @@ public abstract class APIQueryMessage extends APISyncCallMessage {
     @APIParam
     private List<QueryCondition> conditions;
     @APIParam(numberRange = {0, 200})
-    private Integer limit = 20;
+    private Integer limit = 100;
     private Integer start;
     private boolean count;
     private String groupBy;
