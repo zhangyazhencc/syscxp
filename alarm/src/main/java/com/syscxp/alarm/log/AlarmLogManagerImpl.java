@@ -164,7 +164,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelAlarm(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Alarm] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        GLock gLock = new GLock("TunnelAlarm.lock",60);
+        GLock gLock = new GLock("TunnelAlarm.lock", 60);
         gLock.lock();
         try {
             AlarmEventVO existedEvent = getExistedEvents(eventVO);
@@ -180,7 +180,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
                 sendMessage(logVO);
             }
-        }finally {
+        } finally {
             gLock.unlock();
         }
     }
@@ -193,7 +193,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelRecover(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Recover] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        GLock gLock = new GLock("TunnelRecover.lock",60);
+        GLock gLock = new GLock("TunnelRecover.lock", 60);
         gLock.lock();
         try {
             AlarmEventVO existedEvent = getExistedEvents(eventVO);
@@ -214,7 +214,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     sendMessage(logVO);
                 }
             }
-        }finally {
+        } finally {
             gLock.unlock();
         }
     }
@@ -439,15 +439,16 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("failed to recalculate bandwidth! " +
-                            "[TunnelUuid: %s Metric: %s RightValue: %s LeftValue: %s]"
+                            "[TunnelUuid: %s Metric: %s RightValue: %s LeftValue: %s]  Error: %s"
                     , eventVO.getProductUuid(), eventVO.getExpression().getMetric()
-                    , eventVO.getExpression().getRightValue(), eventVO.getLeftValue()));
+                    , eventVO.getExpression().getRightValue(), eventVO.getLeftValue(), e.getMessage()));
         }
     }
 
     /**
      * 共点判断
      * 同交换机、同vlan视为共点（同策略同步判断共点逻辑）
+     *
      * @param eventVO
      * @param tunnelInfo
      * @return
@@ -521,7 +522,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
      * @param eventVO
      * @return
      */
-    private AlarmEventVO  getExistedEvents(AlarmEventVO eventVO) {
+    private AlarmEventVO getExistedEvents(AlarmEventVO eventVO) {
         List<AlarmEventVO> existedEvents = Q.New(AlarmEventVO.class)
                 .eq(AlarmEventVO_.endpoint, eventVO.getEndpoint())
                 .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())
