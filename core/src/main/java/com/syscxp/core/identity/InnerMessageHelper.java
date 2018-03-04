@@ -1,12 +1,15 @@
 package com.syscxp.core.identity;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.utils.Utils;
+import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.util.StringUtils;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.utils.gson.JSONObjectUtil;
 
 public class InnerMessageHelper {
+    private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     public static void setMD5(APIMessage message) {
         message.setSignature(getMD5(message));
@@ -29,7 +32,11 @@ public class InnerMessageHelper {
             return false;
         String signature = message.getSignature();
         message.setSignature(null);
-        return signature.equals(getMD5(message, key)) && !isExpirate(message);
+        String md5 = getMD5(message, key);
+        logger.trace(String.format("local [%s] [%s], [%s] [%s], [%s]", signature, message.getCreatedTime(),
+                md5, System.currentTimeMillis(), key));
+
+        return signature.equals(md5) && !isExpirate(message);
     }
 
 
