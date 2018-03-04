@@ -79,6 +79,8 @@ CREATE PROCEDURE account_data_migration()
 		DECLARE _email VARCHAR(32);
 		DECLARE _company VARCHAR(32);
 		DECLARE _status VARCHAR(32);
+		DECLARE _secretId VARCHAR(32);
+		DECLARE _secretKey VARCHAR(32);
 		DECLARE migration_status int default 0;
 		DECLARE cursor_name CURSOR FOR select id,name,extra,password,enabled,created_at,telephone,email,company from keystone.`user`;
 		DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' SET migration_status = 1;
@@ -100,6 +102,9 @@ CREATE PROCEDURE account_data_migration()
 					THEN SET _telephone = CONCAT('null_data',_uuid);
 				end if;
 				set _extra = fn_parseJson(replace(_extra,' ',''), 'industry');
+				set _secretId = left(replace(uuid(), '-', ''),30);
+				set _secretKey = left(replace(uuid(), '-', ''),16);
+
 				INSERT INTO `AccountVO`(
 								`uuid`, `name`, `password`, `email`, `emailStatus`, `phone`, `phoneStatus`,
 								`trueName`, `company`, `industry`, `type`, `status`, `description`, `lastOpDate`, `createDate`)
@@ -107,8 +112,7 @@ CREATE PROCEDURE account_data_migration()
 								'trueName', _company, _extra, 'Normal', _enabled, "旧系统老用户", SYSDATE(), _created_at);
 			  INSERT INTO `AccountApiSecurityVO` (
 			          `uuid`, `accountUuid`, `secretId`, `secretKey`, `allowIp`, `lastOpDate`, `createDate`)
-			          VALUES (select replace(uuid(), '-', ''), _uuid, SELECT LEFT((select replace(uuid(), '-', '')),30),
-			            SELECT LEFT((select replace(uuid(), '-', '')),16), NULL, SYSDATE(), _created_at);
+			          VALUES (replace(uuid(), '-', ''), _uuid, _secretId,_secretKey, NULL, SYSDATE(), _created_at);
         INSERT INTO `AccountExtraInfoVO` (
                 `uuid`, `grade`, `userUuid`, `createWay`, `lastOpDate`, `createDate`)
                 VALUES (_uuid, "Normal", NULL, "SystemAdmin", SYSDATE(), _created_at);

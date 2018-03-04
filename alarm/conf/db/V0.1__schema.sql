@@ -173,12 +173,10 @@ CREATE TABLE `ContactVO` (
   `name` varchar(127) DEFAULT NULL,
   `mobile` varchar(20) DEFAULT NULL,
   `email` varchar(127) DEFAULT NULL,
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `accountUuid` varchar(32) DEFAULT NULL,
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `unique_email` (`email`),
-  UNIQUE KEY `unique_mobile` (`mobile`)
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `MonitorTargetVO` */
@@ -259,15 +257,15 @@ CREATE TABLE `RegulationVO` (
 DROP TABLE IF EXISTS `ResourcePolicyRefVO`;
 
 CREATE TABLE `ResourcePolicyRefVO` (
-  `uuid` varchar(32) NOT NULL,
-  `resourceUuid` varchar(32) NOT NULL,
-  `policyUuid` varchar(32) NOT NULL,
-  `productType` varchar(50) NOT NULL,
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `resourceUuid` varchar(32) DEFAULT NULL,
+  `policyUuid` varchar(32) DEFAULT NULL,
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `productType` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique` (`resourceUuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1073 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `SmsVO` */
 DROP TABLE IF EXISTS `SmsVO`;
