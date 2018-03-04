@@ -20,6 +20,8 @@ public class InnerMessageHelper {
     }
 
     public static String getMD5(APIMessage message, String key) {
+        String str = JSONObjectUtil.toJsonString(message.getDeclaredFieldAndValues()) + key;
+        logger.trace(String.format("signature info [%s]", str));
         return DigestUtils.md5Hex(JSONObjectUtil.toJsonString(message.getDeclaredFieldAndValues()) + key);
     }
 
@@ -33,10 +35,10 @@ public class InnerMessageHelper {
         String signature = message.getSignature();
         message.setSignature(null);
         String md5 = getMD5(message, key);
-        logger.trace(String.format("local [%s] [%s], [%s] [%s], [%s]", signature, message.getCreatedTime(),
+        logger.trace(String.format("signature info [received: %s, %s], [local: %s, %s], [%s]", signature, message.getCreatedTime(),
                 md5, System.currentTimeMillis(), key));
 
-        return signature.equals(md5) && !isExpirate(message);
+        return signature.equals(md5) && ! isExpirate(message);
     }
 
 
