@@ -50,15 +50,16 @@ public class RESTApiController {
     }
 
     private String handleByMessageType(String body, String ip) {
+        logger.info(String.format("Received request body: %s", body));
         APIMessage amsg = null;
         try {
             amsg = (APIMessage) RESTApiDecoder.loads(body);
             amsg.setIp(ip);
         } catch (Throwable t) {
+            logger.error(t.getMessage());
             return t.getMessage();
         }
 
-        logger.info(String.format("Received request body: %s", body));
 
         RestAPIResponse rsp;
         if (amsg instanceof APISyncCallMessage) {
