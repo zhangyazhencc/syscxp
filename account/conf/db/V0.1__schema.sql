@@ -376,7 +376,7 @@ update TicketTypeVO set lastOpDate = now(), createDate = now();
 
 CREATE TABLE  `LoginLogVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '用户uuid',
-  `name` varchar(128) NOT NULL UNIQUE COMMENT '用户名',
+  `name` varchar(128) NOT NULL COMMENT '用户名',
   `type` varchar(128) NOT NULL COMMENT '用户类型（账户、子用户）',
   `lastLoginIp` varchar(128) NOT NULL COMMENT '客户端IP',
   `lastLoginTime` timestamp NOT NULL COMMENT '登录时间',
