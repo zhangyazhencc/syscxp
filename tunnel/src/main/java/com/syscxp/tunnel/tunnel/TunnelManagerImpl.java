@@ -2526,6 +2526,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIListTraceRouteReply traceRouteReply = new APIListTraceRouteReply();
         List<TraceRouteVO> traceRouteVOS = Q.New(TraceRouteVO.class)
                 .eq(TraceRouteVO_.tunnelUuid, msg.getTunnelUuid())
+                .orderBy(TraceRouteVO_.traceSort, SimpleQuery.Od.ASC)
                 .list();
         if (traceRouteVOS.isEmpty() || msg.isTraceAgain()) {
             ListTraceRouteMsg listTraceRouteMsg = new ListTraceRouteMsg();
@@ -2562,6 +2563,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         }
                         List<TraceRouteVO> traceRouteList = Q.New(TraceRouteVO.class)
                                 .eq(TraceRouteVO_.tunnelUuid, msg.getTunnelUuid())
+                                .orderBy(TraceRouteVO_.traceSort, SimpleQuery.Od.ASC)
                                 .list();
                         traceRouteReply.setInventories(TraceRouteInventory.valueOf(traceRouteList));
                         bus.reply(msg, traceRouteReply);
