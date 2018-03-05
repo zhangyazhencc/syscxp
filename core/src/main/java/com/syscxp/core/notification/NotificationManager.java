@@ -24,6 +24,7 @@ import com.syscxp.header.notification.ApiNotificationFactory;
 import com.syscxp.header.notification.ApiNotificationFactoryExtensionPoint;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -320,10 +321,8 @@ public class NotificationManager extends AbstractService {
     private void callWebhook(APIMessage msg) {
 
         RestAPIResponse rsp = restf.syncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(msg), RestAPIResponse.class);
-
-        APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-        if (!apiReply.isSuccess()){
-            logger.debug(String.format("Message[%s]:保存日志失败", msg.getClass().getSimpleName()));
+        if (rsp.getState().equals(RestAPIState.Processing.toString())){
+            logger.debug(String.format("Message[%s]:日志发送成功", msg.getClass().getSimpleName()));
         }
     }
 
