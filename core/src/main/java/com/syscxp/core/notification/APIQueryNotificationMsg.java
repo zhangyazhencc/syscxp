@@ -1,5 +1,6 @@
 package com.syscxp.core.notification;
 
+import com.syscxp.header.identity.Action;
 import org.springframework.http.HttpMethod;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
@@ -17,6 +18,7 @@ import static java.util.Arrays.asList;
         isAction = true,
         responseClass = APIQueryNotificationReply.class
 )
+@Action(services = {"account"}, category = "account", adminOnly = true)
 @AutoQuery(replyClass = APIQueryNotificationReply.class, inventoryClass = NotificationInventory.class)
 public class APIQueryNotificationMsg extends APIQueryMessage {
     public static List<String> __example__() {

@@ -231,6 +231,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void handle(APIUpdateOrderExpiredTimeMsg msg) {
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
         query.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
+        query.add(OrderVO_.type, SimpleQuery.Op.EQ, OrderType.BUY);
         query.add(OrderVO_.productStatus, SimpleQuery.Op.EQ, 0);
         OrderVO orderVO = query.find();
         if (orderVO == null) {
@@ -246,7 +247,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
         renewVO.setExpiredTime(msg.getEndTime());
         dbf.getEntityManager().merge(renewVO);
-        dbf.getEntityManager().persist(orderVO);
+        dbf.getEntityManager().merge(orderVO);
         dbf.getEntityManager().flush();
         APIUpdateOrderExpiredTimeReply reply = new APIUpdateOrderExpiredTimeReply();
         reply.setInventory(OrderInventory.valueOf(orderVO));
@@ -377,7 +378,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
             orderVo.setProductEffectTimeStart(msg.getExpiredTime());
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(msg.getExpiredTime().toLocalDateTime().plusDays(msg.getDuration())));
-            orderVo.setProductStatus(1);
+            orderVo.setProductStatus(0);
 
             RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
             if (renewVO == null) {
