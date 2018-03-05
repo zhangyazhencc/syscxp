@@ -231,6 +231,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void handle(APIUpdateOrderExpiredTimeMsg msg) {
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
         query.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
+        query.add(OrderVO_.type, SimpleQuery.Op.EQ, OrderType.BUY);
         query.add(OrderVO_.productStatus, SimpleQuery.Op.EQ, 0);
         OrderVO orderVO = query.find();
         if (orderVO == null) {

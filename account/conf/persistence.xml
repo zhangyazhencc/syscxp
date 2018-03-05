@@ -28,6 +28,9 @@
         <class>com.syscxp.account.header.ticket.TicketVO</class>
         <class>com.syscxp.account.header.ticket.TicketRecordVO</class>
         <class>com.syscxp.account.header.ticket.TicketTypeVO</class>
+        <class>com.syscxp.account.header.identity.LoginLogVO</class>
+
+
 
     </persistence-unit>
 </persistence>

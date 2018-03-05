@@ -164,7 +164,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelAlarm(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Alarm] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        GLock gLock = new GLock("TunnelAlarm.lock",60);
+        GLock gLock = new GLock("TunnelAlarm.lock", 60);
         gLock.lock();
         try {
             AlarmEventVO existedEvent = getExistedEvents(eventVO);
@@ -180,7 +180,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
                 sendMessage(logVO);
             }
-        }finally {
+        } finally {
             gLock.unlock();
         }
     }
@@ -193,7 +193,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void tunnelRecover(AlarmEventVO eventVO) {
         logger.info(String.format("[Tunnel Recover] TunnelUuid: [%s]", eventVO.getProductUuid()));
 
-        GLock gLock = new GLock("TunnelRecover.lock",60);
+        GLock gLock = new GLock("TunnelRecover.lock", 60);
         gLock.lock();
         try {
             AlarmEventVO existedEvent = getExistedEvents(eventVO);
@@ -214,7 +214,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     sendMessage(logVO);
                 }
             }
-        }finally {
+        } finally {
             gLock.unlock();
         }
     }
@@ -291,7 +291,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     /***
      * 从tunnel获取专线数据(含共点专线)
-     * 查询条件:tunnel.vsi=当前tunnel.vsi && tunnel.statte = Enabled
+     * 查询条件: vlan,vsi,port && tunnel.statte = Enabled
      * @param tunnelUuid
      * @return
      */
@@ -439,36 +439,41 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("failed to recalculate bandwidth! " +
-                            "[TunnelUuid: %s Metric: %s RightValue: %s LeftValue: %s]"
+                            "[TunnelUuid: %s Metric: %s RightValue: %s LeftValue: %s]  Error: %s"
                     , eventVO.getProductUuid(), eventVO.getExpression().getMetric()
-                    , eventVO.getExpression().getRightValue(), eventVO.getLeftValue()));
+                    , eventVO.getExpression().getRightValue(), eventVO.getLeftValue(), e.getMessage()));
         }
     }
 
     /**
      * 共点判断
      * 同交换机、同vlan视为共点（同策略同步判断共点逻辑）
+     *
      * @param eventVO
      * @param tunnelInfo
      * @return
      */
     private boolean isSharePoint(AlarmEventVO eventVO, TunnelAlarmCmd.TunnelInfo tunnelInfo) {
         boolean isSharePoint = false;
-        Map tags = eventVO.getExpression().getTags();
+        try {
+            Map tags = eventVO.getExpression().getTags();
 
-        if (!tags.isEmpty()) {
-            String endpoint = tags.get("endpoint").toString();
-            Integer vlan = Integer.valueOf(tags.get("ifName").toString());
+            if (!tags.isEmpty()) {
+                String endpoint = tags.get("endpoint").toString();
+                String vlan = tags.get("ifName").toString();
 
-            if (StringUtils.equals(endpoint, tunnelInfo.getEndpointAMip())) {
-                if (vlan.intValue() == tunnelInfo.getEndpointAVlan().intValue())
-                    isSharePoint = true;
-            } else if (StringUtils.equals(endpoint, tunnelInfo.getEndpointZMip())) {
-                if (vlan.intValue() == tunnelInfo.getEndpointZVlan().intValue())
-                    isSharePoint = true;
-            }
-        } else
-            throw new RuntimeException("[isSharePoint] eventVO.getExpression().getTags() 数据为空！");
+                if (StringUtils.equals(endpoint, tunnelInfo.getEndpointAMip())) {
+                    if (vlan.equals("Vlanif" + tunnelInfo.getEndpointAVlan()))
+                        isSharePoint = true;
+                } else if (StringUtils.equals(endpoint, tunnelInfo.getEndpointZMip())) {
+                    if (vlan.equals("Vlanif" + tunnelInfo.getEndpointZVlan()))
+                        isSharePoint = true;
+                }
+            } else
+                throw new RuntimeException("[isSharePoint] eventVO.getExpression().getTags() 数据为空！");
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("[isSharePoint] Error: %s", e.getMessage()));
+        }
 
         return isSharePoint;
     }
@@ -521,7 +526,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
      * @param eventVO
      * @return
      */
-    private AlarmEventVO  getExistedEvents(AlarmEventVO eventVO) {
+    private AlarmEventVO getExistedEvents(AlarmEventVO eventVO) {
         List<AlarmEventVO> existedEvents = Q.New(AlarmEventVO.class)
                 .eq(AlarmEventVO_.endpoint, eventVO.getEndpoint())
                 .eq(AlarmEventVO_.productUuid, eventVO.getProductUuid())

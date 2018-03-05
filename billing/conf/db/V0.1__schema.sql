@@ -480,6 +480,39 @@ VALUES ('19146f3bb7da11e7be460242ac110003', 'LONG', 'DEFAULT', '默认', 'DEFAUL
 ('1904a1afb7da11e7be460242ac110003', 'LONG', 'DEFAULT', '默认', 'DEFAULT', '默认', '50M', '50M', '8888', '2018-01-18 13:44:14', '2017-10-23 10:08:20'),
 ('195de86cb7da11e7be460242ac110003', 'LONG', 'DEFAULT', '默认', 'DEFAULT', '默认', '5G', '5G', '15800', '2018-01-18 13:44:14', '2017-10-23 10:08:21'),
 ('18e20801b7da11e7be460242ac110003', 'LONG', 'DEFAULT', '默认', 'DEFAULT', '默认', '5M', '5M', '6800', '2018-01-18 13:44:14', '2017-10-23 10:08:20');
+
+## 跨国专线ABROAD 国外到国外默认价格
+INSERT INTO `ProductPriceUnitVO` ( uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
+VALUES('64f7e897b7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '100M', '100M', '9600', '2018-01-18 13:44:14', '2017-10-23 09:48:59'),
+('b6d8ca0db7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '10G', '10G', '17000', '2018-01-18 13:44:14', '2017-10-23 09:51:17'),
+('b7d8ca0db7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '20G', '20G', '17000', '2018-01-18 13:44:14', '2017-10-23 09:51:17'),
+('6d81e6ddb7ced1e7areae30242ac1100', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '10M', '10M', '6670', '2018-01-18 13:44:14', '2017-10-23 08:44:48'),
+('920bff80b7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '1G', '1G', '13800', '2018-01-18 13:44:14', '2017-10-23 09:50:15'),
+('71efa25db7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '200M', '200M', '11800', '2018-01-18 13:44:14', '2017-10-23 09:49:21'),
+('0cc4c0b6b7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '20M', '20M', '7800', '2018-01-18 13:44:14', '2017-10-23 09:46:31'),
+('9d77d22ab7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '2G', '2G', '14800', '2018-01-18 13:44:14', '2017-10-23 09:50:34'),
+('6d81e6ddb7ced1e7aae30242ac110002', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '2M', '2M', '3300', '2018-01-18 13:44:14', '2017-10-23 08:44:48'),
+('8292ae59b7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '500M', '500M', '12800', '2018-01-18 13:44:14', '2017-10-23 09:49:49'),
+('56fbd8fbb7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '50M', '50M', '8800', '2018-01-18 13:44:14', '2017-10-23 09:48:36'),
+('a79fc19cb7d7d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '5G', '5G', '15800', '2018-01-18 13:44:14', '2017-10-23 09:50:51'),
+('9f182aefb7d6d1e7be460242ac110003', 'ABROAD', 'ABROAD', '国外', 'DEFAULT', '默认', '5M', '5M', '5800', '2018-01-18 13:44:14', '2017-10-23 09:43:27');
+
+## 跨国专线CHINA2ABROAD 国内到国外默认价格
+INSERT INTO `ProductPriceUnitVO` ( uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
+VALUES('64f7e897b7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '100M', '100M', '9600', '2018-01-18 13:44:14', '2017-10-23 09:48:59'),
+('b6d8ca0db7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '10G', '10G', '17000', '2018-01-18 13:44:14', '2017-10-23 09:51:17'),
+('b7d8ca0db7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '20G', '20G', '17000', '2018-01-18 13:44:14', '2017-10-23 09:51:17'),
+('6d81e6ddb7cedae7areae30242ac1100', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '10M', '10M', '6670', '2018-01-18 13:44:14', '2017-10-23 08:44:48'),
+('920bff80b7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '1G', '1G', '13800', '2018-01-18 13:44:14', '2017-10-23 09:50:15'),
+('71efa25db7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '200M', '200M', '11800', '2018-01-18 13:44:14', '2017-10-23 09:49:21'),
+('0cc4c0b6b7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '20M', '20M', '7800', '2018-01-18 13:44:14', '2017-10-23 09:46:31'),
+('9d77d22ab7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '2G', '2G', '14800', '2018-01-18 13:44:14', '2017-10-23 09:50:34'),
+('6d81e6ddb7cedae7aae30242ac110002', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '2M', '2M', '3300', '2018-01-18 13:44:14', '2017-10-23 08:44:48'),
+('8292ae59b7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '500M', '500M', '12800', '2018-01-18 13:44:14', '2017-10-23 09:49:49'),
+('56fbd8fbb7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '50M', '50M', '8800', '2018-01-18 13:44:14', '2017-10-23 09:48:36'),
+('a79fc19cb7d7dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '5G', '5G', '15800', '2018-01-18 13:44:14', '2017-10-23 09:50:51'),
+('9f182aefb7d6dae7be460242ac110003', 'ABROAD', 'CHINA2ABROAD', '国内到国外', 'DEFAULT', '默认', '5M', '5M', '5800', '2018-01-18 13:44:14', '2017-10-23 09:43:27');
+
 ## 独享端口
 INSERT INTO `ProductPriceUnitVO` ( uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
 VALUES ('996ba83db7dd11e7be460242ac110003', 'EXCLUSIVE', 'DEFAULT', '默认', 'DEFAULT', '默认', 'SFP_10G', '光口万兆', '1500', '2018-01-18 13:44:14', '2017-10-23 10:33:24'),

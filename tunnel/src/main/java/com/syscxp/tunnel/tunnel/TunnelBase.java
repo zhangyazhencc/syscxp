@@ -20,6 +20,7 @@ import com.syscxp.tunnel.tunnel.job.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -538,5 +539,28 @@ public class TunnelBase {
         taskBase.deleteTunnelForRelationJob(vo, "删除专线");
 
         return vo;
+    }
+
+    /**
+     * judge share point tunnel
+     * @param tunnelVOA
+     * @param tunnelVOB
+     * @return
+     */
+    public boolean isSharePoint(TunnelVO tunnelVOA, TunnelVO tunnelVOB) {
+        boolean isSharePoint = false;
+        if (tunnelVOA.getVsi() != tunnelVOB.getVsi())
+            return false;
+
+        for (TunnelSwitchPortVO portA : tunnelVOA.getTunnelSwitchPortVOS()) {
+            for (TunnelSwitchPortVO portB : tunnelVOB.getTunnelSwitchPortVOS()) {
+                if (portA.getVlan() == portB.getVlan()) {
+                    if (StringUtils.equals(portA.getSwitchPortUuid(), portB.getSwitchPortUuid()))
+                        return true;
+                }
+            }
+        }
+
+        return isSharePoint;
     }
 }
