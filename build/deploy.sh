@@ -5,7 +5,7 @@ cd ..
 mvn -DskipTests clean install
 cd -
 
-### mvn war:war
+#### mvn war:war
 ### rm -rf $CATALINA_HOME/webapps/syscxp
 ### rm -f $CATALINA_HOME/webapps/syscxp.war
 ### cp target/syscxp.war $CATALINA_HOME/webapps/syscxp.war
