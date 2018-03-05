@@ -13,8 +13,8 @@ MySQL - 5.5.56-MariaDB : Database - syscxp_alarm
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 CREATE DATABASE /*!32312 IF NOT EXISTS*/`syscxp_alarm` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
-
-CREATE TABLE  `syscxp_account`.`ManagementNodeVO` (
+USE `syscxp_alarm`;
+CREATE TABLE  `syscxp_alarm`.`ManagementNodeVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `hostName` varchar(255) DEFAULT NULL,
     `port` int unsigned DEFAULT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE  `syscxp_account`.`ManagementNodeVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_account`.`GlobalConfigVO` (
+CREATE TABLE  `syscxp_alarm`.`GlobalConfigVO` (
     `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
@@ -141,7 +141,7 @@ CREATE TABLE `ComparisonRuleVO` (
   `comparisonName` varchar(127) DEFAULT NULL,
   `comparisonValue` varchar(127) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
-  `createDate` timestamp,
+  `createDate` timestamp
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `ComparisonRuleVO` */
@@ -173,12 +173,10 @@ CREATE TABLE `ContactVO` (
   `name` varchar(127) DEFAULT NULL,
   `mobile` varchar(20) DEFAULT NULL,
   `email` varchar(127) DEFAULT NULL,
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `accountUuid` varchar(32) DEFAULT NULL,
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `unique_email` (`email`),
-  UNIQUE KEY `unique_mobile` (`mobile`)
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `MonitorTargetVO` */
@@ -259,15 +257,15 @@ CREATE TABLE `RegulationVO` (
 DROP TABLE IF EXISTS `ResourcePolicyRefVO`;
 
 CREATE TABLE `ResourcePolicyRefVO` (
-  `uuid` varchar(32) NOT NULL,
-  `resourceUuid` varchar(32) NOT NULL,
-  `policyUuid` varchar(32) NOT NULL,
-  `productType` varchar(50) NOT NULL,
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `resourceUuid` varchar(32) DEFAULT NULL,
+  `policyUuid` varchar(32) DEFAULT NULL,
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `productType` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique` (`resourceUuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1073 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `SmsVO` */
 DROP TABLE IF EXISTS `SmsVO`;

@@ -14,7 +14,9 @@ import java.util.List;
 public class ZoneNodeRefInventory {
     private String uuid;
     private String nodeUuid;
+    private String nodeName;
     private String zoneUuid;
+    private String zoneName;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -26,7 +28,8 @@ public class ZoneNodeRefInventory {
         inv.setZoneUuid(vo.getZoneUuid());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-
+        inv.setNodeName(vo.getNode().getName());
+        inv.setZoneName(vo.getZone().getName());
         return inv;
     }
 
@@ -76,5 +79,21 @@ public class ZoneNodeRefInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public String getZoneName() {
+        return zoneName;
+    }
+
+    public void setZoneName(String zoneName) {
+        this.zoneName = zoneName;
     }
 }

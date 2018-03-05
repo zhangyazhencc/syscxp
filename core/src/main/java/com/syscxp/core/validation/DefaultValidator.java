@@ -15,7 +15,7 @@ import java.util.List;
 public class DefaultValidator implements Validator {
     @Override
     public List<Class> supportedClasses() {
-        List<Class> classes = new ArrayList<Class>();
+        List<Class> classes = new ArrayList<>();
         classes.add(Object.class);
         return classes;
     }
@@ -34,11 +34,9 @@ public class DefaultValidator implements Validator {
                 return error(obj, f, "field can not be null");
             }
             if (at.notZero() && TypeUtils.isTypeOf(value, Integer.TYPE, Integer.class, Long.TYPE, Long.class)) {
-                if (value != null) {
-                    long intValue = Long.valueOf(value.toString());
-                    if (intValue == 0) {
-                        return error(obj, f, "field can not be zero");
-                    }
+                long intValue = Long.valueOf(value.toString());
+                if (intValue == 0) {
+                    return error(obj, f, "field can not be zero");
                 }
             }
 

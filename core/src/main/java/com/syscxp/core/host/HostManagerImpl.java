@@ -1,13 +1,13 @@
 package com.syscxp.core.host;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.*;
 import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.db.*;
+import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
+import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.defer.Deferred;
-import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.*;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
@@ -29,6 +29,7 @@ import com.syscxp.utils.ObjectUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.function.ForEachFunction;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
 import java.util.*;
@@ -48,17 +49,11 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
     @Autowired
     private PluginRegistry pluginRgty;
     @Autowired
-    private DbEntityLister dl;
-    @Autowired
     private ResourceDestinationMaker destMaker;
-    @Autowired
-    private ErrorFacade errf;
     @Autowired
     private HostExtensionPointEmitter extEmitter;
     @Autowired
     protected HostTracker tracker;
-    @Autowired
-    private EventFacade evtf;
 
     private Map<Class, HostBaseExtensionFactory> hostBaseExtensionFactories = new HashMap<>();
 

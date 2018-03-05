@@ -1239,7 +1239,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIUpdateTunnelVlanMsg msg) {
         APIUpdateTunnelVlanEvent evt = new APIUpdateTunnelVlanEvent(msg.getId());
         TunnelBase tunnelBase = new TunnelBase();
-        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         //如果vlan改变，问专线是否被互联云，VPN使用
@@ -1248,16 +1247,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 extp.preDelete(vo);
             }
         }
-
-        //专线是否修改了
-        boolean updateVlanOrInterface = false;
-        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())
-                || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())
-                || !msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())
-                || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-            updateVlanOrInterface = true;
-        }
-        final boolean updateTunnel = updateVlanOrInterface;
 
         //修改前的TunnelSwitchPort
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
@@ -1929,13 +1918,31 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             new TunnelJobAndTaskBase().taskCreateTunnelZK(vo.getUuid());
 
+            //开通成功后修改订单到期时间
+            logger.info("修改订单到期时间，并创建任务：UpdateOrderExpiredTimeJob");
+            UpdateOrderExpiredTimeJob job = new UpdateOrderExpiredTimeJob();
+            job.setResourceUuid(vo.getUuid());
+            job.setStartTime(dbf.getCurrentSqlTime());
+            job.setEndTime(vo.getExpireDate());
+            jobf.execute("修改订单到期时间", Platform.getManagementServerId(), job);
+
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
         } else {
-
-            taskBase.taskOpenTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
+            final TunnelVO vo2 = vo;
+            taskBase.taskOpenTunnel(vo2,new ReturnValueCompletion<TunnelInventory>(null) {
                 @Override
                 public void success(TunnelInventory inv) {
+
+                    //开通成功后修改订单到期时间
+                    logger.info("修改订单到期时间，并创建任务：UpdateOrderExpiredTimeJob");
+                    final TunnelVO vo3 = dbf.findByUuid(vo2.getUuid(), TunnelVO.class);
+                    UpdateOrderExpiredTimeJob job = new UpdateOrderExpiredTimeJob();
+                    job.setResourceUuid(vo3.getUuid());
+                    job.setStartTime(dbf.getCurrentSqlTime());
+                    job.setEndTime(vo3.getExpireDate());
+                    jobf.execute("修改订单到期时间", Platform.getManagementServerId(), job);
+
                     evt.setInventory(inv);
                     bus.publish(evt);
                 }

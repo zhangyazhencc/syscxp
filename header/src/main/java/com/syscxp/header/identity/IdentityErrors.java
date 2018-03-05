@@ -1,5 +1,7 @@
 package com.syscxp.header.identity;
 
+import javax.security.auth.login.AccountNotFoundException;
+
 /**
  */
 public enum IdentityErrors {
@@ -7,7 +9,8 @@ public enum IdentityErrors {
     INVALID_SESSION(1001),
     PERMISSION_DENIED(1002),
     QUOTA_EXCEEDING(1003),
-    QUOTA_INVALID_OP(1004);
+    QUOTA_INVALID_OP(1004),
+    ACCOUNT_NOT_FOUND(1010);
 
     private String code;
 

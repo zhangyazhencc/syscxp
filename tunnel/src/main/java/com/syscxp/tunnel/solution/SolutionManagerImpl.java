@@ -116,15 +116,23 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APICreateShareSolutionMsg) msg);
         } else if(msg instanceof APIDeleteShareSolutionMsg){
             handle((APIDeleteShareSolutionMsg) msg);
-        }else if(msg instanceof APIGetShareSolutionMsg){
-            handle((APIGetShareSolutionMsg) msg);
+        }else if(msg instanceof APIListShareSolutionMsg){
+            handle((APIListShareSolutionMsg) msg);
+        } else if(msg instanceof APIGetSolutionMsg){
+            handle((APIGetSolutionMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIGetShareSolutionMsg msg) {
-        APIGetShareSolutionReply reply = new APIGetShareSolutionReply();
+    private void handle(APIGetSolutionMsg msg) {
+        APIGetSolutionReply reply = new APIGetSolutionReply();
+        reply.setInventory(SolutionInventory.valueOf(dbf.findByUuid(msg.getUuid(), SolutionVO.class)));
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIListShareSolutionMsg msg) {
+        APIListShareSolutionReply reply = new APIListShareSolutionReply();
         List<SolutionInventory> solutionInventories = new ArrayList<>();
 
         SimpleQuery<ShareSolutionVO> query = dbf.createQuery(ShareSolutionVO.class);
@@ -136,24 +144,25 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         reply.setSolutionInventories(solutionInventories);
+        reply.setTotal(query.count());
         bus.reply(msg, reply);
     }
 
     private void handle(APIDeleteShareSolutionMsg msg) {
         ShareSolutionVO vo = dbf.findByUuid(msg.getUuid(), ShareSolutionVO.class);
+        if( !vo.getOwnerAccountUuid().equals(msg.getSession().getAccountUuid())){
+            throw  new RuntimeException(String.format("The solution[name: %s] is not yours", dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class).getName()));
+        }
         dbf.remove(vo);
 
         SimpleQuery<ShareSolutionVO> simpleQuery = dbf.createQuery(ShareSolutionVO.class);
         simpleQuery.add(ShareSolutionVO_.solutionUuid, SimpleQuery.Op.EQ, vo.getSolutionUuid());
-        List<ShareSolutionVO> shareSolutionVOS = simpleQuery.list();
 
-        if(shareSolutionVOS.size() == 0){
+        if(simpleQuery.count().longValue() == 0){
             SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
             solutionVO.setShare(false);
             dbf.updateAndRefresh(solutionVO);
         }
-
-
 
         APIDeleteShareSolutionEvent event = new APIDeleteShareSolutionEvent(msg.getId());
         bus.publish(event);
@@ -165,10 +174,20 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         List<String> accountUuids = msg.getAccountUuids();
 
         for(String accountUuid : accountUuids){
+
+            SimpleQuery<ShareSolutionVO> simpleQuery = dbf.createQuery(ShareSolutionVO.class);
+            simpleQuery.add(ShareSolutionVO_.solutionUuid, SimpleQuery.Op.EQ, msg.getSolutionUuid());
+            simpleQuery.add(ShareSolutionVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
+            simpleQuery.add(ShareSolutionVO_.ownerAccountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+            if(simpleQuery.count().longValue() != 0){
+                throw new RuntimeException(String.format("The slotion[name: %s] has been Shared with this user[uuid: %s]",
+                        dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class).getName(), accountUuid));
+            }
+
             ShareSolutionVO vo = new ShareSolutionVO();
             vo.setUuid(Platform.getUuid());
             vo.setAccountUuid(accountUuid);
-            vo.setOwnerAccountUuid(msg.getOwnerAccountUuid());
+            vo.setOwnerAccountUuid(msg.getSession().getAccountUuid());
             vo.setSolutionUuid(msg.getSolutionUuid());
 
             shareSolutionVOS.add(vo);

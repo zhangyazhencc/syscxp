@@ -1,11 +1,9 @@
 package com.syscxp.core.host;
 
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import com.syscxp.core.cascade.CascadeConstant;
-import com.syscxp.core.cascade.CascadeFacade;
-import com.syscxp.core.cloudbus.*;
+import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.CloudBusCallBack;
+import com.syscxp.core.cloudbus.EventFacade;
+import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.config.GlobalConfigFacade;
 import com.syscxp.core.db.DatabaseFacade;
@@ -19,29 +17,25 @@ import com.syscxp.core.workflow.ShareFlow;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.NoErrorCompletion;
-import com.syscxp.header.core.NopeCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.host.*;
-import com.syscxp.header.host.HostCanonicalEvents.HostDeletedData;
-import com.syscxp.header.host.HostCanonicalEvents.HostStatusChangedData;
 import com.syscxp.header.host.HostErrors.Opaque;
 import com.syscxp.header.host.HostMaintenancePolicyExtensionPoint.HostMaintenancePolicy;
-import com.syscxp.header.message.APIDeleteMessage;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.utils.CollectionUtils;
-import com.syscxp.utils.DebugUtils;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.function.ForEachFunction;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowire;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -64,8 +58,6 @@ public abstract class HostBase extends AbstractHost {
     protected GlobalConfigFacade gcf;
     @Autowired
     protected HostManager hostMgr;
-    @Autowired
-    protected CascadeFacade casf;
     @Autowired
     protected ErrorFacade errf;
     @Autowired

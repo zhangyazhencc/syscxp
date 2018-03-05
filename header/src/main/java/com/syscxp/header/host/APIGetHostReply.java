@@ -4,7 +4,7 @@ import com.syscxp.header.message.APIReply;
 
 public class APIGetHostReply extends APIReply {
 
-    HostInventory inventory;
+    private HostInventory inventory;
 
     public HostInventory getInventory() {
         return inventory;

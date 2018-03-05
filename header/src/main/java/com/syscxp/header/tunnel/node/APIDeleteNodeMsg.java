@@ -4,13 +4,14 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.NodeConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-13.
  * @Description: 删除节点数据.
  */
-
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteNodeMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = NodeEO.class, checkAccount = true)
     private String uuid;

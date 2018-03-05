@@ -86,7 +86,7 @@
 
         <Root level="warn" additivity="false">
             <AppenderRef ref="Async"/>
-            <AppenderRef ref="Console"/>
+            <!--<AppenderRef ref="Console"/>-->
         </Root>
     </Loggers>
 </Configuration>

@@ -10,6 +10,7 @@ import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 /**
  * Created by DCY on 2017-09-13
  */
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateSwitchPortMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SwitchPortVO.class)

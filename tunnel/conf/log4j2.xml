@@ -2,7 +2,7 @@
 <Configuration status="warn">
     <Appenders>
         <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/tunnel.log"
-                     filePattern="${sys:catalina.home}/logs/management-server-tunnel%d{yyyy-MM-dd}-%i.log">
+                     filePattern="${sys:catalina.home}/logs/management-server-tunnel-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{1}] %X{api,} %m%n</pattern>
             </PatternLayout>
@@ -65,7 +65,7 @@
             <AppenderRef ref="ApiRequestLogger" level="TRACE" />
         </Logger>
 
-        <Logger name="com.syscxp" level="debug"/>
+        <Logger name="com.syscxp" level="trace"/>
 
         <Logger name="com.syscxp.utils" level="trace"/>
 

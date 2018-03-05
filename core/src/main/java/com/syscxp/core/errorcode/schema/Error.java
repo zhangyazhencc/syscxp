@@ -107,7 +107,7 @@ public class Error {
      */
     public List<Error.Code> getCode() {
         if (code == null) {
-            code = new ArrayList<Error.Code>();
+            code = new ArrayList<>();
         }
         return this.code;
     }

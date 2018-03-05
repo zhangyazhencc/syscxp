@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateMonitorHostMsg extends APIUpdateHostMsg {
 
     @APIParam(required = false, emptyString = false, resourceType = NodeVO.class)

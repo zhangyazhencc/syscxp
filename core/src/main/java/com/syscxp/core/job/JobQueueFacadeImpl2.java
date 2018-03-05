@@ -1,31 +1,25 @@
 package com.syscxp.core.job;
 
 import com.google.gson.*;
+import com.syscxp.core.Platform;
+import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusEventListener;
 import com.syscxp.core.cloudbus.EventSubscriberReceipt;
-import com.syscxp.core.db.*;
+import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.GLock;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
-import com.syscxp.header.message.GsonTransient;
-import com.syscxp.header.message.Message;
-import com.syscxp.utils.gson.GsonTypeCoder;
-import com.syscxp.utils.gson.GsonUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.core.Platform;
-import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.Component;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.NopeCompletion;
 import com.syscxp.header.core.NopeReturnValueCompletion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.managementnode.ManagementNodeChangeListener;
 import com.syscxp.header.message.Event;
@@ -33,12 +27,16 @@ import com.syscxp.utils.Bucket;
 import com.syscxp.utils.DebugUtils;
 import com.syscxp.utils.JsonWrapper;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.GsonTypeCoder;
+import com.syscxp.utils.gson.GsonUtil;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.utils.serializable.SerializableHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -110,8 +108,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         }
 
         public Job loads(String jsonStr) {
-            Job job = gson.fromJson(jsonStr, Job.class);
-            return job;
+            return gson.fromJson(jsonStr, Job.class);
         }
 
         public String dumpJob(Job job) {
@@ -463,7 +460,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             private void process(final JobQueueVO qvo) {
 
                 if (stopped) {
-                    logger.warn(String.format("[Job Facade Stopped]: stop processing job"));
+                    logger.warn("[Job Facade Stopped]: stop processing job");
                     return;
                 }
 
@@ -515,7 +512,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
                 try {
                     GLock lock = new GLock(LOCK_NAME, LOCK_TIMEOUT);
-                    JobQueueVO qvo = null;
+                    JobQueueVO qvo;
                     lock.lock();
                     try {
                         qvo = saveJob();
