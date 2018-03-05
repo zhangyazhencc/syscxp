@@ -89,6 +89,9 @@ public class TunnelBase {
         }
 
         if(isTransnational){    //跨国
+            if(innerEndpointUuid == null){
+                throw new IllegalArgumentException("该跨国专线互联连接点不能为空！");
+            }
             EndpointVO endpointVO = dbf.findByUuid(innerEndpointUuid, EndpointVO.class);
             if(endpointVO.getEndpointType() == EndpointType.VIRTUAL){   //直通
                 return TunnelType.CHINA1ABROAD;
