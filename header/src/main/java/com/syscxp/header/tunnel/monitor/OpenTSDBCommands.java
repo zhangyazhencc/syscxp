@@ -144,6 +144,27 @@ public class OpenTSDBCommands {
         }
     }
 
+    public static class TunnelCondition{
+        private String nodeUuid;
+        private Map<String,Tags> tags;
+
+        public String getNodeUuid() {
+            return nodeUuid;
+        }
+
+        public void setNodeUuid(String nodeUuid) {
+            this.nodeUuid = nodeUuid;
+        }
+
+        public Map<String, Tags> getTags() {
+            return tags;
+        }
+
+        public void setTags(Map<String, Tags> tags) {
+            this.tags = tags;
+        }
+    }
+
     /**
      * @Author: sunxuelong.
      * @Cretion Date: 2017-11-02.

@@ -131,6 +131,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIQueryNettoolMonitorHostMsg) msg);
         } else if (msg instanceof APIQueryMonitorResultMsg) {
             handle((APIQueryMonitorResultMsg) msg);
+        } else if (msg instanceof APIQueryOpentsdbConditionMsg) {
+            handle((APIQueryOpentsdbConditionMsg) msg);
         } else if (msg instanceof APIQuerySwitchPortTrafficMsg) {
             handle((APIQuerySwitchPortTrafficMsg) msg);
         } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
@@ -163,14 +165,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         dbf.getEntityManager().merge(tunnelVO);
 
         // 开启控制器监控
-        startControllerMonitor(tunnelVO.getUuid());
+        //startControllerMonitor(tunnelVO.getUuid());
 
         // 开启agent监控
         try {
             startAgentMonitor(tunnelVO.getUuid());
         } catch (Exception e) {
             try {
-                stopControllerMonitor(msg.getTunnelUuid());
+                //stopControllerMonitor(msg.getTunnelUuid());
             } catch (Exception e1) {
                 logger.info(String.format("start job to stop controller monitor[tunnel: %s MonitorJobType: %s]"
                         , msg.getTunnelUuid(), MonitorJobType.STOP.toString()));
@@ -222,10 +224,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         // job关闭控制器监控
-        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-        monitorJob.setTunnelUuid(msg.getTunnelUuid());
-        monitorJob.setJobType(MonitorJobType.STOP);
-        jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
+//        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+//        monitorJob.setTunnelUuid(msg.getTunnelUuid());
+//        monitorJob.setJobType(MonitorJobType.STOP);
+//        jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
 
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
@@ -257,10 +259,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     , tunnelVO.getName(), e.getMessage()));
         }
 
-        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-        monitorJob.setTunnelUuid(msg.getTunnelUuid());
-        monitorJob.setJobType(MonitorJobType.MODIFY);
-        jobf.execute("修改监控失败-修改监控", Platform.getManagementServerId(), monitorJob);
+//        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+//        monitorJob.setTunnelUuid(msg.getTunnelUuid());
+//        monitorJob.setJobType(MonitorJobType.MODIFY);
+//        jobf.execute("修改监控失败-修改监控", Platform.getManagementServerId(), monitorJob);
 
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
         logger.info(String.format("%s reset cidr success!", tunnelVO.getName()));
@@ -1301,6 +1303,43 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         condition.setQueries(queries);
 
         return JSONObjectUtil.toJsonString(condition);
+    }
+
+    private void handle(APIQueryOpentsdbConditionMsg msg) {
+        APIQueryOpentsdbConditionReply reply = new APIQueryOpentsdbConditionReply();
+
+        List<OpenTSDBCommands.TunnelCondition> tunnelConditions = new ArrayList<>();
+
+        TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getTunnelUuid()).find();
+        for (TunnelSwitchPortVO tunnelPort : tunnel.getTunnelSwitchPortVOS()) {
+
+            OpenTSDBCommands.TunnelCondition tunnelCondition = new OpenTSDBCommands.TunnelCondition();
+
+            if (tunnelPort.getSortTag().equals(InterfaceType.A.toString()) ||
+                    tunnelPort.getSortTag().equals(InterfaceType.Z.toString())) {
+                PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(tunnelPort.getSwitchPortUuid());
+                if (physicalSwitch == null)
+                    throw new IllegalArgumentException(String.format("No physical switch exist under switch port %s"
+                            , tunnelPort.getSwitchPortUuid()));
+
+                OpenTSDBCommands.Tags tunnelTag = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                        , "Vlanif" + tunnelPort.getVlan(), msg.getTunnelUuid());
+                OpenTSDBCommands.Tags switchTag = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                        , "Vlanif" + tunnelPort.getVlan());
+
+                Map<String, OpenTSDBCommands.Tags> map = new HashMap<>();
+                map.put("tunnelTag", tunnelTag);
+                map.put("switchTag", switchTag);
+                tunnelCondition.setTags(map);
+
+                tunnelCondition.setNodeUuid(tunnelPort.getEndpointVO().getNodeVO().getUuid());
+
+                tunnelConditions.add(tunnelCondition);
+            }
+        }
+
+        reply.setInventories(TunnelConditionInventory.valueOf(tunnelConditions));
+        bus.reply(msg, reply);
     }
 
     private void handle(APIQuerySwitchPortTrafficMsg msg) {
