@@ -170,8 +170,9 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         senderImpl.setUsername(MailGlobalProperty.USERNAME);
         senderImpl.setPassword(MailGlobalProperty.PASSWORD);
         Properties prop = new Properties();
-        prop.put(" mail.smtp.auth ", "true");
+        prop.put(" mail.smtp.auth ", "false");
         prop.put(" mail.smtp.timeout ", "25000");
+
         senderImpl.setJavaMailProperties(prop);
 
         try{
