@@ -34,6 +34,7 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.IdentityInterceptor;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
+import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.tunnel.tunnel.job.MonitorJobType;
 import com.syscxp.tunnel.tunnel.job.TunnelMonitorJob;
 import com.syscxp.utils.Utils;
@@ -152,6 +153,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (tunnelVO.getMonitorState() == TunnelMonitorState.Enabled)
             throw new IllegalArgumentException("tunnel monitor already started !");
 
+        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
+            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
+
         // 初始化监控通道
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
@@ -193,6 +197,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
 
+        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
+            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
+
         if (tunnelVO.getState() == TunnelState.Enabled) {
             tunnelVO.setStatus(TunnelStatus.Connected);
         }
@@ -206,19 +213,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
             dbf.getEntityManager().remove(tunnelMonitorVO);
 
+        // 关闭agent监控，失败后报错
+        try {
+            stopAgentMonitor(tunnelVO.getUuid());
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("failed to stop agent monitor[tunnel: %s] Error: %s"
+                    , tunnelVO.getName(), e.getMessage()));
+        }
+
         // job关闭控制器监控
         TunnelMonitorJob monitorJob = new TunnelMonitorJob();
         monitorJob.setTunnelUuid(msg.getTunnelUuid());
         monitorJob.setJobType(MonitorJobType.STOP);
         jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
-
-        // 关闭agent监控，失败后由agent定时任务停止
-        try {
-            stopAgentMonitor(tunnelVO.getUuid());
-        } catch (Exception e) {
-            logger.error(String.format("failed to stop agent monitor[tunnel: %s] Error: %s"
-                    , tunnelVO.getName(), e.getMessage()));
-        }
 
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
@@ -237,8 +244,18 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("can only restart monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
 
+        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
+            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
+
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         dbf.getEntityManager().merge(tunnelVO);
+
+        try {
+            updateAgentMonitor(tunnelVO.getUuid());
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("failed to modify monitor CIDR. [tunnel: %s] Error: %s"
+                    , tunnelVO.getName(), e.getMessage()));
+        }
 
         TunnelMonitorJob monitorJob = new TunnelMonitorJob();
         monitorJob.setTunnelUuid(msg.getTunnelUuid());
@@ -1970,28 +1987,33 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .eq(TunnelVO_.vsi, cmdTunnel.getVsi())
                 .eq(TunnelVO_.state, TunnelState.Enabled)
                 .list();
+
+        TunnelBase tunnelBase = new TunnelBase();
         for (TunnelVO tunnelVO : tunnelVOS) {
             MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
-            for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
-                if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
-                    endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                    endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
-                            tunnelSwitchPort.getSwitchPortUuid()).getmIP());
-                    endpointTunnel.setEndpointAVlan(tunnelSwitchPort.getVlan());
-                } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
-                    endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                    endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
-                            tunnelSwitchPort.getSwitchPortUuid()).getmIP());
-                    endpointTunnel.setEndpointZVlan(tunnelSwitchPort.getVlan());
+
+            if (tunnelBase.isSharePoint(cmdTunnel, tunnelVO)) {
+                for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
+                    if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
+                        endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                        endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
+                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                        endpointTunnel.setEndpointAVlan(tunnelSwitchPort.getVlan());
+                    } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
+                        endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                        endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
+                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                        endpointTunnel.setEndpointZVlan(tunnelSwitchPort.getVlan());
+                    }
                 }
+
+                endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
+                endpointTunnel.setTunnelName(tunnelVO.getName());
+                endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
+                endpointTunnel.setAccountUuid(tunnelVO.getOwnerAccountUuid());
+
+                endpointTunnels.add(endpointTunnel);
             }
-
-            endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
-            endpointTunnel.setTunnelName(tunnelVO.getName());
-            endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
-            endpointTunnel.setAccountUuid(tunnelVO.getOwnerAccountUuid());
-
-            endpointTunnels.add(endpointTunnel);
         }
 
         return EndpointTunnelsInventory.valueOf(endpointTunnels);

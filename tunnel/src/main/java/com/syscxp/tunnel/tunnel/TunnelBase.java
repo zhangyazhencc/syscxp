@@ -549,12 +549,12 @@ public class TunnelBase {
      */
     public boolean isSharePoint(TunnelVO tunnelVOA, TunnelVO tunnelVOB) {
         boolean isSharePoint = false;
-        if (tunnelVOA.getVsi() != tunnelVOB.getVsi())
+        if (!tunnelVOA.getVsi().equals(tunnelVOB.getVsi()))
             return false;
 
         for (TunnelSwitchPortVO portA : tunnelVOA.getTunnelSwitchPortVOS()) {
             for (TunnelSwitchPortVO portB : tunnelVOB.getTunnelSwitchPortVOS()) {
-                if (portA.getVlan() == portB.getVlan()) {
+                if (portA.getVlan().equals(portB.getVlan())) {
                     if (StringUtils.equals(portA.getSwitchPortUuid(), portB.getSwitchPortUuid()))
                         return true;
                 }
