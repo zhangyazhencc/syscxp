@@ -18,7 +18,7 @@ import static java.util.Arrays.asList;
         isAction = true,
         responseClass = APIQueryNotificationReply.class
 )
-@Action(services = {"account"}, category = "account", adminOnly = true)
+@Action(services = {"account"}, category = "account", names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQueryNotificationReply.class, inventoryClass = NotificationInventory.class)
 public class APIQueryNotificationMsg extends APIQueryMessage {
     public static List<String> __example__() {
