@@ -2676,10 +2676,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         //修改物理接口
-        List<String> interfaceUuids = Q.New(InterfaceVO.class).select(InterfaceVO_.uuid).listValues();
-        List<String> sameUuids = Q.New(TunnelVO.class).in(TunnelVO_.uuid, interfaceUuids).select(TunnelVO_.uuid).listValues();
+        List<String> interfaceUuids = Q.New(InterfaceVO.class).lt(InterfaceVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).select(InterfaceVO_.uuid).listValues();
 
-        for(String sameUUid : sameUuids){
+        for(String sameUUid : interfaceUuids){
             String newInterfaceUuid = Platform.getUuid();
 
             String sql1 = "update InterfaceEO set uuid = :newInterfaceUuid where uuid = :sameUUid";
