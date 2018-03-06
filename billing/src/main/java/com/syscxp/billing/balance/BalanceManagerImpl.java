@@ -517,6 +517,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
                     dealDetailVO.setTradeNO(trade_no);
                     dbf.getEntityManager().merge(dealDetailVO);
                     dbf.getEntityManager().flush();
+                    reply.setAddMoney(new BigDecimal(total_amount));
                 }
 
             }
