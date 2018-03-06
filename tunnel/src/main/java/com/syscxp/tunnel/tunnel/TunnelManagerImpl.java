@@ -194,6 +194,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIRunDataForTunnelTypeMsg) msg);
         } else if (msg instanceof APIRunDataForTunnelZKMsg) {
             handle((APIRunDataForTunnelZKMsg) msg);
+        } else if (msg instanceof APIUpdateResourceUuidMsg) {
+            handle((APIUpdateResourceUuidMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -2652,6 +2654,41 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         bus.publish(evt);
+    }
+
+    /**
+     * 数据修正-修改资源UUID
+     * */
+    private void handle(APIUpdateResourceUuidMsg msg){
+        APIUpdateResourceUuidReply reply = new APIUpdateResourceUuidReply();
+        //修改最后一公里
+        List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).list();
+        for (EdgeLineVO edgeLineVO : edgeLineVOS){
+            edgeLineVO.setUuid("edgeline"+edgeLineVO.getUuid());
+            dbf.updateAndRefresh(edgeLineVO);
+        }
+
+        //修改物理接口
+        List<String> interfaceUuids = Q.New(InterfaceVO.class).select(InterfaceVO_.uuid).listValues();
+        List<String> sameUuids = Q.New(TunnelVO.class).in(TunnelVO_.uuid, interfaceUuids).listValues();
+
+        for(String sameUUid : sameUuids){
+            InterfaceVO interfaceVO = dbf.findByUuid(sameUUid, InterfaceVO.class);
+            String newInterfaceUuid = "interface"+interfaceVO.getUuid();
+            interfaceVO.setUuid(newInterfaceUuid);
+            dbf.updateAndRefresh(interfaceVO);
+
+            UpdateQuery.New(EdgeLineVO.class)
+                    .set(EdgeLineVO_.interfaceUuid, newInterfaceUuid)
+                    .eq(EdgeLineVO_.interfaceUuid, sameUUid)
+                    .update();
+            UpdateQuery.New(TunnelSwitchPortVO.class)
+                    .set(TunnelSwitchPortVO_.interfaceUuid, newInterfaceUuid)
+                    .eq(TunnelSwitchPortVO_.interfaceUuid, sameUUid)
+                    .update();
+        }
+
+        bus.reply(msg, reply);
     }
 
     /**************************************** The following clean the expired Products **************************************************/
