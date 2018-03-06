@@ -2664,7 +2664,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         //修改最后一公里
         List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).lt(EdgeLineVO_.createDate, "2018-03-03 00:00:00").list();
         for (EdgeLineVO edgeLineVO : edgeLineVOS){
-            edgeLineVO.setUuid("edgeline"+edgeLineVO.getUuid());
+            edgeLineVO.setUuid(Platform.getUuid());
             dbf.updateAndRefresh(edgeLineVO);
         }
 
@@ -2674,7 +2674,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         for(String sameUUid : sameUuids){
             InterfaceVO interfaceVO = dbf.findByUuid(sameUUid, InterfaceVO.class);
-            String newInterfaceUuid = "interface"+interfaceVO.getUuid();
+            String newInterfaceUuid = Platform.getUuid();
             interfaceVO.setUuid(newInterfaceUuid);
             dbf.updateAndRefresh(interfaceVO);
 
