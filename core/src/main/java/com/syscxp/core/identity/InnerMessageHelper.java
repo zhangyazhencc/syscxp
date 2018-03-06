@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.utils.gson.JSONObjectUtil;
 
 public class InnerMessageHelper {
-    private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
+    private static final CLogger logger = Utils.getLogger(InnerMessageHelper.class);
 
     public static void setMD5(APIMessage message) {
         message.setSignature(getMD5(message));
