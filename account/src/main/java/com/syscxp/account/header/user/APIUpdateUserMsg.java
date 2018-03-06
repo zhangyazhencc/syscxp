@@ -4,6 +4,7 @@ import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.account.AccountMessage;
 import com.syscxp.header.identity.AccountStatus;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressUserCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -23,8 +24,10 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
     @APIParam(maxLength = 128, required = false)
     private String name;
     @APIParam(maxLength = 36, required = false)
+    @PasswordNoSee
     private String email;
     @APIParam(maxLength = 32, required = false)
+    @PasswordNoSee
     private String phone;
     @APIParam(maxLength = 128, required = false)
     private String trueName;

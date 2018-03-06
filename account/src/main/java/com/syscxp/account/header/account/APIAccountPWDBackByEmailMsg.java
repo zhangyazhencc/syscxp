@@ -1,5 +1,6 @@
 package com.syscxp.account.header.account;
 
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -13,6 +14,7 @@ import com.syscxp.header.notification.ApiNotification;
 public class APIAccountPWDBackByEmailMsg extends APIMessage  {
 
     @APIParam
+    @PasswordNoSee
     private String email;
 
     @APIParam

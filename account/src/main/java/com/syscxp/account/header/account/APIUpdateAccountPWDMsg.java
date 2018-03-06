@@ -1,6 +1,7 @@
 package com.syscxp.account.header.account;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -13,18 +14,22 @@ import com.syscxp.header.notification.ApiNotification;
 public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage {
 
     @APIParam(required = false)
+    @PasswordNoSee
     private String phone;
 
     @APIParam(required = false)
+    @PasswordNoSee
     private String email;
 
     @APIParam
     private String code;
 
     @APIParam
+    @PasswordNoSee
     private String oldpassword;
 
     @APIParam(maxLength = 2048)
+    @PasswordNoSee
     private String newpassword;
 
     public String getCode() {

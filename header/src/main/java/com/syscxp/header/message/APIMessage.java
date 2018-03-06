@@ -1,5 +1,6 @@
 package com.syscxp.header.message;
 
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.rest.APIWithSession;
@@ -42,6 +43,8 @@ public abstract class APIMessage extends NeedReplyMessage {
         Map<String, Object> msgFields = new HashMap<>();
 
         for (Field field: fields) {
+            if (field.isAnnotationPresent(PasswordNoSee.class))
+                continue;
             Object value = FieldUtils.getFieldValue(field.getName(), this);
             msgFields.put(field.getName(), value);
         }

@@ -61,7 +61,7 @@ public class APIUpdateGlobalConfigMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating a global configuration[category:%s, name:%s]", getDeclaredFieldAndValues())
+                ntfy(String.format("Updating a global configuration[category:%s, name:%s]", category, name))
                         .resource(null, GlobalConfigVO.class)
                         .messageAndEvent(that, evt).done();
             }
