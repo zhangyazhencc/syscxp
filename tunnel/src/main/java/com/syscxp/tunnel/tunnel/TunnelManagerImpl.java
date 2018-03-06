@@ -2670,7 +2670,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //修改物理接口
         List<String> interfaceUuids = Q.New(InterfaceVO.class).select(InterfaceVO_.uuid).listValues();
-        List<String> sameUuids = Q.New(TunnelVO.class).in(TunnelVO_.uuid, interfaceUuids).listValues();
+        List<String> sameUuids = Q.New(TunnelVO.class).in(TunnelVO_.uuid, interfaceUuids).select(TunnelVO_.uuid).listValues();
 
         for(String sameUUid : sameUuids){
             InterfaceVO interfaceVO = dbf.findByUuid(sameUUid, InterfaceVO.class);
