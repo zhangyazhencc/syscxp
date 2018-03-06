@@ -505,17 +505,21 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
                 bus.reply(msg, reply);
                 return;
             } else if (dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
-                AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
-                BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
-                vo.setCashBalance(balance);
-                dbf.getEntityManager().merge(vo);
+                if (dealDetailVO.getState() != DealState.SUCCESS) {
+                    AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
+                    BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
+                    vo.setCashBalance(balance);
+                    dbf.getEntityManager().merge(vo);
 
-                dealDetailVO.setBalance(balance == null ? BigDecimal.ZERO : balance);
-                dealDetailVO.setState(DealState.SUCCESS);
-                dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
-                dealDetailVO.setTradeNO(trade_no);
-                dbf.getEntityManager().merge(dealDetailVO);
-                dbf.getEntityManager().flush();
+                    dealDetailVO.setBalance(balance == null ? BigDecimal.ZERO : balance);
+                    dealDetailVO.setState(DealState.SUCCESS);
+                    dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
+                    dealDetailVO.setTradeNO(trade_no);
+                    dbf.getEntityManager().merge(dealDetailVO);
+                    dbf.getEntityManager().flush();
+                    reply.setAddMoney(new BigDecimal(total_amount));
+                }
+
             }
         }
         reply.setInventory(signVerified);

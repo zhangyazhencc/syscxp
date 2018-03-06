@@ -1,21 +1,25 @@
 package com.syscxp.account.header.identity;
 
 import com.syscxp.header.identity.APISessionMessage;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;
 
 @SuppressCredentialCheck
 public class APILogInByAccountMsg extends APISessionMessage {
     @APIParam(required = false)
+    @PasswordNoSee
     private String phone;
 
     @APIParam(required = false)
+    @PasswordNoSee
     private String email;
 
     @APIParam(required = false)
     private String accountName;
 
     @APIParam
+    @PasswordNoSee
     private String password;
 
     @APIParam(required = false)

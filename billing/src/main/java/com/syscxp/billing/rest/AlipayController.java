@@ -33,7 +33,7 @@ public class AlipayController {
 
     @RequestMapping(value = "/alipay/return", method = {RequestMethod.GET})
     @ResponseBody
-    public String alipayReturnUrl(HttpServletRequest request, HttpServletResponse rsp) throws IOException {
+    public void alipayReturnUrl(HttpServletRequest request, HttpServletResponse rsp) throws IOException {
         try {
             //获取支付宝GET过来反馈信息
             Map<String, String> params = getParamterMap(request);
@@ -43,15 +43,15 @@ public class AlipayController {
             if (res.getState().equals(RestAPIState.Done.toString())) {
                 APIVerifyReturnReply replay = (APIVerifyReturnReply) RESTApiDecoder.loads(res.getResult());
                 if (replay.getInventory()) {
-                    return "success";
+                    rsp.sendRedirect("/naas/account/#/recharge?result=success&money="+replay.getAddMoney().doubleValue());
+                    return;
                 }
             }
-
+            rsp.sendRedirect( "/naas/account/#/recharge?result=failure&addMoney=0");
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-            return "failure";
+            logger.error(t.getMessage(), t);
+            rsp.sendRedirect( "/naas/account/#/recharge?result=failure&money=0");
         }
-        return "failure";
     }
 
     @RequestMapping(value = "/alipay/notify", method = {RequestMethod.POST})

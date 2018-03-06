@@ -3,6 +3,7 @@ package com.syscxp.header.tunnel.host;
 import com.syscxp.header.host.APIUpdateHostMsg;
 import com.syscxp.header.host.HostConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
@@ -15,6 +16,7 @@ public class APIUpdateMonitorHostMsg extends APIUpdateHostMsg {
     @APIParam(maxLength = 255, required = false, emptyString = false)
     private String username;
     @APIParam(maxLength = 255, required = false, emptyString = false)
+    @PasswordNoSee
     private String password;
     @APIParam(numberRange = {1, 65535})
     private Integer sshPort;

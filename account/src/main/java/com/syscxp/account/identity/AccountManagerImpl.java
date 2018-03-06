@@ -824,9 +824,18 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, msg.getUuid());
 
         if (msg.getSession().getType() == AccountType.SystemAdmin || q.isExists()) {
+            validateSystemAdminOnlySelf(msg.getAccountUuid(), msg);
         } else {
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of the other account[uuid: %s]",
                     msg.getAccountUuid(), msg.getUuid()));
+        }
+    }
+
+    private void validateSystemAdminOnlySelf(String accountUuid, APIMessage msg){
+        AccountVO account = dbf.findByUuid(accountUuid, AccountVO.class);
+        if (account.getType() == AccountType.SystemAdmin && msg.getSession().isAdminAccountSession()){
+        }else{
+            throw new ApiMessageInterceptionException(argerr("禁止修改系统管理员信息"));
         }
     }
 

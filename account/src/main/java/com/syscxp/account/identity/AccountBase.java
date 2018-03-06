@@ -246,12 +246,12 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIResetAccountPWDMsg msg) {
 
         APIResetAccountPWDEvent evt = new APIResetAccountPWDEvent(msg.getId());
-        AccountVO cont = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
         String pwd = getRandomString(12);
 
-        cont.setPassword(DigestUtils.sha512Hex(pwd));
-        dbf.updateAndRefresh(cont);
+        account.setPassword(DigestUtils.sha512Hex(pwd));
+        dbf.updateAndRefresh(account);
 
         evt.setPassword(pwd);
         bus.publish(evt);
@@ -262,9 +262,9 @@ public class AccountBase extends AbstractAccount {
         APIResetUserPWDEvent evt = new APIResetUserPWDEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
         if (msg.getSession().getType() != AccountType.SystemAdmin &&
-                !msg.getAccountUuid().equals(user.getAccountUuid())) {
-            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of other user [uuid: %s]",
-                    msg.getAccountUuid(), msg.getUuid()));
+                !msg.getSession().getAccountUuid().equals(user.getAccountUuid())) {
+            throw new OperationFailureException(operr("只允许重置本账户下的子用户密码 account [uuid: %s], user [uuid: %s]",
+                    msg.getSession().getAccountUuid(), msg.getUuid()));
         }
 
         String pwd = getRandomString(12);
