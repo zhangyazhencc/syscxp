@@ -63,6 +63,7 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -2659,13 +2660,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 数据修正-修改资源UUID
      * */
+    @Transactional
     private void handle(APIUpdateResourceUuidMsg msg){
         APIUpdateResourceUuidReply reply = new APIUpdateResourceUuidReply();
         //修改最后一公里
         List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).lt(EdgeLineVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).list();
         for (EdgeLineVO edgeLineVO : edgeLineVOS){
-            edgeLineVO.setUuid(Platform.getUuid());
-            dbf.updateAndRefresh(edgeLineVO);
+
+            String uuid = Platform.getUuid();
+            String sql = "update EdgeLineEO set uuid = :uuid where uuid = :olduuid";
+            Query query = dbf.getEntityManager().createQuery(sql);
+            query.setParameter("uuid",uuid);
+            query.setParameter("olduuid",edgeLineVO.getUuid());
+            query.executeUpdate();
         }
 
         //修改物理接口
@@ -2673,19 +2680,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         List<String> sameUuids = Q.New(TunnelVO.class).in(TunnelVO_.uuid, interfaceUuids).select(TunnelVO_.uuid).listValues();
 
         for(String sameUUid : sameUuids){
-            InterfaceVO interfaceVO = dbf.findByUuid(sameUUid, InterfaceVO.class);
             String newInterfaceUuid = Platform.getUuid();
-            interfaceVO.setUuid(newInterfaceUuid);
-            dbf.updateAndRefresh(interfaceVO);
 
-            UpdateQuery.New(EdgeLineVO.class)
-                    .set(EdgeLineVO_.interfaceUuid, newInterfaceUuid)
-                    .eq(EdgeLineVO_.interfaceUuid, sameUUid)
-                    .update();
-            UpdateQuery.New(TunnelSwitchPortVO.class)
-                    .set(TunnelSwitchPortVO_.interfaceUuid, newInterfaceUuid)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, sameUUid)
-                    .update();
+            String sql1 = "update InterfaceEO set uuid = :newInterfaceUuid where uuid = :sameUUid";
+            Query query = dbf.getEntityManager().createQuery(sql1);
+            query.setParameter("newInterfaceUuid",newInterfaceUuid);
+            query.setParameter("sameUUid",sameUUid);
+            query.executeUpdate();
+
+            String sql2 = "update EdgeLineEO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
+            Query query2 = dbf.getEntityManager().createQuery(sql2);
+            query2.setParameter("newInterfaceUuid",newInterfaceUuid);
+            query2.setParameter("sameUUid",sameUUid);
+            query2.executeUpdate();
+
+            String sql3 = "update TunnelSwitchPortVO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
+            Query query3 = dbf.getEntityManager().createQuery(sql3);
+            query3.setParameter("newInterfaceUuid",newInterfaceUuid);
+            query3.setParameter("sameUUid",sameUUid);
+            query3.executeUpdate();
         }
 
         bus.reply(msg, reply);
