@@ -44,14 +44,14 @@ public class AlipayController {
                 APIVerifyReturnReply replay = (APIVerifyReturnReply) RESTApiDecoder.loads(res.getResult());
                 if (replay.getInventory()) {
                     rsp.sendRedirect("/naas/account/#/recharge?result=success&money="+replay.getAddMoney().doubleValue());
+                    return;
                 }
             }
-
+            rsp.sendRedirect( "/naas/account/#/recharge?result=failure&addMoney=0");
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.error(t.getMessage(), t);
             rsp.sendRedirect( "/naas/account/#/recharge?result=failure&money=0");
         }
-        rsp.sendRedirect( "/naas/account/#/recharge?result=failure&addMoney=0");
     }
 
     @RequestMapping(value = "/alipay/notify", method = {RequestMethod.POST})
