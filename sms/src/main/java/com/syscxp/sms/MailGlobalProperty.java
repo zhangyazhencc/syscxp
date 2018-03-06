@@ -8,16 +8,16 @@ import com.syscxp.core.GlobalPropertyDefinition;
 @GlobalPropertyDefinition
 public class MailGlobalProperty {
 
-    @GlobalProperty(name = "host", defaultValue = "smtp.exmail.qq.com")
-    public static String HOST;
+    @GlobalProperty(name = "mailHost", defaultValue = "smtp.exmail.qq.com")
+    public static String MAIL_HOST;
 
-    @GlobalProperty(name = "from", defaultValue = "wangwg@syscloud.cn")
-    public static String FROM;
+    @GlobalProperty(name = "mailFrom", defaultValue = "notice@syscloud.cn")
+    public static String MAIL_FROM;
 
-    @GlobalProperty(name = "username", defaultValue = "wangwg@syscloud.cn")
-    public static String USERNAME;
+    @GlobalProperty(name = "mailUsername", defaultValue = "wangwg@syscloud.cn")
+    public static String MAIL_USERNAME;
 
-    @GlobalProperty(name = "password", defaultValue = "Aa123456789")
-    public static String PASSWORD;
+    @GlobalProperty(name = "mailPassword", defaultValue = "Aa123456789")
+    public static String MAIL_PASSWORD;
 
 }
