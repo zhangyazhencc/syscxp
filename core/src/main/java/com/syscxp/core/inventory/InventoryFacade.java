@@ -10,7 +10,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface InventoryFacade {
-    public Object valueOf(Object vo);
+    Object valueOf(Object vo);
 
-    public List valueOf(Collection vos);
+    List valueOf(Collection vos);
 }

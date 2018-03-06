@@ -32,7 +32,7 @@
         <category>host</category>
         <name>ping.interval</name>
         <description>The interval management server sends ping command to host, in seconds</description>
-        <defaultValue>60</defaultValue>
+        <defaultValue>300</defaultValue>
         <type>java.lang.Integer</type>
     </config>
     <config>
@@ -47,6 +47,13 @@
         <name>reconnectAllOnBoot</name>
         <description>Whether to reconnect all hosts when the management node starts</description>
         <defaultValue>true</defaultValue>
+        <type>java.lang.Boolean</type>
+    </config>
+    <config>
+        <category>host</category>
+        <name>ping.auto</name>
+        <description>A boolean value indicating whether management server ping host auto</description>
+        <defaultValue>false</defaultValue>
         <type>java.lang.Boolean</type>
     </config>
 </globalConfig>

@@ -1,6 +1,5 @@
 package com.syscxp.core.job;
 
-import com.syscxp.core.job.JobQueueEntryInventory;
 import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;

@@ -62,7 +62,7 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
         }
         Q q = Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.name, msg.getName());
-        if (q.isExists()) {
+        if (q.count() > 1) {
             throw new ApiMessageInterceptionException(argerr(
                     "The VpnHost[name:%s] is already exist.", msg.getName()
             ));

@@ -1,6 +1,14 @@
 package com.syscxp.core.rest;
 
-import com.syscxp.header.rest.*;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.rest.RESTApiFacade;
+import com.syscxp.header.rest.RESTConstant;
+import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
+import com.syscxp.utils.logging.CLogger;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -8,25 +16,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import com.syscxp.header.alipay.APIVerifyNotifyMsg;
-import com.syscxp.header.alipay.APIVerifyNotifyReply;
-import com.syscxp.header.alipay.APIVerifyReturnMsg;
-import com.syscxp.header.alipay.APIVerifyReturnReply;
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.utils.Utils;
-import com.syscxp.utils.gson.JSONObjectUtil;
-import com.syscxp.utils.logging.CLogger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 @Controller
 public class RESTApiController {
@@ -64,9 +58,9 @@ public class RESTApiController {
             return t.getMessage();
         }
 
-        logger.info(String.format("Received request body:", body));
+        logger.info(String.format("Received request body: %s", body));
 
-        RestAPIResponse rsp = null;
+        RestAPIResponse rsp;
         if (amsg instanceof APISyncCallMessage) {
             rsp = restApi.call(amsg);
         } else {

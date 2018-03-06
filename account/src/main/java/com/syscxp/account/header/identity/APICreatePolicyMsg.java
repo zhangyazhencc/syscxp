@@ -1,10 +1,8 @@
 package com.syscxp.account.header.identity;
 
-import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.account.AccountMessage;
 import com.syscxp.header.identity.AccountType;
-import com.syscxp.header.identity.Action;
-import com.syscxp.header.identity.PermissionType;
+import com.syscxp.header.identity.PolicyType;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -18,7 +16,7 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage {
     public String permission;
 
     @APIParam(maxLength = 36)
-    private PermissionType type;
+    private PolicyType type;
 
     @APIParam
     private AccountType accountType;
@@ -45,11 +43,11 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage {
     }
 
 
-    public PermissionType getType() {
+    public PolicyType getType() {
         return type;
     }
 
-    public void setType(PermissionType type) {
+    public void setType(PolicyType type) {
         this.type = type;
     }
 

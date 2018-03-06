@@ -189,7 +189,7 @@ public class RESTApiFacadeImpl implements RESTApiFacade, CloudBusEventListener, 
 
     public Set<String> getBasePkgNames() {
         if (basePkgNames == null) {
-            basePkgNames = new HashSet<String>();
+            basePkgNames = new HashSet<>();
             basePkgNames.add("com.syscxp");
         }
         return basePkgNames;

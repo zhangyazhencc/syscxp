@@ -83,4 +83,23 @@
         <name>com.syscxp.header.tunnel.solution.APIGetTunnelPriceMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APICreateShareSolutionMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIDeleteShareSolutionMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIListShareSolutionMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIQueryShareSolutionMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIGetSolutionMsg</name>
+    </message>
+
+
 </service>

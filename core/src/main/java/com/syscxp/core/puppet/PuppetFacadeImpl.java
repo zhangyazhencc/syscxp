@@ -68,11 +68,11 @@ public class PuppetFacadeImpl extends AbstractService implements PuppetFacade {
             logger.debug(String.format("%s is not existing, need to deploy puppet module[%s]", destModulePath, moduleName));
             return true;
         }
-        List<File> destFiles = new ArrayList<File>(20);
+        List<File> destFiles = new ArrayList<>(20);
         ModuleWalker walker = new ModuleWalker();
         walker.doWalk(dest, destFiles);
 
-        List<File> srcFiles = new ArrayList<File>(20);
+        List<File> srcFiles = new ArrayList<>(20);
         walker = new ModuleWalker();
         File src = new File(modulePath);
         walker.doWalk(src, srcFiles);
@@ -82,13 +82,13 @@ public class PuppetFacadeImpl extends AbstractService implements PuppetFacade {
             return true;
         }
 
-        Map<String, String> srcMd5sum = new HashMap<String, String>(srcFiles.size());
+        Map<String, String> srcMd5sum = new HashMap<>(srcFiles.size());
         for (File f : srcFiles) {
             FileInputStream fis = new FileInputStream(f);
             String md5 = DigestUtils.md5Hex(fis);
             srcMd5sum.put(f.getName(), md5);
         }
-        Map<String, String> destMd5sum = new HashMap<String, String>(destFiles.size());
+        Map<String, String> destMd5sum = new HashMap<>(destFiles.size());
         for (File f : destFiles) {
             FileInputStream fis = new FileInputStream(f);
             String md5 = DigestUtils.md5Hex(fis);
@@ -127,9 +127,6 @@ public class PuppetFacadeImpl extends AbstractService implements PuppetFacade {
         }
 
         String moduleName = src.getName();
-        if (moduleName == null) {
-            throw new PuppetException(String.format("Cannot get puppet module name from path[%s]", modulePath));
-        }
 
         try {
             if (!isNeedToDeploy(moduleName, modulePath)) {
@@ -297,13 +294,14 @@ public class PuppetFacadeImpl extends AbstractService implements PuppetFacade {
 
     private void handle(PuppetPokeAgentMsg msg) throws UnknownHostException {
 
-
-        if (true) {
+        /*if (true) {
             pokePuppetAgent(msg);
         } else {
             PokePuppetAgentJob job = new PokePuppetAgentJob(msg, puppetMasterCertName);
             jobf.execute("puppet-" + msg.getHostname(), Platform.getManagementServerId(), job);
-        }
+        }*/
+
+        pokePuppetAgent(msg);
     }
 
     @Override

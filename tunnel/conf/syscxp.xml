@@ -60,5 +60,7 @@
     <import resource="springConfigXml/SolutionManager.xml"/>
     <import resource="springConfigXml/BillingCallBackManager.xml"/>
     <import resource="springConfigXml/EdgeLineManager.xml"/>
+    <import resource="springConfigXml/L3NetworkManager.xml"/>
+    <import resource="springConfigXml/NotificationManager.xml"/>
 
 </beans>

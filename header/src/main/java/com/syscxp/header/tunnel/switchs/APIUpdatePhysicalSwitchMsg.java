@@ -9,6 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-06
  */
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
@@ -25,11 +26,15 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
     private String mIP;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String localIP;
+    @APIParam(emptyString = false,required = false,validValues = {"SSH", "TELNET"})
+    private RemoteProtocol protocol;
+    @APIParam(required = false)
+    private Integer port;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String username;
-    @APIParam(emptyString = false,required = false,maxLength = 128)
+    @APIParam(required = false,maxLength = 128)
     private String password;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
+    @APIParam(required = false,maxLength = 255)
     private String description;
 
     public String getUuid() {
@@ -110,5 +115,21 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     public void setLocalIP(String localIP) {
         this.localIP = localIP;
+    }
+
+    public RemoteProtocol getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(RemoteProtocol protocol) {
+        this.protocol = protocol;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }

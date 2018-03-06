@@ -1,13 +1,27 @@
 package com.syscxp.core.generate;
 
-import com.syscxp.core.cloudbus.CloudBusImpl2;
+import com.syscxp.core.Platform;
+import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigFacade;
-import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.rest.RESTApiJsonTemplateGenerator;
+import com.syscxp.header.AbstractService;
 import com.syscxp.header.configuration.*;
+import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.*;
+import com.syscxp.header.rest.APINoSee;
+import com.syscxp.header.search.APIGetMessage;
+import com.syscxp.header.search.APISearchMessage;
+import com.syscxp.header.search.Inventory;
+import com.syscxp.header.vo.EO;
+import com.syscxp.header.vo.NoView;
 import com.syscxp.utils.*;
+import com.syscxp.utils.function.Function;
+import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.path.PathUtil;
 import javassist.Modifier;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -19,23 +33,6 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import com.syscxp.core.Platform;
-import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.rest.RESTApiJsonTemplateGenerator;
-import com.syscxp.header.AbstractService;
-import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.exception.CloudRuntimeException;
-import com.syscxp.header.rest.APINoSee;
-import com.syscxp.header.search.APIGetMessage;
-import com.syscxp.header.search.APISearchMessage;
-import com.syscxp.header.search.Inventory;
-import com.syscxp.header.vo.EO;
-import com.syscxp.header.vo.NoView;
-import com.syscxp.utils.*;
-import com.syscxp.utils.function.Function;
-import com.syscxp.utils.logging.CLogger;
-import com.syscxp.utils.path.PathUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -50,8 +47,6 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
 
     @Autowired
     private CloudBus bus;
-    @Autowired
-    private DatabaseFacade dbf;
     @Autowired
     private PluginRegistry pluginRgty;
     @Autowired
@@ -297,7 +292,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
     }
 
     private void generateGroovyNotNullObjectClass(StringBuilder sb) {
-        sb.append(String.format("public class NotNullObject {}\n\n"));
+        sb.append("public class NotNullObject {}\n\n");
     }
 
     private void generateRootMessageGroovyClass(StringBuilder sb) {
@@ -315,7 +310,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
         sb.append(String.format("\n%sreturn JSON.dump([(fullName()):this])", whiteSpace(8)));
         sb.append(String.format("\n%s}\n", whiteSpace(4)));
         sb.append(String.format("\n%sdef fullName() {}", whiteSpace(4)));
-        sb.append(String.format("\n}\n\n"));
+        sb.append("\n}\n\n");
         generatedGroovyClassName.add(Message.class.getSimpleName());
     }
 
@@ -328,7 +323,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
             }
             List<String> basePkgs = msg.getBasePackageNames();
             if (basePkgs == null || basePkgs.isEmpty()) {
-                basePkgs = new ArrayList<String>(1);
+                basePkgs = new ArrayList<>(1);
                 basePkgs.add("com.syscxp");
             }
 
@@ -403,7 +398,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
                 throw new CloudRuntimeException(String.format("cannot generate event type for %s", clazz.getName()), e);
             }
         }
-        sb.append(String.format("\n}\n\n"));
+        sb.append("\n}\n\n");
         generatedGroovyClassName.add(clazz.getSimpleName());
     }
 
@@ -444,7 +439,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
                 Collections.addAll(values, at.validValues());
                 sb.append(String.format("\n%s#valid values: %s", whiteSpace(8), values));
             }
-            if (at != null && at.validRegexValues() != null && at.validRegexValues().trim().equals("") == false) {
+            if (at != null && !at.validRegexValues().trim().equals("")) {
                 String regex = at.validRegexValues().trim();
                 sb.append(String.format("\n%s#valid regex values: %s", whiteSpace(8), regex));
             }
@@ -495,7 +490,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
     }
 
     private void generateSessionPythonClass(StringBuilder sb) {
-        sb.append(String.format("\nclass Session(object):"));
+        sb.append("\nclass Session(object):");
         sb.append(String.format("\n%sdef __init__(self):", whiteSpace(4)));
         sb.append(String.format("\n%sself.uuid = None", whiteSpace(8)));
         sb.append("\n\n");
@@ -508,19 +503,19 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
     }
 
     private void generateMandoryFieldClass(StringBuilder sb) {
-        sb.append(String.format("\n\nclass NotNoneField(object):"));
+        sb.append("\n\nclass NotNoneField(object):");
         sb.append(String.format("\n%spass\n", whiteSpace(4)));
 
-        sb.append(String.format("\n\nclass NotNoneList(object):"));
+        sb.append("\n\nclass NotNoneList(object):");
         sb.append(String.format("\n%spass\n", whiteSpace(4)));
 
-        sb.append(String.format("\n\nclass OptionalList(object):"));
+        sb.append("\n\nclass OptionalList(object):");
         sb.append(String.format("\n%spass\n", whiteSpace(4)));
 
-        sb.append(String.format("\n\nclass NotNoneMap(object):"));
+        sb.append("\n\nclass NotNoneMap(object):");
         sb.append(String.format("\n%spass\n", whiteSpace(4)));
 
-        sb.append(String.format("\n\nclass OptionalMap(object):"));
+        sb.append("\n\nclass OptionalMap(object):");
         sb.append(String.format("\n%spass\n", whiteSpace(4)));
     }
 
@@ -541,7 +536,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
 
     private void generateApiNameList(StringBuilder sb, List<String> apiNames) {
         Collections.sort(apiNames);
-        sb.append(String.format("\napi_names = ["));
+        sb.append("\napi_names = [");
         for (String name : apiNames) {
             sb.append(String.format("\n%s'%s',", whiteSpace(4), name));
         }
@@ -621,9 +616,9 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
     private void generateConstantPythonClass(StringBuilder sb, List<String> basePkgs) {
         Reflections reflections = Platform.getReflections();
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(PythonClass.class);
-        for (Class<?> clazz : annotated.stream().sorted((c1, c2) -> {
-            return c1.getSimpleName().compareTo(c2.getSimpleName());
-        }).collect(Collectors.toList())) {
+        for (Class<?> clazz : annotated.stream()
+                .sorted(Comparator.comparing(Class::getSimpleName))
+                .collect(Collectors.toList())) {
             try {
                 generateConstantFromClassField(sb, clazz);
             } catch (Exception e) {
@@ -638,9 +633,9 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
         scanner.addIncludeFilter(new AnnotationTypeFilter(PythonClassInventory.class));
         scanner.addExcludeFilter(new AnnotationTypeFilter(Component.class));
         for (String pkg : basePkgs) {
-            for (BeanDefinition bd : scanner.findCandidateComponents(pkg).stream().sorted((bd1, bd2) -> {
-                return bd1.getBeanClassName().compareTo(bd2.getBeanClassName());
-            }).collect(Collectors.toList())) {
+            for (BeanDefinition bd : scanner.findCandidateComponents(pkg).stream()
+                    .sorted(Comparator.comparing(BeanDefinition::getBeanClassName))
+                    .collect(Collectors.toList())) {
                 try {
                     Class<?> clazz = Class.forName(bd.getBeanClassName());
                     if (isPythonClassGenerated(clazz)) {
@@ -671,19 +666,18 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
         pysb.append("\n#GlobalConfigPythonConstant");
         Map<String, List<String>> configs = new HashMap<>();
         for (GlobalConfig c : gcf.getAllConfig().values()) {
-            List<String> cnames = configs.get(c.getCategory());
+            /*List<String> cnames = configs.get(c.getCategory());
             if (cnames == null) {
                 cnames = new ArrayList<>();
                 configs.put(c.getCategory(), cnames);
-            }
+            }*/
+            List<String> cnames = configs.computeIfAbsent(c.getCategory(), k -> new ArrayList<>());
             cnames.add(c.getName());
         }
 
         for (Map.Entry<String, List<String>> e : configs.entrySet()
                 .stream()
-                .sorted((e1, e2) -> {
-                    return e1.getKey().toUpperCase().compareTo(e2.getKey().toUpperCase());
-                })
+                .sorted(Comparator.comparing(e2 -> e2.getKey().toUpperCase()))
                 .collect(Collectors.toList())) {
             pysb.append(String.format("\nclass GlobalConfig_%s(object):", e.getKey().toUpperCase().replaceAll("\\.", "_")));
             for (String cname : e.getValue()) {
@@ -806,8 +800,9 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
 
     private void populateExtensions() {
         List<PythonApiBindingWriter> exts = pluginRgty.getExtensionList(PythonApiBindingWriter.class);
-        List<PythonApiBindingWriter> sortedExts = exts.stream().sorted((e1, e2) ->
-                e1.getClass().getName().compareTo(e2.getClass().getName())).collect(Collectors.toList());
+        List<PythonApiBindingWriter> sortedExts = exts.stream()
+                .sorted(Comparator.comparing(e -> e.getClass().getName()))
+                .collect(Collectors.toList());
         for (PythonApiBindingWriter ext : sortedExts) {
             pythonApiBindingWriters.add(ext);
         }

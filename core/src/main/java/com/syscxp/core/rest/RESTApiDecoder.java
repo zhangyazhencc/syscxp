@@ -1,10 +1,6 @@
 package com.syscxp.core.rest;
 
 import com.google.gson.*;
-import com.syscxp.core.job.Job;
-import com.syscxp.header.account.APIValidateAccountMsg;
-import com.syscxp.header.identity.SessionInventory;
-import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.rest.APINoSession;
@@ -67,9 +63,9 @@ public class RESTApiDecoder {
     private class EncoderWithSession extends Encoder {
         @Override
         public boolean shouldSkipField(FieldAttributes f) {
-            if (f.getAnnotation(APIWithSession.class) != null)
-                return false;
-            return f.getAnnotation(APINoSee.class) != null || f.getAnnotation(APINoSession.class) != null;
+            return f.getAnnotation(APIWithSession.class) == null
+                    && (f.getAnnotation(APINoSee.class) != null
+                    || f.getAnnotation(APINoSession.class) != null);
         }
     }
 
@@ -123,8 +119,7 @@ public class RESTApiDecoder {
     }
     
     public static Message loads(String jsonStr) {
-        Message msg = self.gsonDecoder.fromJson(jsonStr, Message.class);
-        return msg;
+        return self.gsonDecoder.fromJson(jsonStr, Message.class);
     }
     
     public static String dump(Message msg) {

@@ -78,16 +78,13 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                         && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
                     // can ping, but host is in Disconnected status
                     needReconnect = true;
-                } else if (!r.isConnected() && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)
-                        && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
-                    // cannot ping, host is in Disconnected status
-                    needReconnect = true;
-                    logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
-                            "but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
+                } else if (!r.isConnected()) {
+                    logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
                 }
 
+                //TODO: implement stopping PING after failing specific times
 
-                if (needReconnect) {
+                if (needReconnect && !inReconnectingHost.contains(hostUuid)) {
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
                                     "issue a reconnect because %s is set to true",
                             hostUuid, HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.toString()));
@@ -113,6 +110,9 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
         @Override
         public void run() {
             try {
+                if (!HostGlobalConfig.PING_HOST_AUTO.value(Boolean.class)) {
+                    return;
+                }
                 List<PingHostMsg> msgs;
                 synchronized (hostUuids) {
                     msgs = new ArrayList<>();
@@ -241,13 +241,15 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
     private void setupTracker() {
         startTracker();
-        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
-                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startTracker();
-            }
+        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension((oldConfig, newConfig) -> {
+            logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            startTracker();
+        });
+        HostGlobalConfig.PING_HOST_AUTO.installUpdateExtension((oldConfig, newConfig) -> {
+            logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            startTracker();
         });
     }
 

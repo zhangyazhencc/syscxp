@@ -65,6 +65,12 @@
         <class>com.syscxp.header.tunnel.solution.SolutionInterfaceVO</class>
         <class>com.syscxp.header.tunnel.solution.SolutionTunnelVO</class>
         <class>com.syscxp.header.tunnel.solution.SolutionVpnVO</class>
+        <class>com.syscxp.header.tunnel.solution.ShareSolutionVO</class>
+
+        <class>com.syscxp.header.tunnel.network.L3RouteVO</class>
+        <class>com.syscxp.header.tunnel.network.L3RtVO</class>
+        <class>com.syscxp.header.tunnel.network.L3EndPointVO</class>
+        <class>com.syscxp.header.tunnel.network.L3NetworkVO</class>
 
     </persistence-unit>
 </persistence>

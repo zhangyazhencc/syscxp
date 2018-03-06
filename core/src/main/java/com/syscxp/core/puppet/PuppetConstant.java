@@ -1,9 +1,9 @@
 package com.syscxp.core.puppet;
 
 public interface PuppetConstant {
-    public String SERVICE_ID = "PuppetFacade";
+    String SERVICE_ID = "PuppetFacade";
     
-    public static enum PuppetGlobalConfig {
+    enum PuppetGlobalConfig {
         useJobQueue;
         
         public String getCategory() {

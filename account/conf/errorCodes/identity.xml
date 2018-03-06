@@ -26,5 +26,10 @@
         <description>Invalid quota operation</description>>
     </code>
 
+    <code>
+        <id>1010</id>id>
+        <description>Account not found</description>>
+    </code>
+
 </error>
 

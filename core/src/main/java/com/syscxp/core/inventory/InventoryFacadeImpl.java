@@ -23,7 +23,7 @@ public class InventoryFacadeImpl implements InventoryFacade, Component {
         Class<?> inventoryClass;
     };
 
-    private Map<Class<?>, Info> inventoryMapping = new HashMap<Class<?>, Info>();
+    private Map<Class<?>, Info> inventoryMapping = new HashMap<>();
 
     private Info getInfo(Class<?> voClass) {
         Info info = inventoryMapping.get(voClass);
@@ -72,7 +72,7 @@ public class InventoryFacadeImpl implements InventoryFacade, Component {
     }
 
     public List<String> getBasePkgNames() {
-        List<String> pkgNames = new ArrayList<String>();
+        List<String> pkgNames = new ArrayList<>();
         pkgNames.add("com.syscxp");
         return pkgNames;
     }
@@ -87,8 +87,7 @@ public class InventoryFacadeImpl implements InventoryFacade, Component {
         if (methodName.equals("")) {
             methodName = "valueOf";
         }
-        Method valueOf = inventoryClass.getMethod(methodName, Collection.class);
-        return valueOf;
+        return inventoryClass.getMethod(methodName, Collection.class);
     }
 
     private List convertVOsToInventories(Collection vos) {
@@ -100,8 +99,7 @@ public class InventoryFacadeImpl implements InventoryFacade, Component {
 
             Info info = getInfo(first.getClass());
             Method valueOf = getCollectionValueOfMethod(info.inventory, info.inventoryClass);
-            List ret = (List) valueOf.invoke(info.inventoryClass, vos);
-            return ret;
+            return (List) valueOf.invoke(info.inventoryClass, vos);
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }
@@ -111,8 +109,7 @@ public class InventoryFacadeImpl implements InventoryFacade, Component {
         try {
             Info info = getInfo(vo.getClass());
             Method valueOf = getValueOfMethod(info.inventoryClass, vo.getClass());
-            Object ret = valueOf.invoke(info.inventoryClass, vo);
-            return ret;
+            return valueOf.invoke(info.inventoryClass, vo);
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }

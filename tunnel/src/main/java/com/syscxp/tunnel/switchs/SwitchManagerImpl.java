@@ -3,8 +3,7 @@ package com.syscxp.tunnel.switchs;
 import com.syscxp.core.db.*;
 import com.syscxp.header.tunnel.SwitchConstant;
 import com.syscxp.header.tunnel.switchs.*;
-import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
-import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +18,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.host.HostSwitchMonitorVO;
 import com.syscxp.header.tunnel.host.HostSwitchMonitorVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
-import com.syscxp.header.tunnel.tunnel.InterfaceVO;
-import com.syscxp.header.tunnel.tunnel.InterfaceVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
@@ -91,9 +88,65 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
             handle((APIQuerySwitchPortAvailableMsg) msg);
         } else if (msg instanceof APIQueryVlanUsedMsg) {
             handle((APIQueryVlanUsedMsg) msg);
+        } else if (msg instanceof APIGetSwitchPortDetailMsg) {
+            handle((APIGetSwitchPortDetailMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetSwitchPortDetailMsg msg){
+        APIGetSwitchPortDetailReply reply = new APIGetSwitchPortDetailReply();
+
+        String swicthPortUuid = msg.getUuid();
+
+        //已开通专线数量
+        String sql1 = "select count(b.uuid) from TunnelSwitchPortVO a,TunnelVO b " +
+                "where a.tunnelUuid = b.uuid " +
+                "and a.switchPortUuid = :swicthPortUuid " +
+                "and b.state = 'Enabled'";
+        TypedQuery<Long> vq1 = dbf.getEntityManager().createQuery(sql1, Long.class);
+        vq1.setParameter("swicthPortUuid", swicthPortUuid);
+        Long count = vq1.getSingleResult();
+        reply.setTunnelNumEnabled(count.intValue());
+
+        //已售带宽
+        String sql2 = "select sum(b.bandwidth) from TunnelSwitchPortVO a,TunnelVO b " +
+                "where a.tunnelUuid = b.uuid " +
+                "and a.switchPortUuid = :swicthPortUuid " +
+                "and b.state != 'Unpaid'";
+        TypedQuery<Long> vq2 = dbf.getEntityManager().createQuery(sql2, Long.class);
+        vq2.setParameter("swicthPortUuid", swicthPortUuid);
+        Long sum1 = vq2.getSingleResult();
+        if(sum1 == null){
+            sum1 = 0L;
+        }
+        reply.setBandwidthPaid(sum1);
+
+        //已使用带宽
+        String sql3 = "select sum(b.bandwidth) from TunnelSwitchPortVO a,TunnelVO b " +
+                "where a.tunnelUuid = b.uuid " +
+                "and a.switchPortUuid = :swicthPortUuid " +
+                "and b.state = 'Enabled'";
+        TypedQuery<Long> vq3 = dbf.getEntityManager().createQuery(sql3, Long.class);
+        vq3.setParameter("swicthPortUuid", swicthPortUuid);
+        Long sum2 = vq3.getSingleResult();
+        if(sum2 == null){
+            sum2 = 0L;
+        }
+        reply.setBandwidthUsed(sum2);
+
+        //带宽使用率
+        if(sum2 == 0){
+            reply.setBandwidthUsage((double)0);
+        }else if(sum1 == 0){
+            reply.setBandwidthUsage((double)0);
+        }else{
+            reply.setBandwidthUsage(sum2/(double)sum1);
+        }
+
+        bus.reply(msg, reply);
+
     }
 
     private void handle(APIQueryVlanUsedMsg msg) {
@@ -194,6 +247,8 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         vo.setRack(msg.getRack());
         vo.setmIP(msg.getmIP());
         vo.setLocalIP(msg.getLocalIP());
+        vo.setProtocol(msg.getProtocol());
+        vo.setPort(msg.getPort());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
         vo.setDescription(msg.getDescription());
@@ -247,11 +302,19 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
             vo.setLocalIP(msg.getLocalIP());
             update = true;
         }
+        if (msg.getProtocol() != null) {
+            vo.setProtocol(msg.getProtocol());
+            update = true;
+        }
+        if (msg.getPort() != null) {
+            vo.setPort(msg.getPort());
+            update = true;
+        }
         if (msg.getUsername() != null) {
             vo.setUsername(msg.getUsername());
             update = true;
         }
-        if (msg.getPassword() != null) {
+        if (msg.getPassword() != null && !"".equals(msg.getPassword())) {
             vo.setPassword(msg.getPassword());
             update = true;
         }
@@ -383,6 +446,21 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         boolean update = false;
         if (msg.getState() != null) {
             vo.setState(msg.getState());
+            update = true;
+        }
+
+        if(msg.getPortAttribute() != null){
+            vo.setPortAttribute(msg.getPortAttribute());
+            update = true;
+        }
+
+        if(msg.getAutoAllot() != null){
+            vo.setAutoAllot(msg.getAutoAllot());
+            update = true;
+        }
+
+        if(msg.getPortOfferingUuid() != null){
+            vo.setPortType(msg.getPortOfferingUuid());
             update = true;
         }
 
@@ -705,6 +783,27 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
     }
 
     private void validate(APIUpdateSwitchPortMsg msg) {
+        if(msg.getPortOfferingUuid() != null){
+
+            if(msg.getPortOfferingUuid().equals("SHARE")){
+                //独享改共享的验证
+                if(Q.New(InterfaceVO.class)
+                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                        .eq(InterfaceVO_.type, NetworkType.ACCESS)
+                        .isExists()){
+                    throw new ApiMessageInterceptionException(argerr("该端口已经被用户作为ACCESS模式接口，不可再共享！"));
+                }
+            }else{
+                //共享改独享的验证
+                if(Q.New(InterfaceVO.class)
+                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                        .select(InterfaceVO_.ownerAccountUuid)
+                        .groupBy(InterfaceVO_.ownerAccountUuid)
+                        .count() > 1){
+                    throw new ApiMessageInterceptionException(argerr("该端口已经被不同的用户使用，不可再独享！"));
+                }
+            }
+        }
     }
 
     private void validate(APIDeleteSwitchPortMsg msg) {

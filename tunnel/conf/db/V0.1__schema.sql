@@ -18,7 +18,6 @@ CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
-ALTER TABLE SpeedRecordsVO ADD CONSTRAINT fkSpeedRecordsVOTunnelEO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 
 CREATE TABLE `syscxp_tunnel`.`SpeedTestTunnelVO` (
@@ -28,7 +27,7 @@ CREATE TABLE `syscxp_tunnel`.`SpeedTestTunnelVO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='测速专线列表';
-ALTER TABLE SpeedTestTunnelVO ADD CONSTRAINT fkSpeedTestTunnelVOTunnelVO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
+
 
 CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `uuid` varchar(32) NOT NULL UNIQUE,
@@ -141,7 +140,8 @@ CREATE TABLE `syscxp_tunnel`.`ZoneVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `name` varchar(128) NOT NULL COMMENT '区域名称',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `syscxp_tunnel`.`ZoneVO` (`uuid`,`name`,`lastOpDate`,`createDate`)
@@ -156,8 +156,10 @@ CREATE TABLE `syscxp_tunnel`.`ZoneNodeRefVO` (
   `nodeUuid` varchar(32) NOT NULL COMMENT '节点UUID',
   `zoneUuid` varchar(32) NOT NULL COMMENT '区域UUID',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 ## 连接点
 CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
@@ -215,6 +217,8 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `mIP` varchar(128) NOT NULL COMMENT '管理IP',
   `localIP` varchar(128) NOT NULL COMMENT '本地IP',
+  `protocol` varchar(32) NOT NULL COMMENT '远程协议',
+  `port` INT(11) NOT NULL COMMENT '协议端口号',
   `username` varchar(128) NOT NULL COMMENT '用户名',
   `password` varchar(128) NOT NULL COMMENT '密码',
   `deleted` varchar(255) DEFAULT NULL,
@@ -223,7 +227,7 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, accessType, rack, description, mIP, localIP, username, password, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, accessType, rack, description, mIP, localIP, protocol, port, username, password, lastOpDate, createDate
                                           FROM `PhysicalSwitchEO` WHERE deleted IS NULL;
 
 ##物理交换机上联
@@ -255,7 +259,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, type, description, state, status, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, code, name, type, description, state, status, lastOpDate, createDate
                                             FROM `SwitchEO` WHERE deleted IS NULL;
 
 
@@ -468,7 +472,6 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelSwitchPortVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-ALTER TABLE TunnelSwitchPortVO ADD CONSTRAINT fkTunnelSwitchPortVOTunnelEO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 ##Qinq模式网段
 CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
@@ -480,7 +483,6 @@ CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-ALTER TABLE QinqVO ADD CONSTRAINT fkQinqVOTunnelEO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 ############################################################################################################################
 ##########################################监控##############################################################################
@@ -499,7 +501,6 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorVO` (
   UNIQUE KEY `uuid` (`uuid`)
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '通道监控';
-ALTER TABLE TunnelMonitorVO ADD CONSTRAINT fkTunnelMonitorVOTunnelEO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 
 ##监控机
@@ -596,8 +597,12 @@ CREATE TABLE `syscxp_tunnel`.`CloudVO` (
 INSERT INTO `syscxp_tunnel`.`CloudVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
 VALUES ('Syscloud','犀思互联云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('AliYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Tencent','腾讯云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('Huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
-  ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
+  ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Ksyun','金山云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('JD','京东云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('UCloud','UCloud','','2017-11-01 13:51:31','2017-11-01 13:51:31');
 
 CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 	`uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',
@@ -608,9 +613,6 @@ CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 	`monitorType` VARCHAR(32) DEFAULT 'TUNNEL',
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-ALTER TABLE MonitorHostVO ADD CONSTRAINT fkMonitorHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
-ALTER TABLE MonitorHostVO ADD CONSTRAINT fkMonitorHostVONodeEO FOREIGN KEY (nodeUuid) REFERENCES NodeEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
 
 ########################################################
 #解决方案#
@@ -687,3 +689,22 @@ ALTER TABLE SolutionVpnVO ADD CONSTRAINT fkSolutionVpnVOSolutionTunnelVO FOREIGN
 ########################################################
 
 CREATE INDEX idxTaskResourceVOcreateDate ON TaskResourceVO (lastOpDate);
+
+
+#######################################################
+
+DROP TABLE IF EXISTS `ShareSolutionVO`;
+#分享方案#
+CREATE TABLE  `ShareSolutionVO` (
+    `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+    `accountUuid` varchar(32) NOT NULL,
+    `ownerAccountUuid` varchar(32) NOT NULL,
+    `solutionUuid` varchar(32) NOT NULL,
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`),
+    UNIQUE KEY `ukShareSolutionVO` (`accountUuid`,`ownerAccountUuid`,`solutionUuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `SolutionVO` ADD COLUMN `isShare` tinyint(1) unsigned DEFAULT 0 COMMENT '是否共享';
+

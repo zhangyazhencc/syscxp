@@ -37,7 +37,7 @@ import static com.syscxp.utils.DebugUtils.Assert;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class SaltRunner {
     private static final CLogger logger = Utils.getLogger(SaltRunner.class);
-    private static Map<String, String> minionIds = new HashMap<String, String>();
+    private static Map<String, String> minionIds = new HashMap<>();
 
     @Autowired
     private ThreadFacade thdf;
@@ -224,8 +224,8 @@ public class SaltRunner {
     private boolean doRunState() {
         StringBuilder sb = new StringBuilder(String.format("/usr/bin/salt --out=json '%s' state.sls %s queue=True", minionId, stateName));
         boolean alwaysFullDeploy = Boolean.valueOf(System.getProperty("SaltFacade.alwaysFullDeploy"));
-        if (alwaysFullDeploy ? alwaysFullDeploy : fullDeploy) {
-            sb.append(String.format(" pillar=\"{'pkg':True}\""));
+        if (alwaysFullDeploy || fullDeploy) {
+            sb.append(" pillar=\"{'pkg':True}\"");
         }
         String cmd = sb.toString();
         ShellResult res = ShellUtils.runAndReturn(cmd);
@@ -233,7 +233,8 @@ public class SaltRunner {
         if ("".equals(res.getStdout()) || res.isReturnCode(2)) {
             sb = new StringBuilder(String.format("\nfailed to apply salt state[minion id:%s, state name:%s]", minionId, stateName));
             sb.append(String.format("\ncommand: %s", cmd));
-            sb.append(String.format("\nno json output from the command, it's probably caused by the minion hasn't connected to master, will retry", res.getStdout()));
+            sb.append(String.format("\nno json output from the command, it's probably caused by the minion hasn't connected to master, will retry." +
+                    "%s", res.getStdout()));
             logger.debug(sb.toString());
             return false;
         }

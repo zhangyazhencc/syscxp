@@ -25,10 +25,10 @@
 		</syscxp:plugin>
     </bean>
 
-	<bean id="ConfigurationManager" class="com.syscxp.core.generate.ConfigurationManagerImpl">
-		<syscxp:plugin>
-			<syscxp:extension interface="com.syscxp.header.Service" />
-		</syscxp:plugin>
-	</bean>
+	<!--<bean id="ConfigurationManager" class="com.syscxp.core.generate.ConfigurationManagerImpl">-->
+		<!--<syscxp:plugin>-->
+			<!--<syscxp:extension interface="com.syscxp.header.Service" />-->
+		<!--</syscxp:plugin>-->
+	<!--</bean>-->
 
 </beans>

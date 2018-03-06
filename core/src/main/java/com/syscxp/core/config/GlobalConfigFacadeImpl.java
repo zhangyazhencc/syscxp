@@ -6,8 +6,6 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.errorcode.ErrorFacade;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.exception.CloudRuntimeException;
@@ -18,6 +16,7 @@ import com.syscxp.utils.TypeUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -39,8 +38,6 @@ public class GlobalConfigFacadeImpl extends AbstractService implements GlobalCon
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private ErrorFacade errf;
 
     private JAXBContext context;
     private Map<String, GlobalConfig> allConfigs = new ConcurrentHashMap<>();

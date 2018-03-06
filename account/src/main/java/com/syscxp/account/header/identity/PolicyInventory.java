@@ -1,7 +1,7 @@
 package com.syscxp.account.header.identity;
 
 import com.syscxp.header.identity.AccountType;
-import com.syscxp.header.identity.PermissionType;
+import com.syscxp.header.identity.PolicyType;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -17,7 +17,7 @@ public class PolicyInventory {
     private String name;
     private String permission;
     private String description;
-    private PermissionType type;
+    private PolicyType type;
     private AccountType accountType;
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -41,11 +41,11 @@ public class PolicyInventory {
         return invs;
     }
 
-    public PermissionType getType() {
+    public PolicyType getType() {
         return type;
     }
 
-    public void setType(PermissionType type) {
+    public void setType(PolicyType type) {
         this.type = type;
     }
 

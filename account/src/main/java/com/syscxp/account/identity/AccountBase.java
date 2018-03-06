@@ -9,6 +9,8 @@ import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.identity.*;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsService;
+import com.syscxp.utils.CollectionUtils;
+import org.codehaus.groovy.util.StringUtil;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,6 +168,7 @@ public class AccountBase extends AbstractAccount {
 
     }
 
+
     private void handle(APILogInBySecretIdMsg msg) {
         APILogInReply reply = new APILogInReply();
 
@@ -203,24 +206,25 @@ public class AccountBase extends AbstractAccount {
 
         RoleVO role = dbf.findByUuid(msg.getUuid(), RoleVO.class);
 
+        boolean update = false;
         if (msg.getName() != null) {
             role.setName(msg.getName());
+            update = true;
         }
 
         if (msg.getDescription() != null) {
             role.setDescription(msg.getDescription());
+            update = true;
         }
 
         if (msg.getPolicyUuids() != null) {
-
-            List<RolePolicyRefVO> list = new ArrayList();
-            RolePolicyRefVO vo = null;
-
             UpdateQuery.New(RolePolicyRefVO.class).condAnd(RolePolicyRefVO_.roleUuid,
                     SimpleQuery.Op.EQ,msg.getUuid()).delete();
 
-            for (String id : msg.getPolicyUuids()) {
-                vo = new RolePolicyRefVO();
+            List<RolePolicyRefVO> list = new ArrayList();
+            List<String> pids = CollectionUtils.removeDuplicateFromList(msg.getPolicyUuids());
+            for (String id : pids) {
+                RolePolicyRefVO vo = new RolePolicyRefVO();
                 vo.setRoleUuid(msg.getUuid());
                 vo.setPolicyUuid(id);
                 list.add(vo);
@@ -229,8 +233,9 @@ public class AccountBase extends AbstractAccount {
             dbf.persistCollection(list);
         }
 
-
-        role = dbf.getEntityManager().merge(role);
+        if(update) {
+            role = dbf.getEntityManager().merge(role);
+        }
 
         APIUpdateRoleEvent evt = new APIUpdateRoleEvent(msg.getId());
 

@@ -1,6 +1,5 @@
 package com.syscxp.vpn.host;
 
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.ansible.AnsibleGlobalProperty;
@@ -149,7 +148,7 @@ public class VpnHost extends HostBase implements Host {
                             public Class<PingResponse> getReturnClass() {
                                 return PingResponse.class;
                             }
-                        });
+                        }, TimeUnit.SECONDS, 5);
                     }
                 });
 
@@ -501,7 +500,7 @@ public class VpnHost extends HostBase implements Host {
         if (umsg.getNodeUuid() != null) {
             vo.setNodeUuid(umsg.getNodeUuid());
         }
-        if (umsg.getPassword() != null) {
+        if (umsg.getPassword() != null && !umsg.getPassword().equals("")) {
             vo.setPassword(umsg.getPassword());
         }
         if (umsg.getSshPort() != null && NetworkUtils.isLegalPort(umsg.getSshPort())) {

@@ -33,6 +33,8 @@ public class TunnelStatusChecker implements Component {
     @Autowired
     private ThreadFacade thdf;
 
+    private int index = 0;
+
     private Future<Void> checkTunnelStatusThread = null;
     private int checkTunnelStatusInterval;
     private boolean isCheckTunnelStatus;
@@ -41,37 +43,37 @@ public class TunnelStatusChecker implements Component {
     public static final double PACKETS_LOST_MIN = 5;
     public static final double PACKETS_LOST_MAX = 20;
 
-    private void startCleanExpiredProduct() {
+    private void startStatusCheck() {
         checkTunnelStatusInterval = TunnelGlobalConfig.CHECK_TUNNEL_STATUS_INTERVAL.value(Integer.class);
         isCheckTunnelStatus = TunnelGlobalConfig.IS_CHECK_TUNNEL_STATUS.value(Boolean.class);
         if (checkTunnelStatusThread != null) {
             checkTunnelStatusThread.cancel(true);
         }
 
-        checkTunnelStatusThread = thdf.submitPeriodicTask(new CheckTunnelStatus(), TimeUnit.SECONDS.toMillis(10));
+        checkTunnelStatusThread = thdf.submitPeriodicTask(new CheckTunnelStatus(), 300);
         logger.debug(String
-                .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", checkTunnelStatusInterval));
+                .format("security group checkTunnelStatusThread starts[interval: %s seconds]", checkTunnelStatusInterval));
     }
 
-    private void restartCleanExpiredProduct() {
+    private void restartStatusCheck() {
 
-        startCleanExpiredProduct();
+        startStatusCheck();
 
         TunnelGlobalConfig.CHECK_TUNNEL_STATUS_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
             @Override
             public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart startCleanExpiredProduct thread",
+                logger.debug(String.format("%s change from %s to %s, restart CheckTunnelStatus thread",
                         oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startCleanExpiredProduct();
+                startStatusCheck();
             }
         });
 
         TunnelGlobalConfig.IS_CHECK_TUNNEL_STATUS.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
             @Override
             public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart startCleanExpiredProduct thread",
+                logger.debug(String.format("%s change from %s to %s, restart CheckTunnelStatus thread",
                         oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startCleanExpiredProduct();
+                startStatusCheck();
             }
         });
     }
@@ -81,24 +83,25 @@ public class TunnelStatusChecker implements Component {
 
         @Override
         public TimeUnit getTimeUnit() {
-            return TimeUnit.MILLISECONDS;
+            return TimeUnit.SECONDS;
         }
 
         @Override
         public long getInterval() {
-            return TimeUnit.MINUTES.toMillis(checkTunnelStatusInterval);
+            return checkTunnelStatusInterval;
         }
 
         @Override
         public String getName() {
-            return "clean-expired-product-" + Platform.getManagementServerId();
+            return "check-tunnel-status-" + Platform.getManagementServerId();
         }
 
-        private List<TunnelVO> getTunnels() {
+        private List<TunnelVO> getTunnels(int start) {
 
             return Q.New(TunnelVO.class)
                     .eq(TunnelVO_.state, TunnelState.Enabled)
                     .eq(TunnelVO_.monitorState, TunnelMonitorState.Enabled)
+                    .start(start).limit(50)
                     .list();
         }
 
@@ -107,12 +110,17 @@ public class TunnelStatusChecker implements Component {
             if (!isCheckTunnelStatus) {
                 return;
             }
-            List<TunnelVO> tunnelVOs = new ArrayList<>();
+            int start = index * 50;
+            index++;
+
+            List<TunnelVO> tunnelVOs;
             try {
-                tunnelVOs = getTunnels();
+                tunnelVOs = getTunnels(start);
                 logger.debug("tunnel status check.");
-                if (tunnelVOs.isEmpty())
+                if (tunnelVOs.isEmpty()) {
+                    index = 0;
                     return;
+                }
                 for (TunnelVO vo : tunnelVOs) {
                     Long endTime = Instant.now().getEpochSecond();
                     Long startTime = endTime - 5 * 30;
@@ -153,7 +161,6 @@ public class TunnelStatusChecker implements Component {
                 tunnelVOs.clear();
             } catch (Throwable t) {
                 logger.warn("unhandled exception", t);
-                tunnelVOs.clear();
             }
         }
 
@@ -195,7 +202,7 @@ public class TunnelStatusChecker implements Component {
 
     @Override
     public boolean start() {
-        restartCleanExpiredProduct();
+        restartStatusCheck();
         return true;
     }
 
@@ -203,5 +210,4 @@ public class TunnelStatusChecker implements Component {
     public boolean stop() {
         return true;
     }
-
 }

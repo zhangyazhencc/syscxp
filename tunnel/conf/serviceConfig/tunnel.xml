@@ -186,4 +186,12 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIRunDataForTunnelTypeMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIRunDataForTunnelZKMsg</name>
+    </message>
+
 </service>
