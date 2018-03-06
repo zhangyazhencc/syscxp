@@ -27,6 +27,9 @@ public class L3RouteVO {
     private String nextIp;
 
     @Column
+    private Long index;
+
+    @Column
     private Timestamp lastOpDate;
 
     @Column
@@ -62,6 +65,14 @@ public class L3RouteVO {
 
     public void setNextIp(String nextIp) {
         this.nextIp = nextIp;
+    }
+
+    public Long getIndex() {
+        return index;
+    }
+
+    public void setIndex(Long index) {
+        this.index = index;
     }
 
     public Timestamp getLastOpDate() {

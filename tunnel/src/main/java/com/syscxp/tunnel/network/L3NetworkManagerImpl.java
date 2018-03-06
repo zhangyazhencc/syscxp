@@ -72,6 +72,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         L3RouteVO vo = new L3RouteVO();
         vo.setUuid(Platform.getUuid());
         vOAddAllOfMsg.addAll(msg,vo);
+
+
         bus.publish(event);
     }
 
