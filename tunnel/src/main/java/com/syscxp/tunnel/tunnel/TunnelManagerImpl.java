@@ -2662,7 +2662,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIUpdateResourceUuidMsg msg){
         APIUpdateResourceUuidReply reply = new APIUpdateResourceUuidReply();
         //修改最后一公里
-        List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).lt(EdgeLineVO_.createDate, "2018-03-03 00:00:00").list();
+        List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).lt(EdgeLineVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).list();
         for (EdgeLineVO edgeLineVO : edgeLineVOS){
             edgeLineVO.setUuid(Platform.getUuid());
             dbf.updateAndRefresh(edgeLineVO);
