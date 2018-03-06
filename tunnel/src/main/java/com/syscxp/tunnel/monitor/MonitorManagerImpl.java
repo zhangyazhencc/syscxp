@@ -14,13 +14,9 @@ import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
-import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
-import com.syscxp.header.core.workflow.*;
-import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.host.*;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
@@ -42,7 +38,6 @@ import com.syscxp.utils.data.SizeUnit;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
-import groovy.transform.TailRecursive;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
-import org.springframework.web.client.RestTemplate;
 
-import javax.persistence.StoredProcedureQuery;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -63,7 +56,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
-import static com.syscxp.core.Platform.err;
 
 /**
  * Created by DCY on 2017-09-07
@@ -1308,12 +1300,23 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void handle(APIQueryOpentsdbConditionMsg msg) {
         APIQueryOpentsdbConditionReply reply = new APIQueryOpentsdbConditionReply();
 
-        List<OpenTSDBCommands.TunnelCondition> tunnelConditions = new ArrayList<>();
+        List<OpenTSDBCommands.CustomCondition> conditions = new ArrayList<>();
+        if(msg.getType() == OpentsdbConditionType.TUNNEL)
+            conditions = getTunnelCondition(msg);
+        else if (msg.getType() == OpentsdbConditionType.SWITCH_PORT)
+            conditions = getSwitchPortCondition(msg);
+
+        reply.setInventories(TunnelConditionInventory.valueOf(conditions));
+        bus.reply(msg, reply);
+    }
+
+    private List<OpenTSDBCommands.CustomCondition> getTunnelCondition(APIQueryOpentsdbConditionMsg msg) {
+        List<OpenTSDBCommands.CustomCondition> conditions = new ArrayList<>();
 
         TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getTunnelUuid()).find();
         for (TunnelSwitchPortVO tunnelPort : tunnel.getTunnelSwitchPortVOS()) {
 
-            OpenTSDBCommands.TunnelCondition tunnelCondition = new OpenTSDBCommands.TunnelCondition();
+            OpenTSDBCommands.CustomCondition tunnelCondition = new OpenTSDBCommands.CustomCondition();
 
             if (tunnelPort.getSortTag().equals(InterfaceType.A.toString()) ||
                     tunnelPort.getSortTag().equals(InterfaceType.Z.toString())) {
@@ -1334,12 +1337,31 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                 tunnelCondition.setNodeUuid(tunnelPort.getEndpointVO().getNodeVO().getUuid());
 
-                tunnelConditions.add(tunnelCondition);
+                conditions.add(tunnelCondition);
             }
         }
 
-        reply.setInventories(TunnelConditionInventory.valueOf(tunnelConditions));
-        bus.reply(msg, reply);
+        return conditions;
+    }
+
+    private List<OpenTSDBCommands.CustomCondition> getSwitchPortCondition(APIQueryOpentsdbConditionMsg msg) {
+        List<OpenTSDBCommands.CustomCondition> conditions = new ArrayList<>();
+
+        PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(msg.getSwitchPortUuid());
+        SwitchPortVO switchPortVO = dbf.findByUuid(msg.getSwitchPortUuid(), SwitchPortVO.class);
+
+        OpenTSDBCommands.Tags switchPortTag = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                    , switchPortVO.getPortName());
+
+        Map<String, OpenTSDBCommands.Tags> map = new HashMap<>();
+        map.put("switchPortTag", switchPortTag);
+
+        OpenTSDBCommands.CustomCondition condition = new OpenTSDBCommands.CustomCondition();
+        condition.setTags(map);
+
+        conditions.add(condition);
+
+        return conditions;
     }
 
     private void handle(APIQuerySwitchPortTrafficMsg msg) {
