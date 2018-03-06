@@ -89,6 +89,9 @@ public class TunnelBase {
         }
 
         if(isTransnational){    //跨国
+            if(innerEndpointUuid == null){
+                throw new IllegalArgumentException("该跨国专线互联连接点不能为空！");
+            }
             EndpointVO endpointVO = dbf.findByUuid(innerEndpointUuid, EndpointVO.class);
             if(endpointVO.getEndpointType() == EndpointType.VIRTUAL){   //直通
                 return TunnelType.CHINA1ABROAD;
@@ -549,12 +552,12 @@ public class TunnelBase {
      */
     public boolean isSharePoint(TunnelVO tunnelVOA, TunnelVO tunnelVOB) {
         boolean isSharePoint = false;
-        if (tunnelVOA.getVsi() != tunnelVOB.getVsi())
+        if (!tunnelVOA.getVsi().equals(tunnelVOB.getVsi()))
             return false;
 
         for (TunnelSwitchPortVO portA : tunnelVOA.getTunnelSwitchPortVOS()) {
             for (TunnelSwitchPortVO portB : tunnelVOB.getTunnelSwitchPortVOS()) {
-                if (portA.getVlan() == portB.getVlan()) {
+                if (portA.getVlan().equals(portB.getVlan())) {
                     if (StringUtils.equals(portA.getSwitchPortUuid(), portB.getSwitchPortUuid()))
                         return true;
                 }

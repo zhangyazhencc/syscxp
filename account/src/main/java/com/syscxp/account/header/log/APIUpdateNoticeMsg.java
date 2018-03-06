@@ -18,9 +18,9 @@ public class APIUpdateNoticeMsg extends APIMessage {
     @APIParam(maxLength = 255, required = false)
     private String link;
     @APIParam(required = false)
-    private Timestamp startTime;
+    private String startTime;
     @APIParam(required = false)
-    private Timestamp endTime;
+    private String endTime;
     @APIParam(required = false)
     private String status;
 
@@ -56,19 +56,19 @@ public class APIUpdateNoticeMsg extends APIMessage {
         this.link = link;
     }
 
-    public Timestamp getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Timestamp startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
-    public Timestamp getEndTime() {
+    public String getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Timestamp endTime) {
+    public void setEndTime(String endTime) {
         this.endTime = endTime;
     }
 

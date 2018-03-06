@@ -9,6 +9,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
 import java.sql.Timestamp;
+
 @Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
 public class APICreateNoticeMsg extends APICreateMessage {
     @APIParam(maxLength = 255, emptyString = false)
@@ -16,9 +17,9 @@ public class APICreateNoticeMsg extends APICreateMessage {
     @APIParam(maxLength = 255, required = false)
     private String link;
     @APIParam
-    private Timestamp startTime;
+    private String startTime;
     @APIParam
-    private Timestamp endTime;
+    private String endTime;
 
     public String getTitle() {
         return title;
@@ -36,19 +37,19 @@ public class APICreateNoticeMsg extends APICreateMessage {
         this.link = link;
     }
 
-    public Timestamp getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Timestamp startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
-    public Timestamp getEndTime() {
+    public String getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Timestamp endTime) {
+    public void setEndTime(String endTime) {
         this.endTime = endTime;
     }
 
