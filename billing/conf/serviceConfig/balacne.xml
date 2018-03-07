@@ -16,6 +16,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.billing.header.balance.APIUpdatePresentMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.balance.APIGetExpenseGrossMonthMsg</name>
     </message>
 
