@@ -1,6 +1,5 @@
 package com.syscxp.tunnel.sdnController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class L3NetworkCommand {
@@ -10,19 +9,21 @@ public class L3NetworkCommand {
     private String username;
     private List<Mpls_switche> mpls_switches;
 
-    class Mpls_switche{
+    public class Mpls_switche{
         private String uuid;
         private String switch_type;
         private String sub_type;
         private String port_name;
-        private int vlan_id;
+        private Long vlan_id;
         private String m_ip;
         private String connect_ip_local;
         private String connect_ip_remote;
         private String netmask;
         private String username;
         private String password;
-        private int bandwidth;
+        private Long bandwidth;
+        private String protocol;
+        private String port;
         private List<Route> routes;
 
         public String getUuid() {
@@ -57,11 +58,11 @@ public class L3NetworkCommand {
             this.port_name = port_name;
         }
 
-        public int getVlan_id() {
+        public Long getVlan_id() {
             return vlan_id;
         }
 
-        public void setVlan_id(int vlan_id) {
+        public void setVlan_id(Long vlan_id) {
             this.vlan_id = vlan_id;
         }
 
@@ -113,12 +114,28 @@ public class L3NetworkCommand {
             this.password = password;
         }
 
-        public int getBandwidth() {
+        public Long getBandwidth() {
             return bandwidth;
         }
 
-        public void setBandwidth(int bandwidth) {
+        public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+
+        public String getPort() {
+            return port;
+        }
+
+        public void setPort(String port) {
+            this.port = port;
         }
 
         public List<Route> getRoutes() {
@@ -130,11 +147,11 @@ public class L3NetworkCommand {
         }
     }
 
-    class Route{
+    public class Route{
         private String business_ip;
         private String netmask;
         private String route_ip;
-        private int index;
+        private Long index;
 
         public String getBusiness_ip() {
             return business_ip;
@@ -160,11 +177,11 @@ public class L3NetworkCommand {
             this.route_ip = route_ip;
         }
 
-        public int getIndex() {
+        public Long getIndex() {
             return index;
         }
 
-        public void setIndex(int index) {
+        public void setIndex(Long index) {
             this.index = index;
         }
     }
@@ -200,27 +217,6 @@ public class L3NetworkCommand {
 
     public void setMpls_switches(List<Mpls_switche> mpls_switches) {
         this.mpls_switches = mpls_switches;
-    }
-
-    public L3NetworkCommand createL3NetworkCommand(String[] args) {
-        L3NetworkCommand cmd = new L3NetworkCommand();
-        List<Mpls_switche> mpls_switcheList = new ArrayList<>();
-
-        cmd.setNet_id("new_id");
-        cmd.setUsername("username");
-        cmd.setVrf_id(123456L);
-
-
-        List<Route> routeList = new ArrayList<>();
-
-
-        L3NetworkCommand.Mpls_switche mpls_switche = cmd.new Mpls_switche();
-        L3NetworkCommand.Route route = cmd.new Route();
-
-//        mpls_switcheList.add();
-        cmd.setMpls_switches(mpls_switcheList);
-
-        return cmd;
     }
 
 }

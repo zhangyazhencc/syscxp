@@ -5,15 +5,18 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.core.keyvalue.Op;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.network.*;
+import com.syscxp.tunnel.sdnController.L3NetworkCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class L3NetworkManagerImpl extends AbstractService implements L3NetworkManager{
@@ -148,7 +151,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         L3NetworkVO vo = new L3NetworkVO();
         vo.setUuid(Platform.getUuid());
         TypedQuery<Long> vid_q = dbf.getEntityManager().createQuery("SELECT MAX(vid) from L3NetworkVO ", Long.class);
-        vo.setVid(vid_q.getSingleResult()==null ? 100000L : vid_q.getSingleResult());
+        vo.setVid(vid_q.getSingleResult()==null ? 100000L : vid_q.getSingleResult() + 1L);
         vo.setEndPointNum(0L);
 //        vo.setMaxModifies();
         if(msg.getType() == null){
@@ -172,6 +175,66 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         UpdateQuery.New(L3NetworkVO.class).condAnd(L3NetworkVO_.uuid, SimpleQuery.Op.EQ,l3Networkuuid).
                 set(L3NetworkVO_.endPointNum,num_q.getSingleResult()).update();
 
+    }
+
+    private L3NetworkCommand createL3NetworkCommand(String l3Uuid) {
+        L3NetworkCommand cmd = new L3NetworkCommand();
+        L3NetworkVO l3NetworkVO= dbf.findByUuid(l3Uuid,L3NetworkVO.class);
+        cmd.setNet_id(l3NetworkVO.getUuid().substring(0,10));
+        cmd.setUsername(l3NetworkVO.getOwnerAccountUuid());
+        cmd.setVrf_id(l3NetworkVO.getVid());
+
+        List<L3NetworkCommand.Mpls_switche> mpls_switcheList = new ArrayList<>();
+        SimpleQuery<L3EndPointVO> l3Endpoint  = dbf.createQuery(L3EndPointVO.class);
+        l3Endpoint.add(L3EndPointVO_.l3NetworkUuid, SimpleQuery.Op.EQ,l3NetworkVO.getUuid());
+        List<L3EndPointVO> l3EndPointVOS = l3Endpoint.list();
+        for(L3EndPointVO vo : l3EndPointVOS){
+            L3NetworkCommand.Mpls_switche mpls_switche = cmd.new Mpls_switche();
+            mpls_switche.setUuid(vo.getUuid());
+            mpls_switche.setVlan_id(vo.getVlan());
+            mpls_switche.setBandwidth(vo.getBandwidth());
+            mpls_switche.setConnect_ip_local(vo.getLocalIP());
+            mpls_switche.setConnect_ip_remote(vo.getRemoteIp());
+            mpls_switche.setNetmask(vo.getNetmask());
+
+            String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
+                    "from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
+                    "where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
+                    "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid;";
+            TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(
+                    "select username,password,mIP from PhysicalSwitchVO  where ", Tuple.class);
+            physicalSwitchQuery.setParameter("endpointUuid", vo.getUuid());
+            Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
+
+            mpls_switche.setUsername(physicalSwitchT.get(0,String.class));
+            mpls_switche.setPassword(physicalSwitchT.get(1,String.class));
+            mpls_switche.setM_ip(physicalSwitchT.get(2,String.class));
+            mpls_switche.setProtocol(physicalSwitchT.get(3,String.class));
+            mpls_switche.setPort(physicalSwitchT.get(4,String.class));
+            mpls_switche.setPort_name(physicalSwitchT.get(5,String.class));
+            mpls_switche.setSwitch_type(physicalSwitchT.get(6,String.class));
+            mpls_switche.setSub_type(physicalSwitchT.get(7,String.class));
+
+            List<L3NetworkCommand.Route> routeList = new ArrayList<>();
+            SimpleQuery<L3RouteVO> l3RouteVOSimpleQuery  = dbf.createQuery(L3RouteVO.class);
+            l3RouteVOSimpleQuery.add(L3RouteVO_.l3EndPointUuid, SimpleQuery.Op.EQ,vo.getUuid());
+            List<L3RouteVO> l3RouteVOs = l3RouteVOSimpleQuery.list();
+            for(L3RouteVO l3routeVO : l3RouteVOs){
+                L3NetworkCommand.Route route = cmd.new Route();
+                route.setIndex(l3routeVO.getIndex());
+                String[] str = l3routeVO.getCidr().split("/");
+                route.setBusiness_ip(str[0]);
+                route.setNetmask(str[1]);
+                route.setRoute_ip(l3routeVO.getNextIp());
+                routeList.add(route);
+            }
+
+            mpls_switcheList.add(mpls_switche);
+        }
+
+        cmd.setMpls_switches(mpls_switcheList);
+
+        return cmd;
     }
 
     @Override
