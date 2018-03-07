@@ -98,9 +98,36 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             handle((APIVerifyReturnMsg) msg);
         } else if (msg instanceof APIVerifyNotifyMsg) {
             handle((APIVerifyNotifyMsg) msg);
+        } else if (msg instanceof APIUpdatePresentMsg) {
+            handle((APIUpdatePresentMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdatePresentMsg msg) {
+
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        if (vo == null) {
+            vo = initAccountBlance(msg.getAccountUuid());
+        }
+
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+        int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+        String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+        if (msg.getPresent() != null) {
+            vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getPresentBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null,msg.getSession().getUserUuid());
+            dbf.getEntityManager().merge(vo);
+            dbf.getEntityManager().flush();
+        }
+
+        AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
+        abi.setOutTradeNo(outTradeNO);
+        APIUpdatePresentEvent evt = new APIUpdatePresentEvent(msg.getId());
+        evt.setInventory(abi);
+        bus.publish(evt);
+
     }
 
     private void handle(APIGetAccountDiscountCategoryMsg msg) {
@@ -505,17 +532,21 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
                 bus.reply(msg, reply);
                 return;
             } else if (dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
-                AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
-                BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
-                vo.setCashBalance(balance);
-                dbf.getEntityManager().merge(vo);
+                if (dealDetailVO.getState() != DealState.SUCCESS) {
+                    AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
+                    BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
+                    vo.setCashBalance(balance);
+                    dbf.getEntityManager().merge(vo);
 
-                dealDetailVO.setBalance(balance == null ? BigDecimal.ZERO : balance);
-                dealDetailVO.setState(DealState.SUCCESS);
-                dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
-                dealDetailVO.setTradeNO(trade_no);
-                dbf.getEntityManager().merge(dealDetailVO);
-                dbf.getEntityManager().flush();
+                    dealDetailVO.setBalance(balance == null ? BigDecimal.ZERO : balance);
+                    dealDetailVO.setState(DealState.SUCCESS);
+                    dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
+                    dealDetailVO.setTradeNO(trade_no);
+                    dbf.getEntityManager().merge(dealDetailVO);
+                    dbf.getEntityManager().flush();
+                    reply.setAddMoney(new BigDecimal(total_amount));
+                }
+
             }
         }
         reply.setInventory(signVerified);

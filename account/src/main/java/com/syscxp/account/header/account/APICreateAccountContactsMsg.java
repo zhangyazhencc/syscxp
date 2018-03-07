@@ -2,6 +2,7 @@ package com.syscxp.account.header.account;
 
 import com.syscxp.account.header.identity.NoticeWay;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -15,8 +16,10 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
     @APIParam(maxLength = 128)
     private String name;
     @APIParam(maxLength = 36,required = false)
+    @PasswordNoSee
     private String phone;
     @APIParam(maxLength = 36,required = false)
+    @PasswordNoSee
     private String email;
     @APIParam(maxLength = 36)
     private NoticeWay noticeWay;

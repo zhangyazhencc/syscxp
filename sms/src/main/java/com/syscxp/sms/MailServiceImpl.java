@@ -161,24 +161,31 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
     public boolean mailSend(String[] mails, String subject, String content){
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(mails);
-        mailMessage.setFrom(MailGlobalProperty.FROM);
+        mailMessage.setFrom(MailGlobalProperty.MAIL_FROM);
         mailMessage.setSubject(subject);
         mailMessage.setText(content);
-        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
-        senderImpl.setHost(MailGlobalProperty.HOST);
-        senderImpl.setPort(25);
-        senderImpl.setUsername(MailGlobalProperty.USERNAME);
-        senderImpl.setPassword(MailGlobalProperty.PASSWORD);
+
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost(MailGlobalProperty.MAIL_HOST);
+        mailSender.setPort(25);
+        mailSender.setUsername(MailGlobalProperty.MAIL_USERNAME);
+        mailSender.setPassword(MailGlobalProperty.MAIL_PASSWORD);
         Properties prop = new Properties();
+<<<<<<< HEAD
         prop.put(" mail.smtp.auth ", "false");
         prop.put(" mail.smtp.timeout ", "25000");
 
         senderImpl.setJavaMailProperties(prop);
+=======
+        prop.put("mail.smtp.auth", true);
+        prop.put("mail.smtp.starttls.enable", true);
+        prop.put("mail.smtp.timeout", 5000);
+        mailSender.setJavaMailProperties(prop);
+>>>>>>> dev
 
         try{
-            senderImpl.send(mailMessage);
+            mailSender.send(mailMessage);
         }catch(Exception e){
-            e.printStackTrace();
             throw new OperationFailureException(operr("message:" + e.getMessage()));
         }
         logger.debug(">>>>>>>>>>>>>>>>>>发送成功<<<<<<<<<<<<<<<<<<<<<<");

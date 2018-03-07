@@ -1,5 +1,6 @@
 package com.syscxp.account.header.user;
 
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -17,12 +18,14 @@ public class APIUserPWDBackMsg extends APIMessage  {
     private String accountName;
 
     @APIParam
+    @PasswordNoSee
     private String phone;
 
     @APIParam
     private String code;
 
     @APIParam(maxLength = 2048)
+    @PasswordNoSee
     private String newpassword;
 
     public String getCode() {

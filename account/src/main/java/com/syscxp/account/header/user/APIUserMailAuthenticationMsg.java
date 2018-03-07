@@ -4,6 +4,7 @@ import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.account.AccountMessage;
 import com.syscxp.account.header.account.AccountVO;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressUserCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -18,6 +19,7 @@ import com.syscxp.header.notification.ApiNotification;
 public class APIUserMailAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam
+    @PasswordNoSee
     private String mail;
 
     @APIParam

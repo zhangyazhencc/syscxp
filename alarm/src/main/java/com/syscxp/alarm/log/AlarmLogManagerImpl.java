@@ -506,7 +506,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             // send mail
             if (emailList.size() > 0)
                 mailService.sendAlarmMonitorMsg(emailList, "监控报警信息"
-                        , String.format("【犀思云】服务器预警信息如下: %s)", logVO.getMailContent()));
+                        , String.format("【犀思云】服务预警信息如下: %s)", logVO.getMailContent()));
 
             // send smss
             List<String> smsDatas = new ArrayList<String>();

@@ -18,8 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import static com.syscxp.core.Platform.argerr;
+import static com.syscxp.header.message.DocUtils.date;
 
 public class NoticeManagerImpl extends AbstractService implements NoticeManager, ApiMessageInterceptor {
     private static final CLogger logger = Utils.getLogger(NoticeManagerImpl.class);
@@ -134,11 +137,13 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         }
 
         if (!StringUtils.isEmpty(msg.getStartTime())) {
-            nvo.setStartTime(msg.getStartTime());
+            Timestamp startTime = Timestamp.valueOf(msg.getStartTime());
+            nvo.setStartTime(startTime);
             update = true;
         }
         if (!StringUtils.isEmpty(msg.getEndTime())) {
-            nvo.setEndTime(msg.getEndTime());
+            Timestamp endTime = Timestamp.valueOf(msg.getEndTime());
+            nvo.setEndTime(endTime);
             update = true;
         }
         if (!StringUtils.isEmpty(msg.getStatus())) {
@@ -160,8 +165,12 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         noticeVO.setUuid(Platform.getUuid());
         noticeVO.setTitle(msg.getTitle());
         noticeVO.setLink(msg.getLink());
-        noticeVO.setStartTime(msg.getStartTime());
-        noticeVO.setEndTime(msg.getEndTime());
+
+        Timestamp startTime = Timestamp.valueOf(msg.getStartTime());
+        Timestamp endTime = Timestamp.valueOf(msg.getEndTime());
+
+        noticeVO.setStartTime(startTime);
+        noticeVO.setEndTime(endTime);
         noticeVO.setStatus(NoticeStatus.NORMAL);
 
         NoticeVO nvo = dbf.persistAndRefresh(noticeVO);
@@ -189,11 +198,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if (msg instanceof APICreateNoticeMsg) {
-            validate((APICreateNoticeMsg) msg);
-        } else if (msg instanceof APIUpdateNoticeMsg) {
-            validate((APIUpdateNoticeMsg) msg);
-        } else if (msg instanceof APICreateAlarmContactMsg) {
+        if (msg instanceof APICreateAlarmContactMsg) {
             validate((APICreateAlarmContactMsg) msg);
         }
 
@@ -214,30 +219,6 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
                     "手机号和邮箱至少有一个不为空."
             ));
         }
-    }
-    private void validate(APIUpdateNoticeMsg msg) {
-        checkStartTime(msg.getStartTime(), msg.getEndTime());
-    }
-
-    private void checkStartTime(Timestamp start, Timestamp end) {
-        if (start.after(end)) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "开始时间必须小于结束时间 ."
-            ));
-        }
-    }
-
-    private void checkEndTime(Timestamp end) {
-        if (dbf.getCurrentSqlTime().after(end)) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "结束时间必须大于当前时间."
-            ));
-        }
-    }
-
-    private void validate(APICreateNoticeMsg msg) {
-        checkStartTime(msg.getStartTime(), msg.getEndTime());
-        checkEndTime(msg.getEndTime());
     }
 
 }

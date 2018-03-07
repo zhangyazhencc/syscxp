@@ -1,6 +1,7 @@
 package com.syscxp.account.header.account;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -13,6 +14,7 @@ import com.syscxp.header.notification.ApiNotification;
 public class APIAccountMailAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam
+    @PasswordNoSee
     private String mail;
 
     @APIParam

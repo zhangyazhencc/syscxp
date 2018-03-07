@@ -1,5 +1,6 @@
 package com.syscxp.account.header.identity;
 
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
@@ -14,15 +15,19 @@ public class APIVerifyRepetitionMsg extends APISyncCallMessage {
     @APIParam(maxLength = 128, required = false)
     private String accountName;
     @APIParam(maxLength = 128, required = false)
+    @PasswordNoSee
     private String accountEmail;
     @APIParam(maxLength = 32, required = false)
+    @PasswordNoSee
     private String accountPhone;
 
     @APIParam(maxLength = 128, required = false)
     private String userName;
     @APIParam(maxLength = 128, required = false)
+    @PasswordNoSee
     private String userEmail;
     @APIParam(maxLength = 128, required = false)
+    @PasswordNoSee
     private String userPhone;
 
     @APIParam(maxLength = 128, required = false)

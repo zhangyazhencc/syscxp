@@ -1,5 +1,6 @@
 package com.syscxp.account.header.account;
 
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -11,10 +12,13 @@ public class APIRegisterAccountMsg extends APIMessage {
     @APIParam(maxLength = 128)
     private String name;
     @APIParam(maxLength = 128)
+    @PasswordNoSee
     private String password;
     @APIParam(maxLength = 36)
+    @PasswordNoSee
     private String email;
     @APIParam(validRegexValues = "^1[3,4,5,7,8]\\d{9}$")
+    @PasswordNoSee
     private String phone;
 
     @APIParam(maxLength = 32)

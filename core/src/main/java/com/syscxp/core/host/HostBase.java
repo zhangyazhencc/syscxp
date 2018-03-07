@@ -441,11 +441,17 @@ public abstract class HostBase extends AbstractHost {
 
     private void handle(final PingHostMsg msg) {
         final PingHostReply reply = new PingHostReply();
+        if (self.getState() == HostState.Disabled) {
+            reply.setError(operr("host is disabled"));
+            bus.reply(msg, reply);
+            return;
+        }
         if (self.getStatus() == HostStatus.Connecting) {
             reply.setError(operr("host is connecting"));
             bus.reply(msg, reply);
             return;
         }
+
 
         pingHook(new Completion(msg) {
             @Override

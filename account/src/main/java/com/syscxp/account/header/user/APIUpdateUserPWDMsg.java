@@ -3,6 +3,7 @@ package com.syscxp.account.header.user;
 import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.account.AccountMessage;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.identity.SuppressUserCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -20,15 +21,18 @@ public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage {
     private String phone;
 
     @APIParam(maxLength = 36,required = false)
+    @PasswordNoSee
     private String email;
 
     @APIParam(maxLength = 32)
     private String code;
 
     @APIParam(maxLength = 128)
+    @PasswordNoSee
     private String oldpassword;
 
     @APIParam(maxLength = 128)
+    @PasswordNoSee
     private String newpassword;
 
     @Override

@@ -2,6 +2,7 @@ package com.syscxp.account.header.account;
 
 import com.syscxp.header.identity.AccountStatus;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.PasswordNoSee;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -15,8 +16,10 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     private String uuid;
 
     @APIParam(maxLength = 36, required = false)
+    @PasswordNoSee
     private String email ;
     @APIParam(maxLength = 32, required = false)
+    @PasswordNoSee
     private String phone;
     @APIParam(maxLength = 128, required = false)
     private String trueName;

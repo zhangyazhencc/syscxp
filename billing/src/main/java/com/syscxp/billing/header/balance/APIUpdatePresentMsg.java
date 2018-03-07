@@ -7,19 +7,14 @@ import com.syscxp.header.message.APIParam;
 
 import java.math.BigDecimal;
 
-@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECHARGE, names = {"update"}, adminOnly = true)
-public class APIUpdateAccountBalanceMsg extends APIMessage {
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRESENT, names = {"update"})
+public class APIUpdatePresentMsg extends APIMessage{
+
     @APIParam(emptyString = false)
     private String accountUuid;
 
-    @APIParam(required = false)
+    @APIParam
     private BigDecimal present;
-
-    @APIParam(required = false)
-    private BigDecimal credit;
-
-    @APIParam(required = false)
-    private BigDecimal cash;
 
     @APIParam(required = false)
     private String tradeNO;
@@ -41,22 +36,6 @@ public class APIUpdateAccountBalanceMsg extends APIMessage {
 
     public void setPresent(BigDecimal present) {
         this.present = present;
-    }
-
-    public BigDecimal getCredit() {
-        return credit;
-    }
-
-    public void setCredit(BigDecimal credit) {
-        this.credit = credit;
-    }
-
-    public BigDecimal getCash() {
-        return cash;
-    }
-
-    public void setCash(BigDecimal cash) {
-        this.cash = cash;
     }
 
     public String getTradeNO() {

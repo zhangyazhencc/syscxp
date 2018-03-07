@@ -283,7 +283,7 @@ ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission)
 VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal','0','{"actions":["tunnel:.*:read"],"effect":"Allow"}'),
 ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*"],"effect":"Allow"}'),
-('TunnelOnlyFullAccess','管理云专线权限','tunnel','Normal','2','{"actions":["tunnel:.*:read","tunnel:tunnel:.*","tunnel:edgeLine:.*","tunnel:monitor:.*"]],"effect":"Allow"}'),
+('TunnelOnlyFullAccess','管理云专线权限','tunnel','Normal','2','{"actions":["tunnel:.*:read","tunnel:tunnel:.*","tunnel:edgeLine:.*","tunnel:monitor:.*"],"effect":"Allow"}'),
 ('SolutionReadOnlyAccess','只读访问专线解决方案的权限','tunnel','Normal','80','{"actions":["tunnel:solution:read"],"effect":"Allow"}'),
 ('SolutionFullAccess','管理专线解决方案权限','tunnel','Normal','81','{"actions":["tunnel:solution:.*","tunnel:node:read"],"effect":"Allow"}'),
 ('NodeReadOnlyAccess','只读访问节点的权限','tunnel','SystemAdmin','4','{"actions":["tunnel:node:read"],"effect":"Allow"}'),
@@ -293,7 +293,7 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('SwitchFullAccess','管理交换机权限','tunnel','SystemAdmin','7','{"actions":["tunnel:switch:.*","tunnel:node:read"],"effect":"Allow"}'),
 ('TunnelHostReadOnlyAccess','只读访问监控主机的权限','tunnel','SystemAdmin','8','{"actions":["tunnel:host:read","tunnel:node:read"],"effect":"Allow"}'),
 ('TunnelHostFullAccess','管理监控主机权限','tunnel','SystemAdmin','9','{"actions":["tunnel:host:.*","tunnel:node:read"],"effect":"Allow"}'),
-('AliEdgeRouterReadOnlyAccess','只读访问阿里边界路由器权限','tunnel','Normal','90','{"actions":["tunnel:aliEdgeRouter:read","tunnel:tunnel:read"]],"effect":"Allow"}'),
+('AliEdgeRouterReadOnlyAccess','只读访问阿里边界路由器权限','tunnel','Normal','90','{"actions":["tunnel:aliEdgeRouter:read","tunnel:tunnel:read"],"effect":"Allow"}'),
 ('AliEdgeRouterFullAccess','管理阿里边界路由器权限','tunnel','Normal','91','{"actions":["tunnel:aliEdgeRouter:.*","tunnel:tunnel:read"],"effect":"Allow"}'),
 ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0','{"actions":["vpn:.*:read"],"effect":"Allow"}'),
 ('VPNFullAccess','管理VPN权限','vpn','Normal','1','{"actions":["vpn:.*"],"effect":"Allow"}'),
@@ -377,7 +377,7 @@ update TicketTypeVO set lastOpDate = now(), createDate = now();
 
 CREATE TABLE  `LoginLogVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '用户uuid',
-  `name` varchar(128) NOT NULL UNIQUE COMMENT '用户名',
+  `name` varchar(128) NOT NULL COMMENT '用户名',
   `type` varchar(128) NOT NULL COMMENT '用户类型（账户、子用户）',
   `lastLoginIp` varchar(128) NOT NULL COMMENT '客户端IP',
   `lastLoginTime` timestamp NOT NULL COMMENT '登录时间',
