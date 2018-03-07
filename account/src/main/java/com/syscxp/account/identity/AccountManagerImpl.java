@@ -208,8 +208,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.email, Op.EQ, msg.getEmail());
             AccountVO account = q.find();
+            if (account.getType() != AccountType.SystemAdmin) {
+                throw new ApiMessageInterceptionException(argerr("SystemAdmin禁止使用找回密码功能[email %s]", msg.getEmail()));
+            }
             account.setPassword(msg.getNewPassword());
-            evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
+            account = dbf.updateAndRefresh(account);
+            evt.setInventory(AccountInventory.valueOf(account));
         }
 
         bus.publish(evt);
@@ -335,6 +339,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
             AccountVO account = q.find();
+            if (account.getType() != AccountType.SystemAdmin) {
+                throw new ApiMessageInterceptionException(argerr("SystemAdmin禁止使用找回密码功能[phone %s]", msg.getPhone()));
+            }
             account.setPassword(msg.getNewpassword());
             evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
         }
@@ -794,11 +801,33 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIRegisterAccountMsg) msg);
         } else if (msg instanceof APIDeleteProxyAccountRefMsg) {
             validate((APIDeleteProxyAccountRefMsg) msg);
+        } else if (msg instanceof APIAccountMailAuthenticationMsg){
+            validate((APIAccountMailAuthenticationMsg) msg);
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+            validate((APIAccountPhoneAuthenticationMsg) msg);
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+            validate((APIAccountPhoneAuthenticationMsg) msg);
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+            validate((APIAccountPhoneAuthenticationMsg) msg);
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+            validate((APIAccountPhoneAuthenticationMsg) msg);
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+            validate((APIAccountPhoneAuthenticationMsg) msg);
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+            validate((APIAccountPhoneAuthenticationMsg) msg);
         }
 
         setServiceId(msg);
 
         return msg;
+    }
+
+    private void validate(APIAccountPhoneAuthenticationMsg msg){
+        validateSystemAdminOnlySelf(msg.getAccountUuid(), msg);
+    }
+
+    private void validate(APIAccountMailAuthenticationMsg msg){
+        validateSystemAdminOnlySelf(msg.getAccountUuid(), msg);
     }
 
     private void validate(APIDeleteProxyAccountRefMsg msg) {
@@ -833,9 +862,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validateSystemAdminOnlySelf(String accountUuid, APIMessage msg){
         AccountVO account = dbf.findByUuid(accountUuid, AccountVO.class);
-        if (account.getType() == AccountType.SystemAdmin && msg.getSession().isAdminAccountSession()){
-        }else{
-            throw new ApiMessageInterceptionException(argerr("禁止修改系统管理员信息"));
+        if (account.getType() == AccountType.SystemAdmin){
+            if (!msg.getSession().isAdminAccountSession()){
+                throw new ApiMessageInterceptionException(argerr("禁止修改系统管理员信息"));
+            }
         }
     }
 
@@ -846,6 +876,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     msg.getAccountUuid()));
         }
 
+        validateSystemAdminOnlySelf(msg.getAccountUuid(), msg);
     }
 
     private void validate(APIGetAccountApiKeyMsg msg) {
@@ -919,6 +950,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
+        validateSystemAdminOnlySelf(msg.getAccountUuid(), msg);
+
         if (msg.getPhone() != null && !msg.getPhone().equals(dbf.findByUuid(msg.getAccountUuid(),
                 AccountVO.class).getPhone())) {
             throw new ApiMessageInterceptionException(argerr("Wrong Old Phone"));
@@ -951,6 +984,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
+
+        validateSystemAdminOnlySelf(msg.getSession().getAccountUuid(), msg);
     }
 
     private void validate(APIUpdateAccountEmailMsg msg) {
@@ -959,6 +994,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 AccountVO.class).getEmail())) {
             throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
         }
+
+        validateSystemAdminOnlySelf(msg.getSession().getAccountUuid(), msg);
 
         if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode()) ||
                 !mailService.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
@@ -1035,6 +1072,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot update another account[uuid: %s]",
                     msg.getSession().getAccountUuid(), msg.getUuid()));
         }
+
+        validateSystemAdminOnlySelf(msg.getUuid(), msg);
     }
 
     private void validate(APIDetachPolicyFromUserMsg msg) {
