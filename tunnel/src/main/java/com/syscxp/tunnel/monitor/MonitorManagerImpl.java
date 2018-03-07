@@ -1227,34 +1227,34 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void handle(APIQueryMonitorResultMsg msg) {
         APIQueryMonitorResultReply reply = new APIQueryMonitorResultReply();
 
-        String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
-        String condition = getOpenTSDBQueryCondition(msg);
-
-        logger.info(String.format("======= Begin to get OpenTSDB data url: %s condition: %s", url, condition));
-        String resp = "";
-        try {
-            resp = restf.getRESTTemplate().postForObject(url, condition, String.class);
-        } catch (Exception e) {
-            resp = "";
-        }
-
-        List<OpenTSDBCommands.QueryResult> results = new ArrayList<>();
-        if (!StringUtils.isEmpty(resp)) {
-            results = JSON.parseArray(resp, OpenTSDBCommands.QueryResult.class);
-            for (OpenTSDBCommands.QueryResult result : results) {
-                String mIP = result.getTags().getEndpoint();
-                List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class)
-                        .eq(PhysicalSwitchVO_.mIP, mIP)
-                        .list();
-
-                if (physicalSwitchVOS.isEmpty())
-                    throw new IllegalArgumentException(String.format("Fail to get physical switch by mIP %s", mIP));
-
-                result.setNodeUuid(physicalSwitchVOS.get(0).getNodeUuid());
-            }
-        }
-
-        reply.setInventories(OpenTSDBResultInventory.valueOf(results));
+//        String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
+//        String condition = getOpenTSDBQueryCondition(msg);
+//
+//        logger.info(String.format("======= Begin to get OpenTSDB data url: %s condition: %s", url, condition));
+//        String resp = "";
+//        try {
+//            resp = restf.getRESTTemplate().postForObject(url, condition, String.class);
+//        } catch (Exception e) {
+//            resp = "";
+//        }
+//
+//        List<OpenTSDBCommands.QueryResult> results = new ArrayList<>();
+//        if (!StringUtils.isEmpty(resp)) {
+//            results = JSON.parseArray(resp, OpenTSDBCommands.QueryResult.class);
+//            for (OpenTSDBCommands.QueryResult result : results) {
+//                String mIP = result.getTags().getEndpoint();
+//                List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class)
+//                        .eq(PhysicalSwitchVO_.mIP, mIP)
+//                        .list();
+//
+//                if (physicalSwitchVOS.isEmpty())
+//                    throw new IllegalArgumentException(String.format("Fail to get physical switch by mIP %s", mIP));
+//
+//                result.setNodeUuid(physicalSwitchVOS.get(0).getNodeUuid());
+//            }
+//        }
+//
+//        reply.setInventories(OpenTSDBResultInventory.valueOf(results));
         bus.reply(msg, reply);
     }
 
