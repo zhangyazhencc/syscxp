@@ -177,7 +177,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
     private void updateEndPointNum(String l3Networkuuid){
         TypedQuery<Long> num_q = dbf.getEntityManager().createQuery(
-                "SELECT COUNT(*) from L3EndPointVO where  l3NetworkUuid = :l3Uuid ", Long.class);
+                "SELECT COUNT(lvo.uuid) from L3EndPointVO lvo where  l3NetworkUuid = :l3Uuid ", Long.class);
         num_q.setParameter("l3Uuid",l3Networkuuid);
 
         UpdateQuery.New(L3NetworkVO.class).condAnd(L3NetworkVO_.uuid, SimpleQuery.Op.EQ,l3Networkuuid).
@@ -210,9 +210,9 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         mpls_switche.setConnect_ip_remote(endPointVO.getRemoteIp());
         mpls_switche.setNetmask(endPointVO.getNetmask());
         String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
-                "from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
-                "where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
-                "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
+                " from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
+                " where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
+                " and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
         TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
         physicalSwitchQuery.setParameter("endpointUuid", endPointVO.getUuid());
         Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
@@ -249,9 +249,9 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         mpls_switche.setConnect_ip_remote(endPointVO.getRemoteIp());
         mpls_switche.setNetmask(endPointVO.getNetmask());
         String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
-                "from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
-                "where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
-                "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
+                " from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
+                " where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
+                " and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
         TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
         physicalSwitchQuery.setParameter("endpointUuid", endPointVO.getUuid());
         Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
@@ -310,9 +310,9 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             mpls_switche.setNetmask(vo.getNetmask());
 
             String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
-                    "from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
-                    "where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
-                    "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
+                    " from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
+                    " where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
+                    " and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
             TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
             physicalSwitchQuery.setParameter("endpointUuid", vo.getUuid());
             Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
