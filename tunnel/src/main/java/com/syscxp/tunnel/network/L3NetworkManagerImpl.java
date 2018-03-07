@@ -79,8 +79,6 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         L3RouteVO vo = new L3RouteVO();
         vo.setUuid(Platform.getUuid());
         vOAddAllOfMsg.addAll(msg,vo);
-
-
         bus.publish(event);
     }
 
@@ -187,7 +185,111 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
     }
 
-    private L3NetworkCommand createL3NetworkCommand(String l3Uuid) {
+
+    private L3NetworkCommand getCommandForL3Route(String routeUuid){
+
+        L3NetworkCommand cmd = new L3NetworkCommand();
+
+        L3RouteVO routeVO = dbf.findByUuid(routeUuid,L3RouteVO.class);
+        List<L3NetworkCommand.Route> routeList = new ArrayList<>();
+        L3NetworkCommand.Route route = cmd.new Route();
+        route.setIndex(routeVO.getIndex());
+        String[] str = routeVO.getCidr().split("/");
+        route.setBusiness_ip(str[0]);
+        route.setNetmask(str[1]);
+        route.setRoute_ip(routeVO.getNextIp());
+        routeList.add(route);
+
+        List<L3NetworkCommand.Mpls_switche> mpls_switcheList = new ArrayList<>();
+        L3NetworkCommand.Mpls_switche mpls_switche = cmd.new Mpls_switche();
+        L3EndPointVO endPointVO = dbf.findByUuid(routeVO.getL3EndPointUuid(),L3EndPointVO.class);
+        mpls_switche.setUuid(endPointVO.getUuid());
+        mpls_switche.setVlan_id(endPointVO.getVlan());
+        mpls_switche.setBandwidth(endPointVO.getBandwidth());
+        mpls_switche.setConnect_ip_local(endPointVO.getLocalIP());
+        mpls_switche.setConnect_ip_remote(endPointVO.getRemoteIp());
+        mpls_switche.setNetmask(endPointVO.getNetmask());
+        String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
+                "from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
+                "where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
+                "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
+        TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
+        physicalSwitchQuery.setParameter("endpointUuid", endPointVO.getUuid());
+        Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
+        mpls_switche.setUsername(physicalSwitchT.get(0,String.class));
+        mpls_switche.setPassword(physicalSwitchT.get(1,String.class));
+        mpls_switche.setM_ip(physicalSwitchT.get(2,String.class));
+        mpls_switche.setProtocol(physicalSwitchT.get(3,String.class));
+        mpls_switche.setPort(physicalSwitchT.get(4,String.class));
+        mpls_switche.setPort_name(physicalSwitchT.get(5,String.class));
+        mpls_switche.setSwitch_type(physicalSwitchT.get(6,String.class));
+        mpls_switche.setSub_type(physicalSwitchT.get(7,String.class));
+        mpls_switche.setRoutes(routeList);
+
+        mpls_switcheList.add(mpls_switche);
+
+        L3NetworkVO l3NetworkVO= dbf.findByUuid(endPointVO.getL3NetworkUuid(),L3NetworkVO.class);
+        cmd.setNet_id(l3NetworkVO.getUuid().substring(0,10));
+        cmd.setUsername(l3NetworkVO.getOwnerAccountUuid());
+        cmd.setVrf_id(l3NetworkVO.getVid());
+        cmd.setMpls_switches(mpls_switcheList);
+        return cmd;
+    }
+
+    private L3NetworkCommand getCommandForL3EndPoint(String endPointUuid){
+        L3NetworkCommand cmd = new L3NetworkCommand();
+
+        List<L3NetworkCommand.Mpls_switche> mpls_switcheList = new ArrayList<>();
+        L3NetworkCommand.Mpls_switche mpls_switche = cmd.new Mpls_switche();
+        L3EndPointVO endPointVO = dbf.findByUuid(endPointUuid,L3EndPointVO.class);
+        mpls_switche.setUuid(endPointVO.getUuid());
+        mpls_switche.setVlan_id(endPointVO.getVlan());
+        mpls_switche.setBandwidth(endPointVO.getBandwidth());
+        mpls_switche.setConnect_ip_local(endPointVO.getLocalIP());
+        mpls_switche.setConnect_ip_remote(endPointVO.getRemoteIp());
+        mpls_switche.setNetmask(endPointVO.getNetmask());
+        String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
+                "from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
+                "where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
+                "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
+        TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
+        physicalSwitchQuery.setParameter("endpointUuid", endPointVO.getUuid());
+        Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
+        mpls_switche.setUsername(physicalSwitchT.get(0,String.class));
+        mpls_switche.setPassword(physicalSwitchT.get(1,String.class));
+        mpls_switche.setM_ip(physicalSwitchT.get(2,String.class));
+        mpls_switche.setProtocol(physicalSwitchT.get(3,String.class));
+        mpls_switche.setPort(physicalSwitchT.get(4,String.class));
+        mpls_switche.setPort_name(physicalSwitchT.get(5,String.class));
+        mpls_switche.setSwitch_type(physicalSwitchT.get(6,String.class));
+        mpls_switche.setSub_type(physicalSwitchT.get(7,String.class));
+
+        List<L3NetworkCommand.Route> routeList = new ArrayList<>();
+        SimpleQuery<L3RouteVO> l3RouteVOSimpleQuery  = dbf.createQuery(L3RouteVO.class);
+        l3RouteVOSimpleQuery.add(L3RouteVO_.l3EndPointUuid, SimpleQuery.Op.EQ,endPointUuid);
+        List<L3RouteVO> l3RouteVOs = l3RouteVOSimpleQuery.list();
+        for(L3RouteVO l3routeVO : l3RouteVOs){
+            L3NetworkCommand.Route route = cmd.new Route();
+            String[] str = l3routeVO.getCidr().split("/");
+            route.setBusiness_ip(str[0]);
+            route.setNetmask(str[1]);
+            route.setRoute_ip(l3routeVO.getNextIp());
+            route.setIndex(l3routeVO.getIndex());
+            routeList.add(route);
+        }
+
+        mpls_switche.setRoutes(routeList);
+        mpls_switcheList.add(mpls_switche);
+
+        L3NetworkVO l3NetworkVO= dbf.findByUuid(endPointVO.getL3NetworkUuid(),L3NetworkVO.class);
+        cmd.setNet_id(l3NetworkVO.getUuid().substring(0,10));
+        cmd.setUsername(l3NetworkVO.getOwnerAccountUuid());
+        cmd.setVrf_id(l3NetworkVO.getVid());
+        cmd.setMpls_switches(mpls_switcheList);
+        return cmd;
+    }
+
+    private L3NetworkCommand getCommandForL3Network(String l3Uuid) {
         L3NetworkCommand cmd = new L3NetworkCommand();
         L3NetworkVO l3NetworkVO= dbf.findByUuid(l3Uuid,L3NetworkVO.class);
         cmd.setNet_id(l3NetworkVO.getUuid().substring(0,10));
@@ -238,6 +340,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
                 routeList.add(route);
             }
 
+            mpls_switche.setRoutes(routeList);
             mpls_switcheList.add(mpls_switche);
         }
 
