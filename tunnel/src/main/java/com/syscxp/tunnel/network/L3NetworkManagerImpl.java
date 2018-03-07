@@ -6,7 +6,9 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.AbstractService;
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.tunnel.endpoint.EndpointAO_;
 import com.syscxp.header.tunnel.network.*;
 import com.syscxp.tunnel.sdnController.L3NetworkCommand;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,8 @@ import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.syscxp.core.Platform.argerr;
 
 
 public class L3NetworkManagerImpl extends AbstractService implements L3NetworkManager{
@@ -134,7 +138,13 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
     private void handle(APIDeleteL3NetworkMsg msg) {
         APIDeleteL3NetworkEvent event = new APIDeleteL3NetworkEvent(msg.getId());
-        UpdateQuery.New(L3NetworkVO.class).condAnd(L3NetworkVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+        SimpleQuery<L3EndPointVO> vo = dbf.createQuery(L3EndPointVO.class);
+        vo.add(L3EndPointVO_.l3NetworkUuid, SimpleQuery.Op.EQ,msg.getUuid());
+        if(vo.isExists()){
+            event.setError(Platform.argerr("删除网络之前，必须先删除其下的所有交换机"));
+        }else{
+            UpdateQuery.New(L3NetworkVO.class).condAnd(L3NetworkVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+        }
         bus.publish(event);
     }
 
@@ -200,9 +210,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
                     "from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
                     "where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
-                    "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid;";
-            TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(
-                    "select username,password,mIP from PhysicalSwitchVO  where ", Tuple.class);
+                    "and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
+            TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
             physicalSwitchQuery.setParameter("endpointUuid", vo.getUuid());
             Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
 
