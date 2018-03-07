@@ -5,15 +5,15 @@ package com.syscxp.core.cloudbus;
 public class BusQueue {
     private final String name;
     private final String bindingKey;
-    private final String busExchange;
+    private final BusExchange busExchange;
 
-    public BusQueue(String name, String bindingKey, String busExchange) {
+    public BusQueue(String name, String bindingKey, BusExchange busExchange) {
         this.name = name;
         this.bindingKey = bindingKey;
         this.busExchange = busExchange;
     }
 
-    public BusQueue(String name, String busExchange) {
+    public BusQueue(String name, BusExchange busExchange) {
         this.name = name;
         this.bindingKey = name;
         this.busExchange = busExchange;
@@ -27,7 +27,7 @@ public class BusQueue {
         return bindingKey;
     }
 
-    public String getBusExchange() {
+    public BusExchange getBusExchange() {
         return busExchange;
     }
 }

@@ -118,17 +118,13 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         this.DEFAULT_MESSAGE_TIMEOUT = timeout;
     }
 
-    private String makeExchange(BusExchange exchange){
-        return exchange.toString() + CloudBusImpl2.busProjectId;
-    }
-
     private void createExchanges() throws IOException {
         Channel chan = channelPool.acquire();
         try {
-            chan.exchangeDeclare(makeExchange(BusExchange.NO_ROUTE), BusExchange.NO_ROUTE.getType());
-            Map<String, Object> args = map(e("alternate-exchange", (Object) makeExchange(BusExchange.NO_ROUTE)));
-            chan.exchangeDeclare(makeExchange(BusExchange.P2P), BusExchange.P2P.getType(), true, false, args);
-            chan.exchangeDeclare(makeExchange(BusExchange.BROADCAST), BusExchange.BROADCAST.getType());
+            chan.exchangeDeclare(BusExchange.NO_ROUTE.toString(), BusExchange.NO_ROUTE.getType());
+            Map<String, Object> args = map(e("alternate-exchange", (Object) BusExchange.NO_ROUTE.toString()));
+            chan.exchangeDeclare(BusExchange.P2P.toString(), BusExchange.P2P.getType(), true, false, args);
+            chan.exchangeDeclare(BusExchange.BROADCAST.toString(), BusExchange.BROADCAST.getType());
         } finally {
             channelPool.returnChannel(chan);
         }
@@ -276,7 +272,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             try {
                 nrouteChan = conn.createChannel();
                 nrouteChan.queueDeclare(nrouteName, false, false, true, null);
-                nrouteChan.queueBind(nrouteName, makeExchange(BusExchange.NO_ROUTE), "");
+                nrouteChan.queueBind(nrouteName, BusExchange.NO_ROUTE.toString(), "");
                 nrouteChan.basicConsume(nrouteName, true, this);
             } catch (IOException e) {
                 throw new CloudRuntimeException(e);
@@ -416,9 +412,9 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             byte[] data;
             String serviceId;
             Message msg;
-            String exchange;
+            BusExchange exchange;
 
-            RecoverableSend(Channel chan, Message msg, String serviceId, String exchange) throws IOException {
+            RecoverableSend(Channel chan, Message msg, String serviceId, BusExchange exchange) throws IOException {
                 data = compressMessageIfNeeded(msg);
                 this.chan = chan;
                 this.serviceId = serviceId;
@@ -428,7 +424,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
             void send() throws IOException {
                 try {
-                    chan.basicPublish(exchange, serviceId,
+                    chan.basicPublish(exchange.toString(), serviceId,
                             true, msg.getAMQPProperties(), data);
                 } catch (ShutdownSignalException e) {
                     if (!(conn instanceof AutorecoveringConnection) || serverIps.size() <= 1 || !Platform.IS_RUNNING) {
@@ -480,7 +476,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                     }
 
                     try {
-                        chan.basicPublish(exchange, serviceId,
+                        chan.basicPublish(exchange.toString(), serviceId,
                                 true, msg.getAMQPProperties(), data);
                         return true;
                     } catch (ShutdownSignalException e) {
@@ -610,7 +606,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
             Channel chan = channelPool.acquire();
             try {
-                new RecoverableSend(chan, evt, evt.getType(CloudBusImpl2.busProjectId).toString(), makeExchange(BusExchange.BROADCAST)).send();
+                new RecoverableSend(chan, evt, evt.getType(CloudBusImpl2.busProjectId).toString(), BusExchange.BROADCAST).send();
                 /*
                 watch.stop();
                 logger.debug(String.mediaType("sending %s cost %sms", evt.getClass().getName(), watch.getTime()));
@@ -755,7 +751,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                     if (lst == null) {
                         lst = new CopyOnWriteArrayList<EventListenerWrapper>();
                         listeners.put(evt.getClass().getName(), lst);
-                        eventChan.queueBind(queueName, makeExchange(BusExchange.BROADCAST), type);
+                        eventChan.queueBind(queueName, BusExchange.BROADCAST.toString(), type);
                         logger.debug(String.format("[listening event]: %s %s", type, evt.getClass().getName()));
                     }
 
@@ -780,7 +776,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                     lst.remove(l);
                     if (lst.isEmpty()) {
                         listeners.remove(evt.getClass().getName());
-                        eventChan.queueUnbind(queueName, makeExchange(BusExchange.BROADCAST), type);
+                        eventChan.queueUnbind(queueName, BusExchange.BROADCAST.toString(), type);
                         logger.debug(String.format("[unlistening event]: %s %s", type, evt.getClass().getName()));
                     }
                 }
@@ -916,7 +912,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             try {
                 Channel chan = channelPool.acquire();
                 try {
-                    chan.queueBind(name, makeExchange(BusExchange.P2P), bindingKey);
+                    chan.queueBind(name, BusExchange.P2P.toString(), bindingKey);
                 } finally {
                     channelPool.returnChannel(chan);
                 }
@@ -934,7 +930,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             try {
                 chan.queueDeclare(name, false, false, true, null);
                 chan.basicConsume(name, true, tracker);
-                chan.queueBind(name, makeExchange(BusExchange.BROADCAST), "#");
+                chan.queueBind(name, BusExchange.BROADCAST.toString(), "#");
             } finally {
                 channelPool.returnChannel(chan);
             }
@@ -997,7 +993,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                 public void run() throws Throwable {
                     Channel chan = channelPool.acquire();
                     try {
-                        chan.queueUnbind(name, makeExchange(BusExchange.BROADCAST), "#");
+                        chan.queueUnbind(name, BusExchange.BROADCAST.toString(), "#");
                     } finally {
                         channelPool.returnChannel(chan);
                     }
@@ -1010,7 +1006,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                     public void run() throws Throwable {
                         Channel chan = channelPool.acquire();
                         try {
-                            chan.queueUnbind(name, makeExchange(BusExchange.P2P), servId);
+                            chan.queueUnbind(name, BusExchange.P2P.toString(), servId);
                         } finally {
                             channelPool.returnChannel(chan);
                         }
@@ -1217,11 +1213,11 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
             channelPool = new ChannelPool(CloudBusGlobalProperty.CHANNEL_POOL_SIZE, conn);
             createExchanges();
-            outboundQueue = new BusQueue(makeMessageQueueName(SERVICE_ID), makeExchange(BusExchange.P2P));
+            outboundQueue = new BusQueue(makeMessageQueueName(SERVICE_ID), BusExchange.P2P);
             Channel chan = channelPool.acquire();
             chan.queueDeclare(outboundQueue.getName(), false, false, true, queueArguments());
             chan.basicConsume(outboundQueue.getName(), true, consumer);
-            chan.queueBind(outboundQueue.getName(), outboundQueue.getBusExchange(), outboundQueue.getBindingKey());
+            chan.queueBind(outboundQueue.getName(), outboundQueue.getBusExchange().toString(), outboundQueue.getBindingKey());
             channelPool.returnChannel(chan);
             maid.construct();
             noRouteEndPoint.construct();
@@ -2091,12 +2087,12 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                     echan = conn.createChannel();
                     echan.queueDeclare(baseName, false, false, true, null);
                     echan.basicConsume(baseName, true, handler);
-                    echan.queueBind(baseName, makeExchange(BusExchange.P2P), baseName);
+                    echan.queueBind(baseName, BusExchange.P2P.toString(), baseName);
 
                     for (String aliasName : aliasNames) {
                         echan.queueDeclare(aliasName, false, false, true, null);
                         echan.basicConsume(aliasName, true, handler);
-                        echan.queueBind(aliasName, makeExchange(BusExchange.P2P), aliasName);
+                        echan.queueBind(aliasName, BusExchange.P2P.toString(), aliasName);
                     }
                 } catch (IOException e1) {
                     throw new CloudRuntimeException(e1);
@@ -2106,9 +2102,9 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             @Override
             public void inactive() {
                 try {
-                    echan.queueUnbind(baseName, makeExchange(BusExchange.P2P), baseName);
+                    echan.queueUnbind(baseName, BusExchange.P2P.toString(), baseName);
                     for (String aliasName: aliasNames) {
-                        echan.queueUnbind(aliasName, makeExchange(BusExchange.P2P), aliasName);
+                        echan.queueUnbind(aliasName, BusExchange.P2P.toString(), aliasName);
                     }
                     echan.close();
                     echan = null;
@@ -2605,7 +2601,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
     private Map<String, Object> queueArguments() {
         Map<String, Object> ret = new HashMap<String, Object>();
-        ret.put("x-dead-letter-exchange", makeExchange(BusExchange.NO_ROUTE));
+        ret.put("x-dead-letter-exchange", BusExchange.NO_ROUTE.toString());
         ret.put("x-dead-letter-routing-key", DEAD_LETTER);
         ret.put("x-expires", TimeUnit.MINUTES.toMillis(5));
         return ret;
