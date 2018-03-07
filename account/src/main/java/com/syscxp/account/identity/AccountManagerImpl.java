@@ -142,9 +142,53 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetAccountForShareMsg)msg);
         } else if (msg instanceof APIListAccountByUuidMsg) {
             handle((APIListAccountByUuidMsg)msg);
+        } else if (msg instanceof APIMailOrPhoneIsExistentMsg) {
+            handle((APIMailOrPhoneIsExistentMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+
+    }
+
+    private void handle(APIMailOrPhoneIsExistentMsg msg) {
+
+        APIMailOrPhoneIsExistentReply reply =  new APIMailOrPhoneIsExistentReply();
+
+        if(msg.getAccountMail() != null){
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.email, Op.EQ, msg.getAccountMail());
+            q.add(AccountVO_.uuid, Op.NOT_EQ, msg.getSession().getAccountUuid());
+            if (q.isExists()) {
+                reply.setAccountMail(true);
+            }
+        }
+        if(msg.getAccountPhone() != null){
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.phone, Op.EQ, msg.getAccountPhone());
+            q.add(AccountVO_.uuid, Op.NOT_EQ, msg.getSession().getAccountUuid());
+            if (q.isExists()) {
+                reply.setAccountPhone(true);
+            }
+        }
+        if(msg.getUserMail() != null){
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.email, Op.EQ, msg.getUserMail());
+            q.add(UserVO_.uuid, Op.NOT_EQ, msg.getSession().getUserUuid());
+            if (q.isExists()) {
+                reply.setUserMail(true);
+            }
+        }
+        if(msg.getUserPhone() != null){
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.phone, Op.EQ, msg.getUserPhone());
+            q.add(UserVO_.uuid, Op.NOT_EQ, msg.getSession().getUserUuid());
+            if (q.isExists()) {
+                reply.setUserPhone(true);
+            }
+        }
+
+        bus.reply(msg,reply);
+
 
     }
 

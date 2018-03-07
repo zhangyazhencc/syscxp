@@ -8,5 +8,6 @@ public enum ProductType {
     HOST,
     DISK,
     RESOURCEPOOL,
-    EDGELINE
+    EDGELINE,
+    IP
 }

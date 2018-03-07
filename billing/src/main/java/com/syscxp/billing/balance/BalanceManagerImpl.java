@@ -98,9 +98,36 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             handle((APIVerifyReturnMsg) msg);
         } else if (msg instanceof APIVerifyNotifyMsg) {
             handle((APIVerifyNotifyMsg) msg);
+        } else if (msg instanceof APIUpdatePresentMsg) {
+            handle((APIUpdatePresentMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdatePresentMsg msg) {
+
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        if (vo == null) {
+            vo = initAccountBlance(msg.getAccountUuid());
+        }
+
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+        int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+        String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+        if (msg.getPresent() != null) {
+            vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getPresentBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null,msg.getSession().getUserUuid());
+            dbf.getEntityManager().merge(vo);
+            dbf.getEntityManager().flush();
+        }
+
+        AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
+        abi.setOutTradeNo(outTradeNO);
+        APIUpdatePresentEvent evt = new APIUpdatePresentEvent(msg.getId());
+        evt.setInventory(abi);
+        bus.publish(evt);
+
     }
 
     private void handle(APIGetAccountDiscountCategoryMsg msg) {

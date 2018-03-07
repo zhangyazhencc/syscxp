@@ -157,14 +157,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         dbf.getEntityManager().merge(tunnelVO);
 
         // 开启控制器监控
-        //startControllerMonitor(tunnelVO.getUuid());
+        startControllerMonitor(tunnelVO.getUuid());
 
         // 开启agent监控
         try {
             startAgentMonitor(tunnelVO.getUuid());
         } catch (Exception e) {
             try {
-                //stopControllerMonitor(msg.getTunnelUuid());
+                stopControllerMonitor(msg.getTunnelUuid());
             } catch (Exception e1) {
                 logger.info(String.format("start job to stop controller monitor[tunnel: %s MonitorJobType: %s]"
                         , msg.getTunnelUuid(), MonitorJobType.STOP.toString()));
@@ -216,10 +216,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         // job关闭控制器监控
-//        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-//        monitorJob.setTunnelUuid(msg.getTunnelUuid());
-//        monitorJob.setJobType(MonitorJobType.STOP);
-//        jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
+        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+        monitorJob.setTunnelUuid(msg.getTunnelUuid());
+        monitorJob.setJobType(MonitorJobType.STOP);
+        jobf.execute("关闭监控-关闭监控", Platform.getManagementServerId(), monitorJob);
 
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
@@ -251,10 +251,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     , tunnelVO.getName(), e.getMessage()));
         }
 
-//        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
-//        monitorJob.setTunnelUuid(msg.getTunnelUuid());
-//        monitorJob.setJobType(MonitorJobType.MODIFY);
-//        jobf.execute("修改监控失败-修改监控", Platform.getManagementServerId(), monitorJob);
+        TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+        monitorJob.setTunnelUuid(msg.getTunnelUuid());
+        monitorJob.setJobType(MonitorJobType.MODIFY);
+        jobf.execute("修改监控IP-修改监控", Platform.getManagementServerId(), monitorJob);
 
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
         logger.info(String.format("%s reset cidr success!", tunnelVO.getName()));
@@ -1301,7 +1301,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         APIQueryOpentsdbConditionReply reply = new APIQueryOpentsdbConditionReply();
 
         List<OpenTSDBCommands.CustomCondition> conditions = new ArrayList<>();
-        if(msg.getType() == OpentsdbConditionType.TUNNEL)
+        if (msg.getType() == OpentsdbConditionType.TUNNEL)
             conditions = getTunnelCondition(msg);
         else if (msg.getType() == OpentsdbConditionType.SWITCH_PORT)
             conditions = getSwitchPortCondition(msg);
@@ -1351,7 +1351,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         SwitchPortVO switchPortVO = dbf.findByUuid(msg.getSwitchPortUuid(), SwitchPortVO.class);
 
         OpenTSDBCommands.Tags switchPortTag = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
-                    , switchPortVO.getPortName());
+                , switchPortVO.getPortName());
 
         Map<String, OpenTSDBCommands.Tags> map = new HashMap<>();
         map.put("switchPortTag", switchPortTag);
