@@ -1029,10 +1029,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
                 LongString metaData = (LongString) headers.get(MESSAGE_META_DATA);
                 Map m = JSONObjectUtil.toObject(new String(metaData.getBytes()), LinkedHashMap.class);
-
-                logger.warn(m.get("className").toString());
-                logger.warn(JSONObjectUtil.toJsonString(m));
-                logger.warn(metaDataClassCache.get(m.get("className")).getName());
+                
                 trackMessage((MessageMetaData) JSONObjectUtil.rehashObject(m, metaDataClassCache.get(m.get("className"))));
             } catch (Throwable t) {
                 logger.warn("unhandled throwable", t);
