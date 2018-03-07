@@ -144,7 +144,7 @@ public class OpenTSDBCommands {
         }
     }
 
-    public static class TunnelCondition{
+    public static class CustomCondition {
         private String nodeUuid;
         private Map<String,Tags> tags;
 

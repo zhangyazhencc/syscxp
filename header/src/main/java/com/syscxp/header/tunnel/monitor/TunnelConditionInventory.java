@@ -14,7 +14,7 @@ public class TunnelConditionInventory {
     private String nodeUuid;
     private Map<String,OpenTSDBCommands.Tags> tags;
 
-    public static TunnelConditionInventory valueOf(OpenTSDBCommands.TunnelCondition vo){
+    public static TunnelConditionInventory valueOf(OpenTSDBCommands.CustomCondition vo){
         TunnelConditionInventory inventory = new TunnelConditionInventory();
         inventory.setNodeUuid(vo.getNodeUuid());
         inventory.setTags(vo.getTags());
@@ -22,9 +22,9 @@ public class TunnelConditionInventory {
         return  inventory;
     }
 
-    public static List<TunnelConditionInventory> valueOf(Collection<OpenTSDBCommands.TunnelCondition> vos) {
+    public static List<TunnelConditionInventory> valueOf(Collection<OpenTSDBCommands.CustomCondition> vos) {
         List<TunnelConditionInventory> lst = new ArrayList<TunnelConditionInventory>(vos.size());
-        for (OpenTSDBCommands.TunnelCondition vo : vos) {
+        for (OpenTSDBCommands.CustomCondition vo : vos) {
             lst.add(TunnelConditionInventory.valueOf(vo));
         }
         return lst;
