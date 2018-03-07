@@ -2662,45 +2662,45 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * */
     @Transactional
     private void handle(APIUpdateResourceUuidMsg msg){
-        APIUpdateResourceUuidReply reply = new APIUpdateResourceUuidReply();
-        //修改最后一公里
-        List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).lt(EdgeLineVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).list();
-        for (EdgeLineVO edgeLineVO : edgeLineVOS){
-
-            String uuid = Platform.getUuid();
-            String sql = "update EdgeLineEO set uuid = :uuid where uuid = :olduuid";
-            Query query = dbf.getEntityManager().createQuery(sql);
-            query.setParameter("uuid",uuid);
-            query.setParameter("olduuid",edgeLineVO.getUuid());
-            query.executeUpdate();
-        }
-
-        //修改物理接口
-        List<String> interfaceUuids = Q.New(InterfaceVO.class).lt(InterfaceVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).select(InterfaceVO_.uuid).listValues();
-
-        for(String sameUUid : interfaceUuids){
-            String newInterfaceUuid = Platform.getUuid();
-
-            String sql1 = "update InterfaceEO set uuid = :newInterfaceUuid where uuid = :sameUUid";
-            Query query = dbf.getEntityManager().createQuery(sql1);
-            query.setParameter("newInterfaceUuid",newInterfaceUuid);
-            query.setParameter("sameUUid",sameUUid);
-            query.executeUpdate();
-
-            String sql2 = "update EdgeLineEO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
-            Query query2 = dbf.getEntityManager().createQuery(sql2);
-            query2.setParameter("newInterfaceUuid",newInterfaceUuid);
-            query2.setParameter("sameUUid",sameUUid);
-            query2.executeUpdate();
-
-            String sql3 = "update TunnelSwitchPortVO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
-            Query query3 = dbf.getEntityManager().createQuery(sql3);
-            query3.setParameter("newInterfaceUuid",newInterfaceUuid);
-            query3.setParameter("sameUUid",sameUUid);
-            query3.executeUpdate();
-        }
-
-        bus.reply(msg, reply);
+//        APIUpdateResourceUuidReply reply = new APIUpdateResourceUuidReply();
+//        //修改最后一公里
+//        List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).lt(EdgeLineVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).list();
+//        for (EdgeLineVO edgeLineVO : edgeLineVOS){
+//
+//            String uuid = Platform.getUuid();
+//            String sql = "update EdgeLineEO set uuid = :uuid where uuid = :olduuid";
+//            Query query = dbf.getEntityManager().createQuery(sql);
+//            query.setParameter("uuid",uuid);
+//            query.setParameter("olduuid",edgeLineVO.getUuid());
+//            query.executeUpdate();
+//        }
+//
+//        //修改物理接口
+//        List<String> interfaceUuids = Q.New(InterfaceVO.class).lt(InterfaceVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).select(InterfaceVO_.uuid).listValues();
+//
+//        for(String sameUUid : interfaceUuids){
+//            String newInterfaceUuid = Platform.getUuid();
+//
+//            String sql1 = "update InterfaceEO set uuid = :newInterfaceUuid where uuid = :sameUUid";
+//            Query query = dbf.getEntityManager().createQuery(sql1);
+//            query.setParameter("newInterfaceUuid",newInterfaceUuid);
+//            query.setParameter("sameUUid",sameUUid);
+//            query.executeUpdate();
+//
+//            String sql2 = "update EdgeLineEO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
+//            Query query2 = dbf.getEntityManager().createQuery(sql2);
+//            query2.setParameter("newInterfaceUuid",newInterfaceUuid);
+//            query2.setParameter("sameUUid",sameUUid);
+//            query2.executeUpdate();
+//
+//            String sql3 = "update TunnelSwitchPortVO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
+//            Query query3 = dbf.getEntityManager().createQuery(sql3);
+//            query3.setParameter("newInterfaceUuid",newInterfaceUuid);
+//            query3.setParameter("sameUUid",sameUUid);
+//            query3.executeUpdate();
+//        }
+//
+//        bus.reply(msg, reply);
     }
 
     /**************************************** The following clean the expired Products **************************************************/

@@ -251,7 +251,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().flush();
         APIUpdateOrderExpiredTimeReply reply = new APIUpdateOrderExpiredTimeReply();
         reply.setInventory(OrderInventory.valueOf(orderVO));
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     @Transactional
@@ -1008,10 +1008,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private int catECPBaseWidth(ProductPriceUnit unit) {
         int base = 1;
-        if (unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)) {
-            String configCode = unit.getConfigCode().replaceAll("\\D", "");
-            base = Integer.parseInt(configCode);
-            unit.setConfigCode("1M");
+        if (unit.getProductTypeCode().equals(ProductType.ECP)) {
+            if (unit.getCategoryCode().equals(Category.IP)) {
+                String configCode = unit.getConfigCode().replaceAll("\\D", "");
+                base = Integer.parseInt(configCode);
+                unit.setConfigCode("1IP");
+            }
+            if (unit.getCategoryCode().equals(Category.BANDWIDTH)) {
+                String configCode = unit.getConfigCode().replaceAll("\\D", "");
+                base = Integer.parseInt(configCode);
+                unit.setConfigCode("1M");
+            }
         }
         return base;
     }

@@ -237,5 +237,9 @@
         <name>com.syscxp.account.header.account.APIListAccountByUuidMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.account.header.identity.APIMailOrPhoneIsExistentMsg</name>
+    </message>
+
 
 </service>

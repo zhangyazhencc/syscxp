@@ -14,7 +14,7 @@ public class MailGlobalProperty {
     @GlobalProperty(name = "mailFrom", defaultValue = "notice@syscloud.cn")
     public static String MAIL_FROM;
 
-    @GlobalProperty(name = "mailUsername", defaultValue = "smtp.exmail.qq.com")
+    @GlobalProperty(name = "mailUsername", defaultValue = "notice@syscloud.cn")
     public static String MAIL_USERNAME;
 
     @GlobalProperty(name = "mailPassword", defaultValue = "Aa123456789")
