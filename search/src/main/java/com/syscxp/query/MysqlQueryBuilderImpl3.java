@@ -1040,15 +1040,15 @@ public class MysqlQueryBuilderImpl3 implements Component, QueryBuilder, GlobalAp
             Query q = msg.isFieldQuery() ? dbf.getEntityManager().createQuery(jpql, Tuple.class) : dbf.getEntityManager().createQuery(jpql);
 
             setQueryValue(q, root);
-            if (logger.isTraceEnabled()) {
-                org.hibernate.Query hq = q.unwrap(org.hibernate.Query.class);
-                logger.trace(hq.getQueryString());
-            }
             if (msg.getLimit() != null) {
                 q.setMaxResults(msg.getLimit());
             }
             if (msg.getStart() != null) {
                 q.setFirstResult(msg.getStart());
+            }
+            if (logger.isTraceEnabled()) {
+                org.hibernate.Query hq = q.unwrap(org.hibernate.Query.class);
+                logger.trace(hq.getQueryString());
             }
 
             List vos = q.getResultList();
