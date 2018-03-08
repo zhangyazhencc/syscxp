@@ -9,8 +9,8 @@ import java.util.List;
 public abstract class APIQueryMessage extends APISyncCallMessage {
     @APIParam
     private List<QueryCondition> conditions;
-    @APIParam(numberRange = {0, 200})
-    private Integer limit = 100;
+    @APIParam(numberRange = {0, 500})
+    private Integer limit = 200;
     private Integer start;
     private boolean count;
     private String groupBy;

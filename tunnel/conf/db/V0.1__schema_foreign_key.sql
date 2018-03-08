@@ -25,3 +25,19 @@ ALTER TABLE MonitorHostVO ADD CONSTRAINT fkMonitorHostVONodeEO FOREIGN KEY (node
 
 ALTER TABLE SpeedRecordsVO ADD CONSTRAINT fkSpeedRecordsVOTunnelEO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
+
+ALTER TABLE InterfaceEO ADD CONSTRAINT fkInterfaceEOEndpointEO FOREIGN KEY (endpointUuid) REFERENCES EndpointEO (uuid) ON DELETE RESTRICT;
+ALTER TABLE InterfaceEO ADD CONSTRAINT fkInterfaceEOSwitchPortVO FOREIGN KEY (switchPortUuid) REFERENCES SwitchPortVO (uuid) ON DELETE RESTRICT;
+
+ALTER TABLE EdgeLineEO ADD CONSTRAINT fkEdgeLineEOEndpointEO FOREIGN KEY (endpointUuid) REFERENCES EndpointEO (uuid) ON DELETE RESTRICT;
+ALTER TABLE EdgeLineEO ADD CONSTRAINT fkEdgeLineEOInterfaceEO FOREIGN KEY (interfaceUuid) REFERENCES InterfaceEO (uuid) ON DELETE RESTRICT;
+
+ALTER TABLE TunnelSwitchPortVO ADD CONSTRAINT fkTunnelSwitchPortVOSwitchPortVO FOREIGN KEY (switchPortUuid) REFERENCES SwitchPortVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE TunnelSwitchPortVO ADD CONSTRAINT fkTunnelSwitchPortVOEndpointEO FOREIGN KEY (endpointUuid) REFERENCES EndpointEO (uuid) ON DELETE RESTRICT;
+
+ALTER TABLE SwitchEO ADD CONSTRAINT fkSwitchEOPhysicalSwitchEO FOREIGN KEY (physicalSwitchUuid) REFERENCES PhysicalSwitchEO (uuid) ON DELETE RESTRICT;
+
+ALTER TABLE SwitchPortVO ADD CONSTRAINT fkSwitchPortVOSwitchEO FOREIGN KEY (switchUuid) REFERENCES SwitchEO (uuid) ON DELETE CASCADE;
+
+CREATE INDEX idxResourceMotifyRecordVOcreateDate ON ResourceMotifyRecordVO (createDate);
+CREATE INDEX idxResourceOrderEffectiveVOorderUuid ON ResourceOrderEffectiveVO (orderUuid);
