@@ -785,24 +785,33 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
     private void validate(APIUpdateSwitchPortMsg msg) {
         if(msg.getPortOfferingUuid() != null){
 
-            if(msg.getPortOfferingUuid().equals("SHARE")){
-                //独享改共享的验证
-                if(Q.New(InterfaceVO.class)
-                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
-                        .eq(InterfaceVO_.type, NetworkType.ACCESS)
-                        .isExists()){
-                    throw new ApiMessageInterceptionException(argerr("该端口已经被用户作为ACCESS模式接口，不可再共享！"));
-                }
-            }else{
-                //共享改独享的验证
-                if(Q.New(InterfaceVO.class)
-                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
-                        .select(InterfaceVO_.ownerAccountUuid)
-                        .groupBy(InterfaceVO_.ownerAccountUuid)
-                        .count() > 1){
-                    throw new ApiMessageInterceptionException(argerr("该端口已经被不同的用户使用，不可再独享！"));
-                }
+            if(Q.New(InterfaceVO.class)
+                    .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                    .isExists()){
+
+                throw new ApiMessageInterceptionException(argerr("该端口已经被物理接口使用，不能修改端口类型！"));
             }
+            /*else{
+                if(msg.getPortOfferingUuid().equals("SHARE")){
+                    //独享改共享的验证
+                    if(Q.New(InterfaceVO.class)
+                            .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                            .eq(InterfaceVO_.type, NetworkType.ACCESS)
+                            .isExists()){
+                        throw new ApiMessageInterceptionException(argerr("该端口已经被用户作为ACCESS模式接口，不可再共享！"));
+                    }
+                }else{
+                    //共享改独享的验证
+                    if(Q.New(InterfaceVO.class)
+                            .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                            .select(InterfaceVO_.ownerAccountUuid)
+                            .groupBy(InterfaceVO_.ownerAccountUuid)
+                            .count() > 1){
+                        throw new ApiMessageInterceptionException(argerr("该端口已经被不同的用户使用，不可再独享！"));
+                    }
+                }
+            }*/
+
         }
     }
 

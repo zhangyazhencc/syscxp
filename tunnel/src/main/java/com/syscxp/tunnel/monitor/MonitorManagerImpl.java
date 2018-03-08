@@ -39,6 +39,7 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -49,7 +50,9 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
 
 import java.net.UnknownHostException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -147,9 +150,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (tunnelVO.getMonitorState() == TunnelMonitorState.Enabled)
             throw new IllegalArgumentException("tunnel monitor already started !");
 
-        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
-            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
-
         // 初始化监控通道
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
@@ -190,9 +190,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
             throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
-
-        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
-            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
 
         if (tunnelVO.getState() == TunnelState.Enabled) {
             tunnelVO.setStatus(TunnelStatus.Connected);
@@ -237,9 +234,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
             throw new IllegalArgumentException(String.format("can only restart monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
-
-        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
-            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
 
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         dbf.getEntityManager().merge(tunnelVO);
@@ -1227,34 +1221,34 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void handle(APIQueryMonitorResultMsg msg) {
         APIQueryMonitorResultReply reply = new APIQueryMonitorResultReply();
 
-        String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
-        String condition = getOpenTSDBQueryCondition(msg);
-
-        logger.info(String.format("======= Begin to get OpenTSDB data url: %s condition: %s", url, condition));
-        String resp = "";
-        try {
-            resp = restf.getRESTTemplate().postForObject(url, condition, String.class);
-        } catch (Exception e) {
-            resp = "";
-        }
-
-        List<OpenTSDBCommands.QueryResult> results = new ArrayList<>();
-        if (!StringUtils.isEmpty(resp)) {
-            results = JSON.parseArray(resp, OpenTSDBCommands.QueryResult.class);
-            for (OpenTSDBCommands.QueryResult result : results) {
-                String mIP = result.getTags().getEndpoint();
-                List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class)
-                        .eq(PhysicalSwitchVO_.mIP, mIP)
-                        .list();
-
-                if (physicalSwitchVOS.isEmpty())
-                    throw new IllegalArgumentException(String.format("Fail to get physical switch by mIP %s", mIP));
-
-                result.setNodeUuid(physicalSwitchVOS.get(0).getNodeUuid());
-            }
-        }
-
-        reply.setInventories(OpenTSDBResultInventory.valueOf(results));
+//        String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
+//        String condition = getOpenTSDBQueryCondition(msg);
+//
+//        logger.info(String.format("======= Begin to get OpenTSDB data url: %s condition: %s", url, condition));
+//        String resp = "";
+//        try {
+//            resp = restf.getRESTTemplate().postForObject(url, condition, String.class);
+//        } catch (Exception e) {
+//            resp = "";
+//        }
+//
+//        List<OpenTSDBCommands.QueryResult> results = new ArrayList<>();
+//        if (!StringUtils.isEmpty(resp)) {
+//            results = JSON.parseArray(resp, OpenTSDBCommands.QueryResult.class);
+//            for (OpenTSDBCommands.QueryResult result : results) {
+//                String mIP = result.getTags().getEndpoint();
+//                List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class)
+//                        .eq(PhysicalSwitchVO_.mIP, mIP)
+//                        .list();
+//
+//                if (physicalSwitchVOS.isEmpty())
+//                    throw new IllegalArgumentException(String.format("Fail to get physical switch by mIP %s", mIP));
+//
+//                result.setNodeUuid(physicalSwitchVOS.get(0).getNodeUuid());
+//            }
+//        }
+//
+//        reply.setInventories(OpenTSDBResultInventory.valueOf(results));
         bus.reply(msg, reply);
     }
 
@@ -1915,18 +1909,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void resetSpeedRecordStatus() {
-        resetSpeedrecordInterval = CoreGlobalProperty.RESET_SPEEDRECORD_INTERVAL;
-        expiredSpeedRecordTime = CoreGlobalProperty.EXPIRED_SPEEDRECORD_TIME;
+
         if (resetSpeedRecordStatusThread != null) {
             resetSpeedRecordStatusThread.cancel(true);
         }
 
-        resetSpeedRecordStatusThread = thdf.submitPeriodicTask(new ResetSpeedRecordStatusThread(), 10);
+        resetSpeedRecordStatusThread = thdf.submitPeriodicTask(new ResetSpeedRecordStatusThread(), 60 * 10);
     }
 
     private Future<Void> resetSpeedRecordStatusThread = null;
-    private int resetSpeedrecordInterval;
-    private int expiredSpeedRecordTime;
 
     @Override
     public void preDeleteHost(HostInventory inventory) throws HostException {
@@ -1994,7 +1985,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         @Override
         public long getInterval() {
-            return TimeUnit.SECONDS.toSeconds(resetSpeedrecordInterval);
+            return TimeUnit.SECONDS.toSeconds(CoreGlobalProperty.RESET_SPEEDRECORD_INTERVAL);
         }
 
         @Override
@@ -2002,32 +1993,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             return "reset-speedrecord-status-" + Platform.getManagementServerId();
         }
 
-        private long getExpiredTime(Date createDate, int duration) {
-            return createDate.getTime() + (expiredSpeedRecordTime + duration) * 1000;
-        }
-
         @Override
         public void run() {
             try {
                 logger.info(LocalTime.now() + ": 重置测速纪录状态");
-                List<SpeedRecordsVO> list = Q.New(SpeedRecordsVO.class)
+
+                UpdateQuery.New(SpeedRecordsVO.class)
                         .eq(SpeedRecordsVO_.status, SpeedRecordStatus.TESTING)
-                        .list();
-
-                if (!list.isEmpty()) {
-                    long currentTime = System.currentTimeMillis();
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    for (SpeedRecordsVO vo : list) {
-                        long expiredTime = getExpiredTime(vo.getCreateDate(), vo.getDuration());
-                        String d = format.format(expiredTime);
-                        String c = format.format(currentTime);
-
-                        if (System.currentTimeMillis() > expiredTime) {
-                            vo.setStatus(SpeedRecordStatus.FAILURE);
-                            dbf.update(vo);
-                        }
-                    }
-                }
+                        .lt(SpeedRecordsVO_.createDate, Timestamp.valueOf(LocalDateTime.now().minusSeconds(CoreGlobalProperty.EXPIRED_SPEEDRECORD_TIME)))
+                        .set(SpeedRecordsVO_.status, SpeedRecordStatus.FAILURE)
+                        .update();
             } catch (Throwable t) {
                 logger.warn("unhandled exception!");
             }
