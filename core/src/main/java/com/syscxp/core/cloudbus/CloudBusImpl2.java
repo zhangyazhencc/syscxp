@@ -1029,10 +1029,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
                 LongString metaData = (LongString) headers.get(MESSAGE_META_DATA);
                 Map m = JSONObjectUtil.toObject(new String(metaData.getBytes()), LinkedHashMap.class);
-
-                logger.warn(m.get("className").toString());
-                logger.warn(JSONObjectUtil.toJsonString(m));
-                logger.warn(metaDataClassCache.get(m.get("className")).getName());
+                
                 trackMessage((MessageMetaData) JSONObjectUtil.rehashObject(m, metaDataClassCache.get(m.get("className"))));
             } catch (Throwable t) {
                 logger.warn("unhandled throwable", t);
@@ -2021,9 +2018,9 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
                                 @Override
                                 public Void call() throws Exception {
-                                    if (logger.isTraceEnabled() && wire.logMessage(msg)) {
-                                        logger.trace(String.format("[handle message enter]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
-                                    }
+//                                    if (logger.isTraceEnabled() && wire.logMessage(msg)) {
+//                                        logger.trace(String.format("[handle message enter]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
+//                                    }
 
                                     setThreadLoggingContext(msg);
 
@@ -2051,15 +2048,15 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                             */
                                         }
 
-                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
-                                            logger.trace(String.format("[handle message]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
-                                        }
+//                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
+//                                            logger.trace(String.format("[handle message]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
+//                                        }
 
                                         serv.handleMessage(msg);
 
-                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
-                                            logger.trace(String.format("[handle message over]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
-                                        }
+//                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
+//                                            logger.trace(String.format("[handle message over]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
+//                                        }
                                     } catch (Throwable t) {
                                         logExceptionWithMessageDump(msg, t);
 

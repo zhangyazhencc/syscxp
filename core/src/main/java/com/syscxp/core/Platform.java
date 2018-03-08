@@ -322,7 +322,7 @@ public class Platform {
     static {
         try {
             msId = getUuid();
-            logger.error(String.format("default charset of this Java virtual machine, %s", Charset.defaultCharset()));
+            logger.info(String.format("default charset of this Java virtual machine, %s", Charset.defaultCharset()));
             if (! "UTF-8".equalsIgnoreCase(Charset.defaultCharset().toString()) && ! "UTF8".equalsIgnoreCase(Charset.defaultCharset().toString()) ){
                 throw new CloudRuntimeException(String.format("Java virtual machine charset must use UTF-8, now is %s", Charset.defaultCharset()));
             }
