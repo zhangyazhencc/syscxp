@@ -151,7 +151,7 @@ public class NotificationManager extends AbstractService {
                         .account(inner.getAccountUuid())
                         .action(b.message.getIp(), aevt.isSuccess())
                         .name(b.message.getClass().getSimpleName())
-                        .sender(NotificationConstant.API_SENDER)
+                        .sender(bus.getBusProjectId())
                         .resource(inner.getResourceUuid(), inner.getResourceClass())
                         .opaque(opaque));
             }
