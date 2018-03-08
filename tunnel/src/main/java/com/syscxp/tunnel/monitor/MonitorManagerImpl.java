@@ -147,8 +147,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (tunnelVO.getMonitorState() == TunnelMonitorState.Enabled)
             throw new IllegalArgumentException("tunnel monitor already started !");
 
-        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
-            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
+//        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
+//            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
 
         // 初始化监控通道
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
@@ -191,8 +191,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
 
-        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
-            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
+//        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
+//            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
 
         if (tunnelVO.getState() == TunnelState.Enabled) {
             tunnelVO.setStatus(TunnelStatus.Connected);
@@ -238,8 +238,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("can only restart monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
 
-        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
-            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
+//        if (jobf.isExist(tunnelVO.getUuid(), TunnelMonitorJob.class))
+//            throw new IllegalStateException("unhandled job exists for this tunnel monitor, please try later！");
 
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         dbf.getEntityManager().merge(tunnelVO);
