@@ -36,6 +36,9 @@ public abstract class Message implements Serializable, AsyncBackup {
      */
     @APINoSee
     private String serviceId;
+
+    @APINoSee
+    private boolean noError;
     /**
      * @ignore
      */
@@ -126,4 +129,11 @@ public abstract class Message implements Serializable, AsyncBackup {
         return getId().hashCode();
     }
 
+    public boolean isNoError() {
+        return noError;
+    }
+
+    public void setNoError(boolean noError) {
+        this.noError = noError;
+    }
 }
