@@ -105,6 +105,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         }
     }
 
+    @Transactional
     private void handle(APIUpdatePresentMsg msg) {
 
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
@@ -406,8 +407,8 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         Map<String, String> param = new HashMap<>();
         param.put("out_trade_no", outTradeNO);
         param.put("total_amount", total.toString());
-        param.put("subject", "cloud-special-network");
-        param.put("body", "专线网络");
+        param.put("subject", "syscloud");
+        param.put("body", "syscloud");
         param.put("product_code", "FAST_INSTANT_TRADE_PAY");
         alipayRequest.setBizContent(JSONObjectUtil.toJsonString(param));
         String result = "FAILURE";
@@ -445,11 +446,12 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             String trade_status = param.get("trade_status");
             SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
             q.add(DealDetailVO_.outTradeNO, SimpleQuery.Op.EQ, out_trade_no);
-            q.add(DealDetailVO_.state, SimpleQuery.Op.EQ, DealState.SUCCESS);
+            q.add(DealDetailVO_.state, SimpleQuery.Op.EQ, DealState.FAILURE);
             DealDetailVO dealDetailVO = q.find();
 
             if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(AlipayGlobalProperty.ALIPAY_SELLER_ID) || !app_id.equals(AlipayGlobalProperty.ALIPAY_APP_ID)) {
                 reply.setInventory(false);
+                logger.info("通知参数验证失败");
                 bus.reply(msg, reply);
                 return;
             }
@@ -479,7 +481,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
                 //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
                 //如果有做过处理，不执行商户的业务程序
                 if (dealDetailVO.getState().equals(DealState.FAILURE)) {
-                    AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+                    AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                     BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                     vo.setCashBalance(balance);
                     dbf.getEntityManager().merge(vo);
@@ -498,6 +500,8 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             }
 
 
+        }else {
+            logger.info("支付宝通知验证失败");
         }
         reply.setInventory(signVerified);
 
@@ -525,6 +529,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             String app_id = param.get("app_id");
             SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
             q.add(DealDetailVO_.outTradeNO, SimpleQuery.Op.EQ, out_trade_no);
+            q.add(DealDetailVO_.state, SimpleQuery.Op.EQ, DealState.FAILURE);
             DealDetailVO dealDetailVO = q.find();
 
             if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(AlipayGlobalProperty.ALIPAY_SELLER_ID) || !app_id.equals(AlipayGlobalProperty.ALIPAY_APP_ID)) {

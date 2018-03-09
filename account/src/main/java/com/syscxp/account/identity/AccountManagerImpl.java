@@ -252,7 +252,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.email, Op.EQ, msg.getEmail());
             AccountVO account = q.find();
-            if (account.getType() != AccountType.SystemAdmin) {
+            if (account.getType() == AccountType.SystemAdmin) {
                 throw new ApiMessageInterceptionException(argerr("SystemAdmin禁止使用找回密码功能[email %s]", msg.getEmail()));
             }
             account.setPassword(msg.getNewPassword());
@@ -383,7 +383,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
             AccountVO account = q.find();
-            if (account.getType() != AccountType.SystemAdmin) {
+            if (account.getType() == AccountType.SystemAdmin) {
                 throw new ApiMessageInterceptionException(argerr("SystemAdmin禁止使用找回密码功能[phone %s]", msg.getPhone()));
             }
             account.setPassword(msg.getNewpassword());

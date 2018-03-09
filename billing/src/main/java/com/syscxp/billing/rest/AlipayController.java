@@ -39,6 +39,8 @@ public class AlipayController {
             Map<String, String> params = getParamterMap(request);
             APIVerifyReturnMsg msg = new APIVerifyReturnMsg();
             msg.setParam(params);
+            logger.info("支付宝同步返回结果：");
+            logger.info(params.toString());
             RestAPIResponse res = restApi.call(msg);
             if (res.getState().equals(RestAPIState.Done.toString())) {
                 APIVerifyReturnReply replay = (APIVerifyReturnReply) RESTApiDecoder.loads(res.getResult());
@@ -59,7 +61,8 @@ public class AlipayController {
         try {
             Map<String, String> params = getParamterMap(request);
             APIVerifyNotifyMsg msg = new APIVerifyNotifyMsg();
-
+            logger.info("支付宝通知返回结果：");
+            logger.info(params.toString());
             msg.setParam(params);
             RestAPIResponse res = restApi.call(msg);
             if (res.getState().equals(RestAPIState.Done.toString())) {
