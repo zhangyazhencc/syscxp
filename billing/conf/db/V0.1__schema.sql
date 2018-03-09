@@ -390,6 +390,10 @@ VALUES ('VPN', 'VPN', 'VPN', 'VPN', 'VPN', 'enable', '2018-01-02 09:42:29', '201
 ('HOST', 'HOST', '云服务器', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
 ('POOLNETWORK', 'POOLNETWORK', '资源池网络', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2018-01-02 09:42:29'),
 ('RESOURCEPOOL', 'RESOURCEPOOL', '资源池', 'ECP', '互联云', 'enable', '2018-01-02 09:46:37', '2017-10-30 15:46:12');
+
+INSERT INTO `ProductCategoryVO` (uuid, code, name, productTypeCode, productTypeName, status, lastOpDate, createDate)
+VALUES ('IP', 'IP', '公网IP', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 17:18:12');
+
 UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `ProductPriceUnitVO`;

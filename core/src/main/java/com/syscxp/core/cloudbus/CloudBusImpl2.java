@@ -1719,6 +1719,11 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         reply.putHeaderEntry(CORRELATION_ID, request.getId());
         reply.setServiceId((String) request.getHeaderEntry(REPLY_TO));
 
+        if (request.isNoError()) {
+            reply.setError(null);
+            reply.setSuccess(true);
+        }
+
         buildResponseMessageMetaData(reply);
         callReplyPreSendingExtensions(reply);
         wire.send(reply, false);
