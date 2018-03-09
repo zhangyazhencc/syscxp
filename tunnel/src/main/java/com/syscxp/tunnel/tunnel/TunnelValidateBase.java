@@ -122,7 +122,7 @@ public class TunnelValidateBase {
                 .select(SwitchPortVO_.portType).find();
         //判断同一个用户在同一个连接点下是否已经购买共享端口
         if (portType.equals("SHARE")) {
-            String sql = "select a from InterfaceVO a,SwitchPortVO b " +
+            /*String sql = "select a from InterfaceVO a,SwitchPortVO b " +
                     "where a.switchPortUuid = b.uuid " +
                     "and a.accountUuid = :accountUuid " +
                     "and a.endpointUuid = :endpointUuid " +
@@ -132,7 +132,7 @@ public class TunnelValidateBase {
             itq.setParameter("endpointUuid", msg.getEndpointUuid());
             if (!itq.getResultList().isEmpty()) {
                 throw new ApiMessageInterceptionException(argerr("一个用户在同一个连接点下只能购买一个共享口！ "));
-            }
+            }*/
         }else{
             //判断账户金额是否充足
             APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
