@@ -407,8 +407,8 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         Map<String, String> param = new HashMap<>();
         param.put("out_trade_no", outTradeNO);
         param.put("total_amount", total.toString());
-        param.put("subject", "cloud-special-network");
-        param.put("body", "专线网络");
+        param.put("subject", "syscloud");
+        param.put("body", "syscloud");
         param.put("product_code", "FAST_INSTANT_TRADE_PAY");
         alipayRequest.setBizContent(JSONObjectUtil.toJsonString(param));
         String result = "FAILURE";
