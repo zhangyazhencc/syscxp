@@ -451,6 +451,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
 
             if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(AlipayGlobalProperty.ALIPAY_SELLER_ID) || !app_id.equals(AlipayGlobalProperty.ALIPAY_APP_ID)) {
                 reply.setInventory(false);
+                logger.info("通知参数验证失败");
                 bus.reply(msg, reply);
                 return;
             }
@@ -499,6 +500,8 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             }
 
 
+        }else {
+            logger.info("支付宝通知验证失败");
         }
         reply.setInventory(signVerified);
 
