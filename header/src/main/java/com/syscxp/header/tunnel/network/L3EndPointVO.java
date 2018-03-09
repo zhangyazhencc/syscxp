@@ -1,55 +1,87 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.vo.ForeignKey;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table
+@Inheritance(strategy = InheritanceType.JOINED)
 public class L3EndPointVO {
 
     @Id
     @Column
     private String uuid;
+
     @Column
-    @ForeignKey(parentEntityClass = L3NetworkVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
+    @ForeignKey(parentEntityClass = L3NetworkEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String l3NetworkUuid;
+
     @Column
     private String endpointUuid;
+
+    @Column
+    private String bandwidthOffering;
+
     @Column
     private Long bandwidth;
+
     @Column
     private String routeType;
+
     @Column
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private L3EndpointStatus status;
+
     @Column
-    private Long maxRouteNum;
+    private Integer maxRouteNum;
+
     @Column
     private String localIP;
+
     @Column
     private String remoteIp;
+
     @Column
     private String netmask;
+
     @Column
     private String interfaceUuid;
+
     @Column
     private String switchPortUuid;
+
     @Column
-    private Long vlan;
+    private String physicalSwitchUuid;
+
+    @Column
+    private Integer vlan;
+
     @Column
     private String rd;
+
     @Column
     private Timestamp lastOpDate;
+
     @Column
     private Timestamp createDate;
 
-    @OneToMany(targetEntity = L3RouteVO.class,orphanRemoval=true)
-    private Set<L3RouteVO> l3RouteVOs;
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="endpointUuid", insertable=false, updatable=false)
+    private EndpointVO endpointVO;
 
-    @OneToMany(targetEntity = L3RtVO.class,orphanRemoval=true)
-    private Set<L3RtVO> l3RtVOs;
+    @OneToMany(fetch= FetchType.EAGER)
+    @JoinColumn(name = "l3EndPointUuid", insertable = false, updatable = false)
+    private List<L3RouteVO> l3RouteVOS = new ArrayList<L3RouteVO>();
+
+    @OneToMany(fetch= FetchType.EAGER)
+    @JoinColumn(name = "l3EndPointUuid", insertable = false, updatable = false)
+    private List<L3RtVO> l3RtVOS = new ArrayList<L3RtVO>();
 
     @PreUpdate
     private void preUpdate() {
@@ -80,6 +112,14 @@ public class L3EndPointVO {
         this.endpointUuid = endpointUuid;
     }
 
+    public String getBandwidthOffering() {
+        return bandwidthOffering;
+    }
+
+    public void setBandwidthOffering(String bandwidthOffering) {
+        this.bandwidthOffering = bandwidthOffering;
+    }
+
     public Long getBandwidth() {
         return bandwidth;
     }
@@ -96,19 +136,19 @@ public class L3EndPointVO {
         this.routeType = routeType;
     }
 
-    public String getStatus() {
+    public L3EndpointStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(L3EndpointStatus status) {
         this.status = status;
     }
 
-    public Long getMaxRouteNum() {
+    public Integer getMaxRouteNum() {
         return maxRouteNum;
     }
 
-    public void setMaxRouteNum(Long maxRouteNum) {
+    public void setMaxRouteNum(Integer maxRouteNum) {
         this.maxRouteNum = maxRouteNum;
     }
 
@@ -152,11 +192,19 @@ public class L3EndPointVO {
         this.switchPortUuid = switchPortUuid;
     }
 
-    public Long getVlan() {
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
+    }
+
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
+    }
+
+    public Integer getVlan() {
         return vlan;
     }
 
-    public void setVlan(Long vlan) {
+    public void setVlan(Integer vlan) {
         this.vlan = vlan;
     }
 
@@ -184,19 +232,27 @@ public class L3EndPointVO {
         this.createDate = createDate;
     }
 
-    public Set<L3RouteVO> getL3RouteVOs() {
-        return l3RouteVOs;
+    public EndpointVO getEndpointVO() {
+        return endpointVO;
     }
 
-    public void setL3RouteVOs(Set<L3RouteVO> l3RouteVOs) {
-        this.l3RouteVOs = l3RouteVOs;
+    public void setEndpointVO(EndpointVO endpointVO) {
+        this.endpointVO = endpointVO;
     }
 
-    public Set<L3RtVO> getL3RtVOs() {
-        return l3RtVOs;
+    public List<L3RouteVO> getL3RouteVOS() {
+        return l3RouteVOS;
     }
 
-    public void setL3RtVOs(Set<L3RtVO> l3RtVOs) {
-        this.l3RtVOs = l3RtVOs;
+    public void setL3RouteVOS(List<L3RouteVO> l3RouteVOS) {
+        this.l3RouteVOS = l3RouteVOS;
+    }
+
+    public List<L3RtVO> getL3RtVOS() {
+        return l3RtVOS;
+    }
+
+    public void setL3RtVOS(List<L3RtVO> l3RtVOS) {
+        this.l3RtVOS = l3RtVOS;
     }
 }

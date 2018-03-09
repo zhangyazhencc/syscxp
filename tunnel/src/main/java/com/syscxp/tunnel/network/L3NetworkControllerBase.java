@@ -3,6 +3,7 @@ package com.syscxp.tunnel.network;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.core.Completion;
@@ -10,9 +11,10 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.tunnel.network.CreateL3EndpointMsg;
-import com.syscxp.header.tunnel.network.CreateL3EndpointReply;
-import com.syscxp.header.tunnel.network.L3EndPointVO;
+import com.syscxp.header.tunnel.network.*;
+import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
+import com.syscxp.header.tunnel.switchs.SwitchModelVO;
+import com.syscxp.header.tunnel.switchs.SwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.TaskResourceVO;
 import com.syscxp.header.tunnel.tunnel.TaskStatus;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
@@ -27,6 +29,8 @@ import org.springframework.beans.factory.annotation.Configurable;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Create by DCY on 2018/3/7
@@ -104,5 +108,56 @@ public class L3NetworkControllerBase {
                 bus.reply(msg, reply);
             }
         });
+    }
+
+    /**
+     * 控制器下发配置
+     * */
+    public ControllerCommands.L3NetworkConfig getL3NetworkConfigInfo(L3EndPointVO vo){
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = new ControllerCommands.L3NetworkConfig();
+
+
+
+        List<ControllerCommands.L3RoutesConfig> routes = new ArrayList<>();
+        List<L3RouteVO> l3RouteVOS = Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndPointUuid, vo.getUuid()).list();
+        for (L3RouteVO l3RouteVO : l3RouteVOS) {
+            String[] cidr = l3RouteVO.getCidr().split("/");
+            ControllerCommands.L3RoutesConfig l3RoutesConfig = new ControllerCommands.L3RoutesConfig();
+            l3RoutesConfig.setBusiness_ip(cidr[0]);
+            l3RoutesConfig.setNetmask(cidr[1]);
+            l3RoutesConfig.setRoute_ip(l3RouteVO.getNextIp());
+            l3RoutesConfig.setIndex(l3RouteVO.getIndex());
+            routes.add(l3RoutesConfig);
+        }
+
+        List<ControllerCommands.L3MplsConfig> mpls_switches = new ArrayList<>();
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(vo.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        SwitchModelVO switchModelVO = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(), SwitchModelVO.class);
+        SwitchPortVO switchPortVO = dbf.findByUuid(vo.getSwitchPortUuid(), SwitchPortVO.class);
+
+        ControllerCommands.L3MplsConfig l3MplsConfig = new ControllerCommands.L3MplsConfig();
+        l3MplsConfig.setUuid(vo.getPhysicalSwitchUuid());
+        l3MplsConfig.setSwitch_type(switchModelVO.getModel());
+        l3MplsConfig.setSub_type(switchModelVO.getSubModel());
+        l3MplsConfig.setPort_name(switchPortVO.getPortName());
+        l3MplsConfig.setVlan_id(vo.getVlan());
+        l3MplsConfig.setM_ip(physicalSwitchVO.getmIP());
+        l3MplsConfig.setProtocol(physicalSwitchVO.getProtocol().toString());
+        l3MplsConfig.setPort(physicalSwitchVO.getPort());
+        l3MplsConfig.setConnect_ip_local(vo.getLocalIP());
+        l3MplsConfig.setConnect_ip_remote(vo.getRemoteIp());
+        l3MplsConfig.setNetmask(vo.getNetmask());
+        l3MplsConfig.setUsername(physicalSwitchVO.getUsername());
+        l3MplsConfig.setPassword(physicalSwitchVO.getPassword());
+        l3MplsConfig.setBandwidth(vo.getBandwidth()/1024);
+        l3MplsConfig.setRoutes(routes);
+        mpls_switches.add(l3MplsConfig);
+
+        L3NetworkVO l3NetworkVO = dbf.findByUuid(vo.getL3NetworkUuid(), L3NetworkVO.class);
+        l3NetworkConfig.setNet_id(l3NetworkVO.getUuid());
+        l3NetworkConfig.setVrf_id(l3NetworkVO.getVid());
+        l3NetworkConfig.setUsername(l3NetworkVO.getCode());
+        l3NetworkConfig.setMpls_switches(mpls_switches);
+        return l3NetworkConfig;
     }
 }

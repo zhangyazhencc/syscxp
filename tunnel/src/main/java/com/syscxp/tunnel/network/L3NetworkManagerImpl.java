@@ -1,39 +1,67 @@
 package com.syscxp.tunnel.network;
 
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
+import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.tunnel.endpoint.EndpointAO_;
+import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.network.*;
-import com.syscxp.tunnel.sdnController.L3NetworkCommand;
+import com.syscxp.header.tunnel.tunnel.InterfaceVO;
+import com.syscxp.tunnel.tunnel.TunnelBase;
+import com.syscxp.utils.Utils;
+import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
 
 
-public class L3NetworkManagerImpl extends AbstractService implements L3NetworkManager{
+public class L3NetworkManagerImpl extends AbstractService implements L3NetworkManager, ApiMessageInterceptor {
+    private static final CLogger logger = Utils.getLogger(L3NetworkManagerImpl.class);
+
 
     @Autowired
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
+    @Autowired
+    private RESTFacade restf;
+    @Autowired
+    private ErrorFacade errf;
+    @Autowired
+    private JobQueueFacade jobf;
 
     private VOAddAllOfMsg vOAddAllOfMsg = new VOAddAllOfMsg();
 
     @Override
+    @MessageSafe
     public void handleMessage(Message msg) {
+
+        if (msg instanceof APIMessage) {
+            handleApiMessage((APIMessage) msg);
+        } else {
+            handleLocalMessage(msg);
+        }
+    }
+
+    private void handleLocalMessage(Message msg) {
+        L3NetworkControllerBase base = new L3NetworkControllerBase();
+        base.handleMessage(msg);
+    }
+
+    public void handleApiMessage(APIMessage msg) {
         if(msg instanceof APICreateL3NetworkMsg){
             handle((APICreateL3NetworkMsg) msg);
         }else if(msg instanceof APIUpdateL3NetworkMsg){
@@ -42,14 +70,10 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             handle((APIDeleteL3NetworkMsg) msg);
         }else if(msg instanceof APICreateL3EndPointMsg){
             handle((APICreateL3EndPointMsg) msg);
-        }else if(msg instanceof APIUpdateL3EndPointMsg){
-            handle((APIUpdateL3EndPointMsg) msg);
         }else if(msg instanceof APIDeleteL3EndPointMsg){
             handle((APIDeleteL3EndPointMsg) msg);
         }else if(msg instanceof APICreateL3RouteMsg){
             handle((APICreateL3RouteMsg) msg);
-        }else if(msg instanceof APIUpdateL3RouteMsg){
-            handle((APIUpdateL3RouteMsg) msg);
         }else if(msg instanceof APIDeleteL3RouteMsg){
             handle((APIDeleteL3RouteMsg) msg);
         }
@@ -59,91 +83,28 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
     }
 
-    private void handle(APIDeleteL3RouteMsg msg) {
-        APIDeleteL3RouteEvent event = new APIDeleteL3RouteEvent(msg.getId());
-        UpdateQuery.New(L3RouteVO.class).condAnd(L3RouteVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
-        bus.publish(event);
-    }
+    private void handle(APICreateL3NetworkMsg msg) {
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+        APICreateL3NetworkEvent evt = new APICreateL3NetworkEvent(msg.getId());
 
-    private void handle(APIUpdateL3RouteMsg msg) {
-        APIUpdateL3RouteEvent event = new APIUpdateL3RouteEvent(msg.getId());
-        L3RouteVO vo = dbf.findByUuid(msg.getUuid(),L3RouteVO.class);
-        vOAddAllOfMsg.addAll(msg,vo);
-        event.setInventory(L3RouteInventory.valueOf(dbf.updateAndRefresh(vo)));
-        bus.publish(event);
-    }
-
-    private void handle(APICreateL3RouteMsg msg) {
-
-        APICreateL3RouteEvent event = new APICreateL3RouteEvent(msg.getId());
-        L3RouteVO vo = new L3RouteVO();
+        L3NetworkVO vo = new L3NetworkVO();
         vo.setUuid(Platform.getUuid());
-        vOAddAllOfMsg.addAll(msg,vo);
-        bus.publish(event);
-    }
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setOwnerAccountUuid(msg.getAccountUuid());
+        vo.setName(msg.getName());
+        vo.setCode(msg.getAccountUuid().substring(0,10));
+        vo.setVid(l3NetworkBase.getVidAuto());
+        vo.setType("MPLSVPN");
+        vo.setEndPointNum(0);
+        vo.setDescription(msg.getDescription());
+        vo.setDuration(msg.getDuration());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setMaxModifies(CoreGlobalProperty.L3NETWORK_MAX_MOTIFIES);
+        vo.setExpireDate(null);
+        vo = dbf.persistAndRefresh(vo);
 
-    @Transactional(propagation = Propagation.NESTED)
-    private void handle(APIDeleteL3EndPointMsg msg) {
-        APIDeleteL3EndPointEvent event = new APIDeleteL3EndPointEvent(msg.getId());
-        UpdateQuery.New(L3EndPointVO.class).condAnd(L3EndPointVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
-        updateEndPointNum(msg.getUuid());
-        bus.publish(event);
-    }
-
-
-    private void handle(APIUpdateL3EndPointMsg msg) {
-        APIUpdateL3EndPointEvent event = new APIUpdateL3EndPointEvent(msg.getId());
-        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(),L3EndPointVO.class);
-        vOAddAllOfMsg.addAll(msg,vo);
-        event.setInventory(L3EndPointInventory.valueOf(dbf.updateAndRefresh(vo)));
-        bus.publish(event);
-    }
-
-    @Transactional(propagation=Propagation.NESTED)
-    private void handle(APICreateL3EndPointMsg msg) {
-        APICreateL3EndPointEvent event = new APICreateL3EndPointEvent(msg.getId());
-        L3EndPointVO vo = new L3EndPointVO();
-
-        if(msg.getRouteType() == null){
-            msg.setRouteType("STATIC");
-        }
-        if(msg.getStatus() == null){
-            msg.setStatus("Connected");
-        }
-//        vo.setMaxRouteNum();
-        TypedQuery<Long> vid_q = dbf.getEntityManager().createQuery(
-                "SELECT MAX(vid) from L3NetworkEO where uuid = :l3Uuid", Long.class);
-        vid_q.setParameter("l3Uuid",msg.getL3NetworkUuid());
-        vo.setRd(String.valueOf(vid_q.getSingleResult()));
-
-        vOAddAllOfMsg.addAll(msg,vo);
-        vo.setUuid(Platform.getUuid());
-        L3RtVO rtVo = new L3RtVO(
-                Platform.getUuid(),
-                msg.getEndpointUuid(),
-                "100000","100000",
-                dbf.getCurrentSqlTime(),dbf.getCurrentSqlTime()
-        );
-
-        dbf.getEntityManager().persist(vo);
-        dbf.getEntityManager().persist(rtVo);
-        updateEndPointNum(vo.getUuid());
-        dbf.getEntityManager().flush();
-
-        event.setInventory(L3EndPointInventory.valueOf(vo));
-        bus.publish(event);
-    }
-
-    private void handle(APIDeleteL3NetworkMsg msg) {
-        APIDeleteL3NetworkEvent event = new APIDeleteL3NetworkEvent(msg.getId());
-        SimpleQuery<L3EndPointVO> vo = dbf.createQuery(L3EndPointVO.class);
-        vo.add(L3EndPointVO_.l3NetworkUuid, SimpleQuery.Op.EQ,msg.getUuid());
-        if(vo.isExists()){
-            event.setError(Platform.argerr("删除网络之前，必须先删除其下的所有交换机"));
-        }else{
-            UpdateQuery.New(L3NetworkVO.class).condAnd(L3NetworkVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
-        }
-        bus.publish(event);
+        evt.setInventory(L3NetworkInventory.valueOf(vo));
+        bus.publish(evt);
     }
 
     private void handle(APIUpdateL3NetworkMsg msg) {
@@ -154,200 +115,115 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         bus.publish(event);
     }
 
-    private void handle(APICreateL3NetworkMsg msg) {
-        APICreateL3NetworkEvent event = new APICreateL3NetworkEvent();
-        L3NetworkVO vo = new L3NetworkVO();
+    private void handle(APIDeleteL3NetworkMsg msg) {
+        APIDeleteL3NetworkEvent evt = new APIDeleteL3NetworkEvent(msg.getId());
+        L3NetworkVO vo = dbf.findByUuid(msg.getUuid(),L3NetworkVO.class);
+
+        dbf.remove(vo);
+
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateL3EndPointMsg msg) {
+        APICreateL3EndPointEvent evt = new APICreateL3EndPointEvent(msg.getId());
+
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+
+        String l3EndpointUuid = doCreateL3EndPointVO(msg);
+        L3EndPointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndPointVO.class);
+
+        l3NetworkBase.updateEndPointNum(msg.getL3NetworkUuid());
+
+        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    @Transactional
+    private String doCreateL3EndPointVO(APICreateL3EndPointMsg msg){
+        TunnelBase tunnelBase = new TunnelBase();
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+
+
+        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
+        L3NetworkVO l3NetworkVO = dbf.findByUuid(msg.getL3NetworkUuid(), L3NetworkVO.class);
+        InterfaceVO interfaceVO = dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class);
+
+        String switchPortUuid = interfaceVO.getSwitchPortUuid();
+        String physicalSwitchUuid = tunnelBase.getPhysicalSwitchBySwitchPortUuid(interfaceVO.getSwitchPortUuid()).getUuid();
+
+        Integer vlan = l3NetworkBase.getVlanForL3(switchPortUuid, physicalSwitchUuid);
+        if (vlan == 0) {
+            throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortUuid));
+        }
+
+        L3EndPointVO vo = new L3EndPointVO();
         vo.setUuid(Platform.getUuid());
-        TypedQuery<Long> vid_q = dbf.getEntityManager().createQuery("SELECT MAX(vid) from L3NetworkVO ", Long.class);
-        vo.setVid(vid_q.getSingleResult()==null ? 100000L : vid_q.getSingleResult() + 1L);
-        vo.setEndPointNum(0L);
-//        vo.setMaxModifies();
-        if(msg.getType() == null){
-            msg.setType("MPLSVPN");
-        }
-        if(msg.getStatus() == null){
-            msg.setStatus("Connected");
-        }
+        vo.setL3NetworkUuid(msg.getL3NetworkUuid());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setBandwidthOffering(msg.getBandwidthOfferingUuid());
+        vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
+        vo.setRouteType("STATIC");
+        vo.setStatus(L3EndpointStatus.UnReady);
+        vo.setMaxRouteNum(CoreGlobalProperty.L3_MAX_ROUTENUM);
+        vo.setLocalIP(null);
+        vo.setRemoteIp(null);
+        vo.setNetmask(null);
+        vo.setInterfaceUuid(msg.getInterfaceUuid());
+        vo.setSwitchPortUuid(switchPortUuid);
+        vo.setPhysicalSwitchUuid(physicalSwitchUuid);
+        vo.setVlan(vlan);
+        vo.setRd("58991:"+Integer.toString(l3NetworkVO.getVid()));
 
-        vOAddAllOfMsg.addAll(msg,vo);
+        L3RtVO rtVO = new L3RtVO();
+        rtVO.setUuid(Platform.getUuid());
+        rtVO.setL3EndPointUuid(vo.getUuid());
+        rtVO.setImpor("58991:"+Integer.toString(l3NetworkVO.getVid()));
+        rtVO.setExport("58991:"+Integer.toString(l3NetworkVO.getVid()));
 
-        event.setInventory(L3NetworkInventory.valueOf(dbf.persistAndRefresh(vo)));
+        dbf.getEntityManager().persist(vo);
+        dbf.getEntityManager().persist(rtVO);
+
+        return vo.getUuid();
+    }
+
+
+    private void handle(APIDeleteL3EndPointMsg msg) {
+        APIDeleteL3EndPointEvent evt = new APIDeleteL3EndPointEvent(msg.getId());
+
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+
+        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        l3NetworkBase.deleteL3EndpointDB(msg.getUuid());
+        l3NetworkBase.updateEndPointNum(vo.getL3NetworkUuid());
+
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateL3RouteMsg msg) {
+        APICreateL3RouteEvent evt = new APICreateL3RouteEvent(msg.getId());
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndPointVO.class);
+
+        L3RouteVO vo = new L3RouteVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setL3EndPointUuid(msg.getL3EndPointUuid());
+        vo.setCidr(msg.getCidr());
+        vo.setNextIp(l3EndPointVO.getRemoteIp());
+        vo.setIndex(l3NetworkBase.getIndexForRoute(msg.getL3EndPointUuid()));
+
+        vo = dbf.persistAndRefresh(vo);
+
+        evt.setInventory(L3RouteInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteL3RouteMsg msg) {
+        APIDeleteL3RouteEvent event = new APIDeleteL3RouteEvent(msg.getId());
+        UpdateQuery.New(L3RouteVO.class).condAnd(L3RouteVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
         bus.publish(event);
     }
 
-    private void updateEndPointNum(String l3Networkuuid){
-        TypedQuery<Long> num_q = dbf.getEntityManager().createQuery(
-                "SELECT COUNT(lvo.uuid) from L3EndPointVO lvo where  l3NetworkUuid = :l3Uuid ", Long.class);
-        num_q.setParameter("l3Uuid",l3Networkuuid);
 
-        UpdateQuery.New(L3NetworkVO.class).condAnd(L3NetworkVO_.uuid, SimpleQuery.Op.EQ,l3Networkuuid).
-                set(L3NetworkVO_.endPointNum,num_q.getSingleResult()).update();
-
-    }
-
-
-    private L3NetworkCommand getCommandForL3Route(String routeUuid){
-
-        L3NetworkCommand cmd = new L3NetworkCommand();
-
-        L3RouteVO routeVO = dbf.findByUuid(routeUuid,L3RouteVO.class);
-        List<L3NetworkCommand.Route> routeList = new ArrayList<>();
-        L3NetworkCommand.Route route = cmd.new Route();
-        route.setIndex(routeVO.getIndex());
-        String[] str = routeVO.getCidr().split("/");
-        route.setBusiness_ip(str[0]);
-        route.setNetmask(str[1]);
-        route.setRoute_ip(routeVO.getNextIp());
-        routeList.add(route);
-
-        List<L3NetworkCommand.Mpls_switche> mpls_switcheList = new ArrayList<>();
-        L3NetworkCommand.Mpls_switche mpls_switche = cmd.new Mpls_switche();
-        L3EndPointVO endPointVO = dbf.findByUuid(routeVO.getL3EndPointUuid(),L3EndPointVO.class);
-        mpls_switche.setUuid(endPointVO.getUuid());
-        mpls_switche.setVlan_id(endPointVO.getVlan());
-        mpls_switche.setBandwidth(endPointVO.getBandwidth());
-        mpls_switche.setConnect_ip_local(endPointVO.getLocalIP());
-        mpls_switche.setConnect_ip_remote(endPointVO.getRemoteIp());
-        mpls_switche.setNetmask(endPointVO.getNetmask());
-        String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
-                " from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
-                " where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
-                " and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
-        TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
-        physicalSwitchQuery.setParameter("endpointUuid", endPointVO.getUuid());
-        Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
-        mpls_switche.setUsername(physicalSwitchT.get(0,String.class));
-        mpls_switche.setPassword(physicalSwitchT.get(1,String.class));
-        mpls_switche.setM_ip(physicalSwitchT.get(2,String.class));
-        mpls_switche.setProtocol(physicalSwitchT.get(3,String.class));
-        mpls_switche.setPort(physicalSwitchT.get(4,String.class));
-        mpls_switche.setPort_name(physicalSwitchT.get(5,String.class));
-        mpls_switche.setSwitch_type(physicalSwitchT.get(6,String.class));
-        mpls_switche.setSub_type(physicalSwitchT.get(7,String.class));
-        mpls_switche.setRoutes(routeList);
-
-        mpls_switcheList.add(mpls_switche);
-
-        L3NetworkVO l3NetworkVO= dbf.findByUuid(endPointVO.getL3NetworkUuid(),L3NetworkVO.class);
-        cmd.setNet_id(l3NetworkVO.getUuid().substring(0,10));
-        cmd.setUsername(l3NetworkVO.getOwnerAccountUuid());
-        cmd.setVrf_id(l3NetworkVO.getVid());
-        cmd.setMpls_switches(mpls_switcheList);
-        return cmd;
-    }
-
-    private L3NetworkCommand getCommandForL3EndPoint(String endPointUuid){
-        L3NetworkCommand cmd = new L3NetworkCommand();
-
-        List<L3NetworkCommand.Mpls_switche> mpls_switcheList = new ArrayList<>();
-        L3NetworkCommand.Mpls_switche mpls_switche = cmd.new Mpls_switche();
-        L3EndPointVO endPointVO = dbf.findByUuid(endPointUuid,L3EndPointVO.class);
-        mpls_switche.setUuid(endPointVO.getUuid());
-        mpls_switche.setVlan_id(endPointVO.getVlan());
-        mpls_switche.setBandwidth(endPointVO.getBandwidth());
-        mpls_switche.setConnect_ip_local(endPointVO.getLocalIP());
-        mpls_switche.setConnect_ip_remote(endPointVO.getRemoteIp());
-        mpls_switche.setNetmask(endPointVO.getNetmask());
-        String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
-                " from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
-                " where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
-                " and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
-        TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
-        physicalSwitchQuery.setParameter("endpointUuid", endPointVO.getUuid());
-        Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
-        mpls_switche.setUsername(physicalSwitchT.get(0,String.class));
-        mpls_switche.setPassword(physicalSwitchT.get(1,String.class));
-        mpls_switche.setM_ip(physicalSwitchT.get(2,String.class));
-        mpls_switche.setProtocol(physicalSwitchT.get(3,String.class));
-        mpls_switche.setPort(physicalSwitchT.get(4,String.class));
-        mpls_switche.setPort_name(physicalSwitchT.get(5,String.class));
-        mpls_switche.setSwitch_type(physicalSwitchT.get(6,String.class));
-        mpls_switche.setSub_type(physicalSwitchT.get(7,String.class));
-
-        List<L3NetworkCommand.Route> routeList = new ArrayList<>();
-        SimpleQuery<L3RouteVO> l3RouteVOSimpleQuery  = dbf.createQuery(L3RouteVO.class);
-        l3RouteVOSimpleQuery.add(L3RouteVO_.l3EndPointUuid, SimpleQuery.Op.EQ,endPointUuid);
-        List<L3RouteVO> l3RouteVOs = l3RouteVOSimpleQuery.list();
-        for(L3RouteVO l3routeVO : l3RouteVOs){
-            L3NetworkCommand.Route route = cmd.new Route();
-            String[] str = l3routeVO.getCidr().split("/");
-            route.setBusiness_ip(str[0]);
-            route.setNetmask(str[1]);
-            route.setRoute_ip(l3routeVO.getNextIp());
-            route.setIndex(l3routeVO.getIndex());
-            routeList.add(route);
-        }
-
-        mpls_switche.setRoutes(routeList);
-        mpls_switcheList.add(mpls_switche);
-
-        L3NetworkVO l3NetworkVO= dbf.findByUuid(endPointVO.getL3NetworkUuid(),L3NetworkVO.class);
-        cmd.setNet_id(l3NetworkVO.getUuid().substring(0,10));
-        cmd.setUsername(l3NetworkVO.getOwnerAccountUuid());
-        cmd.setVrf_id(l3NetworkVO.getVid());
-        cmd.setMpls_switches(mpls_switcheList);
-        return cmd;
-    }
-
-    private L3NetworkCommand getCommandForL3Network(String l3Uuid) {
-        L3NetworkCommand cmd = new L3NetworkCommand();
-        L3NetworkVO l3NetworkVO= dbf.findByUuid(l3Uuid,L3NetworkVO.class);
-        cmd.setNet_id(l3NetworkVO.getUuid().substring(0,10));
-        cmd.setUsername(l3NetworkVO.getOwnerAccountUuid());
-        cmd.setVrf_id(l3NetworkVO.getVid());
-
-        List<L3NetworkCommand.Mpls_switche> mpls_switcheList = new ArrayList<>();
-        SimpleQuery<L3EndPointVO> l3Endpoint  = dbf.createQuery(L3EndPointVO.class);
-        l3Endpoint.add(L3EndPointVO_.l3NetworkUuid, SimpleQuery.Op.EQ,l3NetworkVO.getUuid());
-        List<L3EndPointVO> l3EndPointVOS = l3Endpoint.list();
-        for(L3EndPointVO vo : l3EndPointVOS){
-            L3NetworkCommand.Mpls_switche mpls_switche = cmd.new Mpls_switche();
-            mpls_switche.setUuid(vo.getUuid());
-            mpls_switche.setVlan_id(vo.getVlan());
-            mpls_switche.setBandwidth(vo.getBandwidth());
-            mpls_switche.setConnect_ip_local(vo.getLocalIP());
-            mpls_switche.setConnect_ip_remote(vo.getRemoteIp());
-            mpls_switche.setNetmask(vo.getNetmask());
-
-            String physicalSwitchSql = "select phvo.username,phvo.password,phvo.mIP,phvo.protocol,phvo.port,spvo.portName,smvo.model,smvo.subModel" +
-                    " from L3EndPointVO endvo,SwitchPortVO spvo,SwitchVO svo, PhysicalSwitchVO phvo,SwitchModelVO smvo" +
-                    " where endvo.uuid = :endpointUuid and endvo.switchportUuid = spvo.uuid " +
-                    " and spvo.switchuuid = svo.uuid and svo.PhysicalSwitchuuid = phvo.uuid and phvo.switchModelUuid = smvo.uuid";
-            TypedQuery<Tuple> physicalSwitchQuery = dbf.getEntityManager().createQuery(physicalSwitchSql, Tuple.class);
-            physicalSwitchQuery.setParameter("endpointUuid", vo.getUuid());
-            Tuple physicalSwitchT = physicalSwitchQuery.getSingleResult();
-
-            mpls_switche.setUsername(physicalSwitchT.get(0,String.class));
-            mpls_switche.setPassword(physicalSwitchT.get(1,String.class));
-            mpls_switche.setM_ip(physicalSwitchT.get(2,String.class));
-            mpls_switche.setProtocol(physicalSwitchT.get(3,String.class));
-            mpls_switche.setPort(physicalSwitchT.get(4,String.class));
-            mpls_switche.setPort_name(physicalSwitchT.get(5,String.class));
-            mpls_switche.setSwitch_type(physicalSwitchT.get(6,String.class));
-            mpls_switche.setSub_type(physicalSwitchT.get(7,String.class));
-
-            List<L3NetworkCommand.Route> routeList = new ArrayList<>();
-            SimpleQuery<L3RouteVO> l3RouteVOSimpleQuery  = dbf.createQuery(L3RouteVO.class);
-            l3RouteVOSimpleQuery.add(L3RouteVO_.l3EndPointUuid, SimpleQuery.Op.EQ,vo.getUuid());
-            List<L3RouteVO> l3RouteVOs = l3RouteVOSimpleQuery.list();
-            for(L3RouteVO l3routeVO : l3RouteVOs){
-                L3NetworkCommand.Route route = cmd.new Route();
-                route.setIndex(l3routeVO.getIndex());
-                String[] str = l3routeVO.getCidr().split("/");
-                route.setBusiness_ip(str[0]);
-                route.setNetmask(str[1]);
-                route.setRoute_ip(l3routeVO.getNextIp());
-                routeList.add(route);
-            }
-
-            mpls_switche.setRoutes(routeList);
-            mpls_switcheList.add(mpls_switche);
-        }
-
-        cmd.setMpls_switches(mpls_switcheList);
-
-        return cmd;
-    }
 
     @Override
     public String getId() {
@@ -364,5 +240,9 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         return true;
     }
 
+    @Override
+    public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
 
+        return msg;
+    }
 }

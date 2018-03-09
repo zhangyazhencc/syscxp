@@ -12,16 +12,11 @@
     http://syscxp.com/schema/syscxp/plugin.xsd"
     default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="L3NetworkApiInterceptor" class="com.syscxp.tunnel.network.L3NetworkApiInterceptor">
-        <syscxp:plugin>
-            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor" />
-        </syscxp:plugin>
-    </bean>
-
     <bean id="L3NetworkManager" class="com.syscxp.tunnel.network.L3NetworkManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
         </syscxp:plugin>
     </bean>
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <service xmlns="http://syscxp.com/schema/syscxp">
     <id>l3Network</id>
-    <interceptor>L3NetworkApiInterceptor</interceptor>
+    <interceptor>L3NetworkManager</interceptor>
 
     <message>
         <name>com.syscxp.header.tunnel.network.APICreateL3NetworkMsg</name>
@@ -15,12 +15,6 @@
 
     <message>
         <name>com.syscxp.header.tunnel.network.APIUpdateL3NetworkMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.header.tunnel.network.APIUpdateL3EndPointMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.header.tunnel.network.APIUpdateL3RouteMsg</name>
     </message>
 
     <message>

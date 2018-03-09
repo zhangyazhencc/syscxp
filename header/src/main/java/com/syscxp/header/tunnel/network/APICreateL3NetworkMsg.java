@@ -1,47 +1,39 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.L3NetWorkConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 import java.sql.Timestamp;
 
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateL3NetworkMsg extends APIMessage {
 
-    @APIParam(required = false)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(required = false)
-    private String ownerAccountUuid;
-    @APIParam
+    @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(required = false)
-    private String code;
-    @APIParam(required = false)
-    private String type;
-    @APIParam(required = false)
-    private String status;
-    @APIParam(required = false)
     private String description;
-    @APIParam(required = false)
-    private Long duration;
-    @APIParam(required = false)
-    private String productChargeModel;
-    @APIParam(required = false)
-    private Timestamp expireDate;
+    @APIParam
+    private Integer duration;
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    private ProductChargeModel productChargeModel;
 
     public String getAccountUuid() {
-        return accountUuid;
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
     }
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public String getOwnerAccountUuid() {
-        return ownerAccountUuid;
-    }
-
-    public void setOwnerAccountUuid(String ownerAccountUuid) {
-        this.ownerAccountUuid = ownerAccountUuid;
     }
 
     public String getName() {
@@ -52,30 +44,6 @@ public class APICreateL3NetworkMsg extends APIMessage {
         this.name = name;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -84,27 +52,19 @@ public class APICreateL3NetworkMsg extends APIMessage {
         this.description = description;
     }
 
-    public Long getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
-    public String getProductChargeModel() {
+    public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(String productChargeModel) {
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
-    }
-
-    public Timestamp getExpireDate() {
-        return expireDate;
-    }
-
-    public void setExpireDate(Timestamp expireDate) {
-        this.expireDate = expireDate;
     }
 }

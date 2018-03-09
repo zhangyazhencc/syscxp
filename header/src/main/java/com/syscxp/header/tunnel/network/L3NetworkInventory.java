@@ -1,13 +1,20 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = L3NetworkVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "l3EndPoints", inventoryClass = L3EndPointInventory.class,
+                foreignKey = "uuid", expandedInventoryKey = "l3NetworkUuid"),
+})
 public class L3NetworkInventory {
 
     private String uuid;
@@ -15,18 +22,18 @@ public class L3NetworkInventory {
     private String ownerAccountUuid;
     private String name;
     private String code;
-    private Long vid;
+    private Integer vid;
     private String type;
-    private String status;
-    private Long endPointNum;
+    private Integer endPointNum;
     private String description;
-    private Long duration;
+    private Integer duration;
     private String productChargeModel;
-    private Long maxModifies;
+    private Integer maxModifies;
     private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
-
+    private List<L3EndPointInventory> l3EndPoints = new ArrayList<L3EndPointInventory>();
+    private boolean expired;
 
     public static L3NetworkInventory valueOf(L3NetworkVO vo){
         L3NetworkInventory inv = new L3NetworkInventory();
@@ -37,15 +44,15 @@ public class L3NetworkInventory {
         inv.setCode(vo.getCode());
         inv.setVid(vo.getVid());
         inv.setType(vo.getType());
-        inv.setStatus(vo.getStatus());
         inv.setEndPointNum(vo.getEndPointNum());
         inv.setDescription(vo.getDescription());
         inv.setDuration(vo.getDuration());
-        inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setProductChargeModel(vo.getProductChargeModel().toString());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setL3EndPoints(L3EndPointInventory.valueOf(vo.getL3EndPointVOS()));
 
         return inv;
     }
@@ -98,11 +105,11 @@ public class L3NetworkInventory {
         this.code = code;
     }
 
-    public Long getVid() {
+    public Integer getVid() {
         return vid;
     }
 
-    public void setVid(Long vid) {
+    public void setVid(Integer vid) {
         this.vid = vid;
     }
 
@@ -114,19 +121,11 @@ public class L3NetworkInventory {
         this.type = type;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Long getEndPointNum() {
+    public Integer getEndPointNum() {
         return endPointNum;
     }
 
-    public void setEndPointNum(Long endPointNum) {
+    public void setEndPointNum(Integer endPointNum) {
         this.endPointNum = endPointNum;
     }
 
@@ -138,11 +137,11 @@ public class L3NetworkInventory {
         this.description = description;
     }
 
-    public Long getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
@@ -154,11 +153,11 @@ public class L3NetworkInventory {
         this.productChargeModel = productChargeModel;
     }
 
-    public Long getMaxModifies() {
+    public Integer getMaxModifies() {
         return maxModifies;
     }
 
-    public void setMaxModifies(Long maxModifies) {
+    public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
     }
 
@@ -168,6 +167,12 @@ public class L3NetworkInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+
+        if (expireDate != null){
+            if (expireDate.before(Timestamp.valueOf(LocalDateTime.now()))){
+                this.expired = true;
+            }
+        }
     }
 
     public Timestamp getLastOpDate() {
@@ -184,5 +189,21 @@ public class L3NetworkInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public List<L3EndPointInventory> getL3EndPoints() {
+        return l3EndPoints;
+    }
+
+    public void setL3EndPoints(List<L3EndPointInventory> l3EndPoints) {
+        this.l3EndPoints = l3EndPoints;
+    }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
     }
 }

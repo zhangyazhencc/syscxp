@@ -1,5 +1,7 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.billing.ProductChargeModel;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -24,28 +26,26 @@ public class L3NetworkAO {
     private String code;
 
     @Column
-    private Long vid;
+    private Integer vid;
 
     @Column
     private String type;
 
     @Column
-    private String status;
-
-    @Column
-    private Long endPointNum;
+    private Integer endPointNum;
 
     @Column
     private String description;
 
     @Column
-    private Long duration;
+    private Integer duration;
 
     @Column
-    private String productChargeModel;
+    @Enumerated(EnumType.STRING)
+    private ProductChargeModel productChargeModel;
 
     @Column
-    private Long maxModifies;
+    private Integer maxModifies;
 
     @Column
     private Timestamp expireDate;
@@ -101,11 +101,11 @@ public class L3NetworkAO {
         this.code = code;
     }
 
-    public Long getVid() {
+    public Integer getVid() {
         return vid;
     }
 
-    public void setVid(Long vid) {
+    public void setVid(Integer vid) {
         this.vid = vid;
     }
 
@@ -117,19 +117,11 @@ public class L3NetworkAO {
         this.type = type;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Long getEndPointNum() {
+    public Integer getEndPointNum() {
         return endPointNum;
     }
 
-    public void setEndPointNum(Long endPointNum) {
+    public void setEndPointNum(Integer endPointNum) {
         this.endPointNum = endPointNum;
     }
 
@@ -141,27 +133,27 @@ public class L3NetworkAO {
         this.description = description;
     }
 
-    public Long getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
-    public String getProductChargeModel() {
+    public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(String productChargeModel) {
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 
-    public Long getMaxModifies() {
+    public Integer getMaxModifies() {
         return maxModifies;
     }
 
-    public void setMaxModifies(Long maxModifies) {
+    public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
     }
 

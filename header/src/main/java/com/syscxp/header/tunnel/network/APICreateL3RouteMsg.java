@@ -1,17 +1,18 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.L3NetWorkConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
-
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateL3RouteMsg extends APIMessage {
 
-    @APIParam
+    @APIParam(emptyString = false, resourceType = L3EndPointVO.class)
     private String l3EndPointUuid;
-    @APIParam
+    @APIParam(emptyString = false)
     private String cidr;
-    @APIParam
-    private String nextIp;
 
     public String getL3EndPointUuid() {
         return l3EndPointUuid;
@@ -27,13 +28,5 @@ public class APICreateL3RouteMsg extends APIMessage {
 
     public void setCidr(String cidr) {
         this.cidr = cidr;
-    }
-
-    public String getNextIp() {
-        return nextIp;
-    }
-
-    public void setNextIp(String nextIp) {
-        this.nextIp = nextIp;
     }
 }

@@ -1,33 +1,25 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.configuration.BandwidthOfferingVO;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.L3NetWorkConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 
-
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateL3EndPointMsg extends APIMessage {
 
-    @APIParam
+    @APIParam(emptyString = false, resourceType = L3NetworkVO.class, checkAccount = true)
     private String l3NetworkUuid;
-    @APIParam
+    @APIParam(emptyString = false, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam
-    private Long bandwidth;
-    @APIParam(required = false)
-    private String routeType;
-    @APIParam(required = false)
-    private String status;
-    @APIParam(required = false)
-    private String localIP;
-    @APIParam(required = false)
-    private String remoteIp;
-    @APIParam(required = false)
-    private String netmask;
-    @APIParam
+    @APIParam(emptyString = false, maxLength = 32, resourceType = BandwidthOfferingVO.class)
+    private String bandwidthOfferingUuid;
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceUuid;
-    @APIParam(required = false)
-    private String switchPortUuid;
-    @APIParam(required = false)
-    private Long vlan;
 
     public String getL3NetworkUuid() {
         return l3NetworkUuid;
@@ -45,52 +37,12 @@ public class APICreateL3EndPointMsg extends APIMessage {
         this.endpointUuid = endpointUuid;
     }
 
-    public Long getBandwidth() {
-        return bandwidth;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    public String getRouteType() {
-        return routeType;
-    }
-
-    public void setRouteType(String routeType) {
-        this.routeType = routeType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getLocalIP() {
-        return localIP;
-    }
-
-    public void setLocalIP(String localIP) {
-        this.localIP = localIP;
-    }
-
-    public String getRemoteIp() {
-        return remoteIp;
-    }
-
-    public void setRemoteIp(String remoteIp) {
-        this.remoteIp = remoteIp;
-    }
-
-    public String getNetmask() {
-        return netmask;
-    }
-
-    public void setNetmask(String netmask) {
-        this.netmask = netmask;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
     public String getInterfaceUuid() {
@@ -100,21 +52,4 @@ public class APICreateL3EndPointMsg extends APIMessage {
     public void setInterfaceUuid(String interfaceUuid) {
         this.interfaceUuid = interfaceUuid;
     }
-
-    public String getSwitchPortUuid() {
-        return switchPortUuid;
-    }
-
-    public void setSwitchPortUuid(String switchPortUuid) {
-        this.switchPortUuid = switchPortUuid;
-    }
-
-    public Long getVlan() {
-        return vlan;
-    }
-
-    public void setVlan(Long vlan) {
-        this.vlan = vlan;
-    }
-
 }

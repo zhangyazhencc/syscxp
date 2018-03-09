@@ -7,33 +7,36 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = L3RouteVO.class)
-public class L3RouteInventory {
+/**
+ * Create by DCY on 2018/3/8
+ */
+@Inventory(mappingVOClass = L3RtVO.class)
+public class L3RtInventory {
 
     private String uuid;
     private String l3EndPointUuid;
-    private String cidr;
-    private String nextIp;
-    private Integer index;
+    private String impor;
+    private String export;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static L3RouteInventory valueOf(L3RouteVO vo){
-        L3RouteInventory inv = new L3RouteInventory();
+    public static L3RtInventory valueOf(L3RtVO vo){
+        L3RtInventory inv = new L3RtInventory();
+
         inv.setUuid(vo.getUuid());
-        inv.setCidr(vo.getCidr());
         inv.setL3EndPointUuid(vo.getL3EndPointUuid());
-        inv.setNextIp(vo.getNextIp());
-        inv.setIndex(vo.getIndex());
+        inv.setImpor(vo.getImpor());
+        inv.setExport(vo.getExport());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+
         return inv;
     }
 
-    public static List<L3RouteInventory> valueOf(Collection<L3RouteVO> vos) {
-        List<L3RouteInventory> invs = new ArrayList<>(vos.size());
-        for (L3RouteVO vo : vos) {
-            invs.add(L3RouteInventory.valueOf(vo));
+    public static List<L3RtInventory> valueOf(Collection<L3RtVO> vos){
+        List<L3RtInventory> invs = new ArrayList<>(vos.size());
+        for (L3RtVO vo : vos) {
+            invs.add(L3RtInventory.valueOf(vo));
         }
         return invs;
     }
@@ -54,20 +57,20 @@ public class L3RouteInventory {
         this.l3EndPointUuid = l3EndPointUuid;
     }
 
-    public String getCidr() {
-        return cidr;
+    public String getImpor() {
+        return impor;
     }
 
-    public void setCidr(String cidr) {
-        this.cidr = cidr;
+    public void setImpor(String impor) {
+        this.impor = impor;
     }
 
-    public String getNextIp() {
-        return nextIp;
+    public String getExport() {
+        return export;
     }
 
-    public void setNextIp(String nextIp) {
-        this.nextIp = nextIp;
+    public void setExport(String export) {
+        this.export = export;
     }
 
     public Timestamp getLastOpDate() {
@@ -84,13 +87,5 @@ public class L3RouteInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public Integer getIndex() {
-        return index;
-    }
-
-    public void setIndex(Integer index) {
-        this.index = index;
     }
 }

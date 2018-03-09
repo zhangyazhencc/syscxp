@@ -2,10 +2,7 @@ package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.vo.ForeignKey;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
@@ -17,7 +14,7 @@ public class L3RouteVO {
     private String uuid;
 
     @Column
-    @ForeignKey(parentEntityClass = L3EndPointVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
+    @ForeignKey(parentEntityClass = L3EndPointVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String l3EndPointUuid;
 
     @Column
@@ -27,13 +24,18 @@ public class L3RouteVO {
     private String nextIp;
 
     @Column
-    private Long index;
+    private Integer index;
 
     @Column
     private Timestamp lastOpDate;
 
     @Column
     private Timestamp createDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     public String getUuid() {
         return uuid;
@@ -67,11 +69,11 @@ public class L3RouteVO {
         this.nextIp = nextIp;
     }
 
-    public Long getIndex() {
+    public Integer getIndex() {
         return index;
     }
 
-    public void setIndex(Long index) {
+    public void setIndex(Integer index) {
         this.index = index;
     }
 

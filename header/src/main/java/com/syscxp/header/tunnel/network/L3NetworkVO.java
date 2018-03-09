@@ -2,9 +2,10 @@ package com.syscxp.header.tunnel.network;
 
 
 import com.syscxp.header.vo.EO;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -12,14 +13,15 @@ import java.util.Set;
 @EO(EOClazz = L3NetworkEO.class)
 public class L3NetworkVO extends L3NetworkAO {
 
-    @OneToMany(targetEntity = L3EndPointVO.class,orphanRemoval=true)
-    private Set<L3EndPointVO> l3EndPointVOs;
+    @OneToMany(fetch= FetchType.EAGER)
+    @JoinColumn(name = "l3NetworkUuid", insertable = false, updatable = false)
+    private List<L3EndPointVO> l3EndPointVOS = new ArrayList<L3EndPointVO>();
 
-    public Set<L3EndPointVO> getL3EndPointVOs() {
-        return l3EndPointVOs;
+    public List<L3EndPointVO> getL3EndPointVOS() {
+        return l3EndPointVOS;
     }
 
-    public void setL3EndPointVOs(Set<L3EndPointVO> l3EndPointVOs) {
-        l3EndPointVOs = l3EndPointVOs;
+    public void setL3EndPointVOS(List<L3EndPointVO> l3EndPointVOS) {
+        this.l3EndPointVOS = l3EndPointVOS;
     }
 }
