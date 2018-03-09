@@ -434,21 +434,27 @@ public class TunnelBase {
     /**
      * 通过连接点和端口规格获取可用的端口
      */
-    public List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type, Integer start, Integer limit) {
+    public List<SwitchPortVO> getSwitchPortByType(String accountUuid, String endpointUuid, String type, Integer start, Integer limit) {
         String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
-                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType ";
-        if (!"SHARE".equals(type)){
-            sql = sql + "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
+                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
+                "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid ";
+        if ("SHARE".equals(type)){
+            sql = sql + "AND i.accountUuid = :accountUuid ";
         }
+        sql = sql + ") ";
 
-        return SQL.New(sql)
+        SQL q = SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("switchState", SwitchState.Enabled)
                 .param("portType", type)
                 .param("endpointUuid", endpointUuid)
                 .offset(start != null ? start : 0)
-                .limit(limit != null ? limit : 10)
-                .list();
+                .limit(limit != null ? limit : 20);
+
+        if ("SHARE".equals(type)){
+            q.param("accountUuid", accountUuid);
+        }
+        return  q.list();
     }
 
     /**

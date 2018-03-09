@@ -2173,7 +2173,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点和端口规格获取可用的端口
      */
     private void handle(APIListSwitchPortByTypeMsg msg) {
-        List<SwitchPortVO> ports = new TunnelBase().getSwitchPortByType(msg.getUuid(), msg.getType(), msg.getStart(), msg.getLimit());
+        List<SwitchPortVO> ports = new TunnelBase().getSwitchPortByType(msg.getAccountUuid(), msg.getUuid(), msg.getType(), msg.getStart(), msg.getLimit());
         APIListSwitchPortByTypeReply reply = new APIListSwitchPortByTypeReply();
         reply.setInventories(SwitchPortInventory.valueOf(ports));
         bus.reply(msg, reply);
