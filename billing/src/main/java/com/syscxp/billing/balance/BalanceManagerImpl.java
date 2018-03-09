@@ -446,7 +446,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             String trade_status = param.get("trade_status");
             SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
             q.add(DealDetailVO_.outTradeNO, SimpleQuery.Op.EQ, out_trade_no);
-            q.add(DealDetailVO_.state, SimpleQuery.Op.EQ, DealState.SUCCESS);
+            q.add(DealDetailVO_.state, SimpleQuery.Op.EQ, DealState.FAILURE);
             DealDetailVO dealDetailVO = q.find();
 
             if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(AlipayGlobalProperty.ALIPAY_SELLER_ID) || !app_id.equals(AlipayGlobalProperty.ALIPAY_APP_ID)) {
@@ -529,6 +529,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             String app_id = param.get("app_id");
             SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
             q.add(DealDetailVO_.outTradeNO, SimpleQuery.Op.EQ, out_trade_no);
+            q.add(DealDetailVO_.state, SimpleQuery.Op.EQ, DealState.FAILURE);
             DealDetailVO dealDetailVO = q.find();
 
             if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(AlipayGlobalProperty.ALIPAY_SELLER_ID) || !app_id.equals(AlipayGlobalProperty.ALIPAY_APP_ID)) {
