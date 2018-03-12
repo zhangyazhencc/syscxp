@@ -74,7 +74,7 @@ public class BillingCallBackManagerImpl extends AbstractService implements Billi
         //付款成功,记录生效订单
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-        if(vo.getState() != TunnelState.Enabled){
+        if(vo.getState() == TunnelState.Unpaid){
 
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(TunnelState.Deploying);
