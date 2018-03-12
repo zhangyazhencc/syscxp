@@ -1,5 +1,3 @@
-
-
 ## ecp 线上磁盘规格价格表
 INSERT INTO `ProductPriceUnitVO` (uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
 VALUES ('8bd3bcfcaf744420a398f867bea8018c', 'DISK', 'DEFAULT', '默认', 'DEFAULT', '默认', '8bd3bcfcaf744420a398f867bea8018c', '100G', '100', '2018-01-18 13:44:14', '2017-12-11 15:21:34'),
@@ -37,6 +35,6 @@ VALUES ('575b3d57abae41bd99ed3713c733d698', 'HOST', 'DEFAULT', '默认', 'DEFAUL
 ('2f8a5ff5a25348f4bff6de8ffa5aabed', 'HOST', 'DEFAULT', '默认', 'DEFAULT', '默认', '2f8a5ff5a25348f4bff6de8ffa5aabed', '16核CPU/24G内存', '800', '2018-01-18 13:44:14', '2017-10-23 10:25:51'),
 ('5823f44d131b40149db5f9d7f0df70c1', 'HOST', 'DEFAULT', '默认', 'DEFAULT', '默认', '5823f44d131b40149db5f9d7f0df70c1', '16核CPU/32G内存', '600', '2018-01-18 13:44:14', '2017-10-23 10:25:52');
 
+## ecp IP价格表 默认
 INSERT INTO `ProductPriceUnitVO` (uuid, productCategoryUuid, areaCode, areaName, lineCode, lineName, configCode, configName, unitPrice, lastOpDate, createDate)
-VALUES ('575b3d57abfe41bd99ed3713c733d698', 'IP', 'DEFAULT', '默认', 'DEFAULT', '默认', 'IP', '每IP', '30', '2018-01-19 11:19:15', '2017-10-23 10:21:24'),
-
+VALUES ('575b3d57abfe41bd99ed3713c733d698', 'IP', 'DEFAULT', '默认', 'DEFAULT', '默认', '1IP', '1IP', '30', '2018-03-08 18:59:54', '2018-03-08 18:59:54'),
