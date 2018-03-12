@@ -135,7 +135,7 @@ public class TunnelBillingBase {
         List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
-        unit.setCategoryCode(Category.EXCLUSIVE);
+        unit.setCategoryCode(ProductCategory.EXCLUSIVE);
         unit.setAreaCode("DEFAULT");
         unit.setLineCode("DEFAULT");
         unit.setConfigCode(portOfferingUuid);
@@ -228,7 +228,7 @@ public class TunnelBillingBase {
     public ProductPriceUnit getTunnelPriceUintForSharePort(String bandwidthOfferingUuid,NodeVO nodeVO,EndpointVO endpointVO){
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
-        unit.setCategoryCode(Category.SHARE);
+        unit.setCategoryCode(ProductCategory.SHARE);
         unit.setAreaCode(nodeVO.getUuid());
         unit.setLineCode(endpointVO.getUuid());
         unit.setConfigCode(getSharePortBandwidthOffering(bandwidthOfferingUuid));
@@ -259,20 +259,20 @@ public class TunnelBillingBase {
     public ProductPriceUnit getTunnelPriceUnitCN(String bandwidthOfferingUuid, TunnelType tunnelType, String zoneUuid) {
         ProductPriceUnit unit = new ProductPriceUnit();
 
-        Category category;
+        ProductCategory category;
         String areaCode;
         String lineCode;
 
         if(tunnelType == TunnelType.CITY){
-            category = Category.CITY;
+            category = ProductCategory.CITY;
             areaCode = "DEFAULT";
             lineCode = "DEFAULT";
         }else if(tunnelType == TunnelType.REGION){
-            category = Category.REGION;
+            category = ProductCategory.REGION;
             areaCode = zoneUuid;
             lineCode = "DEFAULT";
         }else{
-            category = Category.LONG;
+            category = ProductCategory.LONG;
             areaCode = "DEFAULT";
             lineCode = "DEFAULT";
         }
@@ -293,7 +293,7 @@ public class TunnelBillingBase {
         ProductPriceUnit unit = new ProductPriceUnit();
 
         unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(Category.ABROAD);
+        unit.setCategoryCode(ProductCategory.ABROAD);
         unit.setAreaCode("CHINA2ABROAD");
         unit.setLineCode(nodeB.getCity() + "/" + nodeZ.getCountry());
         unit.setConfigCode(bandwidthOfferingUuid);
@@ -308,7 +308,7 @@ public class TunnelBillingBase {
         ProductPriceUnit unit = new ProductPriceUnit();
 
         unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(Category.ABROAD);
+        unit.setCategoryCode(ProductCategory.ABROAD);
         unit.setAreaCode("ABROAD");
         unit.setLineCode(nodeA.getCountry() + "/" + nodeZ.getCountry());
         unit.setConfigCode(bandwidthOfferingUuid);

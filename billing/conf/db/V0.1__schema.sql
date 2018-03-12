@@ -383,16 +383,23 @@ VALUES ('VPN', 'VPN', 'VPN', 'VPN', 'VPN', 'enable', '2018-01-02 09:42:29', '201
 ('CITY', 'CITY', '同城', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
 ('LONG', 'LONG', '长传', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
 ('REGION', 'REGION', '区域', 'TUNNEL', '专线网络', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
+
 ('EXCLUSIVE', 'EXCLUSIVE', '独享端口', 'PORT', '端口', 'enable', '2018-01-10 15:59:59', '2017-10-30 15:46:12'),
 ('SHARE', 'SHARE', '共享端口', 'PORT', '端口', 'enable', '2018-01-10 16:00:28', '2017-10-30 15:46:12'),
+
 ('BANDWIDTH', 'BANDWIDTH', '公网带宽', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 17:18:12'),
 ('DISK', 'DISK', '数据盘', 'ECP', '互联云', 'enable', '2018-01-02 09:43:41', '2017-10-30 15:46:12'),
 ('HOST', 'HOST', '云服务器', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 15:46:12'),
 ('POOLNETWORK', 'POOLNETWORK', '资源池网络', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2018-01-02 09:42:29'),
-('RESOURCEPOOL', 'RESOURCEPOOL', '资源池', 'ECP', '互联云', 'enable', '2018-01-02 09:46:37', '2017-10-30 15:46:12');
+('RESOURCEPOOL', 'RESOURCEPOOL', '资源池', 'ECP', '互联云', 'enable', '2018-01-02 09:46:37', '2017-10-30 15:46:12'),
+('IP', 'IP', '公网IP', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 17:18:12');
 
-INSERT INTO `ProductCategoryVO` (uuid, code, name, productTypeCode, productTypeName, status, lastOpDate, createDate)
-VALUES ('IP', 'IP', '公网IP', 'ECP', '互联云', 'enable', '2018-01-18 13:21:54', '2017-10-30 17:18:12');
+update `ProductCategoryVO` set productTypeCode='BANDWIDTH', productTypeName='互联云带宽' where uuid='BANDWIDTH';
+update `ProductCategoryVO` set productTypeCode='DISK', productTypeName='互联云磁盘' where uuid='DISK';
+update `ProductCategoryVO` set productTypeCode='HOST', productTypeName='互联云云主机' where uuid='HOST';
+update `ProductCategoryVO` set productTypeCode='POOLNETWORK', productTypeName='互联云宿主机网络' where uuid='POOLNETWORK';
+update `ProductCategoryVO` set productTypeCode='RESOURCEPOOL', productTypeName='互联云宿主机' where uuid='RESOURCEPOOL';
+update `ProductCategoryVO` set productTypeCode='IP', productTypeName='互联云公网IP' where uuid='IP';
 
 UNLOCK TABLES;
 
