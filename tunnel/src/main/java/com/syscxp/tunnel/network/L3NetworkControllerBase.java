@@ -6,6 +6,7 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
@@ -59,6 +60,16 @@ public class L3NetworkControllerBase {
     private void handleLocalMessage(Message msg){
         if(msg instanceof CreateL3EndpointMsg){
             handle((CreateL3EndpointMsg) msg);
+        }else if(msg instanceof UpdateL3EndpointIPMsg){
+            handle((UpdateL3EndpointIPMsg) msg);
+        }else if(msg instanceof UpdateL3EndpointBandwidthMsg){
+            handle((UpdateL3EndpointBandwidthMsg) msg);
+        }else if(msg instanceof DeleteL3EndPointMsg){
+            handle((DeleteL3EndPointMsg) msg);
+        }else if(msg instanceof CreateL3RouteMsg){
+            handle((CreateL3RouteMsg) msg);
+        }else if(msg instanceof DeleteL3RouteMsg){
+            handle((DeleteL3RouteMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
@@ -72,9 +83,8 @@ public class L3NetworkControllerBase {
         L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
-        //ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
-        //String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
-        String command = "";
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
         crf.sendCommand(ControllerRestConstant.CREATE_L3ENDPOINT, command, new Completion(null) {
@@ -83,6 +93,8 @@ public class L3NetworkControllerBase {
                 logger.info("下发创建云网络连接点成功！");
 
                 //修改连接点状态
+                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
+                dbf.updateAndRefresh(l3EndPointVO);
 
                 //更新任务状态
                 taskResourceVO.setBody(command);
@@ -97,6 +109,220 @@ public class L3NetworkControllerBase {
                 logger.info("下发创建云网络连接点失败！");
 
                 //修改连接点状态
+                l3EndPointVO.setStatus(L3EndpointStatus.Disconnected);
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(UpdateL3EndpointIPMsg msg){
+        UpdateL3EndpointIPReply reply = new UpdateL3EndpointIPReply();
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_CONNECT_IP, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发设置互联IP成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发设置互联IP失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(UpdateL3EndpointBandwidthMsg msg){
+        UpdateL3EndpointBandwidthReply reply = new UpdateL3EndpointBandwidthReply();
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_L3BANDWIDTH, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发修改L3带宽成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发修改L3带宽失败！");
+
+                //修改连接点状态，把带宽改回来
+                BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getOldBandwidthOfferingUuid(), BandwidthOfferingVO.class);
+                l3EndPointVO.setBandwidthOffering(msg.getOldBandwidthOfferingUuid());
+                l3EndPointVO.setBandwidth(bandwidthOfferingVO.getBandwidth());
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(DeleteL3EndPointMsg msg){
+        DeleteL3EndPointReply reply = new DeleteL3EndPointReply();
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.DELETE_L3ENDPOINT, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("删除L3连接点成功！");
+
+                //删除连接点
+                L3NetworkBase l3NetworkBase = new L3NetworkBase();
+
+                L3EndPointVO vo = dbf.findByUuid(msg.getL3EndpointUuid(), L3EndPointVO.class);
+                l3NetworkBase.deleteL3EndpointDB(msg.getL3EndpointUuid());
+                l3NetworkBase.updateEndPointNum(vo.getL3NetworkUuid());
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("删除L3连接点失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(CreateL3RouteMsg msg){
+        CreateL3RouteReply reply = new CreateL3RouteReply();
+
+        L3RouteVO l3RouteVO = dbf.findByUuid(msg.getL3RouteUuid(),L3RouteVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3RouteVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.ADD_ROUTES, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("添加路由条目成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("添加路由条目失败！");
+
+                dbf.remove(l3RouteVO);
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(DeleteL3RouteMsg msg){
+        DeleteL3RouteReply reply = new DeleteL3RouteReply();
+
+        L3RouteVO l3RouteVO = dbf.findByUuid(msg.getL3RouteUuid(),L3RouteVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3RouteVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.DELETE_ROUTES, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("删除路由条目成功！");
+
+                dbf.remove(l3RouteVO);
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("删除路由条目失败！");
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
@@ -111,24 +337,26 @@ public class L3NetworkControllerBase {
     }
 
     /**
-     * 控制器下发配置
+     * 控制器下发配置--下发单位为连接点
      * */
     public ControllerCommands.L3NetworkConfig getL3NetworkConfigInfo(L3EndPointVO vo){
         ControllerCommands.L3NetworkConfig l3NetworkConfig = new ControllerCommands.L3NetworkConfig();
 
-
-
         List<ControllerCommands.L3RoutesConfig> routes = new ArrayList<>();
-        List<L3RouteVO> l3RouteVOS = Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndPointUuid, vo.getUuid()).list();
-        for (L3RouteVO l3RouteVO : l3RouteVOS) {
-            String[] cidr = l3RouteVO.getCidr().split("/");
-            ControllerCommands.L3RoutesConfig l3RoutesConfig = new ControllerCommands.L3RoutesConfig();
-            l3RoutesConfig.setBusiness_ip(cidr[0]);
-            l3RoutesConfig.setNetmask(cidr[1]);
-            l3RoutesConfig.setRoute_ip(l3RouteVO.getNextIp());
-            l3RoutesConfig.setIndex(l3RouteVO.getIndex());
-            routes.add(l3RoutesConfig);
+
+        if(Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndPointUuid, vo.getUuid()).isExists()){
+            List<L3RouteVO> l3RouteVOS = Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndPointUuid, vo.getUuid()).list();
+            for (L3RouteVO l3RouteVO : l3RouteVOS) {
+                String[] cidr = l3RouteVO.getCidr().split("/");
+                ControllerCommands.L3RoutesConfig l3RoutesConfig = new ControllerCommands.L3RoutesConfig();
+                l3RoutesConfig.setBusiness_ip(cidr[0]);
+                l3RoutesConfig.setNetmask(cidr[1]);
+                l3RoutesConfig.setRoute_ip(l3RouteVO.getNextIp());
+                l3RoutesConfig.setIndex(l3RouteVO.getIndex());
+                routes.add(l3RoutesConfig);
+            }
         }
+
 
         List<ControllerCommands.L3MplsConfig> mpls_switches = new ArrayList<>();
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(vo.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
@@ -154,6 +382,54 @@ public class L3NetworkControllerBase {
         mpls_switches.add(l3MplsConfig);
 
         L3NetworkVO l3NetworkVO = dbf.findByUuid(vo.getL3NetworkUuid(), L3NetworkVO.class);
+        l3NetworkConfig.setNet_id(l3NetworkVO.getUuid());
+        l3NetworkConfig.setVrf_id(l3NetworkVO.getVid());
+        l3NetworkConfig.setUsername(l3NetworkVO.getCode());
+        l3NetworkConfig.setMpls_switches(mpls_switches);
+        return l3NetworkConfig;
+    }
+
+    /**
+     * 控制器下发配置--下发单位为路由
+     * */
+    public ControllerCommands.L3NetworkConfig getL3NetworkConfigInfo(L3RouteVO vo){
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = new ControllerCommands.L3NetworkConfig();
+
+        List<ControllerCommands.L3RoutesConfig> routes = new ArrayList<>();
+
+        ControllerCommands.L3RoutesConfig l3RoutesConfig = new ControllerCommands.L3RoutesConfig();
+        String[] cidr = vo.getCidr().split("/");
+        l3RoutesConfig.setBusiness_ip(cidr[0]);
+        l3RoutesConfig.setNetmask(cidr[1]);
+        l3RoutesConfig.setRoute_ip(vo.getNextIp());
+        l3RoutesConfig.setIndex(vo.getIndex());
+        routes.add(l3RoutesConfig);
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
+        List<ControllerCommands.L3MplsConfig> mpls_switches = new ArrayList<>();
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndPointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        SwitchModelVO switchModelVO = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(), SwitchModelVO.class);
+        SwitchPortVO switchPortVO = dbf.findByUuid(l3EndPointVO.getSwitchPortUuid(), SwitchPortVO.class);
+
+        ControllerCommands.L3MplsConfig l3MplsConfig = new ControllerCommands.L3MplsConfig();
+        l3MplsConfig.setUuid(l3EndPointVO.getPhysicalSwitchUuid());
+        l3MplsConfig.setSwitch_type(switchModelVO.getModel());
+        l3MplsConfig.setSub_type(switchModelVO.getSubModel());
+        l3MplsConfig.setPort_name(switchPortVO.getPortName());
+        l3MplsConfig.setVlan_id(l3EndPointVO.getVlan());
+        l3MplsConfig.setM_ip(physicalSwitchVO.getmIP());
+        l3MplsConfig.setProtocol(physicalSwitchVO.getProtocol().toString());
+        l3MplsConfig.setPort(physicalSwitchVO.getPort());
+        l3MplsConfig.setConnect_ip_local(l3EndPointVO.getLocalIP());
+        l3MplsConfig.setConnect_ip_remote(l3EndPointVO.getRemoteIp());
+        l3MplsConfig.setNetmask(l3EndPointVO.getNetmask());
+        l3MplsConfig.setUsername(physicalSwitchVO.getUsername());
+        l3MplsConfig.setPassword(physicalSwitchVO.getPassword());
+        l3MplsConfig.setBandwidth(l3EndPointVO.getBandwidth()/1024);
+        l3MplsConfig.setRoutes(routes);
+        mpls_switches.add(l3MplsConfig);
+
+        L3NetworkVO l3NetworkVO = dbf.findByUuid(l3EndPointVO.getL3NetworkUuid(), L3NetworkVO.class);
         l3NetworkConfig.setNet_id(l3NetworkVO.getUuid());
         l3NetworkConfig.setVrf_id(l3NetworkVO.getVid());
         l3NetworkConfig.setUsername(l3NetworkVO.getCode());

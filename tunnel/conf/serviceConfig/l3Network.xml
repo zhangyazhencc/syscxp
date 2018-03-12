@@ -16,6 +16,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.network.APIUpdateL3EndpointBandwidthMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.network.APICreateL3RouteMsg</name>
     </message>
 

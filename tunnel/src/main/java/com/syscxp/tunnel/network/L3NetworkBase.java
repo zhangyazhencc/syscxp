@@ -1,10 +1,14 @@
 package com.syscxp.tunnel.network;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.Platform;
 import com.syscxp.core.db.*;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.switchs.*;
+import com.syscxp.header.tunnel.tunnel.TaskResourceVO;
+import com.syscxp.header.tunnel.tunnel.TaskStatus;
+import com.syscxp.header.tunnel.tunnel.TaskType;
 import com.syscxp.tunnel.tunnel.TunnelStrategy;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -80,6 +84,27 @@ public class L3NetworkBase {
             glock.unlock();
         }
         return vid;
+    }
+
+    /**
+     * 判断是否满足下发条件
+     */
+    public boolean isControllerReady(L3EndPointVO vo){
+        boolean isReady = true;
+        if(vo.getRemoteIp() == null){
+            isReady = false;
+        }
+
+        if(vo.getLocalIP() == null){
+            isReady = false;
+        }
+
+        if(vo.getNetmask() == null){
+            isReady = false;
+        }
+
+        return isReady;
+
     }
 
     /**
@@ -159,5 +184,44 @@ public class L3NetworkBase {
                 .eq(L3NetworkVO_.uuid, l3Networkuuid)
                 .update();
 
+    }
+
+    /**
+     * 创建L3连接点下发任务
+     */
+    public TaskResourceVO newTaskResourceVO(L3EndPointVO vo, TaskType taskType) {
+        TaskResourceVO taskResourceVO = new TaskResourceVO();
+        L3NetworkVO l3NetworkVO = dbf.findByUuid(vo.getL3NetworkUuid(), L3NetworkVO.class);
+
+        taskResourceVO.setUuid(Platform.getUuid());
+        taskResourceVO.setAccountUuid(l3NetworkVO.getOwnerAccountUuid());
+        taskResourceVO.setResourceUuid(vo.getUuid());
+        taskResourceVO.setResourceType(vo.getClass().getSimpleName());
+        taskResourceVO.setTaskType(taskType);
+        taskResourceVO.setBody(null);
+        taskResourceVO.setResult(null);
+        taskResourceVO.setStatus(TaskStatus.Preexecute);
+        taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+        return taskResourceVO;
+    }
+
+    /**
+     * 创建L3连接点下发任务
+     */
+    public TaskResourceVO newTaskResourceVO(L3RouteVO vo, TaskType taskType) {
+        TaskResourceVO taskResourceVO = new TaskResourceVO();
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
+        L3NetworkVO l3NetworkVO = dbf.findByUuid(l3EndPointVO.getL3NetworkUuid(), L3NetworkVO.class);
+
+        taskResourceVO.setUuid(Platform.getUuid());
+        taskResourceVO.setAccountUuid(l3NetworkVO.getOwnerAccountUuid());
+        taskResourceVO.setResourceUuid(vo.getUuid());
+        taskResourceVO.setResourceType(vo.getClass().getSimpleName());
+        taskResourceVO.setTaskType(taskType);
+        taskResourceVO.setBody(null);
+        taskResourceVO.setResult(null);
+        taskResourceVO.setStatus(TaskStatus.Preexecute);
+        taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+        return taskResourceVO;
     }
 }

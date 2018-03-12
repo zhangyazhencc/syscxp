@@ -34,7 +34,7 @@ public interface ControllerRestConstant {
     static final String ADD_ROUTES = "/l3net/add_routes";
     static final String DELETE_ROUTES = "/l3net/del_routes";
     static final String MODIFY_CONNECT_IP = "/l3net/modify_connect_ip";
-    static final String MODIFY_BANDWIDTH = "/l3net/modify_bandwidth";
+    static final String MODIFY_L3BANDWIDTH = "/l3net/modify_bandwidth";
 
 
 }

@@ -6,6 +6,5 @@ package com.syscxp.header.tunnel.network;
 public enum L3EndpointStatus {
     Connected,
     Disconnected,
-    UnReady,
     Ready
 }

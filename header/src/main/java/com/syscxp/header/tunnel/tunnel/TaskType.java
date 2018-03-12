@@ -23,5 +23,12 @@ public enum TaskType {
     Delete,
     DeleteZK,
 
-    Revert
+    Revert,
+
+    CreateL3Endpoint,
+    DeleteL3Endpoint,
+    UpdateL3EndpointIP,
+    UpdateL3EndpointBandwidth,
+    AddL3EndpointRoutes,
+    DeleteL3EndpointRoutes
 }
