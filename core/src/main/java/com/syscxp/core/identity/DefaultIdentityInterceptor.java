@@ -1,6 +1,11 @@
 package com.syscxp.core.identity;
 
 import com.syscxp.core.rest.RESTApiDecoder;
+import com.syscxp.header.account.APIGetSecretKeyMsg;
+import com.syscxp.header.account.APIGetSecretKeyReply;
+import com.syscxp.header.account.APILogInBySecretIdMsg;
+import com.syscxp.header.account.APILogInBySecretIdReply;
+import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.identity.APIGetSessionPolicyMsg;
@@ -56,4 +61,37 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     protected SessionInventory logOutSessionRemove(String sessionUuid) {
         return null;
     }
+
+    @Override
+    public String getSecretKey(String secretId) {
+        APIGetSecretKeyMsg aMsg = new APIGetSecretKeyMsg();
+        aMsg.setSecretId(secretId);
+        InnerMessageHelper.setMD5(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
+
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+            if (replay.isSuccess()) {
+                return  ((APIGetSecretKeyReply)replay).getSecretKey();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getSessionUuid(String secretId, String secretKey) {
+        APILogInBySecretIdMsg aMsg = new APILogInBySecretIdMsg();
+        aMsg.setSecretId(secretId);
+        InnerMessageHelper.setMD5(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
+
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+            if (replay.isSuccess()) {
+                return  ((APILogInBySecretIdReply)replay).getSessionUuid();
+            }
+        }
+        return null;
+    }
+
 }

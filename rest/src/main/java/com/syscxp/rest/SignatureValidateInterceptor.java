@@ -1,6 +1,10 @@
 package com.syscxp.rest;
 
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.identity.AbstractIdentityInterceptor;
+import com.syscxp.core.identity.DefaultIdentityInterceptor;
+import com.syscxp.core.identity.IdentityGlobalProperty;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.HMAC;
@@ -33,6 +37,9 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
     @Autowired
     private RESTFacade restf;
 
+    @Autowired
+    private AbstractIdentityInterceptor identityInterceptor;
+
     private static final long EXPIRE_TIME = 600 * 1000;
 
     private Map<String, String> sessionUuids = new ConcurrentHashMap<>();
@@ -47,7 +54,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         Long timestamp = Long.valueOf(req.getParameter(RestConstants.TIMESTAMP));
 
         if (!req.getParameter(RestConstants.SIGNATURE).equals(signatureString) || System.currentTimeMillis() - EXPIRE_TIME > timestamp) {
-            throw new RestServletRequestInterceptorException(4100, "Signature校验失败");
+            throw new RestServletRequestInterceptorException(4101, "Signature校验失败");
         }
         LOGGER.debug("Signature校验成功，获取sessionUuid");
 
@@ -72,27 +79,19 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         return HMAC.encryptBase64(hmac);
     }
 
-    private String getSecretKey(String secretId) {
-        String secretKey = secretKeys.get(secretId);
+    private String getSecretKey(String secretId) throws RestServletRequestInterceptorException {
+        String secretKey = identityInterceptor.getSecretKey(secretId);
         if (secretKey == null) {
-            secretKey = secretId;
-
-
-            secretKeys.put(secretId, secretKey);
+            throw new RestServletRequestInterceptorException(4100, String.format("secretId:%s 不存在", secretId));
         }
-
         return secretKey;
     }
 
-    private String getSessionUuid(String secretId, String secretKey) {
-        String sessionUuid = sessionUuids.get(secretId + secretKey);
+    private String getSessionUuid(String secretId, String secretKey) throws RestServletRequestInterceptorException {
+        String sessionUuid = identityInterceptor.getSessionUuid(secretId, secretKey);
         if (sessionUuid == null) {
-            sessionUuid = secretId;
-
-
-            sessionUuids.put(secretId, sessionUuid);
+            throw new RestServletRequestInterceptorException(4102, String.format("secretId:%s 身份认证失败", secretId));
         }
-
         return sessionUuid;
     }
 }

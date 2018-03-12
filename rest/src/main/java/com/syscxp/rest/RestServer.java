@@ -275,7 +275,7 @@ public class RestServer implements Component, CloudBusEventListener {
             apiClass = clz;
             requestAnnotation = at;
             apiResponseClass = at.responseClass();
-            path = String.format("%s%s%s", RestGlobalConfig.SYSCXP_API_SERVER_URL.value(), RestConstants.BASE_PATH, RestConstants.API_VERSION);
+            path = String.format("%s/%s/%s", RestGlobalConfig.SYSCXP_API_SERVER_URL.value(), restf.getPath(), RestConstants.API_VERSION);
 
             if (at.mappingFields().length > 0) {
                 requestMappingFields = new HashMap<>();

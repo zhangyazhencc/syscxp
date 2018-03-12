@@ -484,4 +484,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         return sessions.get(sessionUuid);
     }
 
+    public abstract String getSecretKey(String secretId);
+
+    public abstract String getSessionUuid(String secretId, String secretKey);
 }

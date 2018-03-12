@@ -586,4 +586,7 @@ public class RESTFacadeImpl implements RESTFacade {
         interceptors.add(interceptor);
     }
 
+    public String getPath() {
+        return path;
+    }
 }

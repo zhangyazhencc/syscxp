@@ -3,41 +3,40 @@ package com.syscxp.account.identity;
 import com.syscxp.account.header.account.*;
 import com.syscxp.account.header.identity.*;
 import com.syscxp.account.header.user.*;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.header.identity.*;
-import com.syscxp.sms.MailService;
-import com.syscxp.sms.SmsService;
-import com.syscxp.utils.CollectionUtils;
-import org.codehaus.groovy.util.StringUtil;
-import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cascade.CascadeFacade;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.EventFacade;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.componentloader.PluginRegistry;
+import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
-
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.exception.CloudRuntimeException;
+import com.syscxp.header.identity.AbstractAccount;
+import com.syscxp.header.identity.AccountStatus;
+import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.identity.ValidateStatus;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.sms.MailService;
+import com.syscxp.sms.SmsService;
+import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.ExceptionDSL;
 import com.syscxp.utils.Utils;
-
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.beans.factory.annotation.Autowire;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
-
-import org.apache.commons.codec.digest.DigestUtils;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
@@ -156,11 +155,7 @@ public class AccountBase extends AbstractAccount {
         } else if (msg instanceof APIDeleteProxyAccountRefMsg) {
             handle((APIDeleteProxyAccountRefMsg) msg);
         } else if (msg instanceof APIUserMailAuthenticationMsg) {
-            handle((APIUserMailAuthenticationMsg)msg);
-        } else if (msg instanceof APIGetSecretKeyMsg) {
-            handle((APIGetSecretKeyMsg)msg);
-        } else if (msg instanceof APILogInBySecretIdMsg) {
-            handle((APILogInBySecretIdMsg)msg);
+            handle((APIUserMailAuthenticationMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -168,38 +163,6 @@ public class AccountBase extends AbstractAccount {
 
     }
 
-
-    private void handle(APILogInBySecretIdMsg msg) {
-        APILogInReply reply = new APILogInReply();
-
-        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
-        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
-        q.add(AccountApiSecurityVO_.secretKey, SimpleQuery.Op.EQ, msg.getSecretKey());
-
-        if(q.isExists()){
-            AccountApiSecurityVO api = q.find();
-            reply.setInventory(identiyInterceptor.initSession(
-                    dbf.findByUuid(api.getAccountUuid(),AccountVO.class), null));
-
-        }else{
-            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "Incorrect secretId or secretKey"));
-        }
-
-        bus.reply(msg, reply);
-    }
-
-    private void handle(APIGetSecretKeyMsg msg) {
-
-        APIGetSecretKeyReply reply = new APIGetSecretKeyReply();
-
-        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
-        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
-        AccountApiSecurityVO api = q.find();
-        reply.setSecretKey(api.getSecretKey());
-        bus.reply(msg, reply);
-
-    }
 
     @Transactional
     private void handle(APIUpdateRoleMsg msg) {
@@ -219,7 +182,7 @@ public class AccountBase extends AbstractAccount {
 
         if (msg.getPolicyUuids() != null) {
             UpdateQuery.New(RolePolicyRefVO.class).condAnd(RolePolicyRefVO_.roleUuid,
-                    SimpleQuery.Op.EQ,msg.getUuid()).delete();
+                    SimpleQuery.Op.EQ, msg.getUuid()).delete();
 
             List<RolePolicyRefVO> list = new ArrayList();
             List<String> pids = CollectionUtils.removeDuplicateFromList(msg.getPolicyUuids());
@@ -233,7 +196,7 @@ public class AccountBase extends AbstractAccount {
             dbf.persistCollection(list);
         }
 
-        if(update) {
+        if (update) {
             role = dbf.getEntityManager().merge(role);
         }
 
@@ -346,9 +309,9 @@ public class AccountBase extends AbstractAccount {
 
         APICreateAccountContactsEvent evt = new APICreateAccountContactsEvent(msg.getId());
 
-        if((msg.getNoticeWay() == NoticeWay.phone && msg.getPhone() == null)
-            ||(msg.getNoticeWay() == NoticeWay.email && msg.getEmail() == null)
-                ||(msg.getNoticeWay() == NoticeWay.all && (msg.getEmail() == null || msg.getPhone() == null))){
+        if ((msg.getNoticeWay() == NoticeWay.phone && msg.getPhone() == null)
+                || (msg.getNoticeWay() == NoticeWay.email && msg.getEmail() == null)
+                || (msg.getNoticeWay() == NoticeWay.all && (msg.getEmail() == null || msg.getPhone() == null))) {
             evt.setError(errf.stringToOperationError("Information mismatch"));
         }
 
@@ -419,7 +382,7 @@ public class AccountBase extends AbstractAccount {
         if (!mailService.ValidateMailCode(msg.getMail(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
-        }else{
+        } else {
             if (account.getEmailStatus() == ValidateStatus.Unvalidated) {
                 account.setEmail(msg.getMail());
                 account.setEmailStatus(ValidateStatus.Validated);
@@ -439,7 +402,7 @@ public class AccountBase extends AbstractAccount {
         if (!mailService.ValidateMailCode(msg.getMail(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
-        }else{
+        } else {
             if (user.getEmailStatus() == ValidateStatus.Unvalidated) {
                 user.setEmailStatus(ValidateStatus.Validated);
                 user.setEmail(msg.getMail());
@@ -478,7 +441,7 @@ public class AccountBase extends AbstractAccount {
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
         if ((msg.getPhone() != null && user.getPhone().equals(msg.getPhone()))
-            ||(msg.getEmail() != null && user.getEmail().equals(msg.getEmail()))) {
+                || (msg.getEmail() != null && user.getEmail().equals(msg.getEmail()))) {
 
             if (user.getPassword().equals(msg.getOldpassword())) {
                 user.setPassword(msg.getNewpassword());
@@ -486,7 +449,7 @@ public class AccountBase extends AbstractAccount {
             } else {
                 throw new CloudRuntimeException("bad old passwords");
             }
-        } else{
+        } else {
             throw new ApiMessageInterceptionException(argerr("wrong phone"));
 
         }
@@ -592,35 +555,34 @@ public class AccountBase extends AbstractAccount {
 
             if (msg.getStatus() != null) {
                 account.setStatus(msg.getStatus());
-                if(msg.getStatus() == AccountStatus.Disabled){
+                if (msg.getStatus() == AccountStatus.Disabled) {
                     List<SessionVO> list = dbf.createQuery(SessionVO.class).add(SessionVO_.accountUuid,
-                            SimpleQuery.Op.EQ,msg.getUuid()).list();
-                    for(SessionVO vo: list){
+                            SimpleQuery.Op.EQ, msg.getUuid()).list();
+                    for (SessionVO vo : list) {
                         identiyInterceptor.getSessions().remove(vo.getUuid());
                     }
                     UpdateQuery.New(SessionVO.class).condAnd(SessionVO_.accountUuid,
-                            SimpleQuery.Op.EQ,msg.getUuid()).delete();
+                            SimpleQuery.Op.EQ, msg.getUuid()).delete();
                 }
             }
 
             if (msg.getType() != null) {
 
-                if(msg.getType().equals(AccountType.Proxy.toString()) &&
+                if (msg.getType().equals(AccountType.Proxy.toString()) &&
                         dbf.createQuery(ProxyAccountRefVO.class).add(ProxyAccountRefVO_.customerAccountUuid,
-                                SimpleQuery.Op.EQ,msg.getUuid()).isExists()){
-                    evt.setError(Platform.argerr("先解绑此账户[%s]",msg.getUuid()));
-                }else{
+                                SimpleQuery.Op.EQ, msg.getUuid()).isExists()) {
+                    evt.setError(Platform.argerr("先解绑此账户[%s]", msg.getUuid()));
+                } else {
                     account.setType(AccountType.valueOf(msg.getType()));
                 }
 
-                if(msg.getType().equals(AccountType.Normal.toString()) &&
+                if (msg.getType().equals(AccountType.Normal.toString()) &&
                         dbf.createQuery(ProxyAccountRefVO.class).add(ProxyAccountRefVO_.accountUuid,
-                                SimpleQuery.Op.EQ,msg.getUuid()).isExists()){
+                                SimpleQuery.Op.EQ, msg.getUuid()).isExists()) {
                     dbf.removeCollection(dbf.createQuery(ProxyAccountRefVO.class).add(ProxyAccountRefVO_.accountUuid,
-                            SimpleQuery.Op.EQ,msg.getUuid()).list(),ProxyAccountRefVO.class);
+                            SimpleQuery.Op.EQ, msg.getUuid()).list(), ProxyAccountRefVO.class);
                     account.setType(AccountType.valueOf(msg.getType()));
                 }
-
 
 
             }
@@ -675,7 +637,7 @@ public class AccountBase extends AbstractAccount {
             user.setUserType(msg.getUserType());
         }
 
-        if (msg.getRoleUuid() != null){
+        if (msg.getRoleUuid() != null) {
             RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
             Set<RoleVO> roleSet = new HashSet<>();
             if (role != null) {
@@ -850,7 +812,7 @@ public class AccountBase extends AbstractAccount {
     @Transactional
     private void handle(APIDeleteRoleMsg msg) {
         UpdateQuery.New(RolePolicyRefVO.class).condAnd(RolePolicyRefVO_.roleUuid,
-                SimpleQuery.Op.EQ,msg.getUuid()).delete();
+                SimpleQuery.Op.EQ, msg.getUuid()).delete();
 
 
         dbf.removeByPrimaryKey(msg.getUuid(), RoleVO.class);
@@ -943,11 +905,11 @@ public class AccountBase extends AbstractAccount {
         q.add(ProxyAccountRefVO_.customerAccountUuid, SimpleQuery.Op.EQ, msg.getUuid());
 
         if (q.isExists()) {
-            ProxyAccountRefVO vo  =  q.find();
+            ProxyAccountRefVO vo = q.find();
             dbf.removeByPrimaryKey(vo.getId(), ProxyAccountRefVO.class);
-        }else{
+        } else {
             throw new ApiMessageInterceptionException(argerr("customerAcccount[uuid:%s] is not belong to this account[uuid:%s]"
-                    ,msg.getUuid(),msg.getAccountUuid()));
+                    , msg.getUuid(), msg.getAccountUuid()));
         }
         APIDeleteProxyAccountRefEvent evt = new APIDeleteProxyAccountRefEvent(msg.getId());
 

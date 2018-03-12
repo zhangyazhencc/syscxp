@@ -1,11 +1,11 @@
-package com.syscxp.account.header.account;
+package com.syscxp.header.account;
 
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
 @InnerCredentialCheck
-public class APIGetSecretKeyMsg extends APISyncCallMessage implements  AccountMessage {
+public class APIGetSecretKeyMsg extends APISyncCallMessage {
 
     @APIParam(maxLength = 32)
     private String secretId;
@@ -16,10 +16,5 @@ public class APIGetSecretKeyMsg extends APISyncCallMessage implements  AccountMe
 
     public void setSecretId(String secretId) {
         this.secretId = secretId;
-    }
-
-    @Override
-    public String getAccountUuid() {
-        return null;
     }
 }

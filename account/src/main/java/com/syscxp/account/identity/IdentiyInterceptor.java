@@ -102,6 +102,16 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
+    public String getSecretKey(String secretId) {
+        return null;
+    }
+
+    @Override
+    public String getSessionUuid(String secretId, String secretKey) {
+        return null;
+    }
+
+    @Override
     protected SessionInventory getSessionInventory(String sessionUuid) {
 
         SessionVO svo = dbf.findByUuid(sessionUuid, SessionVO.class);
