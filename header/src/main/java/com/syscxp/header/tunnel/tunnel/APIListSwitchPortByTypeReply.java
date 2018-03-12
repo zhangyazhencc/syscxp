@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.message.APIReply;
+import com.syscxp.header.rest.RestResponse;
 import com.syscxp.header.tunnel.switchs.SwitchPortInventory;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-11
  */
+@RestResponse(fieldsTo = {"inventories"})
 public class APIListSwitchPortByTypeReply extends APIReply {
     private List<SwitchPortInventory> inventories;
 
