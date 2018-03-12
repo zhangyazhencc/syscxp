@@ -783,7 +783,8 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
     }
 
     private void validate(APIUpdateSwitchPortMsg msg) {
-        if(msg.getPortOfferingUuid() != null){
+        SwitchPortVO vo = dbf.findByUuid(msg.getUuid(), SwitchPortVO.class);
+        if(msg.getPortOfferingUuid() != null && !vo.getPortType().equals(msg.getPortOfferingUuid())){
 
             if(Q.New(InterfaceVO.class)
                     .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
