@@ -592,7 +592,7 @@ public class RestServer implements Component, CloudBusEventListener {
 
     private String getSession(HttpServletRequest req) {
 //        return (String) req.getAttribute(RestConstants.SESSION_UUID);
-        return req.getParameter(RestConstants.SESSION_UUID);
+        return (String) req.getAttribute(RestConstants.SESSION_UUID);
     }
 
     private void handleApi(Api api, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
