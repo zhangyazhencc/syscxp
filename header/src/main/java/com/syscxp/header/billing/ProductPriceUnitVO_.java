@@ -9,7 +9,7 @@ public class ProductPriceUnitVO_ {
 
     public static volatile SingularAttribute<ProductPriceUnitVO, String> uuid;
     public static volatile SingularAttribute<ProductPriceUnitVO, ProductType> productTypeCode;
-    public static volatile SingularAttribute<ProductPriceUnitVO, Category> categoryCode;
+    public static volatile SingularAttribute<ProductPriceUnitVO, ProductCategory> categoryCode;
     public static volatile SingularAttribute<ProductPriceUnitVO, String> productTypeName;
     public static volatile SingularAttribute<ProductPriceUnitVO, String> productCategoryUuid;
     public static volatile SingularAttribute<ProductPriceUnitVO, String> categoryName;

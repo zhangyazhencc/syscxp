@@ -680,7 +680,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
 
     }
 
-    private ProductCategoryVO findProductCategory(ProductType type, Category category) {
+    private ProductCategoryVO findProductCategory(ProductType type, ProductCategory category) {
         SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
         queryEO.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, type);
         queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, category);

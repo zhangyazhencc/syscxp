@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 public class ProductCategoryVO_ {
 
     public static volatile SingularAttribute<ProductCategoryVO, String> uuid;
-    public static volatile SingularAttribute<ProductCategoryVO, Category> code;
+    public static volatile SingularAttribute<ProductCategoryVO, ProductCategory> code;
     public static volatile SingularAttribute<ProductCategoryVO, String> name;
     public static volatile SingularAttribute<ProductCategoryVO, ProductType> productTypeCode;
     public static volatile SingularAttribute<ProductCategoryVO, String> productTypeName;

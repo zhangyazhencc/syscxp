@@ -4,7 +4,7 @@ public class ProductPriceUnit {
 
     private ProductType productTypeCode;
 
-    private Category categoryCode;
+    private ProductCategory categoryCode;
 
     private String areaCode = "DEFAULT";
 
@@ -20,11 +20,11 @@ public class ProductPriceUnit {
         this.productTypeCode = productTypeCode;
     }
 
-    public Category getCategoryCode() {
+    public ProductCategory getCategoryCode() {
         return categoryCode;
     }
 
-    public void setCategoryCode(Category categoryCode) {
+    public void setCategoryCode(ProductCategory categoryCode) {
         this.categoryCode = categoryCode;
     }
 

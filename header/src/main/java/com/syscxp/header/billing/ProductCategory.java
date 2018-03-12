@@ -1,12 +1,15 @@
 package com.syscxp.header.billing;
 
-public enum ProductType {
-    PORT,
-    EDGELINE,
-    TUNNEL,
-    VPN,
+public enum ProductCategory {
+    CITY,
+    REGION,
+    LONG,
+    ABROAD,
 
-    L3NETWORK,
+    EXCLUSIVE,
+    SHARE,
+
+    VPN,
 
     HOST,
     DISK,

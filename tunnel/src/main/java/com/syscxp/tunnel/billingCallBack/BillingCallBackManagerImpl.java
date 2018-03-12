@@ -70,32 +70,35 @@ public class BillingCallBackManagerImpl extends AbstractService implements Billi
 
     private void buyTunnel(OrderCallbackCmd cmd) {
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
-
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-        vo.setAccountUuid(vo.getOwnerAccountUuid());
-        vo.setState(TunnelState.Deploying);
-        vo.setStatus(TunnelStatus.Connecting);
-        dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-        //创建任务
-        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Create);
+        if(vo.getState() == TunnelState.Unpaid){
 
-        CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
-        createTunnelMsg.setTunnelUuid(vo.getUuid());
-        createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
-        bus.send(createTunnelMsg, new CloudBusCallBack(null) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-                    logger.info("billing通知回调并请求下发成功");
-                } else {
-                    logger.info("billing通知回调并请求下发失败");
+            vo.setAccountUuid(vo.getOwnerAccountUuid());
+            vo.setState(TunnelState.Deploying);
+            vo.setStatus(TunnelStatus.Connecting);
+            dbf.updateAndRefresh(vo);
+
+            //创建任务
+            TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Create);
+
+            CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
+            createTunnelMsg.setTunnelUuid(vo.getUuid());
+            createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+            bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
+            bus.send(createTunnelMsg, new CloudBusCallBack(null) {
+                @Override
+                public void run(MessageReply reply) {
+                    if (reply.isSuccess()) {
+                        logger.info("billing通知回调并请求下发成功");
+                    } else {
+                        logger.info("billing通知回调并请求下发失败");
+                    }
                 }
-            }
-        });
+            });
+        }
 
     }
 

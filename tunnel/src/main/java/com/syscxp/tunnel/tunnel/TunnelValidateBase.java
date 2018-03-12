@@ -562,6 +562,10 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIOpenTunnelMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+        if(vo.getState() == TunnelState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("该专线已经开通，不可重复操作！"));
+        }
     }
 
     public void validate(APIUnsupportTunnelMsg msg) {
