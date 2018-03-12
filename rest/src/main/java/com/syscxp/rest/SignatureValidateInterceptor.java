@@ -1,11 +1,6 @@
 package com.syscxp.rest;
 
-import com.syscxp.core.CoreGlobalProperty;
-import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.identity.AbstractIdentityInterceptor;
-import com.syscxp.core.identity.DefaultIdentityInterceptor;
-import com.syscxp.core.identity.IdentityGlobalProperty;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.HMAC;
 import com.syscxp.utils.Utils;
@@ -19,7 +14,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.syscxp.utils.StringDSL.s;
 
@@ -33,17 +27,9 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
     private static final CLogger LOGGER = Utils.getLogger(SignatureValidateInterceptor.class);
 
     @Autowired
-    private CloudBus bus;
-    @Autowired
-    private RESTFacade restf;
-
-    @Autowired
     private AbstractIdentityInterceptor identityInterceptor;
 
     private static final long EXPIRE_TIME = 600 * 1000;
-
-    private Map<String, String> sessionUuids = new ConcurrentHashMap<>();
-    private Map<String, String> secretKeys = new ConcurrentHashMap<>();
 
     @Override
     public void intercept(HttpServletRequest req) throws RestServletRequestInterceptorException {

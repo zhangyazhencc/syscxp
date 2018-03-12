@@ -1,11 +1,8 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.header.query.AutoQuery;
-import com.syscxp.header.tunnel.TunnelConstant;
 
 import java.util.List;
 

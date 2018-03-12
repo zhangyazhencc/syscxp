@@ -1,15 +1,22 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import org.springframework.http.HttpMethod;
 
 /**
  * Created by DCY on 2017-09-11
  */
+
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIListSwitchPortByTypeReply.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIListSwitchPortByTypeMsg extends APISyncCallMessage {
 

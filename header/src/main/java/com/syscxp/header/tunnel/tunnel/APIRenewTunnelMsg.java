@@ -7,11 +7,19 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
+import org.springframework.http.HttpMethod;
 
 /**
  * Create by DCY on 2017/11/15
  */
+
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIRenewTunnelReply.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewTunnelMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true)
