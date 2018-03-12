@@ -127,9 +127,15 @@ class SdkApiTemplate implements SdkTemplate {
                 annotationFields.add(String.format("required = false"))
             }
 
+            def fieldTypeName = f.getType().getName()
+
+            if (f.isEnumConstant()) {
+                fieldTypeName = "com.syscxp.sdk." + f.getType().getSimpleName()
+            }
+
             def fs = """\
     @Param(${annotationFields.join(", ")})
-    public ${f.getType().getName()} ${f.getName()}${{ ->
+    public ${fieldTypeName} ${f.getName()}${{ ->
                 f.accessible = true
                 
                 Object val = f.get(msg)
