@@ -82,6 +82,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     public String getSessionUuid(String secretId, String secretKey) {
         APILogInBySecretIdMsg aMsg = new APILogInBySecretIdMsg();
         aMsg.setSecretId(secretId);
+        aMsg.setSecretKey(secretKey);
         InnerMessageHelper.setMD5(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
 
