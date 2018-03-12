@@ -115,11 +115,6 @@ class SdkApiTemplate implements SdkTemplate {
 
                     annotationFields.add(String.format("numberRange = {%s}", ns.join(",")))
 
-                    if (apiParam.numberRangeUnit().length > 0) {
-                        def nru = apiParam.numberRangeUnit() as List<String>
-
-                        annotationFields.add(String.format("numberRangeUnit = {\"%s\", \"%s\"}", nru.get(0), nru.get(1)))
-                    }
                 }
 
                 annotationFields.add(String.format("noTrim = %s", apiParam.noTrim()))
@@ -127,9 +122,15 @@ class SdkApiTemplate implements SdkTemplate {
                 annotationFields.add(String.format("required = false"))
             }
 
+            def fieldTypeName = f.getType().getName()
+
+            if (f.isEnumConstant()) {
+                fieldTypeName = "com.syscxp.sdk." + f.getType().getSimpleName()
+            }
+
             def fs = """\
     @Param(${annotationFields.join(", ")})
-    public ${f.getType().getName()} ${f.getName()}${{ ->
+    public ${fieldTypeName} ${f.getName()}${{ ->
                 f.accessible = true
                 
                 Object val = f.get(msg)

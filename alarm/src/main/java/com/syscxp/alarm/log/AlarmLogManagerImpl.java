@@ -11,6 +11,7 @@ import com.syscxp.alarm.header.contact.NotifyWayVO;
 import com.syscxp.alarm.header.log.*;
 import com.syscxp.alarm.header.resourcePolicy.MonitorTargetVO;
 import com.syscxp.alarm.header.resourcePolicy.PolicyVO;
+import com.syscxp.alarm.header.resourcePolicy.PolicyVO_;
 import com.syscxp.alarm.header.resourcePolicy.RegulationVO;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -38,6 +39,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -126,6 +128,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private void handleAlarm(AlarmEventVO eventVO) {
         if (eventVO != null) {
             RegulationVO regulationVO = dbf.findByUuid(eventVO.getExpression().getRegulationId(), RegulationVO.class);
+
             PolicyVO policyVO;
             if (regulationVO != null) {
                 policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(), PolicyVO.class);
@@ -337,7 +340,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         if (templateVO != null) {
             MonitorTargetVO monitorTargetVO = eventVO.getRegulationVO().getMonitorTargetVO();
             String leftValue = eventVO.getLeftValue() + monitorTargetVO.getUnit();
-            String rightValue = eventVO.getExpression().getRightValue() + monitorTargetVO.getUnit();
+            String rightValue = eventVO.getRegulationVO().getAlarmThreshold() + monitorTargetVO.getUnit();
 
             if (eventVO.getStatus() == AlarmStatus.PROBLEM)
                 content = String.format(templateVO.getTemplate(), productName
@@ -363,7 +366,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     private String getAlarmContent(AlarmEventVO eventVO) {
         String targetName = eventVO.getRegulationVO().getMonitorTargetVO().getTargetName();
         String content = String.format("%s超出告警阀值[%s]，达到[%s]"
-                , targetName, eventVO.getExpression().getRightValue(), eventVO.getLeftValue());
+                , targetName, eventVO.getRegulationVO().getAlarmThreshold(), eventVO.getLeftValue());
 
         return content;
     }
@@ -431,11 +434,12 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     if (isSharePoint(eventVO, tunnelInfo))
                         sumBandwidth += tunnelInfo.getBandwidth();
                 }
-                long rightValue = (long) (Long.valueOf(eventVO.getExpression().getRightValue()) * 1.0 / sumBandwidth * 100);
-                eventVO.getExpression().setRightValue(String.valueOf(rightValue));
 
-                float leftValue = (long) (Long.valueOf(eventVO.getLeftValue()) * 1.0 / sumBandwidth * 100);
-                eventVO.setLeftValue(String.valueOf(leftValue > 0 ? 100 : leftValue));
+                if(sumBandwidth <= 0)
+                    throw new RuntimeException("[recalculateBandwidth] 获取带宽异常！");
+
+                float leftValue = NumberUtils.toFloat(eventVO.getLeftValue()) / sumBandwidth * 100;
+                eventVO.setLeftValue(String.valueOf(leftValue > 100 ? 100 : (float)(Math.round(leftValue*100))/100));
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("failed to recalculate bandwidth! " +

@@ -439,15 +439,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                     NodeExtensionInfo.class,"nodeExtensionInfo");
             if(node == null){
                 mongoTemplate.insert(json.get("nodeExtensionInfo"),"nodeExtensionInfo");
+                event.setInventory(msg.getNodeExtensionInfo());
             }else{
                 event.setError(Platform.argerr("this node Extension Information has existed"));
             }
-
         }else{
             event.setError(Platform.argerr("jsonString is illegal"));
         }
 
-        event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
     }
 
