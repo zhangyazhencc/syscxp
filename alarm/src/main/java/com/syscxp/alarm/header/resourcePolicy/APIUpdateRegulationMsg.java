@@ -2,8 +2,10 @@ package com.syscxp.alarm.header.resourcePolicy;
 
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {AlarmConstant.ACTION_SERVICE}, category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"update"})
 public class APIUpdateRegulationMsg extends APIMessage{
@@ -61,5 +63,18 @@ public class APIUpdateRegulationMsg extends APIMessage{
 
     public void setTriggerPeriod(int triggerPeriod) {
         this.triggerPeriod = triggerPeriod;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update RegulationVO")
+                        .resource(uuid, RegulationVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

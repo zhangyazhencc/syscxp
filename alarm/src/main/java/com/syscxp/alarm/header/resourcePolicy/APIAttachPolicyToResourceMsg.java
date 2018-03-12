@@ -1,10 +1,14 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
+import com.syscxp.alarm.header.contact.APICreateContactEvent;
+import com.syscxp.alarm.header.contact.ContactVO;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 import java.util.List;
 
@@ -53,5 +57,23 @@ public class APIAttachPolicyToResourceMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = resourceUuid;
+                }
+
+                ntfy("attach policy to resource")
+                        .resource(uuid, ResourcePolicyRefVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
