@@ -18,6 +18,8 @@ public class EndpointTunnelsInventory {
     private String nodeZ;
     private long bandwidth;
     private String accountUuid;
+    private Integer endpointAVlan;
+    private Integer endpointZVlan;
 
     public static EndpointTunnelsInventory valueOf(MonitorAgentCommands.EndpointTunnel vo){
         EndpointTunnelsInventory inventory = new EndpointTunnelsInventory();
@@ -29,6 +31,8 @@ public class EndpointTunnelsInventory {
         inventory.setEndpointAMip(vo.getEndpoingAMip());
         inventory.setEndpointZMip(vo.getEndpoingZMip());
         inventory.setAccountUuid(vo.getAccountUuid());
+        inventory.setEndpointAVlan(vo.getEndpointAVlan());
+        inventory.setEndpointZVlan(vo.getEndpointZVlan());
 
         return  inventory;
     }
@@ -103,5 +107,21 @@ public class EndpointTunnelsInventory {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public Integer getEndpointAVlan() {
+        return endpointAVlan;
+    }
+
+    public void setEndpointAVlan(Integer endpointAVlan) {
+        this.endpointAVlan = endpointAVlan;
+    }
+
+    public Integer getEndpointZVlan() {
+        return endpointZVlan;
+    }
+
+    public void setEndpointZVlan(Integer endpointZVlan) {
+        this.endpointZVlan = endpointZVlan;
     }
 }
