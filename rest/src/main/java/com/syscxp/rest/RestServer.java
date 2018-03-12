@@ -12,6 +12,7 @@ import com.syscxp.header.MapField;
 import com.syscxp.header.apimediator.ApiMediatorConstant;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.SessionInventory;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.*;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.APIQueryReply;
@@ -597,9 +598,11 @@ public class RestServer implements Component, CloudBusEventListener {
 
     private void handleApi(Api api, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
 
-        String sessionId = getSession(req);
-
-        Map<String, String[]> vars = req.getParameterMap();
+        String sessionId = null;
+        if (!api.apiClass.isAnnotationPresent(SuppressCredentialCheck.class)) {
+            sessionId = getSession(req);
+        }
+        Map<String, String[]> queryParameters = req.getParameterMap();
 
         if (APIQueryMessage.class.isAssignableFrom(api.apiClass)) {
             handleQueryApi(api, sessionId, req, rsp);
@@ -609,7 +612,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 RestConstants.SIGNATURE_METHOD, RestConstants.NONCE, RestConstants.TIMESTAMP);
         // uses query string to pass parameters
         Map<String, Object> parameter = new HashMap<>();
-        for (Map.Entry<String, String[]> e : vars.entrySet()) {
+        for (Map.Entry<String, String[]> e : queryParameters.entrySet()) {
             String k = e.getKey();
             String[] vals = e.getValue();
 
@@ -668,6 +671,16 @@ public class RestServer implements Component, CloudBusEventListener {
             SessionInventory session = new SessionInventory();
             session.setUuid(sessionId);
             msg.setSession(session);
+        }
+
+        for (Map.Entry<String, Object> e : parameter.entrySet()) {
+
+            Class clazz = PropertyUtils.getPropertyType(msg, e.getKey());
+            if (clazz.isEnum())
+                PropertyUtils.setProperty(msg, e.getKey(), Enum.valueOf(clazz, String.valueOf(e.getValue())));
+            else {
+                PropertyUtils.setProperty(msg, e.getKey(), e.getValue());
+            }
         }
 
         msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
