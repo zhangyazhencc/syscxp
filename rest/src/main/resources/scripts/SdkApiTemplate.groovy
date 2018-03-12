@@ -125,7 +125,7 @@ class SdkApiTemplate implements SdkTemplate {
             def fieldTypeName = f.getType().getName()
 
             if (f.isEnumConstant()) {
-                fieldTypeName = "com.syscxp.sdk." + f.getType().getSimpleName()
+                fieldTypeName = String.format("com.syscxp.sdk.%s",f.getType().getSimpleName())
             }
 
             def fs = """\
@@ -146,13 +146,6 @@ class SdkApiTemplate implements SdkTemplate {
             }()}
 """
             output.add(fs.toString())
-        }
-
-        if (!apiMessageClass.isAnnotationPresent(SuppressCredentialCheck.class)) {
-            output.add("""\
-    @Param(required = true)
-    public String sessionId;
-""")
         }
 
         if (!APISyncCallMessage.class.isAssignableFrom(apiMessageClass)) {
