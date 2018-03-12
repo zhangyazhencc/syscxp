@@ -390,25 +390,27 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIUpdateNodeExtensionInfoMsg msg) {
+        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
 
         JSONObject newInfo = JSONObject.parseObject(msg.getNewNodeExtensionInfo());
-
         NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
                 newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
 
-        String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
+        if(node == null){
+            event.setError(Platform.argerr("this node Extension Information is not existent"));
+        } else{
+            String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
 
-        JSONObject obj = new JSONObject();
-        obj.putAll(JSONObject.parseObject(oldmogo));
-        obj.putAll(newInfo);
-        ((Map)obj.get("nodeExtensionInfo")).put("_id",node.get_id());
-        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
+            JSONObject obj = new JSONObject();
+            obj.putAll(JSONObject.parseObject(oldmogo));
+            obj.putAll(newInfo);
+            ((Map)obj.get("nodeExtensionInfo")).put("_id",node.get_id());
 
-        mongoTemplate.save(obj.get("nodeExtensionInfo"),"nodeExtensionInfo");
-        event.setInventory(obj.toString());
+            mongoTemplate.save(obj.get("nodeExtensionInfo"),"nodeExtensionInfo");
+            event.setInventory(obj.toString());
+        }
 
         bus.publish(event);
-
     }
 
     private void handle(APIDeleteNodeExtensionInfoMsg msg) {
@@ -428,16 +430,23 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
+        APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(msg.getNodeExtensionInfo());
 
-        if(json.get("nodeExtensionInfo") != null && !"".equals(json.get("nodeExtensionInfo"))){
-            mongoTemplate.insert(json.get("nodeExtensionInfo"),"nodeExtensionInfo");
+        String nodeId = json.getJSONObject("nodeExtensionInfo").getString("node_id").trim();
+        if(nodeId != null){
+            NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(nodeId)),
+                    NodeExtensionInfo.class,"nodeExtensionInfo");
+            if(node == null){
+                mongoTemplate.insert(json.get("nodeExtensionInfo"),"nodeExtensionInfo");
+                event.setInventory(msg.getNodeExtensionInfo());
+            }else{
+                event.setError(Platform.argerr("this node Extension Information has existed"));
+            }
         }else{
-            throw new ApiMessageInterceptionException(argerr(""));
+            event.setError(Platform.argerr("jsonString is illegal"));
         }
 
-        APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
-        event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
     }
 
