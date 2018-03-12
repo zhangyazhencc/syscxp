@@ -70,6 +70,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             handle((APIDeleteL3NetworkMsg) msg);
         }else if(msg instanceof APICreateL3EndPointMsg){
             handle((APICreateL3EndPointMsg) msg);
+        }else if(msg instanceof APIUpdateL3EndpointIPMsg){
+            handle((APIUpdateL3EndpointIPMsg) msg);
         }else if(msg instanceof APIDeleteL3EndPointMsg){
             handle((APIDeleteL3EndPointMsg) msg);
         }else if(msg instanceof APICreateL3RouteMsg){
@@ -185,6 +187,14 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         return vo.getUuid();
     }
+
+    private void handle(APIUpdateL3EndpointIPMsg msg){
+        APIUpdateL3EndpointIPEvent evt = new APIUpdateL3EndpointIPEvent(msg.getId());
+
+
+
+    }
+
 
 
     private void handle(APIDeleteL3EndPointMsg msg) {

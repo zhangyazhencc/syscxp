@@ -6,9 +6,15 @@
     <message>
         <name>com.syscxp.header.tunnel.network.APICreateL3NetworkMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.header.tunnel.network.APICreateL3EndPointMsg</name>
     </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.network.APIUpdateL3EndpointIPMsg</name>
+    </message>
+
     <message>
         <name>com.syscxp.header.tunnel.network.APICreateL3RouteMsg</name>
     </message>
@@ -20,9 +26,11 @@
     <message>
         <name>com.syscxp.header.tunnel.network.APIDeleteL3NetworkMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.header.tunnel.network.APIDeleteL3EndPointMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.header.tunnel.network.APIDeleteL3RouteMsg</name>
     </message>
@@ -31,10 +39,12 @@
         <name>com.syscxp.header.tunnel.network.APIQueryL3NetworkMsg</name>
         <serviceId>query</serviceId>
     </message>
+
     <message>
         <name>com.syscxp.header.tunnel.network.APIQueryL3EndPointMsg</name>
         <serviceId>query</serviceId>
     </message>
+
     <message>
         <name>com.syscxp.header.tunnel.network.APIQueryL3RouteMsg</name>
         <serviceId>query</serviceId>
