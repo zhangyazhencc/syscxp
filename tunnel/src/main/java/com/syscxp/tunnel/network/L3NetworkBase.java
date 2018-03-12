@@ -119,7 +119,7 @@ public class L3NetworkBase {
         List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class).eq(SwitchVlanVO_.switchUuid, switchPortVO.getSwitchUuid()).list();
 
         //查询该虚拟交换机所属物理交换机下已经分配的Vlan
-        List<Integer> allocatedVlans = fingAllocateVlanByPhysicalSwitch(physicalSwitchUuid);
+        List<Integer> allocatedVlans = findAllocateVlanByPhysicalSwitch(physicalSwitchUuid);
 
         if(vlanList.isEmpty()){
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
@@ -135,7 +135,7 @@ public class L3NetworkBase {
     /**
      * 查询该虚拟交换机所属物理交换机已经分配的Vlan
      * */
-    public List<Integer> fingAllocateVlanByPhysicalSwitch(String physicalSwitchUuid){
+    public List<Integer> findAllocateVlanByPhysicalSwitch(String physicalSwitchUuid){
 
         String sql1 = "select distinct a.vlan from TunnelSwitchPortVO a " +
                 "where a.ownerMplsSwitchUuid = :physicalSwitchUuid";
