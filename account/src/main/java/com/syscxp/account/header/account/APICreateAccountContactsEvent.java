@@ -1,9 +1,7 @@
 package com.syscxp.account.header.account;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APICreateAccountContactsEvent extends APIEvent {
     private AccountContactsInventory inventory;
 

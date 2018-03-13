@@ -1,15 +1,14 @@
 package com.syscxp.account.header.identity;
 
-import com.syscxp.header.message.APIReply;
-import com.syscxp.header.rest.RestResponse;
 import com.syscxp.header.identity.StatementEffect;
+import com.syscxp.header.message.APIReply;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by xing5 on 2016/3/10.
  */
-@RestResponse(allTo = "inventory")
 public class APICheckApiPermissionReply extends APIReply {
     private Map<String, String> inventory;
 

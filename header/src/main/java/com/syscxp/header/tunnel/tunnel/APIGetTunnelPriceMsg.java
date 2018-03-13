@@ -9,7 +9,6 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.node.NodeVO;
 import org.springframework.http.HttpMethod;
 
 /**
