@@ -263,13 +263,14 @@ ${generateMethods(path)}
         }
 
         SdkFile file = new SdkFile()
-        file.fileName = "${clz.simpleName}.java"
+        file.fileName = "${clz.getSimpleName()}.java"
         file.content = """package com.syscxp.sdk;
 
-public enum ${getTargetClassName(clz)} {
+public enum ${clz.getSimpleName()} {
 ${output.join("\n")}
 }
 """
+        enumClasses.remove(clz)
         return file
     }
 
