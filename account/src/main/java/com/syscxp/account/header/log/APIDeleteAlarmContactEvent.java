@@ -1,9 +1,7 @@
 package com.syscxp.account.header.log;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse
 public class APIDeleteAlarmContactEvent extends APIEvent {
     public APIDeleteAlarmContactEvent() {
     }

@@ -1,9 +1,7 @@
 package com.syscxp.header.host;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse
 public class APIDeleteHostEvent extends APIEvent {
     public APIDeleteHostEvent() {
         super(null);
