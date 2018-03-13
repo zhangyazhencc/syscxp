@@ -1,12 +1,10 @@
 package com.syscxp.core.notification;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
 /**
  * Created by xing5 on 2017/3/18.
  */
-@RestResponse(allTo = "inventory")
 public class APICreateNotificationsEvent extends APIEvent {
 
     private NotificationInventory inventory;
