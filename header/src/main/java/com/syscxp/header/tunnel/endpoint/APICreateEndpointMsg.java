@@ -1,10 +1,14 @@
 package com.syscxp.header.tunnel.endpoint;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.edgeLine.APICreateEdgeLineEvent;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 
 /**
@@ -99,5 +103,22 @@ public class APICreateEndpointMsg extends APIMessage {
 
     public void setCloudType(String cloudType) {
         this.cloudType = cloudType;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateEndpointEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create EndpointVO")
+                        .resource(uuid, EndpointVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

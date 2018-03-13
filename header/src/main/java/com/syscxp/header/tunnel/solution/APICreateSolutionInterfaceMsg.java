@@ -2,8 +2,10 @@ package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
@@ -82,5 +84,22 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateSolutionTunnelEvent) evt).getTunnelInventory().getUuid();
+                }
+                ntfy("Create SolutionTunnelVO")
+                        .resource(uuid, SolutionTunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

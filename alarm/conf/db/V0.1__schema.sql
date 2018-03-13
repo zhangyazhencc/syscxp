@@ -157,12 +157,12 @@ values ('57feaa13025b11e89fd700e0b4506238', 'TUNNEL', '大于', '>', '2018-01-26
 DROP TABLE IF EXISTS `ContactNotifyWayRefVO`;
 
 CREATE TABLE `ContactNotifyWayRefVO` (
-  `uuid` varchar(32) NOT NULL,
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `contactUuid` varchar(32) DEFAULT NULL,
   `notifyWayUuid` varchar(32) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
-  PRIMARY KEY (`uuid`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `ContactVO` */

@@ -1,13 +1,11 @@
 package com.syscxp.core.config;
 
 import com.syscxp.header.query.APIQueryReply;
-import com.syscxp.header.rest.RestResponse;
 
 import java.util.List;
 
 /**
  */
-@RestResponse(allTo = "inventories")
 public class APIQueryGlobalConfigReply extends APIQueryReply {
     private List<GlobalConfigInventory> inventories;
 

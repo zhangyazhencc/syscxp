@@ -9,10 +9,6 @@ import com.syscxp.header.query.AutoQuery;
  * Created by xing5 on 2017/5/7.
  */
 @AutoQuery(inventoryClass = WebhookInventory.class, replyClass = APIQueryWebhookReply.class)
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIQueryWebhookReply.class
-)
+
 public class APIQueryWebhookMsg extends APIQueryMessage {
 }
