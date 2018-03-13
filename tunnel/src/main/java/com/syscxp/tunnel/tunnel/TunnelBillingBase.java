@@ -359,14 +359,21 @@ public class TunnelBillingBase {
         data.add(new DescriptionItem("连接点-A", endpointNameA));
         data.add(new DescriptionItem("连接点-Z", endpointNameZ));
 
-        if(tunnelBase.isShareForInterface(tunnelSwitchPortVOA.getInterfaceUuid())){
+        String portTypeA = tunnelBase.getPortTypeByInterface(tunnelSwitchPortVOA.getInterfaceUuid());
+        String portTypeZ = tunnelBase.getPortTypeByInterface(tunnelSwitchPortVOZ.getInterfaceUuid());
+
+        if(portTypeA.equals("SHARE")){
             data.add(new DescriptionItem("端口-A", "共享端口"));
+        }else if(portTypeA.equals("EXTENDPORT")){
+            data.add(new DescriptionItem("端口-A", "扩展端口"));
         }else{
             data.add(new DescriptionItem("端口-A", "独享端口"));
         }
 
-        if(tunnelBase.isShareForInterface(tunnelSwitchPortVOZ.getInterfaceUuid())){
+        if(portTypeZ.equals("SHARE")){
             data.add(new DescriptionItem("端口-Z", "共享端口"));
+        }else if(portTypeZ.equals("EXTENDPORT")){
+            data.add(new DescriptionItem("端口-Z", "扩展端口"));
         }else{
             data.add(new DescriptionItem("端口-Z", "独享端口"));
         }

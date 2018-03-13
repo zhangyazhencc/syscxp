@@ -181,7 +181,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         APIQuerySwitchPortAvailableReply reply = new APIQuerySwitchPortAvailableReply();
 
         String sql = "select sp from SwitchPortVO sp where sp.switchUuid = :switchUuid and sp.state = :state and " +
-                "((select count(1) as num from InterfaceVO i where i.switchPortUuid = sp.uuid) = 0 or sp.portType = 'SHARE') ";
+                "((select count(1) as num from InterfaceVO i where i.switchPortUuid = sp.uuid) = 0 or sp.portType = 'SHARE' or sp.portType = 'EXTENDPORT') ";
 
         boolean isPortName = false;
         if (msg.getPortName() != null) {
