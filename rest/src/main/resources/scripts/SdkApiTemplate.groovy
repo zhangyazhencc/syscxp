@@ -130,7 +130,7 @@ class SdkApiTemplate implements SdkTemplate {
 
             def fs = """\
     @Param(${annotationFields.join(", ")})
-    public ${fieldTypeName} ${f.getName()}${{ ->
+    public ${fieldTypeName.toString()} ${f.getName()}${{ ->
                 f.accessible = true
                 
                 Object val = f.get(msg)
