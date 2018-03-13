@@ -1,12 +1,10 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
 /**
  * Created by DCY on 2017-09-11
  */
-@RestResponse(allTo = "inventory")
 public class APICreateInterfaceManualEvent extends APIEvent {
     private InterfaceInventory inventory;
 

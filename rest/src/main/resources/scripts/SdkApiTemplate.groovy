@@ -127,6 +127,7 @@ class SdkApiTemplate implements SdkTemplate {
             if (f.isEnumConstant()) {
                 fieldTypeName = String.format("com.syscxp.sdk.%s",f.getType().getSimpleName())
             }
+            println(f.getType().getName() + "===>>>" + f.isEnumConstant() + "===>>>" + fieldTypeName)
 
             def fs = """\
     @Param(${annotationFields.join(", ")})

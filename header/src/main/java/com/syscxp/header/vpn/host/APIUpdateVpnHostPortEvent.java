@@ -1,9 +1,7 @@
 package com.syscxp.header.vpn.host;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APIUpdateVpnHostPortEvent extends APIEvent{
     VpnHostInventory inventory;
 

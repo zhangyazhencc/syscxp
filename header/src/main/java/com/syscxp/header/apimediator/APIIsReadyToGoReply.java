@@ -1,9 +1,7 @@
 package com.syscxp.header.apimediator;
 
 import com.syscxp.header.message.APIReply;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse
 public class APIIsReadyToGoReply extends APIReply {
     private String managementNodeId;
 
