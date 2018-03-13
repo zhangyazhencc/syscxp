@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 public class TunnelAO_ {
 
     public static volatile SingularAttribute<TunnelAO, String> uuid;
+    public static volatile SingularAttribute<TunnelAO, Long> number;
     public static volatile SingularAttribute<TunnelAO, String> accountUuid;
     public static volatile SingularAttribute<TunnelAO, String> ownerAccountUuid;
     public static volatile SingularAttribute<TunnelAO, Integer> vsi;

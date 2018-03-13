@@ -708,3 +708,6 @@ CREATE TABLE  `ShareSolutionVO` (
 
 ALTER TABLE `SolutionVO` ADD COLUMN `isShare` tinyint(1) unsigned DEFAULT 0 COMMENT '是否共享';
 
+ALTER TABLE `syscxp_tunnel`.`TunnelEO` ADD COLUMN `number` bigint unsigned AUTO_INCREMENT Unique, AUTO_INCREMENT=5000;
+DROP VIEW IF EXISTS `syscxp_tunnel`.`TunnelVO`;
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, `number`, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidthOffering, bandwidth, distance, state, status, type, innerEndpointUuid, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate FROM `TunnelEO` WHERE deleted IS NULL;
