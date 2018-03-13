@@ -434,7 +434,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(msg.getNodeExtensionInfo());
 
         String nodeId = json.getJSONObject("nodeExtensionInfo").getString("node_id").trim();
-        if(nodeId != null){
+        if(nodeId != null && dbf.findByUuid(nodeId,NodeVO.class) != null){
             NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(nodeId)),
                     NodeExtensionInfo.class,"nodeExtensionInfo");
             if(node == null){
