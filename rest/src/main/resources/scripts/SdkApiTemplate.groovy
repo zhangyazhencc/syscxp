@@ -128,7 +128,9 @@ class SdkApiTemplate implements SdkTemplate {
 
             if (Enum.class.isAssignableFrom(f.getType())) {
                 fieldTypeName = String.format("com.syscxp.sdk.%s",f.getType().getSimpleName())
-                enumClasses.add(f.getType())
+                if (!enumClasses.contains(f.getType())) {
+                    enumClasses.add(f.getType())
+                }
             }
 
             def fs = """\
@@ -254,23 +256,28 @@ ${generateMethods(path)}
         return f
     }
 
-    def resolveEnumClass(Class clz) {
+    def resolveEnumClass() {
+        def ret = []
+        if (!enumClasses.isEmpty()) {
+            for (Class clz:enumClasses) {
+                def output = []
 
-        def output = []
+                for (Enum e : clz.getEnumConstants()) {
+                    output.add("\t${e.name()},")
+                }
 
-        for (Enum e : clz.getEnumConstants()) {
-            output.add("\t${e.name()},")
-        }
+                SdkFile file = new SdkFile()
+                file.fileName = "${clz.getSimpleName()}.java"
+                file.content = """package com.syscxp.sdk;
 
-        SdkFile file = new SdkFile()
-        file.fileName = "${clz.simpleName}.java"
-        file.content = """package com.syscxp.sdk;
-
-public enum ${getTargetClassName(clz)} {
+public enum ${clz.getSimpleName()} {
 ${output.join("\n")}
 }
 """
-        return file
+                ret.add(file)
+            }
+        }
+        return ret
     }
 
     def generateAction() {
@@ -297,11 +304,6 @@ ${output.join("\n")}
 
                 ret.add(generateAction("${aname}Action", restPath))
             }
-            if (!enumClasses.isEmpty()) {
-                for (Class aClass: enumClasses){
-                    ret.add( resolveEnumClass(aClass))
-                }
-            }
 
             return ret
         } else {
@@ -315,8 +317,11 @@ ${output.join("\n")}
 
     @Override
     List<SdkFile> generate() {
+        def ret = []
         try {
-            return generateAction()
+            ret.addAll(generateAction())
+            ret.addAll(resolveEnumClass())
+            return ret
         } catch (Exception e) {
             logger.warn("failed to generate SDK for ${apiMessageClass.name}")
             throw e
