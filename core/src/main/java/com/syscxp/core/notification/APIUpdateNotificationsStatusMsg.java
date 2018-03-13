@@ -1,9 +1,7 @@
 package com.syscxp.core.notification;
 
-import org.springframework.http.HttpMethod;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.rest.RestRequest;
 
 import java.util.List;
 
@@ -12,11 +10,7 @@ import static java.util.Arrays.asList;
 /**
  * Created by xing5 on 2017/3/18.
  */
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIUpdateNotificationsStatusEvent.class
-)
+
 public class APIUpdateNotificationsStatusMsg extends APIMessage {
     @APIParam(nonempty = true)
     private List<String> uuids;

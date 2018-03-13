@@ -1,7 +1,6 @@
 package com.syscxp.header.managementnode;
 
 import com.syscxp.header.message.APIReply;
-import com.syscxp.header.rest.RestResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Map;
 /**
  * Created by Mei Lei <meilei007@gmail.com> on 11/1/16.
  */
-@RestResponse(fieldsTo = {"all"})
 public class APIGetCurrentTimeReply extends APIReply {
     private Map<String, Long> currentTime;
 

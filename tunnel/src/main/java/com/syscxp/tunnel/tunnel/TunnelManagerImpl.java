@@ -195,8 +195,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIRunDataForTunnelTypeMsg) msg);
         } else if (msg instanceof APIRunDataForTunnelZKMsg) {
             handle((APIRunDataForTunnelZKMsg) msg);
-        } else if (msg instanceof APIUpdateResourceUuidMsg) {
-            handle((APIUpdateResourceUuidMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -2607,101 +2605,56 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 数据迁移--跑 tunnelType
      */
     private void handle(APIRunDataForTunnelTypeMsg msg){
-        TunnelBase tunnelBase = new TunnelBase();
-        APIRunDataForTunnelTypeReply reply = new APIRunDataForTunnelTypeReply();
-
-        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
-                .notEq(TunnelVO_.type, TunnelType.CHINA1ABROAD)
-                .list();
-        for(TunnelVO tunnelVO : tunnelVOS){
-            String endpointUuidA = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag, "A")
-                    .select(TunnelSwitchPortVO_.endpointUuid)
-                    .findValue();
-            String endpointUuidZ = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                    .select(TunnelSwitchPortVO_.endpointUuid)
-                    .findValue();
-            EndpointVO evoA = dbf.findByUuid(endpointUuidA, EndpointVO.class);
-            EndpointVO evoZ = dbf.findByUuid(endpointUuidZ, EndpointVO.class);
-            NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
-            NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
-
-            TunnelType tunnelType = tunnelBase.getTunnelType(nvoA, nvoZ, null);
-
-            tunnelVO.setType(tunnelType);
-
-            dbf.updateAndRefresh(tunnelVO);
-        }
-
-        bus.reply(msg, reply);
+//        TunnelBase tunnelBase = new TunnelBase();
+//        APIRunDataForTunnelTypeReply reply = new APIRunDataForTunnelTypeReply();
+//
+//        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+//                .notEq(TunnelVO_.type, TunnelType.CHINA1ABROAD)
+//                .list();
+//        for(TunnelVO tunnelVO : tunnelVOS){
+//            String endpointUuidA = Q.New(TunnelSwitchPortVO.class)
+//                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
+//                    .eq(TunnelSwitchPortVO_.sortTag, "A")
+//                    .select(TunnelSwitchPortVO_.endpointUuid)
+//                    .findValue();
+//            String endpointUuidZ = Q.New(TunnelSwitchPortVO.class)
+//                    .eq(TunnelSwitchPortVO_.tunnelUuid, tunnelVO.getUuid())
+//                    .eq(TunnelSwitchPortVO_.sortTag, "Z")
+//                    .select(TunnelSwitchPortVO_.endpointUuid)
+//                    .findValue();
+//            EndpointVO evoA = dbf.findByUuid(endpointUuidA, EndpointVO.class);
+//            EndpointVO evoZ = dbf.findByUuid(endpointUuidZ, EndpointVO.class);
+//            NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+//            NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
+//
+//            TunnelType tunnelType = tunnelBase.getTunnelType(nvoA, nvoZ, null);
+//
+//            tunnelVO.setType(tunnelType);
+//
+//            dbf.updateAndRefresh(tunnelVO);
+//        }
+//
+//        bus.reply(msg, reply);
     }
 
     /**
      * 数据迁移--下发ZK
      */
     private void handle(APIRunDataForTunnelZKMsg msg){
-        APIRunDataForTunnelZKEvent evt = new APIRunDataForTunnelZKEvent(msg.getId());
-        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
-
-        List<String> uuids = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.state, TunnelState.Enabled)
-                .select(TunnelVO_.uuid)
-                .listValues();
-        for(String uuid : uuids){
-            taskBase.taskCreateTunnelZK(uuid);
-        }
-
-        bus.publish(evt);
-    }
-
-    /**
-     * 数据修正-修改资源UUID
-     * */
-    @Transactional
-    private void handle(APIUpdateResourceUuidMsg msg){
-//        APIUpdateResourceUuidReply reply = new APIUpdateResourceUuidReply();
-//        //修改最后一公里
-//        List<EdgeLineVO> edgeLineVOS = Q.New(EdgeLineVO.class).lt(EdgeLineVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).list();
-//        for (EdgeLineVO edgeLineVO : edgeLineVOS){
+//        APIRunDataForTunnelZKEvent evt = new APIRunDataForTunnelZKEvent(msg.getId());
+//        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
 //
-//            String uuid = Platform.getUuid();
-//            String sql = "update EdgeLineEO set uuid = :uuid where uuid = :olduuid";
-//            Query query = dbf.getEntityManager().createQuery(sql);
-//            query.setParameter("uuid",uuid);
-//            query.setParameter("olduuid",edgeLineVO.getUuid());
-//            query.executeUpdate();
+//        List<String> uuids = Q.New(TunnelVO.class)
+//                .eq(TunnelVO_.state, TunnelState.Enabled)
+//                .select(TunnelVO_.uuid)
+//                .listValues();
+//        for(String uuid : uuids){
+//            taskBase.taskCreateTunnelZK(uuid);
 //        }
 //
-//        //修改物理接口
-//        List<String> interfaceUuids = Q.New(InterfaceVO.class).lt(InterfaceVO_.createDate, Timestamp.valueOf("2018-03-03 11:11:11")).select(InterfaceVO_.uuid).listValues();
-//
-//        for(String sameUUid : interfaceUuids){
-//            String newInterfaceUuid = Platform.getUuid();
-//
-//            String sql1 = "update InterfaceEO set uuid = :newInterfaceUuid where uuid = :sameUUid";
-//            Query query = dbf.getEntityManager().createQuery(sql1);
-//            query.setParameter("newInterfaceUuid",newInterfaceUuid);
-//            query.setParameter("sameUUid",sameUUid);
-//            query.executeUpdate();
-//
-//            String sql2 = "update EdgeLineEO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
-//            Query query2 = dbf.getEntityManager().createQuery(sql2);
-//            query2.setParameter("newInterfaceUuid",newInterfaceUuid);
-//            query2.setParameter("sameUUid",sameUUid);
-//            query2.executeUpdate();
-//
-//            String sql3 = "update TunnelSwitchPortVO set interfaceUuid = :newInterfaceUuid where interfaceUuid = :sameUUid";
-//            Query query3 = dbf.getEntityManager().createQuery(sql3);
-//            query3.setParameter("newInterfaceUuid",newInterfaceUuid);
-//            query3.setParameter("sameUUid",sameUUid);
-//            query3.executeUpdate();
-//        }
-//
-//        bus.reply(msg, reply);
+//        bus.publish(evt);
     }
+
 
     /**************************************** The following clean the expired Products **************************************************/
 

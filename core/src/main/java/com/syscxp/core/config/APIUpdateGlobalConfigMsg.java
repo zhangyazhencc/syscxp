@@ -1,17 +1,10 @@
 package com.syscxp.core.config;
 
-import org.springframework.http.HttpMethod;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.rest.RestRequest;
 
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIUpdateGlobalConfigEvent.class
-)
 public class APIUpdateGlobalConfigMsg extends APIMessage {
     @APIParam
     private String category;

@@ -5,7 +5,6 @@ import com.syscxp.header.rest.RestResponse;
 
 import java.util.List;
 
-@RestResponse(allTo = "hostTypes")
 public class APIGetHostTypesReply extends APIReply {
     private List<String> hostTypes;
 

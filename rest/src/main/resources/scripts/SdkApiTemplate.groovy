@@ -26,6 +26,8 @@ class SdkApiTemplate implements SdkTemplate {
     Class apiMessageClass
     RestRequest requestAnnotation
 
+    Set<Class> enumClasses = []
+
     String resultClassName
     boolean isQueryApi
 
@@ -124,13 +126,14 @@ class SdkApiTemplate implements SdkTemplate {
 
             def fieldTypeName = f.getType().getName()
 
-            if (f.isEnumConstant()) {
+            if (Enum.class.isAssignableFrom(f.getType())) {
                 fieldTypeName = String.format("com.syscxp.sdk.%s",f.getType().getSimpleName())
+                enumClasses.add(f.getType())
             }
 
             def fs = """\
     @Param(${annotationFields.join(", ")})
-    public ${fieldTypeName} ${f.getName()}${{ ->
+    public ${fieldTypeName.toString()} ${f.getName()}${{ ->
                 f.accessible = true
                 
                 Object val = f.get(msg)
@@ -251,6 +254,25 @@ ${generateMethods(path)}
         return f
     }
 
+    def resolveEnumClass(Class clz) {
+
+        def output = []
+
+        for (Enum e : clz.getEnumConstants()) {
+            output.add("\t${e.name()},")
+        }
+
+        SdkFile file = new SdkFile()
+        file.fileName = "${clz.simpleName}.java"
+        file.content = """package com.syscxp.sdk;
+
+public enum ${getTargetClassName(clz)} {
+${output.join("\n")}
+}
+"""
+        return file
+    }
+
     def generateAction() {
         SDK sdk = apiMessageClass.getAnnotation(SDK.class)
         if (sdk != null && sdk.actionsMapping().length != 0) {
@@ -274,6 +296,11 @@ ${generateMethods(path)}
                 aname = StringUtils.capitalize(aname)
 
                 ret.add(generateAction("${aname}Action", restPath))
+            }
+            if (!enumClasses.isEmpty()) {
+                for (Class aClass: enumClasses){
+                    ret.add( resolveEnumClass(aClass))
+                }
             }
 
             return ret

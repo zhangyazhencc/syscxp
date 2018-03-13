@@ -1,9 +1,7 @@
 package com.syscxp.account.header.user;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse
 public class APIUserPhoneAuthenticationEvent extends APIEvent {
 
     private String phone;

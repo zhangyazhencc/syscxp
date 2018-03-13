@@ -1,7 +1,6 @@
 package com.syscxp.header.managementnode;
 
 import com.syscxp.header.query.APIQueryReply;
-import com.syscxp.header.rest.RestResponse;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -10,7 +9,6 @@ import static com.syscxp.utils.CollectionDSL.list;
 
 /**
  */
-@RestResponse(allTo = "inventories")
 public class APIQueryManagementNodeReply extends APIQueryReply {
     private List<ManagementNodeInventory> inventories;
 

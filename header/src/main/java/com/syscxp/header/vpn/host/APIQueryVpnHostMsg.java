@@ -7,11 +7,6 @@ import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import org.springframework.http.HttpMethod;
 
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIQueryVpnHostReply.class
-)
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_HOST, names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQueryVpnHostReply.class, inventoryClass = VpnHostInventory.class)
 public class APIQueryVpnHostMsg extends APIQueryHostMsg {

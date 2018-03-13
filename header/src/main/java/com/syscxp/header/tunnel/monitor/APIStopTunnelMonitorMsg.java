@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
@@ -24,5 +26,18 @@ public class APIStopTunnelMonitorMsg extends APIMessage {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Stop Tunnel Monitor")
+                        .resource(tunnelUuid, TunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

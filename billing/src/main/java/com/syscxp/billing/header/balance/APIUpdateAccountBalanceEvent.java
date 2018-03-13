@@ -2,9 +2,7 @@ package com.syscxp.billing.header.balance;
 
 import com.syscxp.header.billing.AccountBalanceInventory;
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APIUpdateAccountBalanceEvent extends APIEvent {
 
     private AccountBalanceInventory inventory;

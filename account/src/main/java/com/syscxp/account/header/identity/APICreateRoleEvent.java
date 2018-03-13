@@ -1,9 +1,7 @@
 package com.syscxp.account.header.identity;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APICreateRoleEvent extends APIEvent {
     private RoleInventory inventory;
 

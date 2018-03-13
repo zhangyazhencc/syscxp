@@ -7,11 +7,7 @@ import org.springframework.http.HttpMethod;
 /**
  * Created by xing5 on 2017/3/21.
  */
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIGetTaskProgressReply.class
-)
+
 public class APIGetTaskProgressMsg extends APISyncCallMessage {
     private String apiId;
     private boolean all;
