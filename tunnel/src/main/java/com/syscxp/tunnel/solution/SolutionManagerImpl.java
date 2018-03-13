@@ -200,6 +200,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         dbf.updateAndRefresh(solutionVO);
 
         APICreateShareSolutionEvent event = new APICreateShareSolutionEvent(msg.getId());
+
         bus.publish(event);
     }
 

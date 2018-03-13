@@ -1,10 +1,14 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.edgeLine.APICreateEdgeLineEvent;
+import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY)
 public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
@@ -47,5 +51,23 @@ public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
 
     public void setSwitchPortUuid(String switchPortUuid) {
         this.switchPortUuid = switchPortUuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateAliEdgeRouterConfigEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Create AliEdgeRouterConfigVO")
+                        .resource(uuid, AliEdgeRouterConfigVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

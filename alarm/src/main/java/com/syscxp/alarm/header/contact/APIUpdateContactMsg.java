@@ -2,8 +2,11 @@ package com.syscxp.alarm.header.contact;
 
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 import java.util.List;
 
@@ -85,5 +88,18 @@ public class APIUpdateContactMsg extends APIMessage {
 
     public void setEmailCaptcha(String emailCaptcha) {
         this.emailCaptcha = emailCaptcha;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update ContactVO")
+                        .resource(uuid, ContactVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
