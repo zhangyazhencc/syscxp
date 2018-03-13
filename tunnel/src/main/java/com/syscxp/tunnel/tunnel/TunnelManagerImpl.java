@@ -207,7 +207,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     /**
      * 自动创建物理接口
-     * 仅独享端口，无共享端口
      **/
     private void handle(APICreateInterfaceMsg msg) {
         APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
@@ -215,7 +214,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         String interfaceUuid = doCreateInterfaceVO(msg);
         InterfaceVO vo = dbf.findByUuid(interfaceUuid,InterfaceVO.class);
 
-        if(msg.getPortOfferingUuid().equals("SHARE")){
+        if(msg.getPortOfferingUuid().equals("SHARE") || msg.getPortOfferingUuid().equals("EXTENDPORT")){
             evt.setInventory(InterfaceInventory.valueOf(vo));
             bus.publish(evt);
         }else{
@@ -237,7 +236,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     /**
      * 手动创建物理接口
-     * 独享端口和共享端口
+     * 独享端口和共享端口和扩展端口
      **/
     private void handle(APICreateInterfaceManualMsg msg) {
         APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
@@ -249,7 +248,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         String interfaceUuid = doCreateInterfaceVOManual(msg);
         InterfaceVO vo = dbf.findByUuid(interfaceUuid,InterfaceVO.class);
 
-        if(portType.equals("SHARE")){
+        if(portType.equals("SHARE") || portType.equals("EXTENDPORT")){
             evt.setInventory(InterfaceInventory.valueOf(vo));
             bus.publish(evt);
         }else{
@@ -295,6 +294,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setDuration(1);
             vo.setProductChargeModel(ProductChargeModel.BY_MONTH);
             vo.setState(InterfaceState.Up);
+        }else if(msg.getPortOfferingUuid().equals("EXTENDPORT")){
+            vo.setAccountUuid(msg.getAccountUuid());
+            vo.setDuration(1);
+            vo.setProductChargeModel(ProductChargeModel.BY_MONTH);
+            vo.setState(InterfaceState.Down);
         }else{
             vo.setAccountUuid(null);
             vo.setDuration(msg.getDuration());
@@ -328,6 +332,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setDuration(1);
             vo.setProductChargeModel(ProductChargeModel.BY_MONTH);
             vo.setState(InterfaceState.Up);
+        }else if(portType.equals("EXTENDPORT")){
+            vo.setAccountUuid(msg.getAccountUuid());
+            vo.setType(NetworkType.TRUNK);
+            vo.setDuration(1);
+            vo.setProductChargeModel(ProductChargeModel.BY_MONTH);
+            vo.setState(InterfaceState.Down);
         }else{
             vo.setAccountUuid(null);
             vo.setType(msg.getNetworkType());
@@ -516,7 +526,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).find();
 
-        if(portType.equals("SHARE")){
+        if(portType.equals("SHARE") || portType.equals("EXTENDPORT")){
             dbf.remove(vo);
             bus.publish(evt);
         }else{
@@ -569,7 +579,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      **/
     private void handle(APIUpdateInterfacePortMsg msg) {
         TunnelBase tunnelBase = new TunnelBase();
-        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
         InterfaceVO iface = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         logger.info(String.format("before update InterfaceVO: [%s]", iface));
 
@@ -642,8 +651,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         final TunnelSwitchPortVO remoteTunnelSwitchPortVO = remoteTunnelSwitchPort;
         final PhysicalSwitchVO physicalSwitchVO = physicalSwitch;
-
-        Map<String, Object> rollback = new HashMap<>();
 
         APIUpdateInterfacePortEvent evt = new APIUpdateInterfacePortEvent(msg.getId());
         FlowChain updateInterface = FlowChainBuilder.newSimpleFlowChain();
@@ -2324,7 +2331,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      */
     private void handle(APIGetInterfacePriceMsg msg) {
 
-        if(msg.getPortOfferingUuid().equals("SHARE")){
+        if(msg.getPortOfferingUuid().equals("SHARE") || msg.getPortOfferingUuid().equals("EXTENDPORT")){
             APIGetProductPriceReply reply = new APIGetProductPriceReply();
             reply.setOriginalPrice(BigDecimal.ZERO);
             reply.setDiscountPrice(BigDecimal.ZERO);
@@ -2349,7 +2356,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelBase tunnelBase = new TunnelBase();
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
-        if(tunnelBase.isShareForInterface(vo.getUuid())){
+        if(tunnelBase.isFreeForInterface(vo.getUuid())){
             APIGetUnscribeProductPriceDiffReply reply = new APIGetUnscribeProductPriceDiffReply();
             reply.setInventory(BigDecimal.ZERO);
             reply.setReFoundMoney(BigDecimal.ZERO);
