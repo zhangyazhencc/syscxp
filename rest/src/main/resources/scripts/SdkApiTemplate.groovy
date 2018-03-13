@@ -128,7 +128,9 @@ class SdkApiTemplate implements SdkTemplate {
 
             if (Enum.class.isAssignableFrom(f.getType())) {
                 fieldTypeName = String.format("com.syscxp.sdk.%s",f.getType().getSimpleName())
-                enumClasses.add(f.getType())
+                if (!enumClasses.contains(f.getType())) {
+                    enumClasses.add(f.getType())
+                }
             }
 
             def fs = """\
