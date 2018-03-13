@@ -254,24 +254,28 @@ ${generateMethods(path)}
         return f
     }
 
-    def resolveEnumClass(Class clz) {
+    def resolveEnumClass() {
+        def ret = []
+        if (!enumClasses.isEmpty()) {
+            for (Class clz:enumClasses) {
+                def output = []
 
-        def output = []
+                for (Enum e : clz.getEnumConstants()) {
+                    output.add("\t${e.name()},")
+                }
 
-        for (Enum e : clz.getEnumConstants()) {
-            output.add("\t${e.name()},")
-        }
-
-        SdkFile file = new SdkFile()
-        file.fileName = "${clz.getSimpleName()}.java"
-        file.content = """package com.syscxp.sdk;
+                SdkFile file = new SdkFile()
+                file.fileName = "${clz.getSimpleName()}.java"
+                file.content = """package com.syscxp.sdk;
 
 public enum ${clz.getSimpleName()} {
 ${output.join("\n")}
 }
 """
-        enumClasses.remove(clz)
-        return file
+                ret.add(file)
+            }
+        }
+        return ret
     }
 
     def generateAction() {
@@ -298,11 +302,6 @@ ${output.join("\n")}
 
                 ret.add(generateAction("${aname}Action", restPath))
             }
-            if (!enumClasses.isEmpty()) {
-                for (Class aClass: enumClasses){
-                    ret.add( resolveEnumClass(aClass))
-                }
-            }
 
             return ret
         } else {
@@ -316,8 +315,11 @@ ${output.join("\n")}
 
     @Override
     List<SdkFile> generate() {
+        def ret = []
         try {
-            return generateAction()
+            ret.addAll(generateAction())
+            ret.addAll(resolveEnumClass())
+            return ret
         } catch (Exception e) {
             logger.warn("failed to generate SDK for ${apiMessageClass.name}")
             throw e
