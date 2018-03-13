@@ -23,6 +23,7 @@ import java.util.List;
 public class EdgeLineInventory {
 
     private String uuid;
+    private Long number;
     private String accountUuid;
     private String interfaceUuid;
     private String interfaceName;
@@ -41,6 +42,7 @@ public class EdgeLineInventory {
     public static EdgeLineInventory valueOf(EdgeLineVO vo){
         EdgeLineInventory inv = new EdgeLineInventory();
         inv.setUuid(vo.getUuid());
+        inv.setNumber(vo.getNumber());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setInterfaceUuid(vo.getInterfaceUuid());
         inv.setInterfaceName(vo.getInterfaceVO().getName());
@@ -189,5 +191,13 @@ public class EdgeLineInventory {
 
     public void setExpired(boolean expired) {
         this.expired = expired;
+    }
+
+    public Long getNumber() {
+        return number;
+    }
+
+    public void setNumber(Long number) {
+        this.number = number;
     }
 }

@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(InterfaceAO.class)
 public class InterfaceAO_ {
     public static volatile SingularAttribute<InterfaceAO, String> uuid;
+    public static volatile SingularAttribute<InterfaceAO, Long> number;
     public static volatile SingularAttribute<InterfaceAO, String> accountUuid;
     public static volatile SingularAttribute<InterfaceAO, String> ownerAccountUuid;
     public static volatile SingularAttribute<InterfaceAO, String> name;
