@@ -146,14 +146,15 @@ public class OpenTSDBCommands {
 
     public static class CustomCondition {
         private String nodeUuid;
+        private String endpointUuid;
         private Map<String,Tags> tags;
 
-        public String getNodeUuid() {
-            return nodeUuid;
+        public String getEndpointUuid() {
+            return endpointUuid;
         }
 
-        public void setNodeUuid(String nodeUuid) {
-            this.nodeUuid = nodeUuid;
+        public void setEndpointUuid(String endpointUuid) {
+            this.endpointUuid = endpointUuid;
         }
 
         public Map<String, Tags> getTags() {
@@ -162,6 +163,14 @@ public class OpenTSDBCommands {
 
         public void setTags(Map<String, Tags> tags) {
             this.tags = tags;
+        }
+
+        public String getNodeUuid() {
+            return nodeUuid;
+        }
+
+        public void setNodeUuid(String nodeUuid) {
+            this.nodeUuid = nodeUuid;
         }
     }
 

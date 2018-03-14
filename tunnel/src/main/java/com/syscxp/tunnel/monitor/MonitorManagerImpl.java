@@ -39,7 +39,6 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -51,7 +50,6 @@ import org.springframework.web.client.AsyncRestTemplate;
 
 import java.net.UnknownHostException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -1244,7 +1242,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 //                if (physicalSwitchVOS.isEmpty())
 //                    throw new IllegalArgumentException(String.format("Fail to get physical switch by mIP %s", mIP));
 //
-//                result.setNodeUuid(physicalSwitchVOS.get(0).getNodeUuid());
+//                result.setEndpointUuid(physicalSwitchVOS.get(0).getEndpointUuid());
 //            }
 //        }
 //
@@ -1330,6 +1328,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 tunnelCondition.setTags(map);
 
                 tunnelCondition.setNodeUuid(tunnelPort.getEndpointVO().getNodeVO().getUuid());
+                tunnelCondition.setEndpointUuid(tunnelPort.getEndpointVO().getUuid());
 
                 conditions.add(tunnelCondition);
             }
