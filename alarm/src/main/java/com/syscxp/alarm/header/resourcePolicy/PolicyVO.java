@@ -4,7 +4,6 @@ import com.syscxp.alarm.header.BaseVO;
 import com.syscxp.header.billing.ProductType;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.Set;
 
 @Table

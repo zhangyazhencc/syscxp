@@ -2,8 +2,10 @@ package com.syscxp.sdk;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import okhttp3.*;
-import org.apache.commons.codec.binary.StringUtils;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,7 +14,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -297,7 +298,7 @@ public class ZSClient {
 
         private Map<String, String[]> getCommonParamMap() {
             Map<String, String[]> vars = new HashMap<>();
-            if (!action.Action.isEmpty()) {
+            if (action.Action != null && !action.Action.isEmpty()) {
                 vars.put(Constants.ACTION, s(action.Action));
             } else {
                 vars.put(Constants.ACTION, s(action.getActionName("Action")));
