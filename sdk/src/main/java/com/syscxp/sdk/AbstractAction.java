@@ -18,6 +18,8 @@ public abstract class AbstractAction {
     @Param(emptyString = false)
     public String SecretId;
     public String Action;
+    public String Timestamp;
+    public String Nonce;
     public String SignatureMethod = "";
 
 
