@@ -6,7 +6,7 @@ import com.syscxp.header.rest.RestResponse;
 /**
  * Create by DCY on 2017/12/11
  */
-@RestResponse(fieldsTo = {"all"})
+@RestResponse(superclassFieldsTo = {"all"})
 public class APIGetRenewTunnelPriceReply extends APIGetRenewProductPriceReply {
     public APIGetRenewTunnelPriceReply(){}
 

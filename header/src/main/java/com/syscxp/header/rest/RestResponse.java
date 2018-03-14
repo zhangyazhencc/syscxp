@@ -13,4 +13,5 @@ import java.lang.annotation.Target;
 public @interface RestResponse {
     String allTo() default "";
     String[] fieldsTo() default {};
+    String[] superclassFieldsTo() default {};
 }

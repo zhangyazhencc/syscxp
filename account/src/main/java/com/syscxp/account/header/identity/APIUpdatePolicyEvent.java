@@ -1,7 +1,6 @@
 package com.syscxp.account.header.identity;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
 public class APIUpdatePolicyEvent extends APIEvent {
     private PolicyInventory inventory;
