@@ -301,6 +301,8 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["billing:.*:read"],"effect":"Allow"}'),
 ('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["billing:.*"],"effect":"Allow"}'),
 ('BillingPriceFullAccess','管理费用中心价格的权限','billing','SystemAdmin','2','{"actions":["billing:price:.*"],"effect":"Allow"}'),
+('BillingRecharge','现金充值权限','billing','Normal','10','{"actions":["billing:recharge:.*"],"effect":"Allow"}'),
+('BillingPresent','赠送金额充值权限','billing','SystemAdmin','11','{"actions":["billing:present:.*"],"effect":"Allow"}'),
 
 
 ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:.*:read"],"effect":"Allow"}'),
