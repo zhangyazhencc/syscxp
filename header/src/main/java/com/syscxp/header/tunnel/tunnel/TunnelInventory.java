@@ -21,6 +21,7 @@ import java.util.*;
 public class TunnelInventory {
 
     private String uuid;
+    private Long number;
     private String accountUuid;
     private String ownerAccountUuid;
     private Integer vsi;
@@ -47,6 +48,7 @@ public class TunnelInventory {
     public static TunnelInventory valueOf(TunnelVO vo){
         TunnelInventory inv = new TunnelInventory();
         inv.setUuid(vo.getUuid());
+        inv.setNumber(vo.getNumber());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setVsi(vo.getVsi());
@@ -267,5 +269,13 @@ public class TunnelInventory {
 
     public void setExpired(boolean expired) {
         this.expired = expired;
+    }
+
+    public Long getNumber() {
+        return number;
+    }
+
+    public void setNumber(Long number) {
+        this.number = number;
     }
 }

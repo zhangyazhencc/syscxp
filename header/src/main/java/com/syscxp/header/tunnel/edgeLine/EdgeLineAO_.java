@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(EdgeLineAO.class)
 public class EdgeLineAO_ {
     public static volatile SingularAttribute<EdgeLineAO, String> uuid;
+    public static volatile SingularAttribute<EdgeLineAO, Long> number;
     public static volatile SingularAttribute<EdgeLineAO, String> accountUuid;
     public static volatile SingularAttribute<EdgeLineAO, String> interfaceUuid;
     public static volatile SingularAttribute<EdgeLineAO, String> endpointUuid;

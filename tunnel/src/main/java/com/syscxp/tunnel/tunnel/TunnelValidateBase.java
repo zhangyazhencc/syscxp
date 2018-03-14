@@ -80,6 +80,13 @@ public class TunnelValidateBase {
                 throw new ApiMessageInterceptionException(
                         argerr("The type or Interface must be different！"));
             }
+        }else{
+            String oldPortType = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).select(SwitchPortVO_.portType).findValue();
+            String portType = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid()).select(SwitchPortVO_.portType).findValue();
+            if(!oldPortType.equals(portType)){
+                throw new ApiMessageInterceptionException(
+                        argerr("不支持修改为不同端口类型的端口！"));
+            }
         }
     }
 

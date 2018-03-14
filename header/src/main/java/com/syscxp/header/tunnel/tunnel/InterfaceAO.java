@@ -17,6 +17,10 @@ public class InterfaceAO {
     @Column
     private String uuid;
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
+    private long number;
+
     @Column
     private String accountUuid;
 
@@ -186,5 +190,13 @@ public class InterfaceAO {
 
     public void setOwnerAccountUuid(String ownerAccountUuid) {
         this.ownerAccountUuid = ownerAccountUuid;
+    }
+
+    public long getNumber() {
+        return number;
+    }
+
+    public void setNumber(long number) {
+        this.number = number;
     }
 }
