@@ -30,5 +30,6 @@ public enum TaskType {
     UpdateL3EndpointIP,
     UpdateL3EndpointBandwidth,
     AddL3EndpointRoutes,
-    DeleteL3EndpointRoutes
+    DeleteL3EndpointRoutes,
+    RollBackCreateL3Endpoint
 }

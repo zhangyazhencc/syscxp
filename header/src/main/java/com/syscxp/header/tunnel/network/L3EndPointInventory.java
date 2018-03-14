@@ -17,6 +17,7 @@ public class L3EndPointInventory {
     private String bandwidthOffering;
     private Long bandwidth;
     private String routeType;
+    private String state;
     private String status;
     private Integer maxRouteNum;
     private String localIP;
@@ -42,6 +43,7 @@ public class L3EndPointInventory {
         inv.setBandwidthOffering(vo.getBandwidthOffering());
         inv.setBandwidth(vo.getBandwidth());
         inv.setRouteType(vo.getRouteType());
+        inv.setState(vo.getState().toString());
         inv.setStatus(vo.getStatus().toString());
         inv.setMaxRouteNum(vo.getMaxRouteNum());
         inv.setLocalIP(vo.getLocalIP());
@@ -236,5 +238,13 @@ public class L3EndPointInventory {
 
     public void setL3Rts(List<L3RtInventory> l3Rts) {
         this.l3Rts = l3Rts;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

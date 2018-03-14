@@ -28,6 +28,7 @@ CREATE TABLE `L3EndPointVO` (
   `bandwidthOffering` VARCHAR(32) NOT NULL COMMENT '带宽规格',
   `bandwidth` BIGINT NOT NULL COMMENT '带宽',
   `routeType` varchar(32) NOT NULL DEFAULT 'STATIC' COMMENT '路由类型',
+  `state` varchar(32) NOT NULL COMMENT '状况',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '状态',
   `maxRouteNum` INT(11) NOT NULL COMMENT '改点允许最大路由数量',
   `localIP` varchar(128) DEFAULT NULL COMMENT '犀思云端 ip',

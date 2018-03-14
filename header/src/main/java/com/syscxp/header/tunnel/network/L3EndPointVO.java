@@ -36,6 +36,10 @@ public class L3EndPointVO {
 
     @Column
     @Enumerated(EnumType.STRING)
+    private L3EndpointState state;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private L3EndpointStatus status;
 
     @Column
@@ -254,5 +258,13 @@ public class L3EndPointVO {
 
     public void setL3RtVOS(List<L3RtVO> l3RtVOS) {
         this.l3RtVOS = l3RtVOS;
+    }
+
+    public L3EndpointState getState() {
+        return state;
+    }
+
+    public void setState(L3EndpointState state) {
+        this.state = state;
     }
 }

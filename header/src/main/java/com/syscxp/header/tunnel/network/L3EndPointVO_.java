@@ -13,6 +13,7 @@ public class L3EndPointVO_ {
     public static volatile SingularAttribute<L3EndPointVO,String> bandwidthOffering;
     public static volatile SingularAttribute<L3EndPointVO,Long> bandwidth;
     public static volatile SingularAttribute<L3EndPointVO,String> routeType;
+    public static volatile SingularAttribute<L3EndPointVO,L3EndpointState> state;
     public static volatile SingularAttribute<L3EndPointVO,L3EndpointStatus> status;
     public static volatile SingularAttribute<L3EndPointVO,Integer> maxRouteNum;
     public static volatile SingularAttribute<L3EndPointVO,String> localIP;

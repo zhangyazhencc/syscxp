@@ -10,6 +10,8 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.job.JobQueueEntryVO;
+import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -28,6 +30,7 @@ import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 import com.syscxp.header.tunnel.tunnel.TaskResourceVO;
 import com.syscxp.header.tunnel.tunnel.TaskType;
+import com.syscxp.tunnel.network.job.CreateL3EndpointRollBackJob;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -178,7 +181,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setBandwidthOffering(msg.getBandwidthOfferingUuid());
         vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
         vo.setRouteType("STATIC");
-        vo.setStatus(L3EndpointStatus.Ready);
+        vo.setState(L3EndpointState.Disabled);
+        vo.setStatus(L3EndpointStatus.Disconnected);
         vo.setMaxRouteNum(CoreGlobalProperty.L3_MAX_ROUTENUM);
         vo.setLocalIP(null);
         vo.setRemoteIp(null);
@@ -207,7 +211,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         String l3EndpointUuid = doUpdateL3EndpointIP(msg);
         L3EndPointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndPointVO.class);
 
-        afterUpdateL3EndpointIP(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
+        afterUpdateL3EndpointIP(vo, msg, new ReturnValueCompletion<L3EndPointInventory>(null) {
 
             @Override
             public void success(L3EndPointInventory inv) {
@@ -227,9 +231,11 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
     @Transactional
     private String doUpdateL3EndpointIP(APIUpdateL3EndpointIPMsg msg){
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+
         vo.setRemoteIp(msg.getRemoteIp());
         vo.setLocalIP(msg.getLocalIP());
         vo.setNetmask(msg.getNetmask());
+
         dbf.getEntityManager().merge(vo);
 
         if(Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndPointUuid, msg.getUuid()).isExists()){
@@ -243,10 +249,27 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         return msg.getUuid();
     }
 
-    private void afterUpdateL3EndpointIP(L3EndPointVO vo, ReturnValueCompletion<L3EndPointInventory> completion){
+    private void afterUpdateL3EndpointIP(L3EndPointVO vo, APIUpdateL3EndpointIPMsg msg, ReturnValueCompletion<L3EndPointInventory> completion){
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
-        if(vo.getStatus() == L3EndpointStatus.Ready){
+        if(vo.getState() == L3EndpointState.Disabled){
+
+            //修改状况
+            vo.setState(L3EndpointState.Deploying);
+            vo.setStatus(L3EndpointStatus.Disconnected);
+            dbf.updateAndRefresh(vo);
+
+            if(l3NetworkBase.isFirstSetEndpointIP(vo)){
+
+            }else{
+                if(l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())){
+
+                }else{
+                    jobf.removeJob(vo.getUuid(), CreateL3EndpointRollBackJob.class);
+                }
+            }
+
+
             //创建任务
             TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.CreateL3Endpoint);
 
@@ -295,7 +318,6 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         APIUpdateL3EndpointBandwidthEvent evt = new APIUpdateL3EndpointBandwidthEvent(msg.getId());
 
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
-        String oldBandwidthOfferingUuid = vo.getBandwidthOffering();
 
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
@@ -323,7 +345,6 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             UpdateL3EndpointBandwidthMsg updateL3EndpointBandwidthMsg = new UpdateL3EndpointBandwidthMsg();
             updateL3EndpointBandwidthMsg.setL3EndpointUuid(vo.getUuid());
             updateL3EndpointBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-            updateL3EndpointBandwidthMsg.setOldBandwidthOfferingUuid(oldBandwidthOfferingUuid);
 
             bus.makeLocalServiceId(updateL3EndpointBandwidthMsg, L3NetWorkConstant.SERVICE_ID);
             bus.send(updateL3EndpointBandwidthMsg, new CloudBusCallBack(null) {
@@ -351,7 +372,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
 
-        //判断是否需要下发
+
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
         if(l3NetworkBase.isControllerReady(vo)){

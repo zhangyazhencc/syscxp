@@ -10,8 +10,6 @@ public class UpdateL3EndpointBandwidthMsg extends NeedReplyMessage {
 
     private String taskUuid;
 
-    private String oldBandwidthOfferingUuid;
-
     public String getL3EndpointUuid() {
         return l3EndpointUuid;
     }
@@ -28,11 +26,5 @@ public class UpdateL3EndpointBandwidthMsg extends NeedReplyMessage {
         this.taskUuid = taskUuid;
     }
 
-    public String getOldBandwidthOfferingUuid() {
-        return oldBandwidthOfferingUuid;
-    }
 
-    public void setOldBandwidthOfferingUuid(String oldBandwidthOfferingUuid) {
-        this.oldBandwidthOfferingUuid = oldBandwidthOfferingUuid;
-    }
 }

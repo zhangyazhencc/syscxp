@@ -190,12 +190,6 @@ public class L3NetworkControllerBase {
             public void fail(ErrorCode errorCode) {
                 logger.info("下发修改L3带宽失败！");
 
-                //修改连接点状态，把带宽改回来
-                BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getOldBandwidthOfferingUuid(), BandwidthOfferingVO.class);
-                l3EndPointVO.setBandwidthOffering(msg.getOldBandwidthOfferingUuid());
-                l3EndPointVO.setBandwidth(bandwidthOfferingVO.getBandwidth());
-                dbf.updateAndRefresh(l3EndPointVO);
-
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
                 taskResourceVO.setBody(command);

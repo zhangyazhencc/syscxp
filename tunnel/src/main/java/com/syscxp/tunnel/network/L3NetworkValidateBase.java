@@ -3,10 +3,13 @@ package com.syscxp.tunnel.network;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.job.JobQueueEntryVO;
+import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.tunnel.network.*;
+import com.syscxp.tunnel.network.job.CreateL3EndpointRollBackJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -73,8 +76,27 @@ public class L3NetworkValidateBase {
     }
 
     public void validate(APIUpdateL3EndpointIPMsg msg){
+        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
 
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
+        if(vo.getState() == L3EndpointState.Disabled){
+            if(!l3NetworkBase.isFirstSetEndpointIP(vo)){
+                if(l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())) {
+                    if (Q.New(JobQueueEntryVO.class)
+                            .eq(JobQueueEntryVO_.resourceUuid, vo.getUuid())
+                            .eq(JobQueueEntryVO_.name, CreateL3EndpointRollBackJob.class.getName())
+                            .eq(JobQueueEntryVO_.restartable, true)
+                            .isExists()) {
+                        throw new ApiMessageInterceptionException(argerr("该连接点有回滚任务尚未完成，稍后再试！"));
+                    }
+                }
+            }
+        }else{
+            if(!l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())){
+                throw new ApiMessageInterceptionException(argerr("该连接点互联IP没有改变，勿重复操作！"));
+            }
+        }
     }
 
     public void validate(APIUpdateL3EndpointBandwidthMsg msg){
@@ -100,7 +122,6 @@ public class L3NetworkValidateBase {
     }
 
     public void validate(APICreateL3RouteMsg msg){
-        L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
         //目标网段不可重复添加
         if(Q.New(L3RouteVO.class)
@@ -123,10 +144,12 @@ public class L3NetworkValidateBase {
                     argerr("该连接点下路由条目已达上限."));
         }
 
-        //设置路由必须先设置互联IP
-        if(!l3NetworkBase.isControllerReady(l3EndPointVO)){
+        if(l3EndPointVO.getState() == L3EndpointState.Disabled){
             throw new ApiMessageInterceptionException(
-                    argerr("设置路由必须先设置互联IP."));
+                    argerr("设置路由必须先设置互联IP并成功开启."));
+        }else if(l3EndPointVO.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(
+                    argerr("该连接点有未完成下发任务，不可操作."));
         }
 
     }
