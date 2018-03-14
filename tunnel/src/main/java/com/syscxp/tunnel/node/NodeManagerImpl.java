@@ -322,7 +322,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         }
 
-        query.addCriteria(Criteria.where("status").is("open"));
+        query.addCriteria(Criteria.where("status").in("open","Open"));
 
         Long count = mongoTemplate.count(query,"nodeExtensionInfo");
 
