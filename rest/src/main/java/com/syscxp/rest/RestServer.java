@@ -957,6 +957,11 @@ public class RestServer implements Component, CloudBusEventListener {
                 return new String[0];
             }
 
+            @Override
+            public String[] superclassFieldsTo() {
+                return new String[0];
+            }
+
         }, APIEvent.class));
 
         if (errorApiList.size() > 0) {
