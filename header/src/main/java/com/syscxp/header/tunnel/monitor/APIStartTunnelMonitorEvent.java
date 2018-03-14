@@ -4,8 +4,6 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 import com.syscxp.header.tunnel.tunnel.TunnelInventory;
 
-import java.util.List;
-
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
