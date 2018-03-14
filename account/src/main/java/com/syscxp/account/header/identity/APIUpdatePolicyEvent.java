@@ -3,7 +3,6 @@ package com.syscxp.account.header.identity;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APIUpdatePolicyEvent extends APIEvent {
     private PolicyInventory inventory;
 

@@ -1,7 +1,5 @@
 package com.syscxp.header.message;
 
-import java.util.ArrayList;
-
 public class APICreateMessage extends APIMessage {
     /**
      * @desc resource uuid which must be of version 4(random) with dash stripped. For example,
@@ -10,13 +8,6 @@ public class APICreateMessage extends APIMessage {
      * is raised if the uuid conflicted with any existing resource uuid
      */
     private String resourceUuid;
-
-    public void addSystemTag(String tag) {
-        if (systemTags == null) {
-            systemTags = new ArrayList<String>();
-        }
-        systemTags.add(tag);
-    }
 
     public String getResourceUuid() {
         return resourceUuid;

@@ -8,11 +8,7 @@ import org.springframework.http.HttpMethod;
 /**
  * Created by xing5 on 2017/5/7.
  */
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APICreateWebhookEvent.class
-)
+
 public class APICreateWebhookMsg extends APICreateMessage {
     @APIParam(maxLength = 255)
     private String name;

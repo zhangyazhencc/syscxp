@@ -1,10 +1,14 @@
 package com.syscxp.header.tunnel.node;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.endpoint.APICreateEndpointEvent;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 
 /**
  * Created by DCY on 8/21/17.
@@ -149,5 +153,22 @@ public class APICreateNodeMsg extends APIMessage {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateNodeEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create NodeVO")
+                        .resource(uuid, NodeVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

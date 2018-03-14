@@ -12,11 +12,6 @@ import static java.util.Arrays.asList;
 /**
  */
 @AutoQuery(replyClass = APIQueryManagementNodeReply.class, inventoryClass = ManagementNodeInventory.class)
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIQueryManagementNodeReply.class
-)
 public class APIQueryManagementNodeMsg extends APIQueryMessage {
 
     public static List<String> __example__() {

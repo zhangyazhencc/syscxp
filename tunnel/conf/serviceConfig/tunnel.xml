@@ -194,8 +194,5 @@
         <name>com.syscxp.header.tunnel.tunnel.APIRunDataForTunnelZKMsg</name>
     </message>
 
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateResourceUuidMsg</name>
-    </message>
 
 </service>

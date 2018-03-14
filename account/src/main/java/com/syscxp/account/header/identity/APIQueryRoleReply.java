@@ -1,7 +1,6 @@
 package com.syscxp.account.header.identity;
 
 import com.syscxp.header.query.APIQueryReply;
-import com.syscxp.header.rest.RestResponse;
 
 import java.util.List;
 
@@ -10,7 +9,6 @@ import static com.syscxp.utils.CollectionDSL.list;
 /**
  * Created by frank on 7/14/2015.
  */
-@RestResponse(allTo = "inventories")
 public class APIQueryRoleReply extends APIQueryReply {
     private List<RoleInventory> inventories;
 

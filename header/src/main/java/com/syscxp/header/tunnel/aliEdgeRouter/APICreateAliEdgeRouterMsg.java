@@ -2,8 +2,10 @@ package com.syscxp.header.tunnel.aliEdgeRouter;
 
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
@@ -73,6 +75,24 @@ public class APICreateAliEdgeRouterMsg extends APIMessage{
 
     public void setVlan(Integer vlan) {
         this.vlan = vlan;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateAliEdgeRouterEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Create AliEdgeRouterVO")
+                        .resource(uuid, AliEdgeRouterVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 
 }

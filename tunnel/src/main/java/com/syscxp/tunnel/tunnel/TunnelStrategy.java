@@ -36,13 +36,13 @@ public class TunnelStrategy  {
     //策略分配端口
     public String getSwitchPortByStrategy(String accountUuid, String endpointUuid , String portOfferingUuid){
         String switchPortUuid = null;
-        if(portOfferingUuid.equals("SHARE")){        //共享端口
+        if(portOfferingUuid.equals("SHARE") || portOfferingUuid.equals("EXTENDPORT")){        //共享端口-扩展端口
             //判断该用户在该连接点下是否已经购买共享口
             String sql = "select a from InterfaceVO a,SwitchPortVO b " +
                     "where a.switchPortUuid = b.uuid " +
                     "and a.accountUuid = :accountUuid " +
                     "and a.endpointUuid = :endpointUuid " +
-                    "and b.portType = 'SHARE'";
+                    "and b.portType in ('SHARE','EXTENDPORT')";
             TypedQuery<InterfaceVO> itq = dbf.getEntityManager().createQuery(sql, InterfaceVO.class);
             itq.setParameter("accountUuid",accountUuid);
             itq.setParameter("endpointUuid",endpointUuid);

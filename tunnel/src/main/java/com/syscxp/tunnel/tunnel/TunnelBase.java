@@ -355,16 +355,37 @@ public class TunnelBase {
         if(interfaceUuid == null){
             isShare =  true;
         }else{
-            InterfaceVO interfaceVO = dbf.findByUuid(interfaceUuid,InterfaceVO.class);
-            String portType = Q.New(SwitchPortVO.class)
-                    .eq(SwitchPortVO_.uuid, interfaceVO.getSwitchPortUuid())
-                    .select(SwitchPortVO_.portType).find();
+            String portType = getPortTypeByInterface(interfaceUuid);
             if(portType.equals("SHARE")){
                 isShare =  true;
             }
         }
 
         return isShare;
+    }
+
+    /**
+     * 根据接口获得端口类型
+     * */
+    public String getPortTypeByInterface(String interfaceUuid){
+        InterfaceVO interfaceVO = dbf.findByUuid(interfaceUuid,InterfaceVO.class);
+        return  Q.New(SwitchPortVO.class)
+                .eq(SwitchPortVO_.uuid, interfaceVO.getSwitchPortUuid())
+                .select(SwitchPortVO_.portType).findValue();
+    }
+
+    /**
+     * 判断该物理接口是否收费
+     * */
+    public boolean isFreeForInterface(String interfaceUuid){
+        boolean isFree = false;
+
+        String portType = getPortTypeByInterface(interfaceUuid);
+        if(portType.equals("SHARE") || portType.equals("EXTENDPORT")){
+            isFree =  true;
+        }
+
+        return isFree;
     }
 
     /**
@@ -421,13 +442,14 @@ public class TunnelBase {
 
         String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
                 "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
-                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state and (sp.portType=:portType " +
+                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state and (sp.portType=:portType1 or sp.portType=:portType2 " +
                 "or sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid))) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("switchState", SwitchState.Enabled)
                 .param("endpointUuid", endpointUuid)
-                .param("portType", "SHARE")
+                .param("portType1", "SHARE")
+                .param("portType2", "EXTENDPORT")
                 .list();
     }
 
@@ -438,7 +460,7 @@ public class TunnelBase {
         String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
                 "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
                 "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid ";
-        if ("SHARE".equals(type)){
+        if ("SHARE".equals(type) || "EXTENDPORT".equals(type)){
             sql = sql + "AND i.accountUuid = :accountUuid ";
         }
         sql = sql + ") ";
@@ -451,7 +473,7 @@ public class TunnelBase {
                 .offset(start != null ? start : 0)
                 .limit(limit != null ? limit : 20);
 
-        if ("SHARE".equals(type)){
+        if ("SHARE".equals(type) || "EXTENDPORT".equals(type)){
             q.param("accountUuid", accountUuid);
         }
         return  q.list();

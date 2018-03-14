@@ -1,10 +1,8 @@
 package com.syscxp.header.host;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
 
-@RestResponse(allTo = "inventory")
 public class APIAddHostEvent extends APIEvent {
     /**
      * @desc see :ref:`HostInventory`

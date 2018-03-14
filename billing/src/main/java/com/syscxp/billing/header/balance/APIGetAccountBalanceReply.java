@@ -3,9 +3,7 @@ package com.syscxp.billing.header.balance;
 
 import com.syscxp.header.billing.AccountBalanceInventory;
 import com.syscxp.header.message.APIReply;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APIGetAccountBalanceReply extends APIReply {
 
     private AccountBalanceInventory inventory;

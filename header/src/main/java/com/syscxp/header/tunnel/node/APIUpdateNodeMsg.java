@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.node;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -161,5 +163,18 @@ public class APIUpdateNodeMsg extends APIMessage {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update NodeVO")
+                        .resource(uuid, NodeVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

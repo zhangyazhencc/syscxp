@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-11
  */
-@RestResponse(fieldsTo = {"inventories"})
+@RestResponse(allTo = "inventories")
 public class APIGetInterfaceTypeReply extends APIReply {
     private List<PortOfferingInventory> inventories;
 

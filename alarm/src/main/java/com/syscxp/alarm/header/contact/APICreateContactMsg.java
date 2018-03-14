@@ -1,11 +1,13 @@
 package com.syscxp.alarm.header.contact;
 
 import com.syscxp.header.alarm.AlarmConstant;
-import com.syscxp.header.core.validation.Validation;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 import java.util.List;
 
@@ -91,5 +93,23 @@ public class APICreateContactMsg extends APIMessage{
 
     public void setEmailCaptcha(String emailCaptcha) {
         this.emailCaptcha = emailCaptcha;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateContactEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Create ContactVO")
+                        .resource(uuid, ContactVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

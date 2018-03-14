@@ -15,6 +15,10 @@ public class TunnelAO {
     @Column
     private String uuid;
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
+    private long number;
+
     @Column
     private String accountUuid;
 
@@ -251,5 +255,13 @@ public class TunnelAO {
 
     public void setBandwidthOffering(String bandwidthOffering) {
         this.bandwidthOffering = bandwidthOffering;
+    }
+
+    public long getNumber() {
+        return number;
+    }
+
+    public void setNumber(long number) {
+        this.number = number;
     }
 }

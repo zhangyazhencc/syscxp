@@ -2,8 +2,10 @@ package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 
@@ -44,5 +46,18 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update SolutionTunnelVO")
+                        .resource(uuid, SolutionTunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
