@@ -707,11 +707,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private BigDecimal getValuablePayCash(String accountUuid, String productUuid) {
         BigDecimal total = BigDecimal.ZERO;
         List<OrderVO> orderVOs = getValidOrder(accountUuid, productUuid);
-        if (orderVOs == null || orderVOs.size() == 0) {//有有效订单才能退费
-            throw new IllegalArgumentException("the productUuid is not valid");
-        }
-        for (OrderVO orderVO : orderVOs) {
-            total = total.add(orderVO.getPayCash());
+        if (orderVOs != null && orderVOs.size() > 0) {//有有效订单才能退费
+            for (OrderVO orderVO : orderVOs) {
+                total = total.add(orderVO.getPayCash());
+            }
         }
         return total;
     }

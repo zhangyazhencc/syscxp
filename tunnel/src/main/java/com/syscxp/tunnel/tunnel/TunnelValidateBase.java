@@ -63,11 +63,11 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
 
-        //共享端口或者扩展端口不让改
+        /*//共享端口或者扩展端口不让改
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
         if (switchPort.getPortType().equals("SHARE") || switchPort.getPortType().equals("EXTENDPORT"))
             throw new ApiMessageInterceptionException(
-                    argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));
+                    argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));*/
 
         //接口类型暂时不支持改成ACCESS
         if(msg.getNetworkType() == NetworkType.ACCESS){
