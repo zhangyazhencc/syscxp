@@ -13,8 +13,9 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractAction {
     public String apiId;
-    public String secretKey;
 
+    @Param(emptyString = false)
+    public String SecretKey;
     @Param(emptyString = false)
     public String SecretId;
     public String Action;

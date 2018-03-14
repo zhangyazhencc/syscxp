@@ -40,7 +40,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         Long timestamp = Long.valueOf(req.getParameter(RestConstants.TIMESTAMP));
 
         if (!req.getParameter(RestConstants.SIGNATURE).equals(signatureString) || System.currentTimeMillis() - EXPIRE_TIME > timestamp) {
-            throw new RestServletRequestInterceptorException(4101, "Signature校验失败");
+            throw new RestServletRequestInterceptorException(401, "Signature校验失败");
         }
         LOGGER.debug("Signature校验成功，获取sessionUuid");
 
@@ -68,7 +68,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
     private String getSecretKey(String secretId) throws RestServletRequestInterceptorException {
         String secretKey = identityInterceptor.getSecretKey(secretId);
         if (secretKey == null) {
-            throw new RestServletRequestInterceptorException(4100, String.format("secretId:%s 不存在", secretId));
+            throw new RestServletRequestInterceptorException(401, String.format("secretId:%s 不存在", secretId));
         }
         return secretKey;
     }
@@ -76,7 +76,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
     private String getSessionUuid(String secretId, String secretKey) throws RestServletRequestInterceptorException {
         String sessionUuid = identityInterceptor.getSessionUuid(secretId, secretKey);
         if (sessionUuid == null) {
-            throw new RestServletRequestInterceptorException(4102, String.format("secretId:%s 身份认证失败", secretId));
+            throw new RestServletRequestInterceptorException(401, String.format("secretId:%s 身份认证失败", secretId));
         }
         return sessionUuid;
     }

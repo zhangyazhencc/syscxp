@@ -319,15 +319,17 @@ public class ZSClient {
             List<String> params = vars.entrySet().stream()
                     .map(arg -> arg.getKey() + "=" + join(Arrays.asList(arg.getValue()), ""))
                     .collect(Collectors.toList());
-            String url = info.httpMethod;
+            StringBuilder requestString = new StringBuilder(info.httpMethod);
             if (config.port == 80) {
-                url += String.format("%s://%s/%s/%s", config.scheme, config.hostname, config.contextPath, "v1");
+                requestString.append(String.format("%s://%s/%s/%s", config.scheme, config.hostname, config.contextPath, "v1"));
             } else {
-                url += String.format("%s://%s/%s:%s/%s", config.scheme, config.hostname, config.port, config.contextPath, "v1");
+                requestString.append(String.format("%s://%s:%s/%s/%s", config.scheme, config.hostname, config.port, config.contextPath, "v1"));
             }
 
-            String requestString = url + "?" + join(params, "&");
-            String hmac = HMAC.encryptHMACString(requestString, action.secretKey, vars.getOrDefault(Constants.SIGNATURE_METHOD, s("HmacMD5"))[0]);
+
+            requestString.append("?").append(join(params, "&"));
+
+            String hmac = HMAC.encryptHMACString(requestString.toString(), action.SecretKey, vars.getOrDefault(Constants.SIGNATURE_METHOD, s("HmacMD5"))[0]);
 
             return HMAC.encryptBase64(hmac);
         }
