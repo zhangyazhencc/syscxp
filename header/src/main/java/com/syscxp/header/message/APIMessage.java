@@ -19,7 +19,6 @@ public abstract class APIMessage extends NeedReplyMessage {
     @APINoSee
     private SessionInventory session;
 
-    @APINoSee
     private String ip;
 
     public SessionInventory getSession() {
@@ -52,7 +51,6 @@ public abstract class APIMessage extends NeedReplyMessage {
         return msgFields;
     }
 
-    @APINoSee
     private String signature;
 
     public String getSignature() {
