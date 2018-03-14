@@ -12,24 +12,6 @@ public abstract class NeedReplyMessage extends Message {
      */
     @APINoSee
     protected long timeout = -1;
-    protected List<String> systemTags;
-    protected List<String> userTags;
-
-    public List<String> getSystemTags() {
-        return systemTags;
-    }
-
-    public void setSystemTags(List<String> systemTags) {
-        this.systemTags = systemTags;
-    }
-
-    public List<String> getUserTags() {
-        return userTags;
-    }
-
-    public void setUserTags(List<String> userTags) {
-        this.userTags = userTags;
-    }
 
     public NeedReplyMessage() {
         super();
@@ -44,14 +26,6 @@ public abstract class NeedReplyMessage extends Message {
                 this.getClass().getName(),
                 this.getId(),
                 TimeUnit.MILLISECONDS.toSeconds(getTimeout()));
-    }
-
-    public boolean hasSystemTag(String tag) {
-        if (systemTags == null) {
-            return false;
-        }
-
-        return systemTags.contains(tag);
     }
 
     public long getTimeout() {

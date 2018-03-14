@@ -63,9 +63,9 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
 
-        //共享端口不让改
+        //共享端口或者扩展端口不让改
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
-        if (switchPort.getPortType().equals("SHARE"))
+        if (switchPort.getPortType().equals("SHARE") || switchPort.getPortType().equals("EXTENDPORT"))
             throw new ApiMessageInterceptionException(
                     argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));
 
@@ -80,6 +80,13 @@ public class TunnelValidateBase {
                 throw new ApiMessageInterceptionException(
                         argerr("The type or Interface must be different！"));
             }
+        }else{
+            String oldPortType = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).select(SwitchPortVO_.portType).findValue();
+            String portType = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid()).select(SwitchPortVO_.portType).findValue();
+            if(!oldPortType.equals(portType)){
+                throw new ApiMessageInterceptionException(
+                        argerr("不支持修改为不同端口类型的端口！"));
+            }
         }
     }
 
@@ -92,7 +99,7 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
         }
 
-        if(!msg.getPortOfferingUuid().equals("SHARE")){
+        if(!msg.getPortOfferingUuid().equals("SHARE") && !msg.getPortOfferingUuid().equals("EXTENDPORT")){
             //判断账户金额是否充足
             APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
             priceMsg.setAccountUuid(msg.getAccountUuid());
@@ -121,7 +128,7 @@ public class TunnelValidateBase {
                 .eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).find();
         //判断同一个用户在同一个连接点下是否已经购买共享端口
-        if (portType.equals("SHARE")) {
+        if (portType.equals("SHARE") || portType.equals("EXTENDPORT")) {
             /*String sql = "select a from InterfaceVO a,SwitchPortVO b " +
                     "where a.switchPortUuid = b.uuid " +
                     "and a.accountUuid = :accountUuid " +
