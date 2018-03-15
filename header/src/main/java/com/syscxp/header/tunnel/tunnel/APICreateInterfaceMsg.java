@@ -1,18 +1,27 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.host.APIChangeHostStateEvent;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
+import org.springframework.http.HttpMethod;
 
 /**
  * Created by DCY on 2017-09-08
  */
+
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APICreateInterfaceEvent.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateInterfaceMsg extends APIMessage {
 

@@ -7,11 +7,19 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
+import org.springframework.http.HttpMethod;
 
 /**
  * Create by DCY on 2017/10/10
  */
+
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIUpdateTunnelBandwidthEvent.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateTunnelBandwidthMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)

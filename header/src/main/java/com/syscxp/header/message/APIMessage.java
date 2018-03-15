@@ -19,6 +19,7 @@ public abstract class APIMessage extends NeedReplyMessage {
     @APINoSee
     private SessionInventory session;
 
+    @APINoSee
     private String ip;
 
     public SessionInventory getSession() {

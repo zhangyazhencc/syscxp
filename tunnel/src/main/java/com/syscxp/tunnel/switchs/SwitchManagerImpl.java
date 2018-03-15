@@ -181,7 +181,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         APIQuerySwitchPortAvailableReply reply = new APIQuerySwitchPortAvailableReply();
 
         String sql = "select sp from SwitchPortVO sp where sp.switchUuid = :switchUuid and sp.state = :state and " +
-                "((select count(1) as num from InterfaceVO i where i.switchPortUuid = sp.uuid) = 0 or sp.portType = 'SHARE') ";
+                "((select count(1) as num from InterfaceVO i where i.switchPortUuid = sp.uuid) = 0 or sp.portType = 'SHARE' or sp.portType = 'EXTENDPORT') ";
 
         boolean isPortName = false;
         if (msg.getPortName() != null) {
@@ -783,26 +783,36 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
     }
 
     private void validate(APIUpdateSwitchPortMsg msg) {
-        if(msg.getPortOfferingUuid() != null){
+        SwitchPortVO vo = dbf.findByUuid(msg.getUuid(), SwitchPortVO.class);
+        if(msg.getPortOfferingUuid() != null && !vo.getPortType().equals(msg.getPortOfferingUuid())){
 
-            if(msg.getPortOfferingUuid().equals("SHARE")){
-                //独享改共享的验证
-                if(Q.New(InterfaceVO.class)
-                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
-                        .eq(InterfaceVO_.type, NetworkType.ACCESS)
-                        .isExists()){
-                    throw new ApiMessageInterceptionException(argerr("该端口已经被用户作为ACCESS模式接口，不可再共享！"));
-                }
-            }else{
-                //共享改独享的验证
-                if(Q.New(InterfaceVO.class)
-                        .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
-                        .select(InterfaceVO_.ownerAccountUuid)
-                        .groupBy(InterfaceVO_.ownerAccountUuid)
-                        .count() > 1){
-                    throw new ApiMessageInterceptionException(argerr("该端口已经被不同的用户使用，不可再独享！"));
-                }
+            if(Q.New(InterfaceVO.class)
+                    .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                    .isExists()){
+
+                throw new ApiMessageInterceptionException(argerr("该端口已经被物理接口使用，不能修改端口类型！"));
             }
+            /*else{
+                if(msg.getPortOfferingUuid().equals("SHARE")){
+                    //独享改共享的验证
+                    if(Q.New(InterfaceVO.class)
+                            .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                            .eq(InterfaceVO_.type, NetworkType.ACCESS)
+                            .isExists()){
+                        throw new ApiMessageInterceptionException(argerr("该端口已经被用户作为ACCESS模式接口，不可再共享！"));
+                    }
+                }else{
+                    //共享改独享的验证
+                    if(Q.New(InterfaceVO.class)
+                            .eq(InterfaceVO_.switchPortUuid, msg.getUuid())
+                            .select(InterfaceVO_.ownerAccountUuid)
+                            .groupBy(InterfaceVO_.ownerAccountUuid)
+                            .count() > 1){
+                        throw new ApiMessageInterceptionException(argerr("该端口已经被不同的用户使用，不可再独享！"));
+                    }
+                }
+            }*/
+
         }
     }
 

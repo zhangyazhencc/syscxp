@@ -34,9 +34,9 @@ INNER JOIN zstack.`DiskOfferingEO` d ON d.`uuid` = v.`diskOfferingUuid`
      FETCH generateOrder INTO pd,pn,exd,acUuid,ina,did;
      SELECT unitPrice,configName INTO pri,cona FROM syscxp_billing.`ProductPriceUnitVO` WHERE productCategoryUuid = 'DISK' AND areaCode = 'DEFAULT' AND lineCode='DEFAULT' AND configCode=did;
      SET totpri = pri;
-     SET description=CONCAT_WS('',CONCAT_WS('','{"datas":[{"name":"磁盘容量","value":"',ina),'}]');
+     SET description=CONCAT_WS('',CONCAT_WS('','{"datas":[{"name":"磁盘容量","value":"',ina),'"}]}');
      SET priceInfo ='[{"configName":"';
-     SET priceInfo = CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',priceInfo,ina),',"originalPrice":'),pri),',"realPayPrice":'),pri),',"discount":100}]');
+     SET priceInfo = CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('',CONCAT_WS('', priceInfo, ina),'","originalPrice":'),pri),',"realPayPrice":'),pri),',"discount":100}]');
      SET totpri = totpri*6;
       INSERT INTO syscxp_billing.`OrderVO` VALUES(
          REPLACE(UUID(),'-',''),
@@ -72,7 +72,7 @@ INNER JOIN zstack.`DiskOfferingEO` d ON d.`uuid` = v.`diskOfferingUuid`
            pn ,
            'DISK',
             description,
-            'BUY_MONTH',
+            'BY_MONTH',
             CURRENT_TIMESTAMP(),
             CURRENT_TIMESTAMP(),
             totpri,

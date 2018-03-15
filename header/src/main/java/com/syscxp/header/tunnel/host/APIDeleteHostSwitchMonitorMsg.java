@@ -2,8 +2,10 @@ package com.syscxp.header.tunnel.host;
 
 import com.syscxp.header.host.HostConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -25,5 +27,18 @@ public class APIDeleteHostSwitchMonitorMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Delete HostSwitchMonitorVO")
+                        .resource(uuid, HostSwitchMonitorVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

@@ -1,10 +1,9 @@
 package com.syscxp.billing.header.price;
 
 import com.syscxp.header.billing.BillingConstant;
-import com.syscxp.header.billing.Category;
+import com.syscxp.header.billing.ProductCategory;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.Action;
-import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
@@ -15,7 +14,7 @@ public class APIGetBroadPriceListMsg extends APISyncCallMessage{
     private ProductType productType;
 
     @APIParam
-    private Category category;
+    private ProductCategory category;
 
     @APIParam(required = false,emptyString = false)
     private String areaCode;
@@ -50,11 +49,11 @@ public class APIGetBroadPriceListMsg extends APISyncCallMessage{
         this.productType = productType;
     }
 
-    public Category getCategory() {
+    public ProductCategory getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(ProductCategory category) {
         this.category = category;
     }
 

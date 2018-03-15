@@ -15,4 +15,12 @@
         <defaultValue>3600</defaultValue>
         <type>java.lang.Integer</type>
     </config>
+
+    <config>
+        <category>rest</category>
+        <name>syscxpApi.serverUrl</name>
+        <description>api url</description>
+        <defaultValue>api.syscxp.com</defaultValue>
+        <type>java.lang.String</type>
+    </config>
 </globalConfig>

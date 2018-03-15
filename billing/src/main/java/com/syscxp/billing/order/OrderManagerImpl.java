@@ -251,7 +251,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().flush();
         APIUpdateOrderExpiredTimeReply reply = new APIUpdateOrderExpiredTimeReply();
         reply.setInventory(OrderInventory.valueOf(orderVO));
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     @Transactional
@@ -695,7 +695,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional
-    private ProductCategoryVO getProductCategoryVO(Category categoryCode, ProductType productType) {
+    private ProductCategoryVO getProductCategoryVO(ProductCategory categoryCode, ProductType productType) {
         SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
         query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, categoryCode);
         query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, productType);
@@ -707,11 +707,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private BigDecimal getValuablePayCash(String accountUuid, String productUuid) {
         BigDecimal total = BigDecimal.ZERO;
         List<OrderVO> orderVOs = getValidOrder(accountUuid, productUuid);
-        if (orderVOs == null || orderVOs.size() == 0) {//有有效订单才能退费
-            throw new IllegalArgumentException("the productUuid is not valid");
-        }
-        for (OrderVO orderVO : orderVOs) {
-            total = total.add(orderVO.getPayCash());
+        if (orderVOs != null && orderVOs.size() > 0) {//有有效订单才能退费
+            for (OrderVO orderVO : orderVOs) {
+                total = total.add(orderVO.getPayCash());
+            }
         }
         return total;
     }
@@ -1008,11 +1007,16 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private int catECPBaseWidth(ProductPriceUnit unit) {
         int base = 1;
-        if (unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)) {
+        if (unit.getCategoryCode().equals(ProductCategory.IP)) {
+            String configCode = unit.getConfigCode().replaceAll("\\D", "");
+            base = Integer.parseInt(configCode);
+            unit.setConfigCode("1IP");
+        }else if (unit.getCategoryCode().equals(ProductCategory.BANDWIDTH)) {
             String configCode = unit.getConfigCode().replaceAll("\\D", "");
             base = Integer.parseInt(configCode);
             unit.setConfigCode("1M");
         }
+
         return base;
     }
 

@@ -24,4 +24,13 @@ interface Constants {
     String HEADER_JOB_UUID = "X-Job-UUID";
     String HEADER_WEBHOOK = "X-Web-Hook";
     String HEADER_JOB_SUCCESS = "X-Job-Success";
+
+    String SIGNATURE = "Signature";
+    String SECRET_ID = "SecretId";
+    String TIMESTAMP = "Timestamp";
+    String ACTION = "Action";
+    String NONCE = "Nonce";
+    String SIGNATURE_METHOD = "SignatureMethod";
+
+    String SESSION_UUID = "sessionUuid";
 }

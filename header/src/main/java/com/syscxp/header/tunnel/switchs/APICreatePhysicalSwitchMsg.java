@@ -1,10 +1,13 @@
 package com.syscxp.header.tunnel.switchs;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.SwitchConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.node.APICreateNodeEvent;
 import com.syscxp.header.tunnel.node.NodeVO;
 
 /**
@@ -193,5 +196,22 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreatePhysicalSwitchEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create PhysicalSwitchVO")
+                        .resource(uuid, PhysicalSwitchVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

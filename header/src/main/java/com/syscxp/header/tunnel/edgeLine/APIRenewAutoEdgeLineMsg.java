@@ -2,8 +2,11 @@ package com.syscxp.header.tunnel.edgeLine;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.InnerCredentialCheck;
+import com.syscxp.header.message.APIEvent;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.notification.ApiNotification;
 
 /**
  * Create by DCY on 2018/1/12
@@ -42,5 +45,18 @@ public class APIRenewAutoEdgeLineMsg extends APISyncCallMessage {
 
     public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Renew auto EdgeLineVO")
+                        .resource(uuid, EdgeLineVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

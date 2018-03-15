@@ -54,7 +54,7 @@ public class APIOpenEdgeLineMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update EdgeLineVO")
+                ntfy("Open EdgeLineVO")
                         .resource(uuid, EdgeLineVO.class)
                         .messageAndEvent(that, evt).done();
             }

@@ -1,9 +1,7 @@
 package com.syscxp.core.config;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APIUpdateGlobalConfigEvent extends APIEvent {
 	private GlobalConfigInventory inventory;
 	

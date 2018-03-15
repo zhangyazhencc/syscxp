@@ -6,7 +6,6 @@ import com.syscxp.header.rest.RestResponse;
 /**
  * Create by DCY on 2017/11/1
  */
-@RestResponse(allTo = "inventory")
 public class APICreateInnerEndpointEvent extends APIEvent {
     private InnerConnectedEndpointInventory inventory;
 

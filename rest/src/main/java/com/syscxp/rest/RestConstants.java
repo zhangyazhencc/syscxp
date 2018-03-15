@@ -7,8 +7,7 @@ package com.syscxp.rest;
  * Author: wj
  */
 public interface RestConstants {
-    String API_VERSION = "/v1";
-    String BASE_PATH = "/vpn";
+    String API_VERSION = "v1";
     String ASYNC_JOB_ACTION = "ApiResult";
 
     String HEADER_JSON_SCHEMA = "X-JSON-Schema";
@@ -23,8 +22,6 @@ public interface RestConstants {
     String ACTION = "Action";
     String NONCE = "Nonce";
     String SIGNATURE_METHOD = "SignatureMethod";
-
-    String CONDITION = "^condition\\.\\d+$";
 
     String SESSION_UUID = "sessionUuid";
 }

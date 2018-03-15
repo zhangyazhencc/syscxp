@@ -12,6 +12,10 @@ public class EdgeLineAO {
     @Column
     private String uuid;
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
+    private long number;
+
     @Column
     private String accountUuid;
 
@@ -145,5 +149,13 @@ public class EdgeLineAO {
 
     public void setEndpointUuid(String endpointUuid) {
         this.endpointUuid = endpointUuid;
+    }
+
+    public long getNumber() {
+        return number;
+    }
+
+    public void setNumber(long number) {
+        this.number = number;
     }
 }

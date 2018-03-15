@@ -12,11 +12,13 @@ import java.util.Map;
  */
 public class TunnelConditionInventory {
     private String nodeUuid;
+    private String endpointUuid;
     private Map<String,OpenTSDBCommands.Tags> tags;
 
     public static TunnelConditionInventory valueOf(OpenTSDBCommands.CustomCondition vo){
         TunnelConditionInventory inventory = new TunnelConditionInventory();
         inventory.setNodeUuid(vo.getNodeUuid());
+        inventory.setEndpointUuid(vo.getEndpointUuid());
         inventory.setTags(vo.getTags());
 
         return  inventory;
@@ -30,12 +32,12 @@ public class TunnelConditionInventory {
         return lst;
     }
 
-    public String getNodeUuid() {
-        return nodeUuid;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setNodeUuid(String nodeUuid) {
-        this.nodeUuid = nodeUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
     public Map<String, OpenTSDBCommands.Tags> getTags() {
@@ -44,5 +46,13 @@ public class TunnelConditionInventory {
 
     public void setTags(Map<String, OpenTSDBCommands.Tags> tags) {
         this.tags = tags;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 }

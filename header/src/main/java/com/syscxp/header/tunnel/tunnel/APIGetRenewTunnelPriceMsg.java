@@ -4,11 +4,18 @@ import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
+import org.springframework.http.HttpMethod;
 
 /**
  * Create by DCY on 2017/12/11
  */
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIGetRenewTunnelPriceReply.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetRenewTunnelPriceMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true)

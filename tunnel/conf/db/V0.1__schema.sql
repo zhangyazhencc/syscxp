@@ -399,6 +399,7 @@ CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
 INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
 VALUES ('SFP_10G','光口万兆','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
   ('SHARE','共享端口','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
+  ('EXTENDPORT','扩展端口','扩展端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
   ('SFP_1G','光口千兆','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
   ('RJ45_1G','电口千兆','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
 
@@ -707,4 +708,16 @@ CREATE TABLE  `ShareSolutionVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `SolutionVO` ADD COLUMN `isShare` tinyint(1) unsigned DEFAULT 0 COMMENT '是否共享';
+
+ALTER TABLE `syscxp_tunnel`.`TunnelEO` ADD COLUMN `number` bigint unsigned AUTO_INCREMENT Unique, AUTO_INCREMENT=5000;
+DROP VIEW IF EXISTS `syscxp_tunnel`.`TunnelVO`;
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, `number`, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidthOffering, bandwidth, distance, state, status, type, innerEndpointUuid, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate FROM `TunnelEO` WHERE deleted IS NULL;
+
+ALTER TABLE `syscxp_tunnel`.`InterfaceEO` ADD COLUMN `number` bigint unsigned AUTO_INCREMENT Unique, AUTO_INCREMENT=1000;
+DROP VIEW IF EXISTS `syscxp_tunnel`.`InterfaceVO`;
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, `number`, accountUuid, ownerAccountUuid, name, switchPortUuid, endpointUuid, description, state, type, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate FROM `InterfaceEO` WHERE deleted IS NULL;
+
+ALTER TABLE `syscxp_tunnel`.`EdgeLineEO` ADD COLUMN `number` bigint unsigned AUTO_INCREMENT Unique, AUTO_INCREMENT=1000;
+DROP VIEW IF EXISTS `syscxp_tunnel`.`EdgeLineVO`;
+CREATE VIEW `syscxp_tunnel`.`EdgeLineVO` AS SELECT uuid, `number`, accountUuid, interfaceUuid, endpointUuid, type, destinationInfo, description, state, prices, expireDate, lastOpDate, createDate FROM `EdgeLineEO` WHERE deleted IS NULL;
 

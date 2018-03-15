@@ -10,7 +10,7 @@ public class ProductPriceUnitFactory {
         return createProductPriceUnit(configCode, areaCode, "DEFAULT");
     }
 
-    private static ProductPriceUnit createProductPriceUnit(Category category, ProductType type, String configCode,
+    private static ProductPriceUnit createProductPriceUnit(ProductCategory category, ProductType type, String configCode,
                                                            String areaCode, String lineCode){
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setCategoryCode(category);
@@ -23,7 +23,7 @@ public class ProductPriceUnitFactory {
 
     private static ProductPriceUnit createProductPriceUnit(String configCode,
                                                            String areaCode, String lineCode){
-        return createProductPriceUnit(Category.VPN, ProductType.VPN, configCode, areaCode, lineCode);
+        return createProductPriceUnit(ProductCategory.VPN, ProductType.VPN, configCode, areaCode, lineCode);
 
     }
 }

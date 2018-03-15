@@ -8,12 +8,20 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
+import org.springframework.http.HttpMethod;
 
 /**
  * Created by DCY on 2017-09-11
  */
+
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APICreateTunnelEvent.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateTunnelMsg extends APIMessage {
 

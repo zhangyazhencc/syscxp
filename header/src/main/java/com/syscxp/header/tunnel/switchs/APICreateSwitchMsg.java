@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.switchs;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.SwitchConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
@@ -72,5 +74,22 @@ public class APICreateSwitchMsg extends APIMessage {
 
     public void setType(SwitchType type) {
         this.type = type;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateSwitchEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create SwitchVO")
+                        .resource(uuid, SwitchVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

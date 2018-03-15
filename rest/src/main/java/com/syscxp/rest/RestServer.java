@@ -12,6 +12,7 @@ import com.syscxp.header.MapField;
 import com.syscxp.header.apimediator.ApiMediatorConstant;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.SessionInventory;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.*;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.APIQueryReply;
@@ -111,16 +112,6 @@ public class RestServer implements Component, CloudBusEventListener {
         }
     }
 
-    public static void generateDocTemplate(String path, DocumentGenerator.DocMode mode) {
-        DocumentGenerator rg = GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
-        rg.generateDocTemplates(path, mode);
-    }
-
-    public static void generateMarkdownDoc(String path) {
-        System.setProperty(Constants.UUID_FOR_EXAMPLE, "true");
-        DocumentGenerator rg = GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
-        rg.generateMarkDown(path, PathUtil.join(System.getProperty("user.home"), "syscxp-markdown"));
-    }
 
     public static void generateJavaSdk() {
         String path = PathUtil.join(System.getProperty("user.home"), "syscxp-sdk/java");
@@ -275,7 +266,7 @@ public class RestServer implements Component, CloudBusEventListener {
             apiClass = clz;
             requestAnnotation = at;
             apiResponseClass = at.responseClass();
-            path = String.format("%s%s%s", RestGlobalConfig.SYSCXP_API_SERVER_URL.value(), RestConstants.BASE_PATH, RestConstants.API_VERSION);
+            path = String.format("%s/%s/%s", RestGlobalConfig.SYSCXP_API_SERVER_URL.value(), restf.getPath(), RestConstants.API_VERSION);
 
             if (at.mappingFields().length > 0) {
                 requestMappingFields = new HashMap<>();
@@ -592,14 +583,16 @@ public class RestServer implements Component, CloudBusEventListener {
 
     private String getSession(HttpServletRequest req) {
 //        return (String) req.getAttribute(RestConstants.SESSION_UUID);
-        return req.getParameter(RestConstants.SESSION_UUID);
+        return (String) req.getAttribute(RestConstants.SESSION_UUID);
     }
 
     private void handleApi(Api api, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
 
-        String sessionId = getSession(req);
-
-        Map<String, String[]> vars = req.getParameterMap();
+        String sessionId = null;
+        if (!api.apiClass.isAnnotationPresent(SuppressCredentialCheck.class)) {
+            sessionId = getSession(req);
+        }
+        Map<String, String[]> queryParameters = req.getParameterMap();
 
         if (APIQueryMessage.class.isAssignableFrom(api.apiClass)) {
             handleQueryApi(api, sessionId, req, rsp);
@@ -609,7 +602,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 RestConstants.SIGNATURE_METHOD, RestConstants.NONCE, RestConstants.TIMESTAMP);
         // uses query string to pass parameters
         Map<String, Object> parameter = new HashMap<>();
-        for (Map.Entry<String, String[]> e : vars.entrySet()) {
+        for (Map.Entry<String, String[]> e : queryParameters.entrySet()) {
             String k = e.getKey();
             String[] vals = e.getValue();
 
@@ -668,6 +661,16 @@ public class RestServer implements Component, CloudBusEventListener {
             SessionInventory session = new SessionInventory();
             session.setUuid(sessionId);
             msg.setSession(session);
+        }
+
+        for (Map.Entry<String, Object> e : parameter.entrySet()) {
+
+            Class clazz = PropertyUtils.getPropertyType(msg, e.getKey());
+            if (clazz.isEnum())
+                PropertyUtils.setProperty(msg, e.getKey(), Enum.valueOf(clazz, String.valueOf(e.getValue())));
+            else {
+                PropertyUtils.setProperty(msg, e.getKey(), e.getValue());
+            }
         }
 
         msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
@@ -753,44 +756,47 @@ public class RestServer implements Component, CloudBusEventListener {
                 }
 
                 msg.setSortBy(varvalue);
-            } else if (Pattern.matches(RestConstants.CONDITION, varname)) {
+            } else if ("q".startsWith(varname)) {
+                String[] conds = e.getValue();
 
-                String OP = null;
-                String delimiter = null;
-                for (String op : QUERY_OP_MAPPING.keySet()) {
-                    if (varvalue.contains(op)) {
-                        OP = QUERY_OP_MAPPING.get(op);
-                        delimiter = op;
-                        break;
+                for (String cond : conds) {
+                    String OP = null;
+                    String delimiter = null;
+                    for (String op : QUERY_OP_MAPPING.keySet()) {
+                        if (cond.contains(op)) {
+                            OP = QUERY_OP_MAPPING.get(op);
+                            delimiter = op;
+                            break;
+                        }
                     }
-                }
 
-                if (OP == null) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
-                            " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
-                            " %s", varvalue, asList(QUERY_OP_MAPPING.keySet())));
-                }
-
-                QueryCondition qc = new QueryCondition();
-                String[] ks = StringUtils.splitByWholeSeparator(varvalue, delimiter, 2);
-                if (OP.equals(QueryOp.IS_NULL.toString()) || OP.equals(QueryOp.NOT_NULL.toString())) {
-                    String cname = ks[0].trim();
-                    qc.setName(cname);
-                    qc.setOp(OP);
-                } else {
-                    if (ks.length != 2) {
+                    if (OP == null) {
                         throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
-                                " The '%s' in parameter[q] is not a key-value pair split by %s", varvalue, OP));
+                                " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
+                                " %s", cond, asList(QUERY_OP_MAPPING.keySet())));
                     }
 
-                    String cname = ks[0].trim();
-                    String cvalue = ks[1]; // don't trim the value, a space is valid in some conditions
-                    qc.setName(cname);
-                    qc.setOp(OP);
-                    qc.setValue(cvalue);
-                }
+                    QueryCondition qc = new QueryCondition();
+                    String[] ks = StringUtils.splitByWholeSeparator(cond, delimiter, 2);
+                    if (OP.equals(QueryOp.IS_NULL.toString()) || OP.equals(QueryOp.NOT_NULL.toString())) {
+                        String cname = ks[0].trim();
+                        qc.setName(cname);
+                        qc.setOp(OP);
+                    } else {
+                        if (ks.length != 2) {
+                            throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
+                                    " The '%s' in parameter[q] is not a key-value pair split by %s", cond, OP));
+                        }
 
-                msg.getConditions().add(qc);
+                        String cname = ks[0].trim();
+                        String cvalue = ks[1]; // don't trim the value, a space is valid in some conditions
+                        qc.setName(cname);
+                        qc.setOp(OP);
+                        qc.setValue(cvalue);
+                    }
+
+                    msg.getConditions().add(qc);
+                }
             } else if ("fields".equals(varname)) {
                 List<String> fs = new ArrayList<>();
                 for (String f : varvalue.split(",")) {
@@ -951,6 +957,11 @@ public class RestServer implements Component, CloudBusEventListener {
 
             @Override
             public String[] fieldsTo() {
+                return new String[0];
+            }
+
+            @Override
+            public String[] superclassFieldsTo() {
                 return new String[0];
             }
 

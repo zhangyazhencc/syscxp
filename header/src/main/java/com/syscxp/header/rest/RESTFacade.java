@@ -48,6 +48,8 @@ public interface RESTFacade {
 
     String getBaseUrl();
 
+    String getPath();
+
     String getSendCommandUrl();
 
     String getCallbackUrl();

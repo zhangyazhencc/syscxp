@@ -16,7 +16,7 @@ public class ProductCategoryVO {
     private String uuid;
     @Column
     @Enumerated(EnumType.STRING)
-    private Category code;
+    private ProductCategory code;
     @Column
     private String name;
     @Column
@@ -37,11 +37,11 @@ public class ProductCategoryVO {
         this.uuid = uuid;
     }
 
-    public Category getCode() {
+    public ProductCategory getCode() {
         return code;
     }
 
-    public void setCode(Category code) {
+    public void setCode(ProductCategory code) {
         this.code = code;
     }
 

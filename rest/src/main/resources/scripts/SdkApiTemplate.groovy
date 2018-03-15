@@ -26,6 +26,8 @@ class SdkApiTemplate implements SdkTemplate {
     Class apiMessageClass
     RestRequest requestAnnotation
 
+    Set<Class> enumClasses = []
+
     String resultClassName
     boolean isQueryApi
 
@@ -115,11 +117,6 @@ class SdkApiTemplate implements SdkTemplate {
 
                     annotationFields.add(String.format("numberRange = {%s}", ns.join(",")))
 
-                    if (apiParam.numberRangeUnit().length > 0) {
-                        def nru = apiParam.numberRangeUnit() as List<String>
-
-                        annotationFields.add(String.format("numberRangeUnit = {\"%s\", \"%s\"}", nru.get(0), nru.get(1)))
-                    }
                 }
 
                 annotationFields.add(String.format("noTrim = %s", apiParam.noTrim()))
@@ -127,9 +124,18 @@ class SdkApiTemplate implements SdkTemplate {
                 annotationFields.add(String.format("required = false"))
             }
 
+            def fieldTypeName = f.getType().getName()
+
+            if (Enum.class.isAssignableFrom(f.getType())) {
+                fieldTypeName = String.format("com.syscxp.sdk.%s",f.getType().getSimpleName())
+                if (!enumClasses.contains(f.getType())) {
+                    enumClasses.add(f.getType())
+                }
+            }
+
             def fs = """\
     @Param(${annotationFields.join(", ")})
-    public ${f.getType().getName()} ${f.getName()}${{ ->
+    public ${fieldTypeName.toString()} ${f.getName()}${{ ->
                 f.accessible = true
                 
                 Object val = f.get(msg)
@@ -145,13 +151,6 @@ class SdkApiTemplate implements SdkTemplate {
             }()}
 """
             output.add(fs.toString())
-        }
-
-        if (!apiMessageClass.isAnnotationPresent(SuppressCredentialCheck.class)) {
-            output.add("""\
-    @Param(required = true)
-    public String sessionId;
-""")
         }
 
         if (!APISyncCallMessage.class.isAssignableFrom(apiMessageClass)) {
@@ -257,6 +256,30 @@ ${generateMethods(path)}
         return f
     }
 
+    def resolveEnumClass() {
+        def ret = []
+        if (!enumClasses.isEmpty()) {
+            for (Class clz:enumClasses) {
+                def output = []
+
+                for (Enum e : clz.getEnumConstants()) {
+                    output.add("\t${e.name()},")
+                }
+
+                SdkFile file = new SdkFile()
+                file.fileName = "${clz.getSimpleName()}.java"
+                file.content = """package com.syscxp.sdk;
+
+public enum ${clz.getSimpleName()} {
+${output.join("\n")}
+}
+"""
+                ret.add(file)
+            }
+        }
+        return ret
+    }
+
     def generateAction() {
         SDK sdk = apiMessageClass.getAnnotation(SDK.class)
         if (sdk != null && sdk.actionsMapping().length != 0) {
@@ -294,8 +317,11 @@ ${generateMethods(path)}
 
     @Override
     List<SdkFile> generate() {
+        def ret = []
         try {
-            return generateAction()
+            ret.addAll(generateAction())
+            ret.addAll(resolveEnumClass())
+            return ret
         } catch (Exception e) {
             logger.warn("failed to generate SDK for ${apiMessageClass.name}")
             throw e

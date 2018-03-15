@@ -1,13 +1,17 @@
 package com.syscxp.header.billing;
 
 public enum ProductType {
-    TUNNEL,
-    ECP,
     PORT,
+    EDGELINE,
+    TUNNEL,
     VPN,
+
+    L3NETWORK,
+
     HOST,
     DISK,
+    BANDWIDTH,
     RESOURCEPOOL,
-    EDGELINE,
+    POOLNETWORK,
     IP
 }

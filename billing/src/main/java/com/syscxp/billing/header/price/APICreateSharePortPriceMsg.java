@@ -1,7 +1,7 @@
 package com.syscxp.billing.header.price;
 
 import com.syscxp.header.billing.BillingConstant;
-import com.syscxp.header.billing.Category;
+import com.syscxp.header.billing.ProductCategory;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
@@ -13,7 +13,7 @@ public class APICreateSharePortPriceMsg extends APIMessage {
     private ProductType productType;
 
     @APIParam(maxLength = 256,emptyString = false)
-    private Category category;
+    private ProductCategory category;
 
     @APIParam( maxLength = 256,emptyString = false)
     private String areaCode;
@@ -62,11 +62,11 @@ public class APICreateSharePortPriceMsg extends APIMessage {
         this.productType = productType;
     }
 
-    public Category getCategory() {
+    public ProductCategory getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(ProductCategory category) {
         this.category = category;
     }
 

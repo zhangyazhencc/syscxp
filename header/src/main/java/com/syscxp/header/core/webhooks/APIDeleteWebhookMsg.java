@@ -8,11 +8,7 @@ import com.syscxp.header.message.APIParam;
 /**
  * Created by xing5 on 2017/5/7.
  */
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIDeleteWebhookEvent.class
-)
+
 public class APIDeleteWebhookMsg extends APIDeleteMessage {
     @APIParam(resourceType = WebhookVO.class, successIfResourceNotExisting = true)
     private String uuid;

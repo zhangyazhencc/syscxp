@@ -1,8 +1,5 @@
 package com.syscxp.billing.header.price;
 
-import com.syscxp.header.billing.Category;
-import com.syscxp.header.billing.ProductType;
-
 import java.math.BigDecimal;
 
 public class PriceData {

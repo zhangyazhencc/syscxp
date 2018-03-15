@@ -4,12 +4,25 @@ import com.syscxp.account.header.account.*;
 import com.syscxp.account.header.identity.*;
 import com.syscxp.account.header.user.*;
 import com.syscxp.account.quota.UserQuotaOperator;
+import com.syscxp.core.Platform;
+import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.SimpleQuery.Op;
+import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.header.AbstractService;
 import com.syscxp.header.account.*;
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.errorcode.SysErrors;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.*;
+import com.syscxp.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
@@ -19,27 +32,10 @@ import com.syscxp.sms.SmsService;
 import com.syscxp.utils.ShellResult;
 import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.account.header.identity.APICheckApiPermissionMsg;
-import com.syscxp.account.header.identity.APICheckApiPermissionReply;
-import com.syscxp.account.header.identity.APIValidateSessionMsg;
-import com.syscxp.account.header.identity.APIValidateSessionReply;
-import com.syscxp.core.Platform;
-import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.db.SimpleQuery.Op;
-import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.header.AbstractService;
-import com.syscxp.header.apimediator.ApiMessageInterceptionException;
-import com.syscxp.header.apimediator.ApiMessageInterceptor;
-import com.syscxp.header.errorcode.OperationFailureException;
-import com.syscxp.header.errorcode.SysErrors;
-import com.syscxp.header.exception.CloudRuntimeException;
-import com.syscxp.header.managementnode.PrepareDbInitialValueExtensionPoint;
-import com.syscxp.header.query.QueryOp;
-import com.syscxp.utils.logging.CLogger;
 
 import javax.persistence.Query;
 import java.sql.Timestamp;
@@ -139,22 +135,58 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         } else if (msg instanceof APIValidateAccountWithProxyMsg) {
             handle((APIValidateAccountWithProxyMsg) msg);
         } else if (msg instanceof APIGetAccountForShareMsg) {
-            handle((APIGetAccountForShareMsg)msg);
+            handle((APIGetAccountForShareMsg) msg);
         } else if (msg instanceof APIListAccountByUuidMsg) {
-            handle((APIListAccountByUuidMsg)msg);
+            handle((APIListAccountByUuidMsg) msg);
         } else if (msg instanceof APIMailOrPhoneIsExistentMsg) {
-            handle((APIMailOrPhoneIsExistentMsg)msg);
+            handle((APIMailOrPhoneIsExistentMsg) msg);
+        } else if (msg instanceof APIGetSecretKeyMsg) {
+            handle((APIGetSecretKeyMsg) msg);
+        } else if (msg instanceof APILogInBySecretIdMsg) {
+            handle((APILogInBySecretIdMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
     }
 
+    private void handle(APIGetSecretKeyMsg msg) {
+
+        APIGetSecretKeyReply reply = new APIGetSecretKeyReply();
+
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
+        AccountApiSecurityVO api = q.find();
+        reply.setSecretKey(api.getSecretKey());
+        bus.reply(msg, reply);
+
+    }
+
+    private void handle(APILogInBySecretIdMsg msg) {
+        APILogInBySecretIdReply reply = new APILogInBySecretIdReply();
+
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
+        q.add(AccountApiSecurityVO_.secretKey, SimpleQuery.Op.EQ, msg.getSecretKey());
+
+        if (q.isExists()) {
+            AccountApiSecurityVO api = q.find();
+            reply.setSessionUuid(identiyInterceptor.initSession(
+                    dbf.findByUuid(api.getAccountUuid(), AccountVO.class), null).getUuid());
+
+        } else {
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "Incorrect secretId or secretKey"));
+        }
+
+        bus.reply(msg, reply);
+    }
+
     private void handle(APIMailOrPhoneIsExistentMsg msg) {
 
-        APIMailOrPhoneIsExistentReply reply =  new APIMailOrPhoneIsExistentReply();
+        APIMailOrPhoneIsExistentReply reply = new APIMailOrPhoneIsExistentReply();
 
-        if(msg.getAccountMail() != null){
+        if (msg.getAccountMail() != null) {
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.email, Op.EQ, msg.getAccountMail());
             q.add(AccountVO_.uuid, Op.NOT_EQ, msg.getSession().getAccountUuid());
@@ -162,7 +194,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 reply.setAccountMail(true);
             }
         }
-        if(msg.getAccountPhone() != null){
+        if (msg.getAccountPhone() != null) {
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.phone, Op.EQ, msg.getAccountPhone());
             q.add(AccountVO_.uuid, Op.NOT_EQ, msg.getSession().getAccountUuid());
@@ -170,7 +202,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 reply.setAccountPhone(true);
             }
         }
-        if(msg.getUserMail() != null){
+        if (msg.getUserMail() != null) {
             SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
             q.add(UserVO_.email, Op.EQ, msg.getUserMail());
             q.add(UserVO_.uuid, Op.NOT_EQ, msg.getSession().getUserUuid());
@@ -178,7 +210,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 reply.setUserMail(true);
             }
         }
-        if(msg.getUserPhone() != null){
+        if (msg.getUserPhone() != null) {
             SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
             q.add(UserVO_.phone, Op.EQ, msg.getUserPhone());
             q.add(UserVO_.uuid, Op.NOT_EQ, msg.getSession().getUserUuid());
@@ -187,7 +219,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         }
 
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
 
     }
@@ -196,21 +228,21 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         APIListAccountByUuidReply reply = new APIListAccountByUuidReply();
 
-        List<Map<String,String>> lists = new ArrayList<>();
-        for(String uuid: msg.getAccountUuidList()){
-            Map<String,String> map = new HashMap<>();
-            AccountVO vo = dbf.findByUuid(uuid,AccountVO.class);
-            if(vo != null){
-                map.put("uuid",vo.getUuid());
-                map.put("name",vo.getName());
-                map.put("phone",vo.getPhone());
-                map.put("company",vo.getCompany());
+        List<Map<String, String>> lists = new ArrayList<>();
+        for (String uuid : msg.getAccountUuidList()) {
+            Map<String, String> map = new HashMap<>();
+            AccountVO vo = dbf.findByUuid(uuid, AccountVO.class);
+            if (vo != null) {
+                map.put("uuid", vo.getUuid());
+                map.put("name", vo.getName());
+                map.put("phone", vo.getPhone());
+                map.put("company", vo.getCompany());
                 lists.add(map);
             }
         }
 
         reply.setAccountList(lists);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
     }
 
@@ -220,26 +252,26 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         APIGetAccountForShareReply reply = new APIGetAccountForShareReply();
 
         AccountVO account = null;
-        if(msg.getAccountName() != null){
+        if (msg.getAccountName() != null) {
             account = dbf.createQuery(AccountVO.class).add(AccountVO_.name, SimpleQuery.Op.EQ, msg.getAccountName()).find();
-        }else if(msg.getAccountPhone() != null){
+        } else if (msg.getAccountPhone() != null) {
             account = dbf.createQuery(AccountVO.class).add(AccountVO_.phone, SimpleQuery.Op.EQ, msg.getAccountPhone()).find();
-        }else {
+        } else {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.ACCOUNT_NOT_FOUND,
                     "params is all null"));
         }
 
-        if(account != null){
+        if (account != null) {
             reply.setName(account.getName());
             reply.setUuid(account.getUuid());
             reply.setPhone(account.getPhone());
             reply.setCompany(account.getCompany());
-        }else{
+        } else {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.ACCOUNT_NOT_FOUND,
                     "no find this account"));
         }
 
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIAccountPWDBackByEmailMsg msg) {
@@ -252,7 +284,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.email, Op.EQ, msg.getEmail());
             AccountVO account = q.find();
-            if (account.getType() != AccountType.SystemAdmin) {
+            if (account.getType() == AccountType.SystemAdmin) {
                 throw new ApiMessageInterceptionException(argerr("SystemAdmin禁止使用找回密码功能[email %s]", msg.getEmail()));
             }
             account.setPassword(msg.getNewPassword());
@@ -269,10 +301,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, msg.getAccountUuid());
         q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getProxyUuid());
         ProxyAccountRefVO proxyAccountRefVO = q.find();
-        if(proxyAccountRefVO!=null){
+        if (proxyAccountRefVO != null) {
             reply.setHasRelativeAccountWithProxy(true);
         }
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
 
@@ -290,7 +322,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private boolean accountHasProxy(String accountUuid) {
         SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
         q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, accountUuid);
-        return q.find()!=null;
+        return q.find() != null;
     }
 
     private void handle(APIGetAccountUuidListByProxyMsg msg) {
@@ -383,7 +415,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
             AccountVO account = q.find();
-            if (account.getType() != AccountType.SystemAdmin) {
+            if (account.getType() == AccountType.SystemAdmin) {
                 throw new ApiMessageInterceptionException(argerr("SystemAdmin禁止使用找回密码功能[phone %s]", msg.getPhone()));
             }
             account.setPassword(msg.getNewpassword());
@@ -540,10 +572,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
 
 
-
         }
 
-        if(valid) {
+        if (valid) {
             reply.setAccountUuid(s.getAccountUuid());
             reply.setUserUuid(s.getUserUuid());
             reply.setType(s.getType());
@@ -601,7 +632,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APILogInByUserMsg msg) {
         APILogInReply reply = new APILogInReply();
 
-        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
+        if (!imageCodeService.ValidateImageCode(msg.getImageUuid(), msg.getImageCode())) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "Incorrect Validate Image Code"));
             bus.reply(msg, reply);
@@ -650,14 +681,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         reply.setInventory(identiyInterceptor.initSession(account, user));
-        loginLog(user.getClass().getSimpleName(),user.getName(),user.getUuid(), msg);
+        loginLog(user.getClass().getSimpleName(), user.getName(), user.getUuid(), msg);
         bus.reply(msg, reply);
     }
 
     private void handle(APILogInByAccountMsg msg) {
         APILogInReply reply = new APILogInReply();
 
-        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
+        if (!imageCodeService.ValidateImageCode(msg.getImageUuid(), msg.getImageCode())) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "Incorrect Validate Image Code"));
             bus.reply(msg, reply);
@@ -689,47 +720,47 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "Blocked account"));
             bus.reply(msg, reply);
-        }else if(! msg.getPassword().equals(vo.getPassword())){
-            if(msg.getPlaintext() != null){
-                if( !check_password(msg.getPlaintext(), vo.getPassword())){
+        } else if (!msg.getPassword().equals(vo.getPassword())) {
+            if (msg.getPlaintext() != null) {
+                if (!check_password(msg.getPlaintext(), vo.getPassword())) {
                     reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                             "Incorrect password"));
                     bus.reply(msg, reply);
-                }else{
+                } else {
                     vo.setPassword(DigestUtils.sha512Hex(msg.getPlaintext()));
                     dbf.updateAndRefresh(vo);
                     reply.setInventory(identiyInterceptor.initSession(vo, null));
-                    loginLog(vo.getClass().getSimpleName(),vo.getName(),vo.getUuid(),msg);
+                    loginLog(vo.getClass().getSimpleName(), vo.getName(), vo.getUuid(), msg);
                 }
-            }else{
+            } else {
                 reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                         "Incorrect password"));
                 bus.reply(msg, reply);
             }
-        }else{
+        } else {
             reply.setInventory(identiyInterceptor.initSession(vo, null));
-            loginLog(vo.getClass().getSimpleName(),vo.getName(),vo.getUuid(),msg);
+            loginLog(vo.getClass().getSimpleName(), vo.getName(), vo.getUuid(), msg);
         }
 
         bus.reply(msg, reply);
     }
 
-    private boolean check_password(String password, String hash){
+    private boolean check_password(String password, String hash) {
         StringBuffer cmdStr = new StringBuffer();
-        cmdStr.append("python -c ") ;
-        cmdStr.append("'import passlib.hash;") ;
-        cmdStr.append("print passlib.hash.sha512_crypt.verify(\"") ;
-        cmdStr.append(password) ;
-        cmdStr.append("\",") ;
-        cmdStr.append("\"") ;
-        cmdStr.append(hash) ;
-        cmdStr.append("\")'") ;
+        cmdStr.append("python -c ");
+        cmdStr.append("'import passlib.hash;");
+        cmdStr.append("print passlib.hash.sha512_crypt.verify(\"");
+        cmdStr.append(password);
+        cmdStr.append("\",");
+        cmdStr.append("\"");
+        cmdStr.append(hash);
+        cmdStr.append("\")'");
 
         String cmd = cmdStr.toString();
-        ShellResult sret= ShellUtils.runAndReturn(cmd);
+        ShellResult sret = ShellUtils.runAndReturn(cmd);
 
         sret.raiseExceptionIfFail();
-        if(sret.getStdout().trim().equals("True")){
+        if (sret.getStdout().trim().equals("True")) {
             return true;
         }
 
@@ -845,19 +876,19 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIRegisterAccountMsg) msg);
         } else if (msg instanceof APIDeleteProxyAccountRefMsg) {
             validate((APIDeleteProxyAccountRefMsg) msg);
-        } else if (msg instanceof APIAccountMailAuthenticationMsg){
+        } else if (msg instanceof APIAccountMailAuthenticationMsg) {
             validate((APIAccountMailAuthenticationMsg) msg);
-        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg) {
             validate((APIAccountPhoneAuthenticationMsg) msg);
-        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg) {
             validate((APIAccountPhoneAuthenticationMsg) msg);
-        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg) {
             validate((APIAccountPhoneAuthenticationMsg) msg);
-        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg) {
             validate((APIAccountPhoneAuthenticationMsg) msg);
-        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg) {
             validate((APIAccountPhoneAuthenticationMsg) msg);
-        } else if (msg instanceof APIAccountPhoneAuthenticationMsg){
+        } else if (msg instanceof APIAccountPhoneAuthenticationMsg) {
             validate((APIAccountPhoneAuthenticationMsg) msg);
         }
 
@@ -866,11 +897,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         return msg;
     }
 
-    private void validate(APIAccountPhoneAuthenticationMsg msg){
+    private void validate(APIAccountPhoneAuthenticationMsg msg) {
         validateSystemAdminOnlySelf(msg.getAccountUuid(), msg);
     }
 
-    private void validate(APIAccountMailAuthenticationMsg msg){
+    private void validate(APIAccountMailAuthenticationMsg msg) {
         validateSystemAdminOnlySelf(msg.getAccountUuid(), msg);
     }
 
@@ -904,10 +935,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
     }
 
-    private void validateSystemAdminOnlySelf(String accountUuid, APIMessage msg){
+    private void validateSystemAdminOnlySelf(String accountUuid, APIMessage msg) {
         AccountVO account = dbf.findByUuid(accountUuid, AccountVO.class);
-        if (account.getType() == AccountType.SystemAdmin){
-            if (!msg.getSession().isAdminAccountSession()){
+        if (account.getType() == AccountType.SystemAdmin) {
+            if (!msg.getSession().isAdminAccountSession()) {
                 throw new ApiMessageInterceptionException(argerr("禁止修改系统管理员信息"));
             }
         }
@@ -1085,7 +1116,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
 
-        if(msg.getName().equals("admin")){
+        if (msg.getName().equals("admin")) {
             throw new ApiMessageInterceptionException(argerr("can not use the name[admin]"));
 
         }
@@ -1179,11 +1210,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
 
-    private void loginLog(String type, String name, String uuid, APIMessage msg){
+    private void loginLog(String type, String name, String uuid, APIMessage msg) {
 
         LoginLogVO vo = dbf.findByUuid(uuid, LoginLogVO.class);
 
-        if(vo == null){
+        if (vo == null) {
             vo = new LoginLogVO();
             vo.setUuid(uuid);
             vo.setName(name);
@@ -1192,7 +1223,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             vo.setLastLoginTime(dbf.getCurrentSqlTime());
             vo.setCreateDate(dbf.getCurrentSqlTime());
             dbf.persistAndRefresh(vo);
-        }else{
+        } else {
             vo.setLastLoginIp(msg.getIp());
             vo.setLastLoginTime(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(vo);

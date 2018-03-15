@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
@@ -35,5 +37,18 @@ public class APIRestartTunnelMonitorMsg extends APIMessage {
 
     public void setMonitorCidr(String monitorCidr) {
         this.monitorCidr = monitorCidr;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Restart Tunnel Monitor")
+                        .resource(tunnelUuid, TunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
