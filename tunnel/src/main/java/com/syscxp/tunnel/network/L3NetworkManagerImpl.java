@@ -251,9 +251,9 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
     private void afterUpdateL3EndpointIP(L3EndPointVO vo, APIUpdateL3EndpointIPMsg msg, ReturnValueCompletion<L3EndPointInventory> completion){
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
+        L3NetworkTaskBase taskBase = new L3NetworkTaskBase();
 
         if(vo.getState() == L3EndpointState.Disabled){
-
             //修改状况
             vo.setState(L3EndpointState.Deploying);
             vo.setStatus(L3EndpointStatus.Disconnected);
@@ -261,61 +261,66 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
             if(l3NetworkBase.isFirstSetEndpointIP(vo)){
 
+                taskBase.taskCreateL3Endpoint(vo,new ReturnValueCompletion<L3EndPointInventory>(null) {
+                    @Override
+                    public void success(L3EndPointInventory inv) {
+                        completion.success(inv);
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        completion.fail(errorCode);
+                    }
+                });
+
             }else{
                 if(l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())){
 
+                    taskBase.taskCreateL3Endpoint(vo,new ReturnValueCompletion<L3EndPointInventory>(null) {
+                        @Override
+                        public void success(L3EndPointInventory inv) {
+                            completion.success(inv);
+                        }
+
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            completion.fail(errorCode);
+                        }
+                    });
+
                 }else{
                     jobf.removeJob(vo.getUuid(), CreateL3EndpointRollBackJob.class);
+
+                    taskBase.taskCreateL3Endpoint(vo,new ReturnValueCompletion<L3EndPointInventory>(null) {
+                        @Override
+                        public void success(L3EndPointInventory inv) {
+                            completion.success(inv);
+                        }
+
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            completion.fail(errorCode);
+                        }
+                    });
                 }
             }
 
-
-            //创建任务
-            TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.CreateL3Endpoint);
-
-            CreateL3EndpointMsg createL3EndpointMsg = new CreateL3EndpointMsg();
-            createL3EndpointMsg.setL3EndpointUuid(vo.getUuid());
-            createL3EndpointMsg.setTaskUuid(taskResourceVO.getUuid());
-
-            bus.makeLocalServiceId(createL3EndpointMsg, L3NetWorkConstant.SERVICE_ID);
-            bus.send(createL3EndpointMsg, new CloudBusCallBack(null) {
-                @Override
-                public void run(MessageReply reply) {
-                    if (reply.isSuccess()) {
-                        completion.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
-                    } else {
-
-                        completion.fail(errf.stringToOperationError("创建连接点设置互联IP下发失败"));
-                    }
-                }
-            });
-
         }else{
-            //创建任务
-            TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.UpdateL3EndpointIP);
+            //修改状况
+            vo.setState(L3EndpointState.Deploying);
+            vo.setStatus(L3EndpointStatus.Disconnected);
+            dbf.updateAndRefresh(vo);
 
-            UpdateL3EndpointIPMsg updateL3EndpointIPMsg = new UpdateL3EndpointIPMsg();
-            updateL3EndpointIPMsg.setL3EndpointUuid(vo.getUuid());
-            updateL3EndpointIPMsg.setTaskUuid(taskResourceVO.getUuid());
+            taskBase.taskUpdateL3EndpointIP(vo.getUuid());
+            completion.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
 
-            bus.makeLocalServiceId(updateL3EndpointIPMsg, L3NetWorkConstant.SERVICE_ID);
-            bus.send(updateL3EndpointIPMsg, new CloudBusCallBack(null) {
-                @Override
-                public void run(MessageReply reply) {
-                    if (reply.isSuccess()) {
-                        completion.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
-                    } else {
-
-                        completion.fail(errf.stringToOperationError("修改互联IP下发失败"));
-                    }
-                }
-            });
         }
 
     }
 
     private void handle(APIUpdateL3EndpointBandwidthMsg msg){
         APIUpdateL3EndpointBandwidthEvent evt = new APIUpdateL3EndpointBandwidthEvent(msg.getId());
+        L3NetworkTaskBase taskBase = new L3NetworkTaskBase();
 
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
 
@@ -332,71 +337,34 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         vo.setBandwidthOffering(msg.getBandwidthOfferingUuid());
         vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
+        vo.setState(L3EndpointState.Deploying);
+        vo.setStatus(L3EndpointStatus.Disconnected);
         vo = dbf.updateAndRefresh(vo);
 
-        //判断是否需要下发
-        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+        taskBase.taskUpdateL3EndpointBandwidth(vo.getUuid());
 
-        if(l3NetworkBase.isControllerReady(vo)){
-            final L3EndPointVO finalVO = vo;
-            //创建任务
-            TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.UpdateL3EndpointBandwidth);
-
-            UpdateL3EndpointBandwidthMsg updateL3EndpointBandwidthMsg = new UpdateL3EndpointBandwidthMsg();
-            updateL3EndpointBandwidthMsg.setL3EndpointUuid(vo.getUuid());
-            updateL3EndpointBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-
-            bus.makeLocalServiceId(updateL3EndpointBandwidthMsg, L3NetWorkConstant.SERVICE_ID);
-            bus.send(updateL3EndpointBandwidthMsg, new CloudBusCallBack(null) {
-                @Override
-                public void run(MessageReply reply) {
-                    if (reply.isSuccess()) {
-                        evt.setInventory(L3EndPointInventory.valueOf(finalVO));
-                        bus.publish(evt);
-                    } else {
-
-                        evt.setError(errf.stringToOperationError("修改L3带宽下发失败"));
-                        bus.publish(evt);
-                    }
-                }
-            });
-        }else{
-            evt.setInventory(L3EndPointInventory.valueOf(vo));
-            bus.publish(evt);
-        }
-
+        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        bus.publish(evt);
     }
 
     private void handle(APIDeleteL3EndPointMsg msg) {
         APIDeleteL3EndPointEvent evt = new APIDeleteL3EndPointEvent(msg.getId());
+        L3NetworkTaskBase taskBase = new L3NetworkTaskBase();
 
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
 
 
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
-        if(l3NetworkBase.isControllerReady(vo)){
-            //创建任务
-            TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.DeleteL3Endpoint);
+        if(vo.getState() == L3EndpointState.Enabled){
+            vo.setState(L3EndpointState.Deploying);
+            vo.setStatus(L3EndpointStatus.Disconnected);
+            vo = dbf.updateAndRefresh(vo);
 
-            DeleteL3EndPointMsg deleteL3EndPointMsg = new DeleteL3EndPointMsg();
-            deleteL3EndPointMsg.setL3EndpointUuid(vo.getUuid());
-            deleteL3EndPointMsg.setTaskUuid(taskResourceVO.getUuid());
+            taskBase.taskDeleteL3Endpoint(vo.getUuid());
 
-            bus.makeLocalServiceId(deleteL3EndPointMsg, L3NetWorkConstant.SERVICE_ID);
-            bus.send(deleteL3EndPointMsg, new CloudBusCallBack(null) {
-                @Override
-                public void run(MessageReply reply) {
-                    if (reply.isSuccess()) {
-
-                        bus.publish(evt);
-                    } else {
-
-                        evt.setError(errf.stringToOperationError("删除L3连接点失败"));
-                        bus.publish(evt);
-                    }
-                }
-            });
+            evt.setInventory(L3EndPointInventory.valueOf(vo));
+            bus.publish(evt);
         }else{
 
             //删除连接点
@@ -410,6 +378,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
     private void handle(APICreateL3RouteMsg msg) {
         APICreateL3RouteEvent evt = new APICreateL3RouteEvent(msg.getId());
+        L3NetworkTaskBase taskBase = new L3NetworkTaskBase();
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
         L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndPointVO.class);
@@ -422,60 +391,32 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setIndex(l3NetworkBase.getIndexForRoute(msg.getL3EndPointUuid()));
 
         vo = dbf.persistAndRefresh(vo);
-        final L3RouteVO finalVO = vo;
-        //创建任务
-        TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.AddL3EndpointRoutes);
 
-        CreateL3RouteMsg createL3RouteMsg = new CreateL3RouteMsg();
-        createL3RouteMsg.setL3RouteUuid(vo.getUuid());
-        createL3RouteMsg.setTaskUuid(taskResourceVO.getUuid());
+        l3EndPointVO.setState(L3EndpointState.Deploying);
+        l3EndPointVO.setStatus(L3EndpointStatus.Disconnected);
+        l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
 
-        bus.makeLocalServiceId(createL3RouteMsg, L3NetWorkConstant.SERVICE_ID);
-        bus.send(createL3RouteMsg, new CloudBusCallBack(null) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
+        taskBase.taskAddL3EndpointRoutes(vo.getUuid());
 
-                    evt.setInventory(L3RouteInventory.valueOf(finalVO));
-                    bus.publish(evt);
-                } else {
-
-                    evt.setError(errf.stringToOperationError("添加路由下发失败"));
-                    bus.publish(evt);
-                }
-            }
-        });
-
+        evt.setInventory(L3EndPointInventory.valueOf(l3EndPointVO));
+        bus.publish(evt);
     }
 
     private void handle(APIDeleteL3RouteMsg msg) {
         APIDeleteL3RouteEvent evt = new APIDeleteL3RouteEvent(msg.getId());
-        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+        L3NetworkTaskBase taskBase = new L3NetworkTaskBase();
 
         L3RouteVO vo = dbf.findByUuid(msg.getUuid(), L3RouteVO.class);
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
 
-        //创建任务
-        TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.DeleteL3EndpointRoutes);
+        l3EndPointVO.setState(L3EndpointState.Deploying);
+        l3EndPointVO.setStatus(L3EndpointStatus.Disconnected);
+        l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
 
-        DeleteL3RouteMsg deleteL3RouteMsg = new DeleteL3RouteMsg();
-        deleteL3RouteMsg.setL3RouteUuid(vo.getUuid());
-        deleteL3RouteMsg.setTaskUuid(taskResourceVO.getUuid());
+        taskBase.taskDeleteL3EndpointRoutes(vo.getUuid());
 
-        bus.makeLocalServiceId(deleteL3RouteMsg, L3NetWorkConstant.SERVICE_ID);
-        bus.send(deleteL3RouteMsg, new CloudBusCallBack(null) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-
-                    bus.publish(evt);
-                } else {
-
-                    evt.setError(errf.stringToOperationError("删除路由下发失败"));
-                    bus.publish(evt);
-                }
-            }
-        });
-
+        evt.setInventory(L3EndPointInventory.valueOf(l3EndPointVO));
+        bus.publish(evt);
     }
 
 

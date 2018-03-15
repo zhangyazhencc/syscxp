@@ -92,6 +92,8 @@ public class L3NetworkValidateBase {
                     }
                 }
             }
+        }else if(vo.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有正在下发的任务，稍后再试！"));
         }else{
             if(!l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())){
                 throw new ApiMessageInterceptionException(argerr("该连接点互联IP没有改变，勿重复操作！"));
@@ -115,10 +117,29 @@ public class L3NetworkValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("该云网络[uuid:%s] 已经调整带宽 %s 次.", msg.getUuid(), times));
         }
+
+        if(vo.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有正在下发的任务，稍后再试！"));
+        }else if((vo.getState() == L3EndpointState.Disabled)){
+            throw new ApiMessageInterceptionException(argerr("该连接点还未开通！"));
+        }
     }
 
     public void validate(APIDeleteL3EndPointMsg msg){
 
+        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+
+        if(vo.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有正在下发的任务，稍后再试！"));
+        }else if(vo.getState() == L3EndpointState.Disabled){
+            if (Q.New(JobQueueEntryVO.class)
+                    .eq(JobQueueEntryVO_.resourceUuid, vo.getUuid())
+                    .eq(JobQueueEntryVO_.name, CreateL3EndpointRollBackJob.class.getName())
+                    .eq(JobQueueEntryVO_.restartable, true)
+                    .isExists()) {
+                throw new ApiMessageInterceptionException(argerr("该连接点有回滚任务尚未完成，稍后再试！"));
+            }
+        }
     }
 
     public void validate(APICreateL3RouteMsg msg){
@@ -155,6 +176,15 @@ public class L3NetworkValidateBase {
     }
 
     public void validate(APIDeleteL3RouteMsg msg){
+        L3RouteVO l3RouteVO = dbf.findByUuid(msg.getUuid(), L3RouteVO.class);
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(), L3EndPointVO.class);
 
+        if(l3EndPointVO.getState() == L3EndpointState.Disabled){
+            throw new ApiMessageInterceptionException(
+                    argerr("设置路由必须先设置互联IP并成功开启."));
+        }else if(l3EndPointVO.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(
+                    argerr("该连接点有未完成下发任务，不可操作."));
+        }
     }
 }

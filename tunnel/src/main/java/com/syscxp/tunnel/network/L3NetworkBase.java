@@ -250,7 +250,7 @@ public class L3NetworkBase {
     }
 
     /**
-     * 创建L3连接点下发任务
+     * 创建L3连接点路由下发任务
      */
     public TaskResourceVO newTaskResourceVO(L3RouteVO vo, TaskType taskType) {
         TaskResourceVO taskResourceVO = new TaskResourceVO();
