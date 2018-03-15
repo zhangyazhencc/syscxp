@@ -7,9 +7,6 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.host.APICreateHostSwitchMonitorEvent;
-import com.syscxp.header.tunnel.host.HostSwitchMonitorVO;
-import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 /**

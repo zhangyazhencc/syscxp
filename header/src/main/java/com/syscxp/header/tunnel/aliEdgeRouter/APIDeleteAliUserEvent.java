@@ -1,9 +1,7 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APIDeleteAliUserEvent extends APIEvent {
     private AliUserInventory inventory;
 

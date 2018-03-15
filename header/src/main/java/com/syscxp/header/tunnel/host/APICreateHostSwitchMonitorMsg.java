@@ -7,17 +7,21 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.endpoint.APICreateInnerEndpointEvent;
-import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
+import org.springframework.http.HttpMethod;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
  * @Description: 创建监控主机与物理交换机关联.
  */
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APICreateHostSwitchMonitorEvent.class
+)
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateHostSwitchMonitorMsg extends APIMessage {

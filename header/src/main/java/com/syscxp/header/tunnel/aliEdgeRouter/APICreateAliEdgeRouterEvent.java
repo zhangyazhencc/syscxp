@@ -3,7 +3,6 @@ package com.syscxp.header.tunnel.aliEdgeRouter;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APICreateAliEdgeRouterEvent extends APIEvent{
 
     private boolean aliIdentityFailure;

@@ -1,11 +1,9 @@
 package com.syscxp.header.host;
 
 import com.syscxp.header.query.APIQueryReply;
-import com.syscxp.header.rest.RestResponse;
 
 import java.util.List;
 
-@RestResponse(allTo = "inventories")
 public class APIQueryHostReply extends APIQueryReply {
     private List<HostInventory> inventories;
 
