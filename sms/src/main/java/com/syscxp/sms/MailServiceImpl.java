@@ -171,7 +171,6 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         mailSender.setUsername(MailGlobalProperty.MAIL_USERNAME);
         mailSender.setPassword(MailGlobalProperty.MAIL_PASSWORD);
         Properties prop = new Properties();
-
         prop.put("mail.smtp.auth", true);
         prop.put("mail.smtp.starttls.enable", true);
         prop.put("mail.smtp.timeout", 5000);
