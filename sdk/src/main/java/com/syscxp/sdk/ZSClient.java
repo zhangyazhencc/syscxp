@@ -391,7 +391,7 @@ public class ZSClient {
             HttpUrl.Builder builder = fillApiRequestBuilderHead();
             for (String k : action.getAllParameterNames()) {
 
-                if (Constants.SECRET_KEY.equals(k) || vars.containsKey(Constants.SECRET_ID)) {
+                if (Constants.SECRET_KEY.equals(k) || vars.containsKey(k)) {
                     continue;
                 }
                 Object v = action.getParameterValue(k);
