@@ -44,7 +44,7 @@ public class L3NetworkBase {
 
             List<Integer> allocationIndexs = Q.New(L3RouteVO.class)
                     .eq(L3RouteVO_.l3EndPointUuid, l3EndpointUuid)
-                    .select(L3RouteVO_.index)
+                    .select(L3RouteVO_.indexNum)
                     .listValues();
 
             for(int i = 1; i <= 1000; i++){

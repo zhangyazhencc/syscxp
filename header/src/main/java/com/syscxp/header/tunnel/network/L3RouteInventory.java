@@ -14,7 +14,7 @@ public class L3RouteInventory {
     private String l3EndPointUuid;
     private String cidr;
     private String nextIp;
-    private Integer index;
+    private Integer indexNum;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -24,7 +24,7 @@ public class L3RouteInventory {
         inv.setCidr(vo.getCidr());
         inv.setL3EndPointUuid(vo.getL3EndPointUuid());
         inv.setNextIp(vo.getNextIp());
-        inv.setIndex(vo.getIndex());
+        inv.setIndexNum(vo.getIndexNum());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -86,11 +86,11 @@ public class L3RouteInventory {
         this.createDate = createDate;
     }
 
-    public Integer getIndex() {
-        return index;
+    public Integer getIndexNum() {
+        return indexNum;
     }
 
-    public void setIndex(Integer index) {
-        this.index = index;
+    public void setIndexNum(Integer indexNum) {
+        this.indexNum = indexNum;
     }
 }

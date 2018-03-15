@@ -372,7 +372,7 @@ public class L3NetworkControllerBase {
                 l3RoutesConfig.setBusiness_ip(cidr[0]);
                 l3RoutesConfig.setNetmask(cidr[1]);
                 l3RoutesConfig.setRoute_ip(l3RouteVO.getNextIp());
-                l3RoutesConfig.setIndex(l3RouteVO.getIndex());
+                l3RoutesConfig.setIndex(l3RouteVO.getIndexNum());
                 routes.add(l3RoutesConfig);
             }
         }
@@ -422,7 +422,7 @@ public class L3NetworkControllerBase {
         l3RoutesConfig.setBusiness_ip(cidr[0]);
         l3RoutesConfig.setNetmask(cidr[1]);
         l3RoutesConfig.setRoute_ip(vo.getNextIp());
-        l3RoutesConfig.setIndex(vo.getIndex());
+        l3RoutesConfig.setIndex(vo.getIndexNum());
         routes.add(l3RoutesConfig);
 
         L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);

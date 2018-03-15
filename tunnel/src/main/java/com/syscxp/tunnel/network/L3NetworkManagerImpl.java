@@ -383,12 +383,14 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndPointVO.class);
 
+        Integer index = l3NetworkBase.getIndexForRoute(msg.getL3EndPointUuid());
+
         L3RouteVO vo = new L3RouteVO();
         vo.setUuid(Platform.getUuid());
         vo.setL3EndPointUuid(msg.getL3EndPointUuid());
         vo.setCidr(msg.getCidr());
         vo.setNextIp(l3EndPointVO.getRemoteIp());
-        vo.setIndex(l3NetworkBase.getIndexForRoute(msg.getL3EndPointUuid()));
+        vo.setIndexNum(index);
 
         vo = dbf.persistAndRefresh(vo);
 

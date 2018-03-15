@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table
+@Inheritance(strategy = InheritanceType.JOINED)
 public class L3RouteVO {
 
     @Id
@@ -24,7 +25,7 @@ public class L3RouteVO {
     private String nextIp;
 
     @Column
-    private Integer index;
+    private Integer indexNum;
 
     @Column
     private Timestamp lastOpDate;
@@ -69,12 +70,12 @@ public class L3RouteVO {
         this.nextIp = nextIp;
     }
 
-    public Integer getIndex() {
-        return index;
+    public Integer getIndexNum() {
+        return indexNum;
     }
 
-    public void setIndex(Integer index) {
-        this.index = index;
+    public void setIndexNum(Integer indexNum) {
+        this.indexNum = indexNum;
     }
 
     public Timestamp getLastOpDate() {
