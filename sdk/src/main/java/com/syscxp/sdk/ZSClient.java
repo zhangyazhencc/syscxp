@@ -445,18 +445,18 @@ public class ZSClient {
             }
 
             Map body = gson.fromJson(response.body().string(), LinkedHashMap.class);
-            String pollingUrl = (String) body.get(Constants.LOCATION);
-            if (pollingUrl == null) {
+            String result = (String) body.get(Constants.RESULT);
+            if (result == null) {
                 throw new ApiException(String.format("Internal Error] the api[%s] is an async API but the server" +
                         " doesn't return the polling location url", action.getClass().getSimpleName()));
             }
 
             if (completion == null) {
                 // sync polling
-                return syncPollResult(pollingUrl);
+                return syncPollResult(result);
             } else {
                 // async polling
-                asyncPollResult(pollingUrl);
+                asyncPollResult(result);
                 return null;
             }
         }
@@ -540,22 +540,37 @@ public class ZSClient {
             return err;
         }
 
-        private ApiResult syncPollResult(String url) {
+        private void fillApiResultBuilder(Request.Builder reqBuilder, String resultUuid) {
+            Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
+            vars.putAll(getCommonParamMap());
+            vars.put(Constants.ACTION, s(Constants.ASYNC_JOB_ACTION));
+            vars.put("uuid", s(resultUuid));
+            vars.put(Constants.SIGNATURE, s(getSignatureString(vars)));
+
+
+            HttpUrl.Builder urlBuilder = fillApiRequestBuilderHead();
+            for (Map.Entry<String, String[]> entry : vars.entrySet()) {
+                for (String v : entry.getValue()) {
+                    urlBuilder.addQueryParameter(entry.getKey(), v);
+                }
+            }
+            reqBuilder.url(urlBuilder.build()).get();
+        }
+
+        private ApiResult syncPollResult(String resultUuid) {
             long current = System.currentTimeMillis();
             Long timeout = (Long) action.getParameterValue("timeout", false);
             long expiredTime = current + (timeout == null ? config.defaultPollingTimeout : timeout);
             Long interval = (Long) action.getParameterValue("pollingInterval", false);
             interval = interval == null ? config.defaultPollingInterval : interval;
 
-            Object sessionId = action.getParameterValue(Constants.SESSION_ID);
-
             while (current < expiredTime) {
-                Request req = new Request.Builder()
-                        .url(url)
-                        .addHeader(Constants.HEADER_AUTHORIZATION, String.format("%s %s", Constants.OAUTH, sessionId))
-                        .addHeader(Constants.HEADER_JSON_SCHEMA, Boolean.TRUE.toString())
-                        .get()
-                        .build();
+                Request.Builder builder = new Request.Builder()
+                        .addHeader(Constants.HEADER_JSON_SCHEMA, Boolean.TRUE.toString());
+
+                fillApiResultBuilder(builder, resultUuid);
+
+                Request req = builder.build();
 
                 try {
                     try (Response response = http.newCall(req).execute()) {

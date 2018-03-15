@@ -69,7 +69,7 @@ CREATE TABLE  `syscxp_tunnel`.`AsyncRestVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `requestData` TEXT NOT NULL,
   `state` varchar(32) NOT NULL,
-  `result` varchar(32) DEFAULT NULL,
+  `result` TEXT DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)

@@ -12,7 +12,8 @@ interface Constants {
     String SESSION_ID = "sessionId";
     String HEADER_AUTHORIZATION = "Authorization";
     String OAUTH = "OAuth";
-    String LOCATION = "location";
+    String RESULT = "result";
+    String ASYNC_JOB_ACTION = "ApiResult";
 
     MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
