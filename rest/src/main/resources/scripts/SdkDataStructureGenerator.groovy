@@ -208,45 +208,48 @@ ${output.join("\n")}
             Field f = responseClass.getDeclaredField(at.allTo())
             addToFields(at.allTo(), f)
         } else {
-
-            if (at.superclassFieldsTo().length == 1 && at.superclassFieldsTo()[0] == "all") {
-                for (Field f : responseClass.superclass.getDeclaredFields()) {
-                    addToFields(f.name, f)
-                }
-            } else {
-                at.superclassFieldsTo().each { s ->
-                    def ss = s.split("=")
-
-                    def dst, src
-                    if (ss.length == 2) {
-                        dst = ss[0].trim()
-                        src = ss[1].trim()
-                    } else {
-                        dst = src = ss[0]
+            if (at.superclassFieldsTo().length != 0) {
+                if (at.superclassFieldsTo().length == 1 && at.superclassFieldsTo()[0] == "all") {
+                    for (Field f : responseClass.superclass.getDeclaredFields()) {
+                        addToFields(f.name, f)
                     }
+                } else {
+                    at.superclassFieldsTo().each { s ->
+                        def ss = s.split("=")
 
-                    Field f = responseClass.superclass.getDeclaredField(src)
-                    addToFields(dst, f)
+                        def dst, src
+                        if (ss.length == 2) {
+                            dst = ss[0].trim()
+                            src = ss[1].trim()
+                        } else {
+                            dst = src = ss[0]
+                        }
+
+                        Field f = responseClass.superclass.getDeclaredField(src)
+                        addToFields(dst, f)
+                    }
                 }
             }
-            if (at.fieldsTo().length == 1 && at.fieldsTo()[0] == "all") {
-                for (Field f : responseClass.getDeclaredFields()) {
-                    addToFields(f.name, f)
-                }
-            } else {
-                at.fieldsTo().each { s ->
-                    def ss = s.split("=")
-
-                    def dst, src
-                    if (ss.length == 2) {
-                        dst = ss[0].trim()
-                        src = ss[1].trim()
-                    } else {
-                        dst = src = ss[0]
+            if (at.fieldsTo().length != 0) {
+                if (at.fieldsTo().length == 1 && at.fieldsTo()[0] == "all") {
+                    for (Field f : responseClass.getDeclaredFields()) {
+                        addToFields(f.name, f)
                     }
+                } else {
+                    at.fieldsTo().each { s ->
+                        def ss = s.split("=")
 
-                    Field f = responseClass.getDeclaredField(src)
-                    addToFields(dst, f)
+                        def dst, src
+                        if (ss.length == 2) {
+                            dst = ss[0].trim()
+                            src = ss[1].trim()
+                        } else {
+                            dst = src = ss[0]
+                        }
+
+                        Field f = responseClass.getDeclaredField(src)
+                        addToFields(dst, f)
+                    }
                 }
             }
         }

@@ -410,9 +410,9 @@ public class RestServer implements Component, CloudBusEventListener {
             this.annotation = annotation;
             this.apiResponseClass = apiResponseClass;
 
-            if (annotation.fieldsTo().length > 0) {
-                responseMappingFields = new HashMap<>();
 
+            responseMappingFields = new HashMap<>();
+            if (annotation.superclassFieldsTo().length > 0) {
                 if (annotation.superclassFieldsTo().length == 1 && "all".equals(annotation.superclassFieldsTo()[0])) {
                     Field[] fields = apiResponseClass.getSuperclass().getDeclaredFields();
 
@@ -434,7 +434,8 @@ public class RestServer implements Component, CloudBusEventListener {
                         }
                     }
                 }
-
+            }
+            if (annotation.fieldsTo().length > 0) {
                 if (annotation.fieldsTo().length == 1 && "all".equals(annotation.fieldsTo()[0])) {
                     Field[] fields = apiResponseClass.getDeclaredFields();
 
