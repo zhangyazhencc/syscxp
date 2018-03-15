@@ -27,10 +27,9 @@ interface Constants {
 
     String SIGNATURE = "Signature";
     String SECRET_ID = "SecretId";
+    String SECRET_KEY = "SecretKey";
     String TIMESTAMP = "Timestamp";
     String ACTION = "Action";
     String NONCE = "Nonce";
     String SIGNATURE_METHOD = "SignatureMethod";
-
-    String SESSION_UUID = "sessionUuid";
 }

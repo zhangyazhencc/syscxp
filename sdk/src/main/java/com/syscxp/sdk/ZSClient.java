@@ -391,8 +391,7 @@ public class ZSClient {
             HttpUrl.Builder builder = fillApiRequestBuilderHead();
             for (String k : action.getAllParameterNames()) {
 
-                if (Constants.SESSION_ID.equals(k)) {
-                    // the field is set in URL variables
+                if (Constants.SECRET_KEY.equals(k) || vars.containsKey(Constants.SECRET_ID)) {
                     continue;
                 }
                 Object v = action.getParameterValue(k);
