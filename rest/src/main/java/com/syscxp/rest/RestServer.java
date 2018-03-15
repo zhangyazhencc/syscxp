@@ -7,7 +7,6 @@ import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.retry.Retry;
 import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.header.Component;
-import com.syscxp.header.Constants;
 import com.syscxp.header.MapField;
 import com.syscxp.header.apimediator.ApiMediatorConstant;
 import com.syscxp.header.exception.CloudRuntimeException;
@@ -19,7 +18,6 @@ import com.syscxp.header.query.APIQueryReply;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.*;
-import com.syscxp.rest.sdk.DocumentGenerator;
 import com.syscxp.rest.sdk.SdkFile;
 import com.syscxp.rest.sdk.SdkTemplate;
 import com.syscxp.utils.*;
@@ -53,7 +51,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -416,9 +413,32 @@ public class RestServer implements Component, CloudBusEventListener {
             if (annotation.fieldsTo().length > 0) {
                 responseMappingFields = new HashMap<>();
 
+                if (annotation.superclassFieldsTo().length == 1 && "all".equals(annotation.superclassFieldsTo()[0])) {
+                    Field[] fields = apiResponseClass.getSuperclass().getDeclaredFields();
+
+                    List<Field> apiFields = Arrays.stream(fields).filter(f -> !f.isAnnotationPresent(APINoSee.class)
+                            && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
+
+                    for (Field f : apiFields) {
+                        responseMappingFields.put(f.getName(), f.getName());
+                    }
+                } else {
+                    for (String mf : annotation.superclassFieldsTo()) {
+                        String[] kv = mf.split("=");
+                        if (kv.length == 2) {
+                            responseMappingFields.put(kv[0].trim(), kv[1].trim());
+                        } else if (kv.length == 1) {
+                            responseMappingFields.put(kv[0].trim(), kv[0].trim());
+                        } else {
+                            throw new CloudRuntimeException(String.format("bad mappingFields[%s] of %s", mf, apiResponseClass));
+                        }
+                    }
+                }
+
                 if (annotation.fieldsTo().length == 1 && "all".equals(annotation.fieldsTo()[0])) {
-                    List<Field> apiFields = FieldUtils.getAllFields(apiResponseClass);
-                    apiFields = apiFields.stream().filter(f -> !f.isAnnotationPresent(APINoSee.class)
+                    Field[] fields = apiResponseClass.getDeclaredFields();
+
+                    List<Field> apiFields = Arrays.stream(fields).filter(f -> !f.isAnnotationPresent(APINoSee.class)
                             && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
 
                     for (Field f : apiFields) {
