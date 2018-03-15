@@ -67,5 +67,7 @@
         <class>com.syscxp.header.tunnel.solution.SolutionVpnVO</class>
         <class>com.syscxp.header.tunnel.solution.ShareSolutionVO</class>
 
+        <class>com.syscxp.rest.AsyncRestVO</class>
+
     </persistence-unit>
 </persistence>

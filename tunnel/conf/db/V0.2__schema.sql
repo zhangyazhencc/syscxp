@@ -64,3 +64,13 @@ CREATE TABLE `L3RouteVO` (
 
 CREATE VIEW `L3NetworkVO` AS SELECT `uuid`, `accountUuid`, `ownerAccountUuid`, `name`, `code`, `vid`, `type`, `status`, `endPointNum`, `description`, `duration`, `productChargeModel`, `maxModifies`, `expireDate`, `lastOpDate`, `createDate` FROM `L3NetworkEO` WHERE deleted IS NULL;
 
+# REST API
+CREATE TABLE  `syscxp_tunnel`.`AsyncRestVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `requestData` TEXT NOT NULL,
+  `state` varchar(32) NOT NULL,
+  `result` varchar(32) DEFAULT NULL,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
