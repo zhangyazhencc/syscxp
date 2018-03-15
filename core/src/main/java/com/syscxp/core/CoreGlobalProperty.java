@@ -60,6 +60,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "tunnelMaxMotifies", defaultValue = "5")
     public static Integer TUNNEL_MAX_MOTIFIES;
 
+    @GlobalProperty(name = "l3NetworkMaxMotifies", defaultValue = "5")
+    public static Integer L3NETWORK_MAX_MOTIFIES;
+
     @GlobalProperty(name = "controllerManagerUrl", defaultValue = "http://192.168.211.224:8080")
     public static String CONTROLLER_MANAGER_URL;
 
@@ -74,6 +77,12 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "startVsi", defaultValue = "200000")
     public static Integer START_VSI;
+
+    @GlobalProperty(name = "startL3Vid", defaultValue = "100000")
+    public static Integer START_L3_VID;
+
+    @GlobalProperty(name = "maxRouteNum", defaultValue = "50")
+    public static Integer L3_MAX_ROUTENUM;
 
     @GlobalProperty(name = "openTSDBServerUrl", defaultValue = "http://192.168.211.6:4242")
     public static String OPENTSDB_SERVER_URL;
