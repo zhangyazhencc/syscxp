@@ -442,7 +442,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 if (annotation.fieldsTo().length == 1 && "all".equals(annotation.fieldsTo()[0])) {
                     Field[] fields = apiResponseClass.getDeclaredFields();
 
-                   List<Field> apiFields = Arrays.stream(fields).filter(f -> !f.isAnnotationPresent(APINoSee.class)
+                    List<Field> apiFields = Arrays.stream(fields).filter(f -> !f.isAnnotationPresent(APINoSee.class)
                             && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
 
                     for (Field f : apiFields) {
@@ -466,6 +466,8 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     void init() throws IllegalAccessException, InstantiationException {
+        //todo 按类名订阅
+
         bus.subscribeEvent(this, new APIEvent());
     }
 
@@ -938,6 +940,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 .filter(it -> it.isAnnotationPresent(RestRequest.class)).collect(Collectors.toSet());
 
         List<String> errorApiList = new ArrayList<>();
+        Set<APIEvent> boundEvents = new HashSet<>();
         for (Class clz : classes) {
             RestRequest at = (RestRequest) clz.getAnnotation(RestRequest.class);
 
@@ -966,6 +969,18 @@ public class RestServer implements Component, CloudBusEventListener {
 
 
             responseAnnotationByClass.put(api.apiResponseClass, new RestResponseWrapper(api.responseAnnotation, api.apiResponseClass));
+
+
+            try {
+                APIEvent evt = (APIEvent) api.apiResponseClass.newInstance();
+                boundEvents.add(evt);
+            } catch (Exception e) {
+                throw new CloudRuntimeException(String.format("failed to subscribe APIEvent[%s]. ", api.apiResponseClass));
+            }
+        }
+
+        for (APIEvent e : boundEvents) {
+            bus.subscribeEvent(this, e);
         }
 
         responseAnnotationByClass.put(APIEvent.class, new RestResponseWrapper(new RestResponse() {

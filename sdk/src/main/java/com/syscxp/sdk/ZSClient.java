@@ -303,13 +303,11 @@ public class ZSClient {
             } else {
                 vars.put(Constants.ACTION, s(action.getActionName("Action")));
             }
-            vars.put(Constants.SECRET_ID, s(action.SecretId));
+            vars.put(Constants.SECRET_ID, s(config.SecretId));
             vars.put(Constants.TIMESTAMP, s(String.format("%s", System.currentTimeMillis())));
             vars.put(Constants.NONCE, s(String.format("%s", System.currentTimeMillis() % 88888)));
+            vars.put(Constants.SIGNATURE_METHOD, s(config.SignatureMethod));
 
-            if (!action.SignatureMethod.isEmpty()) {
-                vars.put(Constants.SIGNATURE_METHOD, s(action.SignatureMethod));
-            }
             return vars;
         }
 
@@ -329,7 +327,7 @@ public class ZSClient {
 
             requestString.append("?").append(join(params, "&"));
 
-            String hmac = HMAC.encryptHMACString(requestString.toString(), action.SecretKey, vars.getOrDefault(Constants.SIGNATURE_METHOD, s("HmacMD5"))[0]);
+            String hmac = HMAC.encryptHMACString(requestString.toString(), config.SecretKey, vars.getOrDefault(Constants.SIGNATURE_METHOD, s("HmacMD5"))[0]);
 
             return HMAC.encryptBase64(hmac);
         }
@@ -391,7 +389,7 @@ public class ZSClient {
             HttpUrl.Builder builder = fillApiRequestBuilderHead();
             for (String k : action.getAllParameterNames()) {
 
-                if (Constants.SECRET_KEY.equalsIgnoreCase(k) || Constants.SIGNATURE.equalsIgnoreCase(k) || vars.containsKey(k)) {
+                if (Constants.SIGNATURE.equalsIgnoreCase(k) || vars.containsKey(k)) {
                     continue;
                 }
                 Object v = action.getParameterValue(k);
