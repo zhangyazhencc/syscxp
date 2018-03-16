@@ -70,7 +70,7 @@ public class L3NetworkBase {
         glock.lock();
 
         Integer vid;
-        String sql = "select max(vo.vid) from L3NetworkVO vo";
+        String sql = "select max(vo.vid) from L3NetworkEO vo";
         try {
             TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
             vid = vq.getSingleResult();
