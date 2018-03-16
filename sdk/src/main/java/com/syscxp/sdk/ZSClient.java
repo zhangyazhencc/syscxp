@@ -414,7 +414,9 @@ public class ZSClient {
                         }
                     }
                 } else {
-                    vars.put(k, s(v.toString()));
+                    if (v != null) {
+                        vars.put(k, s(v.toString()));
+                    }
                 }
 
             }
