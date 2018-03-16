@@ -33,6 +33,9 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
 
     @Override
     public void intercept(HttpServletRequest req) throws RestServletRequestInterceptorException {
+        if (RestConstants.ASYNC_JOB_ACTION.equals(req.getParameter(RestConstants.ACTION))) {
+            return;
+        }
         String secretId = req.getParameter(RestConstants.SECRET_ID);
         String secretKey = getSecretKey(secretId);
         String signatureString = getSignatureString(req, secretKey);
