@@ -560,8 +560,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
                     //删除产品
                     dbf.remove(vo);
-
-                    evt.setInventory(InterfaceInventory.valueOf(vo));
                 } else {
                     //退订失败
                     evt.setError(errf.stringToOperationError("退订失败"));
