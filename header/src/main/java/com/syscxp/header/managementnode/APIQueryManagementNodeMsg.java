@@ -1,9 +1,7 @@
 package com.syscxp.header.managementnode;
 
-import org.springframework.http.HttpMethod;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
-import com.syscxp.header.rest.RestRequest;
 
 import java.util.List;
 

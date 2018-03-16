@@ -542,11 +542,10 @@ public class ZSClient {
 
         private void fillApiResultBuilder(Request.Builder reqBuilder, String resultUuid) {
             Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
-            vars.putAll(getCommonParamMap());
             vars.put(Constants.ACTION, s(Constants.ASYNC_JOB_ACTION));
+            vars.put(Constants.TIMESTAMP, s(String.format("%s", System.currentTimeMillis())));
+            vars.put(Constants.NONCE, s(String.format("%s", System.currentTimeMillis() % 88888)));
             vars.put("uuid", s(resultUuid));
-            vars.put(Constants.SIGNATURE, s(getSignatureString(vars)));
-
 
             HttpUrl.Builder urlBuilder = fillApiRequestBuilderHead();
             for (Map.Entry<String, String[]> entry : vars.entrySet()) {
