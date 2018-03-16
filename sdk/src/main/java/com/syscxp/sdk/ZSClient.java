@@ -339,7 +339,7 @@ public class ZSClient {
             vars.putAll(getCommonParamMap());
 
             if (!qaction.conditions.isEmpty()) {
-                String[] q = (String[]) qaction.conditions.toArray();
+                String[] q = qaction.conditions.toArray(new String[qaction.conditions.size()]);
                 Arrays.sort(q);
                 vars.put("q", q);
             }
@@ -395,7 +395,7 @@ public class ZSClient {
                 Object v = action.getParameterValue(k);
                 if (v != null) {
                     if (v instanceof Collection) {
-                        String[] ks = (String[]) ((Collection) v).toArray();
+                        String[] ks = ((Collection<String>) v).toArray(new String[((Collection) v).size()]);
                         Arrays.sort(ks);
                         vars.put(k, ks);
                     } else if (v instanceof Map) {
