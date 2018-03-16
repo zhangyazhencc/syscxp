@@ -1,5 +1,7 @@
 package com.syscxp.billing.order;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.syscxp.billing.balance.DealDetailVOHelper;
 import com.syscxp.billing.header.balance.*;
 import com.syscxp.header.billing.APIUpdateOrderExpiredTimeReply;
@@ -951,6 +953,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             int base = catECPBaseWidth(unit);
 
             ProductPriceUnitVO productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), unit.getLineCode(), unit.getConfigCode());
+
+            if (unit.getCategoryCode().equals(ProductCategory.ABROAD) && productPriceUnitVO == null) {
+                String lineCode = unit.getLineCode();
+                List<String> lineCodes = Splitter.on("/").splitToList(lineCode);
+                if (lineCodes.size() == 2) {
+                    String newLineCode = Joiner.on("/").join(lineCodes.get(1), lineCodes.get(0));
+                    productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), newLineCode, unit.getConfigCode());
+                }
+            }
             if (productPriceUnitVO == null) {
                 productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), "DEFAULT", unit.getConfigCode());
                 if (productPriceUnitVO == null) {
