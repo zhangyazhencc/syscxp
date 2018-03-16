@@ -27,5 +27,4 @@ public abstract class QueryAction extends AbstractAction {
 
     public java.util.List fields;
 
-    public String sessionId;
 }

@@ -44,4 +44,11 @@
         <defaultValue>12</defaultValue>
         <type>java.lang.Integer</type>
     </config>
+    <config>
+        <category>vpn</category>
+        <name>vpnConf.downloadUrl</name>
+        <description> vpn vonf download url</description>
+        <defaultValue>http://www.syscxp.com</defaultValue>
+        <type>java.lang.String</type>
+    </config>
 </globalConfig>

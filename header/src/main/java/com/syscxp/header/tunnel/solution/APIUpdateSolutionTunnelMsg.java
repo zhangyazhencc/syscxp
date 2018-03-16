@@ -1,16 +1,22 @@
 package com.syscxp.header.tunnel.solution;
 
-import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.configuration.BandwidthOfferingVO;
+import org.springframework.http.HttpMethod;
 
 import java.math.BigDecimal;
 
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIUpdateSolutionTunnelEvent.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "update")
 public class APIUpdateSolutionTunnelMsg extends  APIMessage {
 

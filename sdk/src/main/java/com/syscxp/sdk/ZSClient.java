@@ -2,7 +2,10 @@ package com.syscxp.sdk;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import okhttp3.*;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Project: syscxp
@@ -106,19 +110,19 @@ public class ZSClient {
 
 
     static String join(Collection lst, String sep) {
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         boolean first = true;
         for (Object s : lst) {
             if (first) {
-                ret = s.toString();
+                ret = new StringBuilder(s.toString());
                 first = false;
                 continue;
             }
 
-            ret = ret + sep + s.toString();
+            ret.append(sep).append(s.toString());
         }
 
-        return ret;
+        return ret.toString();
     }
 
     static class Api {
@@ -241,7 +245,7 @@ public class ZSClient {
 
         private ApiResult syncWebHookResult() {
             synchronized (this) {
-                Long timeout = (Long)action.getParameterValue("timeout", false);
+                Long timeout = (Long) action.getParameterValue("timeout", false);
                 timeout = timeout == null ? config.defaultPollingTimeout : timeout;
 
                 try {
@@ -273,10 +277,9 @@ public class ZSClient {
             }
         }
 
-        private void fillQueryApiRequestBuilder(Request.Builder reqBuilder) {
-            QueryAction qaction = (QueryAction) action;
-
-            HttpUrl.Builder urlBuilder = new HttpUrl.Builder().scheme("http")
+        private HttpUrl.Builder fillApiRequestBuilderHead() {
+            HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
+                    .scheme(config.scheme)
                     .host(config.hostname)
                     .port(config.port);
 
@@ -284,141 +287,154 @@ public class ZSClient {
                 urlBuilder.addPathSegments(config.contextPath);
             }
 
-            urlBuilder.addPathSegment("v1")
-                    .addPathSegments(info.path.replaceFirst("/", ""));
+            urlBuilder.addPathSegment("v1");
+
+            return urlBuilder;
+        }
+
+        private String[] s(String... strs) {
+            return strs;
+        }
+
+        private Map<String, String[]> getCommonParamMap() {
+            Map<String, String[]> vars = new HashMap<>();
+            if (action.Action != null && !action.Action.isEmpty()) {
+                vars.put(Constants.ACTION, s(action.Action));
+            } else {
+                vars.put(Constants.ACTION, s(action.getActionName("Action")));
+            }
+            vars.put(Constants.SECRET_ID, s(action.SecretId));
+            vars.put(Constants.TIMESTAMP, s(String.format("%s", System.currentTimeMillis())));
+            vars.put(Constants.NONCE, s(String.format("%s", System.currentTimeMillis() % 88888)));
+
+            if (!action.SignatureMethod.isEmpty()) {
+                vars.put(Constants.SIGNATURE_METHOD, s(action.SignatureMethod));
+            }
+            return vars;
+        }
+
+
+        private String getSignatureString(Map<String, String[]> vars) {
+
+            List<String> params = vars.entrySet().stream()
+                    .map(arg -> arg.getKey() + "=" + join(Arrays.asList(arg.getValue()), ""))
+                    .collect(Collectors.toList());
+            StringBuilder requestString = new StringBuilder(info.httpMethod);
+            if (config.port == 80) {
+                requestString.append(String.format("%s://%s/%s/%s", config.scheme, config.hostname, config.contextPath, "v1"));
+            } else {
+                requestString.append(String.format("%s://%s:%s/%s/%s", config.scheme, config.hostname, config.port, config.contextPath, "v1"));
+            }
+
+
+            requestString.append("?").append(join(params, "&"));
+
+            String hmac = HMAC.encryptHMACString(requestString.toString(), action.SecretKey, vars.getOrDefault(Constants.SIGNATURE_METHOD, s("HmacMD5"))[0]);
+
+            return HMAC.encryptBase64(hmac);
+        }
+
+        private void fillQueryApiRequestBuilder(Request.Builder reqBuilder) {
+            QueryAction qaction = (QueryAction) action;
+
+            Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
+            vars.putAll(getCommonParamMap());
 
             if (!qaction.conditions.isEmpty()) {
-                for (String cond : qaction.conditions) {
-                    urlBuilder.addQueryParameter("q", cond);
-                }
+                String[] q = (String[]) qaction.conditions.toArray();
+                Arrays.sort(q);
+                vars.put("q", q);
             }
             if (qaction.limit != null) {
-                urlBuilder.addQueryParameter("limit", String.format("%s", qaction.limit));
+                vars.put("limit", s(String.format("%s", qaction.limit)));
             }
             if (qaction.start != null) {
-                urlBuilder.addQueryParameter("start", String.format("%s", qaction.start));
+                vars.put("start", s(String.format("%s", qaction.start)));
             }
             if (qaction.count != null) {
-                urlBuilder.addQueryParameter("count", String.format("%s", qaction.count));
+                vars.put("count", s(String.format("%s", qaction.count)));
             }
             if (qaction.groupBy != null) {
-                urlBuilder.addQueryParameter("groupBy", qaction.groupBy);
+                vars.put("groupBy", s(qaction.groupBy));
             }
             if (qaction.replyWithCount != null) {
-                urlBuilder.addQueryParameter("replyWithCount", String.format("%s", qaction.replyWithCount));
+                vars.put("replyWithCount", s(String.format("%s", qaction.replyWithCount)));
             }
             if (qaction.sortBy != null) {
                 if (qaction.sortDirection == null) {
-                    urlBuilder.addQueryParameter("sort", String.format("%s", qaction.sortBy));
+                    vars.put("sort", s(String.format("%s", qaction.sortBy)));
                 } else {
                     String d = "asc".equals(qaction.sortDirection) ? "+" : "-";
-                    urlBuilder.addQueryParameter("sort", String.format("%s%s", d, qaction.replyWithCount));
+                    vars.put("sort", s(String.format("%s%s", d, qaction.replyWithCount)));
                 }
             }
             if (qaction.fields != null && !qaction.fields.isEmpty()) {
-                urlBuilder.addQueryParameter("fields", join(qaction.fields, ","));
+                vars.put("fields", s(join(qaction.fields, ",")));
             }
 
-            reqBuilder.addHeader(Constants.HEADER_AUTHORIZATION, String.format("%s %s", Constants.OAUTH, qaction.sessionId));
+            vars.put(Constants.SIGNATURE, s(getSignatureString(vars)));
+
+            HttpUrl.Builder urlBuilder = fillApiRequestBuilderHead();
+
+            for (Map.Entry<String, String[]> entry : vars.entrySet()) {
+                for (String v : entry.getValue()) {
+                    urlBuilder.addQueryParameter(entry.getKey(), v);
+                }
+            }
             reqBuilder.url(urlBuilder.build()).get();
         }
 
         private void fillNonQueryApiRequestBuilder(Request.Builder reqBuilder) {
-            HttpUrl.Builder builder = new HttpUrl.Builder()
-                    .scheme("http")
-                    .host(config.hostname)
-                    .port(config.port);
 
-            if (config.contextPath != null) {
-                builder.addPathSegments(config.contextPath);
-            }
+            Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
+            vars.putAll(getCommonParamMap());
+            HttpUrl.Builder builder = fillApiRequestBuilderHead();
+            for (String k : action.getAllParameterNames()) {
 
-            // HttpUrl will add an extra / to the path segment
-            // so /v1/zones will become //v1//zones
-            // we remove the extra / here
-            builder.addPathSegment("v1");
-
-            List<String> varNames = getVarNamesFromUrl(info.path);
-            if (!varNames.isEmpty()) {
-                Map<String, Object> vars = new HashMap<>();
-                for (String vname : varNames) {
-                    Object value = action.getParameterValue(vname);
-
-                    if (value == null) {
-                        throw new ApiException(String.format("missing required field[%s]", vname));
-                    }
-
-                    vars.put(vname, value);
-                }
-
-                String path = substituteUrl(info.path, vars);
-                builder.addPathSegments(path.replaceFirst("/", ""));
-            } else {
-                builder.addPathSegments(info.path.replaceFirst("/", ""));
-            }
-
-            final Map<String, Object> params = new HashMap<>();
-
-            for (String pname : action.getAllParameterNames()) {
-                if (varNames.contains(pname) || Constants.SESSION_ID.equals(pname)) {
-                    // the field is set in URL variables
+                if (Constants.SECRET_KEY.equalsIgnoreCase(k) || Constants.SIGNATURE.equalsIgnoreCase(k) || vars.containsKey(k)) {
                     continue;
                 }
-
-                Object value = action.getParameterValue(pname);
-                if (value != null) {
-                    params.put(pname, value);
-                }
-            }
-
-            if (info.httpMethod.equals("GET") || info.httpMethod.equals("DELETE")) {
-                for (Map.Entry<String, Object> e : params.entrySet()) {
-                    String k = e.getKey();
-                    Object v = e.getValue();
-
-                    if (v instanceof Collection) {
-                        for (Object o : (Collection) v) {
-                            builder.addQueryParameter(k, o.toString());
+                Object v = action.getParameterValue(k);
+                if (v instanceof Collection) {
+                    String[] ks = (String[]) ((Collection) v).toArray();
+                    Arrays.sort(ks);
+                    vars.put(k, ks);
+                } else if (v instanceof Map) {
+                    for (Object o : ((Map) v).entrySet()) {
+                        Map.Entry pe = (Map.Entry) o;
+                        if (!(pe.getKey() instanceof String)) {
+                            throw new ApiException(String.format("%s only supports map parameter whose keys and values are both string. %s.%s.%s is not key string",
+                                    info.httpMethod, action.getClass(), k, pe.getKey()));
                         }
-                    } else if (v instanceof Map) {
-                        for (Object o : ((Map) v).entrySet()) {
-                            Map.Entry pe = (Map.Entry) o;
-                            if (!(pe.getKey() instanceof String)) {
-                                throw new ApiException(String.format("%s only supports map parameter whose keys and values are both string. %s.%s.%s is not key string",
-                                        info.httpMethod, action.getClass(), k, pe.getKey()));
-                            }
 
-                            if (pe.getValue() instanceof Collection) {
-                                for (Object i : (Collection)pe.getValue()) {
-                                    builder.addQueryParameter(String.format("%s.%s", k, pe.getKey()), i.toString());
-                                }
-                            } else {
-                                builder.addQueryParameter(String.format("%s.%s", k, pe.getKey()), pe.getValue().toString());
+                        if (pe.getValue() instanceof Collection) {
+                            for (Object i : (Collection) pe.getValue()) {
+                                vars.put(String.format("%s.%s", k, pe.getKey()), s(i.toString()));
                             }
-
+                        } else {
+                            vars.put(String.format("%s.%s", k, pe.getKey()), s(pe.getValue().toString()));
                         }
-                    } else {
-                        builder.addQueryParameter(k, v.toString());
                     }
-
-                }
-
-                if (info.httpMethod.equals("GET")) {
-                    reqBuilder.url(builder.build().url().toString()).get();
-                } else if (info.httpMethod.equals("DELETE")) {
-                    reqBuilder.url(builder.build().url().toString()).delete();
                 } else {
-                    throw new RuntimeException("should not be here");
+                    vars.put(k, s(v.toString()));
                 }
-            } else {
-                Map m = new HashMap();
-                m.put(info.parameterName, params);
-                reqBuilder.url(builder.build().url().toString()).method(info.httpMethod, RequestBody.create(Constants.JSON, gson.toJson(m)));
+
             }
 
-            if (info.needSession) {
-                Object sessionId = action.getParameterValue(Constants.SESSION_ID);
-                reqBuilder.addHeader(Constants.HEADER_AUTHORIZATION, String.format("%s %s", Constants.OAUTH, sessionId));
+            vars.put(Constants.SIGNATURE, s(getSignatureString(vars)));
+
+            for (Map.Entry<String, String[]> entry : vars.entrySet()) {
+                for (String v : entry.getValue()) {
+                    builder.addQueryParameter(entry.getKey(), v);
+                }
+            }
+
+            switch (info.httpMethod) {
+                case "GET":
+                    reqBuilder.url(builder.build()).get();
+                    break;
+                default:
+                    throw new RuntimeException("should not be here");
             }
         }
 
@@ -429,25 +445,25 @@ public class ZSClient {
             }
 
             Map body = gson.fromJson(response.body().string(), LinkedHashMap.class);
-            String pollingUrl = (String) body.get(Constants.LOCATION);
-            if (pollingUrl == null) {
+            String result = (String) body.get(Constants.RESULT);
+            if (result == null) {
                 throw new ApiException(String.format("Internal Error] the api[%s] is an async API but the server" +
                         " doesn't return the polling location url", action.getClass().getSimpleName()));
             }
 
             if (completion == null) {
                 // sync polling
-                return syncPollResult(pollingUrl);
+                return syncPollResult(result);
             } else {
                 // async polling
-                asyncPollResult(pollingUrl);
+                asyncPollResult(result);
                 return null;
             }
         }
 
         private void asyncPollResult(final String url) {
             final long current = System.currentTimeMillis();
-            final Long timeout = (Long)action.getParameterValue("timeout", false);
+            final Long timeout = (Long) action.getParameterValue("timeout", false);
             final long expiredTime = current + (timeout == null ? config.defaultPollingTimeout : timeout);
             final Long i = (Long) action.getParameterValue("pollingInterval", false);
 
@@ -524,22 +540,37 @@ public class ZSClient {
             return err;
         }
 
-        private ApiResult syncPollResult(String url) {
+        private void fillApiResultBuilder(Request.Builder reqBuilder, String resultUuid) {
+            Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
+            vars.putAll(getCommonParamMap());
+            vars.put(Constants.ACTION, s(Constants.ASYNC_JOB_ACTION));
+            vars.put("uuid", s(resultUuid));
+            vars.put(Constants.SIGNATURE, s(getSignatureString(vars)));
+
+
+            HttpUrl.Builder urlBuilder = fillApiRequestBuilderHead();
+            for (Map.Entry<String, String[]> entry : vars.entrySet()) {
+                for (String v : entry.getValue()) {
+                    urlBuilder.addQueryParameter(entry.getKey(), v);
+                }
+            }
+            reqBuilder.url(urlBuilder.build()).get();
+        }
+
+        private ApiResult syncPollResult(String resultUuid) {
             long current = System.currentTimeMillis();
-            Long timeout = (Long)action.getParameterValue("timeout", false);
+            Long timeout = (Long) action.getParameterValue("timeout", false);
             long expiredTime = current + (timeout == null ? config.defaultPollingTimeout : timeout);
             Long interval = (Long) action.getParameterValue("pollingInterval", false);
             interval = interval == null ? config.defaultPollingInterval : interval;
 
-            Object sessionId = action.getParameterValue(Constants.SESSION_ID);
-
             while (current < expiredTime) {
-                Request req = new Request.Builder()
-                        .url(url)
-                        .addHeader(Constants.HEADER_AUTHORIZATION, String.format("%s %s", Constants.OAUTH, sessionId))
-                        .addHeader(Constants.HEADER_JSON_SCHEMA, Boolean.TRUE.toString())
-                        .get()
-                        .build();
+                Request.Builder builder = new Request.Builder()
+                        .addHeader(Constants.HEADER_JSON_SCHEMA, Boolean.TRUE.toString());
+
+                fillApiResultBuilder(builder, resultUuid);
+
+                Request req = builder.build();
 
                 try {
                     try (Response response = http.newCall(req).execute()) {
@@ -617,4 +648,6 @@ public class ZSClient {
         errorIfNotConfigured();
         return new Api(action).call();
     }
+
+
 }

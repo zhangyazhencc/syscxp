@@ -356,7 +356,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             String path = new String(Base64.encode(sb.toString().getBytes()));
 
-            reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(), RESTConstant.REST_API_CALL, "/", msg.getType(), "/", path));
+            reply.setDownloadUrl(URLBuilder.buildUrlFromBase(VpnGlobalConfig.CONF_DOWNLOAD_URL.value(), RESTConstant.REST_API_CALL, msg.getType(), path));
         }
         bus.reply(msg, reply);
     }
@@ -1220,8 +1220,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             return "clean-expired-vpn-" + Platform.getManagementServerId();
         }
 
-        private Timestamp getCloseTime(){
-            return Timestamp.valueOf(LocalDateTime.now().minusDays(Math.min(expiredVpnCloseTime,expiredVpnDeleteTime)));
+        private Timestamp getCloseTime() {
+            return Timestamp.valueOf(LocalDateTime.now().minusDays(Math.min(expiredVpnCloseTime, expiredVpnDeleteTime)));
         }
 
         private List<VpnVO> getVpnVOs() {
@@ -1232,7 +1232,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         @Override
         public void run() {
-            if (!VpnGlobalConfig.EXPIRED_VPN_CLEAN_RUN.value(Boolean.class)){
+            if (!VpnGlobalConfig.EXPIRED_VPN_CLEAN_RUN.value(Boolean.class)) {
                 return;
             }
 

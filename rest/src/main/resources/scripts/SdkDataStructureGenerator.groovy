@@ -258,7 +258,7 @@ ${output.join("\n")}
         if (APIQueryReply.class.isAssignableFrom(responseClass)) {
             addToFields("total", responseClass.superclass.getDeclaredField("total"))
         }
-        
+
         def output = []
         fields.each { String name, Field f ->
             output.add(makeFieldText(name, f))

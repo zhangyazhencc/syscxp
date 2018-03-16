@@ -8,7 +8,6 @@ import com.syscxp.header.rest.RestResponse;
  * @Cretion Date: 2017-11-13.
  * @Description: 网络工具测速.
  */
-@RestResponse(allTo = "inventory")
 public class APICreateNettoolRecordEvent extends APIEvent {
     private NettoolRecordInventory inventory;
 

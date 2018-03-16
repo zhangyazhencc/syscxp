@@ -5,16 +5,23 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.edgeLine.APIRenewEdgeLineReply;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
+import org.springframework.http.HttpMethod;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
  * @Description: 创建监控通道.
  */
-
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIStartTunnelMonitorEvent.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"update"})
 public class APIStartTunnelMonitorMsg extends APIMessage {
 
