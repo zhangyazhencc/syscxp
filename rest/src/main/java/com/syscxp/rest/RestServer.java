@@ -972,9 +972,11 @@ public class RestServer implements Component, CloudBusEventListener {
 
 
             try {
-                APIEvent evt = (APIEvent) api.apiResponseClass.newInstance();
-                boundEvents.add(evt);
-            } catch (Exception e) {
+                Object evt = api.apiResponseClass.newInstance();
+                if (evt instanceof APIEvent) {
+                    boundEvents.add((APIEvent) evt);
+                }
+            } catch (Exception ex) {
                 throw new CloudRuntimeException(String.format("failed to subscribe APIEvent[%s]. ", api.apiResponseClass));
             }
         }
