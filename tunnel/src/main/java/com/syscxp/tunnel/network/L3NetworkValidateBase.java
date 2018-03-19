@@ -12,6 +12,7 @@ import com.syscxp.header.tunnel.network.*;
 import com.syscxp.tunnel.network.job.CreateL3EndpointRollBackJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.network.NetworkUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -80,6 +81,18 @@ public class L3NetworkValidateBase {
 
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
+        if(!NetworkUtils.isIpv4Address(msg.getLocalIP())){
+            throw new ApiMessageInterceptionException(argerr("该犀思云端IP不是合法的IPV4地址！"));
+        }
+
+        if(!NetworkUtils.isIpv4Address(msg.getRemoteIp())){
+            throw new ApiMessageInterceptionException(argerr("该客户端IP不是合法的IPV4地址！"));
+        }
+
+        if(!NetworkUtils.isNetmask(msg.getNetmask())){
+            throw new ApiMessageInterceptionException(argerr("该子网掩码不合法！"));
+        }
+
         if(vo.getState() == L3EndpointState.Disabled){
             if(!l3NetworkBase.isFirstSetEndpointIP(vo)){
                 if(l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())) {
@@ -143,6 +156,10 @@ public class L3NetworkValidateBase {
     }
 
     public void validate(APICreateL3RouteMsg msg){
+
+        if(!NetworkUtils.isCidr(msg.getCidr())){
+            throw new ApiMessageInterceptionException(argerr("该目标网段不合法！"));
+        }
 
         //目标网段不可重复添加
         if(Q.New(L3RouteVO.class)
