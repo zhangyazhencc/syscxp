@@ -13,16 +13,7 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractAction {
     public String apiId;
-
-    @Param(emptyString = false)
-    public String SecretKey;
-    @Param(emptyString = false)
-    public String SecretId;
     public String Action;
-    public String Timestamp;
-    public String Nonce;
-    public String SignatureMethod = "";
-
 
     abstract RestInfo getRestInfo();
 

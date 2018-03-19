@@ -18,6 +18,9 @@ public class ZSConfig {
     Long readTimeout;
     Long writeTimeout;
     String contextPath;
+    String SecretKey;
+    String SecretId;
+    String SignatureMethod = "HmacMD5";
 
     public String getScheme() {
         return scheme;
@@ -59,6 +62,17 @@ public class ZSConfig {
 
         public Builder setPort(int port) {
             config.port = port;
+            return this;
+        }
+
+        public Builder setSecret(String SecretId, String SecretKey ){
+            config.SecretId = SecretId;
+            config.SecretKey = SecretKey;
+            return this;
+        }
+
+        public Builder setSignatureMethod(String SignatureMethod) {
+            config.SignatureMethod = SignatureMethod;
             return this;
         }
 

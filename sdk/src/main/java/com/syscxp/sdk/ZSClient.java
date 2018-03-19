@@ -303,13 +303,11 @@ public class ZSClient {
             } else {
                 vars.put(Constants.ACTION, s(action.getActionName("Action")));
             }
-            vars.put(Constants.SECRET_ID, s(action.SecretId));
+            vars.put(Constants.SECRET_ID, s(config.SecretId));
             vars.put(Constants.TIMESTAMP, s(String.format("%s", System.currentTimeMillis())));
             vars.put(Constants.NONCE, s(String.format("%s", System.currentTimeMillis() % 88888)));
+            vars.put(Constants.SIGNATURE_METHOD, s(config.SignatureMethod));
 
-            if (!action.SignatureMethod.isEmpty()) {
-                vars.put(Constants.SIGNATURE_METHOD, s(action.SignatureMethod));
-            }
             return vars;
         }
 
@@ -329,7 +327,7 @@ public class ZSClient {
 
             requestString.append("?").append(join(params, "&"));
 
-            String hmac = HMAC.encryptHMACString(requestString.toString(), action.SecretKey, vars.getOrDefault(Constants.SIGNATURE_METHOD, s("HmacMD5"))[0]);
+            String hmac = HMAC.encryptHMACString(requestString.toString(), config.SecretKey, vars.getOrDefault(Constants.SIGNATURE_METHOD, s("HmacMD5"))[0]);
 
             return HMAC.encryptBase64(hmac);
         }
@@ -341,7 +339,7 @@ public class ZSClient {
             vars.putAll(getCommonParamMap());
 
             if (!qaction.conditions.isEmpty()) {
-                String[] q = (String[]) qaction.conditions.toArray();
+                String[] q = qaction.conditions.toArray(new String[qaction.conditions.size()]);
                 Arrays.sort(q);
                 vars.put("q", q);
             }
@@ -391,32 +389,35 @@ public class ZSClient {
             HttpUrl.Builder builder = fillApiRequestBuilderHead();
             for (String k : action.getAllParameterNames()) {
 
-                if (Constants.SECRET_KEY.equalsIgnoreCase(k) || Constants.SIGNATURE.equalsIgnoreCase(k) || vars.containsKey(k)) {
+                if (Constants.SIGNATURE.equalsIgnoreCase(k) || vars.containsKey(k)) {
                     continue;
                 }
                 Object v = action.getParameterValue(k);
-                if (v instanceof Collection) {
-                    String[] ks = (String[]) ((Collection) v).toArray();
-                    Arrays.sort(ks);
-                    vars.put(k, ks);
-                } else if (v instanceof Map) {
-                    for (Object o : ((Map) v).entrySet()) {
-                        Map.Entry pe = (Map.Entry) o;
-                        if (!(pe.getKey() instanceof String)) {
-                            throw new ApiException(String.format("%s only supports map parameter whose keys and values are both string. %s.%s.%s is not key string",
-                                    info.httpMethod, action.getClass(), k, pe.getKey()));
-                        }
-
-                        if (pe.getValue() instanceof Collection) {
-                            for (Object i : (Collection) pe.getValue()) {
-                                vars.put(String.format("%s.%s", k, pe.getKey()), s(i.toString()));
+                if (v != null) {
+                    if (v instanceof Collection) {
+                        String[] ks = ((Collection<String>) v).toArray(new String[((Collection) v).size()]);
+                        Arrays.sort(ks);
+                        vars.put(k, ks);
+                    } else if (v instanceof Map) {
+                        for (Object o : ((Map) v).entrySet()) {
+                            Map.Entry pe = (Map.Entry) o;
+                            if (!(pe.getKey() instanceof String)) {
+                                throw new ApiException(String.format("%s only supports map parameter whose keys and values are both string. %s.%s.%s is not key string",
+                                        info.httpMethod, action.getClass(), k, pe.getKey()));
                             }
-                        } else {
-                            vars.put(String.format("%s.%s", k, pe.getKey()), s(pe.getValue().toString()));
+
+                            if (pe.getValue() instanceof Collection) {
+                                for (Object i : (Collection) pe.getValue()) {
+                                    vars.put(String.format("%s.%s", k, pe.getKey()), s(i.toString()));
+                                }
+                            } else {
+                                vars.put(String.format("%s.%s", k, pe.getKey()), s(pe.getValue().toString()));
+                            }
                         }
+                    } else {
+
+                        vars.put(k, s(v.toString()));
                     }
-                } else {
-                    vars.put(k, s(v.toString()));
                 }
 
             }
