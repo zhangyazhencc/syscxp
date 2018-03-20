@@ -6,7 +6,7 @@ import com.syscxp.header.rest.RestResponse;
 /**
  * Create by DCY on 2017/11/20
  */
-@RestResponse(fieldsTo = {"all"})
+@RestResponse(superclassFieldsTo = {"all"})
 public class APIGetUnscribeTunnelPriceDiffReply extends APIGetUnscribeProductPriceDiffReply {
     public APIGetUnscribeTunnelPriceDiffReply(){}
 

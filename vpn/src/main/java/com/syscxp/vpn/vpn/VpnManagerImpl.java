@@ -819,6 +819,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         }
                     });
                 } else {
+                    vpn.setAccountUuid(null);
+                    vpn.setState(VpnState.Disabled);
+                    dbf.updateAndRefresh(vpn);
+                    LOGGER.debug(String.format("VPN[UUID:%s] 过期退订成功", vpn.getUuid()));
                     trigger.next();
                 }
             }
