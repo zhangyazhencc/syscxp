@@ -16,6 +16,9 @@ public class APILogInBySecretIdMsg extends APISessionMessage {
     @PasswordNoSee
     private String secretKey;
 
+    @APIParam
+    private String IP;
+
     public String getSecretId() {
         return secretId;
     }
@@ -30,5 +33,13 @@ public class APILogInBySecretIdMsg extends APISessionMessage {
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
+    }
+
+    public String getIP() {
+        return IP;
+    }
+
+    public void setIP(String IP) {
+        this.IP = IP;
     }
 }
