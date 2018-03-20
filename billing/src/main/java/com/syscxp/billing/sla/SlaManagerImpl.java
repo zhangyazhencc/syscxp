@@ -157,7 +157,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                     throw new IllegalArgumentException("the network is not fine ,try for a moment");
                 }
 
-            }else if (slaCompensateVO.getProductType().equals(ProductType.HOST) || slaCompensateVO.getProductType().equals(ProductType.DISK) || slaCompensateVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
+            }else if (slaCompensateVO.getProductType().equals(ProductType.HOST) || slaCompensateVO.getProductType().equals(ProductType.DISK) || slaCompensateVO.getProductType().equals(ProductType.RESOURCEPOOL)||slaCompensateVO.getProductType().equals(ProductType.IP)) {
                 Map<String, String> header = new HashMap<>();
                 header.put(RESTConstant.COMMAND_PATH, "compensate");
                 SLACmd slaCmd = new SLACmd();
