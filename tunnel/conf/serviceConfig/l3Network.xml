@@ -8,7 +8,31 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.network.APICreateL3NetworkManualMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.network.APIGetL3VidAutoMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.network.APIGetL3VlanAutoMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.network.APICreateL3EndPointMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.network.APIEnableL3EndPointMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.network.APIDisableL3EndPointMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.network.APICreateL3EndPointManualMsg</name>
     </message>
 
     <message>

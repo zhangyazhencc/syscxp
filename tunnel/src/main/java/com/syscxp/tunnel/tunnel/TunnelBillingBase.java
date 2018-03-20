@@ -109,6 +109,8 @@ public class TunnelBillingBase {
             newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusYears(duration));
         } else if (chargeModel == ProductChargeModel.BY_DAY) {
             newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusDays(duration));
+        } else if (chargeModel == ProductChargeModel.BY_WEEK) {
+            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusWeeks(duration));
         }
         return newTime;
     }

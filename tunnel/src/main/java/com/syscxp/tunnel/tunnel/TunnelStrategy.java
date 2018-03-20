@@ -102,13 +102,16 @@ public class TunnelStrategy  {
         Integer vlan;
 
         //查询该虚拟交换机下所有的Vlan段
-        List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class).eq(SwitchVlanVO_.switchUuid, switchUuid).list();
+        List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class)
+                .eq(SwitchVlanVO_.switchUuid, switchUuid)
+                .eq(SwitchVlanVO_.type, SwitchVlanType.L2)
+                .list();
 
         //查询该虚拟交换机所属物理交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
 
         if(vlanList.isEmpty()){
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置L2 vlan，请联系系统管理员 "));
         }
         if(allocatedVlans.isEmpty()){
             return vlanList.get(0).getStartVlan();
@@ -164,7 +167,17 @@ public class TunnelStrategy  {
         avq.setParameter("mplsPhysicalSwitch", mplsPhysicalSwitch.getUuid());
         avq.setParameter("peerMplsPhysicalSwitch", peerMplsPhysicalSwitch.getUuid());
         avq.setParameter("mplsPhysicalSwitch2", mplsPhysicalSwitch.getUuid());
-        return avq.getResultList();
+        List<Integer> list1 = avq.getResultList();
+
+        String sql2 = "select distinct a.vlan from L3EndPointVO a " +
+                "where a.physicalSwitchUuid = :physicalSwitchUuid";
+        TypedQuery<Integer> avq2 = dbf.getEntityManager().createQuery(sql2,Integer.class);
+        avq2.setParameter("physicalSwitchUuid", mplsPhysicalSwitch.getUuid());
+        List<Integer> list2 = avq2.getResultList();
+
+        list1.addAll(list2);
+
+        return list1;
     }
 
     //分配可用VLAN
