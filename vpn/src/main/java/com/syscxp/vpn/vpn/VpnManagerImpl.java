@@ -79,7 +79,9 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +91,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
+import static com.syscxp.utils.CollectionDSL.e;
 import static com.syscxp.utils.CollectionDSL.list;
 
 /**
@@ -356,7 +359,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             String path = new String(Base64.encode(sb.toString().getBytes()));
 
-            reply.setDownloadUrl(URLBuilder.buildUrlFromBase(VpnGlobalConfig.CONF_DOWNLOAD_URL.value(), RESTConstant.REST_API_CALL, msg.getType(), path));
+            reply.setDownloadUrl(URLBuilder.buildUrlFromBase(VpnGlobalConfig.CONF_DOWNLOAD_URL.value(),
+                    "/", restf.getPath(), RESTConstant.REST_API_CALL, "/", msg.getType(), "/", path));
         }
         bus.reply(msg, reply);
     }
@@ -431,7 +435,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(final FlowTrigger trigger, Map data) {
                 APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-                ProductInfoForOrder productInfoForOrder = createBuyOrderForVPN(vpn, new CreateVpnCallBack());
+                ProductInfoForOrder productInfoForOrder = createBuyOrderForVPN(vpn, msg.getProductChargeModel(), new CreateVpnCallBack());
                 productInfoForOrder.setOpAccountUuid(msg.getSession().getAccountUuid());
                 orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
                 createOrder(orderMsg, new Completion(trigger) {
@@ -440,7 +444,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         vpn.setState(VpnState.Enabled);
                         vpn.setStatus(VpnStatus.Connecting);
                         vpn.setPayment(Payment.PAID);
-                        vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+                        vpn.setExpireDate(generateExpireDate(dbf.getCurrentSqlTime(), msg.getDuration(), msg.getProductChargeModel()));
                         dbf.updateAndRefresh(vpn);
                         LOGGER.debug(String.format("VPN[name:%s, uuid:%s]付款成功", vo.getName(), vo.getUuid()));
                         trigger.next();
@@ -492,6 +496,27 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }).start();
     }
 
+    private Timestamp generateExpireDate(Timestamp start, Integer duration, ProductChargeModel model) {
+        Timestamp end;
+        switch (model) {
+            case BY_DAY:
+                end = Timestamp.valueOf(start.toLocalDateTime().plusDays(duration));
+                break;
+            case BY_WEEK:
+                end = Timestamp.valueOf(start.toLocalDateTime().plusWeeks(duration));
+                break;
+            case BY_MONTH:
+                end = Timestamp.valueOf(start.toLocalDateTime().plusMonths(duration));
+                break;
+            case BY_YEAR:
+                end = Timestamp.valueOf(start.toLocalDateTime().plusYears(duration));
+                break;
+            default:
+                end = Timestamp.valueOf(start.toLocalDateTime().plusMonths(duration));
+                break;
+        }
+        return end;
+    }
 
     private void handle(APICreateVpnMsg msg) {
         final APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
@@ -511,9 +536,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         });
     }
 
-    private ProductInfoForOrder createBuyOrderForVPN(VpnVO vo, NotifyCallBackData callBack) {
+    private ProductInfoForOrder createBuyOrderForVPN(VpnVO vo, ProductChargeModel model, NotifyCallBackData callBack) {
         ProductInfoForOrder order = new ProductInfoForOrder();
-        order.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        order.setProductChargeModel(model);
         order.setDuration(vo.getDuration());
         order.setProductName(vo.getName());
         order.setProductUuid(vo.getUuid());
@@ -591,7 +616,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForVPN(vo, vo.getBandwidthOfferingUuid(), new RenewVpnCallBack()));
         orderMsg.setDuration(msg.getDuration());
-        orderMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        orderMsg.setProductChargeModel(msg.getProductChargeModel() == null ? ProductChargeModel.BY_MONTH : msg.getProductChargeModel());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
@@ -613,25 +638,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         OrderInventory inventory = orderReply.getInventory();
         vo.setDuration(inventory.getDuration());
 
-        vo.setExpireDate(getExpireDate(vo.getExpireDate(), inventory.getProductChargeModel(), inventory.getDuration()));
+        vo.setExpireDate(generateExpireDate(vo.getExpireDate(), inventory.getDuration(), inventory.getProductChargeModel()));
 
         vo = dbf.updateAndRefresh(vo);
         reply.setInventory(VpnInventory.valueOf(vo));
         bus.reply(msg, reply);
     }
-
-    private Timestamp getExpireDate(Timestamp oldTime, ProductChargeModel chargeModel, int duration) {
-        Timestamp newTime = oldTime;
-        if (chargeModel == ProductChargeModel.BY_MONTH) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusMonths(duration));
-        } else if (chargeModel == ProductChargeModel.BY_YEAR) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusYears(duration));
-        } else if (chargeModel == ProductChargeModel.BY_DAY) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusDays(duration));
-        }
-        return newTime;
-    }
-
 
     private void handle(APIRenewAutoVpnMsg msg) {
         VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
@@ -1505,8 +1517,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         Long sum = Q.New(VpnVO.class).in(VpnVO_.hostUuid, hostUuids).eq(VpnVO_.state, VpnState.Enabled).count();
         msg.setHostUuid(hostUuids.get((int) (sum % hostUuids.size())));
+
+        if (msg.getProductChargeModel() == null)
+            msg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), msg.getEndpointUuid()));

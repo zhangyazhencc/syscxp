@@ -2,10 +2,13 @@ package com.syscxp.billing.header.price;
 
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.ProductCategory;
+import com.syscxp.header.billing.ProductPriceUnitVO;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE, adminOnly = true)
 public class APIDeleteVPNPriceMsg extends APIMessage {
@@ -52,5 +55,18 @@ public class APIDeleteVPNPriceMsg extends APIMessage {
 
     public void setLineCode(String lineCode) {
         this.lineCode = lineCode;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("DeleteVPNPrice")
+                        .resource(null, ProductPriceUnitVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

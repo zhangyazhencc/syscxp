@@ -314,6 +314,11 @@ public class TunnelValidateBase {
         SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
         SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
 
+        //验证VSI
+        if(Q.New(TunnelVO.class).eq(TunnelVO_.vsi, msg.getVsi()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该vsi已经被专线使用！"));
+        }
+
         //如果是同一个物理交换机的接入和接出，VLAN必须一样
         if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)){
             if(!msg.getaVlan().equals(msg.getzVlan())){

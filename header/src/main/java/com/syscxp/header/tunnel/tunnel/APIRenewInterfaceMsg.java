@@ -26,7 +26,7 @@ public class APIRenewInterfaceMsg extends APISyncCallMessage {
     @APIParam
     private Integer duration;
 
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getUuid() {

@@ -137,6 +137,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     //tunnel删除，把边界路由器终止
+    //新增如果边界路由器没有确认创建，直接删掉边界路由器
     public void TerminateAliEdgeRouter(String aliEdgeRouterUuid) {
 
         AliEdgeRouterVO vo = dbf.findByUuid(aliEdgeRouterUuid, AliEdgeRouterVO.class);
@@ -149,20 +150,31 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
-        TerminateVirtualBorderRouterRequest request = new TerminateVirtualBorderRouterRequest();
-        request.setVbrId(vo.getVbrUuid());
+        if(vo.getStatus().toString().equals(AliEdgeRouterStatus.WaitCreate.toString())){
+            DeleteVirtualBorderRouterRequest request = new DeleteVirtualBorderRouterRequest();
+            request.setVbrId(vo.getVbrUuid());
+            DeleteVirtualBorderRouterResponse response;
+            try{
+                response = client.getAcsResponse(request);
+                dbf.remove(vo);
+            }catch (ClientException e){
+                throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            }
+        }else if(vo.getStatus().toString().equals(AliEdgeRouterStatus.normal.toString())){
+            TerminateVirtualBorderRouterRequest request = new TerminateVirtualBorderRouterRequest();
+            request.setVbrId(vo.getVbrUuid());
 
-        TerminateVirtualBorderRouterResponse response;
+            TerminateVirtualBorderRouterResponse response;
 
-        try {
-            response = client.getAcsResponse(request);
-            vo.setStatus(AliEdgeRouterStatus.Terminate);
-            dbf.updateAndRefresh(vo);
+            try {
+                response = client.getAcsResponse(request);
+                vo.setStatus(AliEdgeRouterStatus.Terminate);
+                dbf.updateAndRefresh(vo);
 
-        } catch (ClientException e) {
-            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            } catch (ClientException e) {
+                throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            }
         }
-
     }
 
     private void handle(APITerminateAliEdgeRouterMsg msg) {

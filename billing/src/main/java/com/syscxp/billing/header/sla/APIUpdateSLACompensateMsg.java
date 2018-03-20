@@ -3,8 +3,10 @@ package com.syscxp.billing.header.sla;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 import java.sql.Timestamp;
 
@@ -106,5 +108,18 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update SLACompensateVO")
+                        .resource(uuid, SLACompensateVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
