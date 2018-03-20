@@ -1,10 +1,15 @@
 package com.syscxp.billing.header.sla;
 
+import com.syscxp.billing.header.receipt.APICreateReceiptEvent;
+import com.syscxp.billing.header.receipt.ReceiptVO;
+import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_SLA, names = {"create"}, adminOnly = true)
 public class APICreateSLACompensateMsg extends APIMessage {
@@ -95,5 +100,22 @@ public class APICreateSLACompensateMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateSLACompensateEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create SLACompensateVO")
+                        .resource(uuid, SLACompensateVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

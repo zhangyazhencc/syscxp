@@ -308,10 +308,13 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:.*:read"],"effect":"Allow"}'),
 ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*"],"effect":"Allow"}'),
 ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["account:user:.*"],"effect":"Allow"}'),
+('AlarmReadOnlyAccess','只读访问报警的权限','alarm','Normal','0','{"actions":["alarm:.*:read"],"effect":"Allow"}'),
+('AlarmFullAccess','管理报警的权限','alarm','Normal','1','{"actions":["alarm:.*"],"effect":"Allow"}'),
+
 ('ECPReadOnlyAccess','只读访问互联云的权限','ecp','Normal','0','{"actions":["ecp:.*:read"],"effect":"Allow"}'),
 ('ECPFullAccess','管理互联云的权限','ecp','Normal','1','{"actions":["ecp:.*"],"effect":"Allow"}'),
-('AlarmReadOnlyAccess','只读访问报警的权限','alarm','Normal','0','{"actions":["alarm:.*:read"],"effect":"Allow"}'),
-('AlarmFullAccess','管理报警的权限','alarm','Normal','1','{"actions":["alarm:.*"],"effect":"Allow"}');
+('ECPFullQuotaAccess','修改配额的权限','ecp','Normal','0','{"actions":["ecp:identity:APIUpdateQuotaMsg"],"effect":"Allow"}'),
+('ECPFullHostAccess','管理云主机的权限','ecp','Normal','0','{"actions":["ecp:identity:APIUpdateQuotaMsg"],"effect":"Allow"}'),
 
 UPDATE `PolicyVO` p set p.lastOpDate = current_timestamp(), p.createDate = current_timestamp();
 

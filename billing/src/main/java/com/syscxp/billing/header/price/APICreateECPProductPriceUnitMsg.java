@@ -1,9 +1,12 @@
 package com.syscxp.billing.header.price;
 
 import com.syscxp.header.billing.BillingConstant;
+import com.syscxp.header.billing.ProductPriceUnitVO;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE)
 public class APICreateECPProductPriceUnitMsg extends APIMessage{
@@ -94,5 +97,23 @@ public class APICreateECPProductPriceUnitMsg extends APIMessage{
 
     public void setConfigCode(String configCode) {
         this.configCode = configCode;
+    }
+
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateECPProductPriceUnitEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create ProductPriceUnitVO")
+                        .resource(uuid, ProductPriceUnitVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
