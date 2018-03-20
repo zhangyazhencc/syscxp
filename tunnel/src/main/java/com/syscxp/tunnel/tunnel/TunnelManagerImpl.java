@@ -119,6 +119,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APICreateInterfaceMsg) msg);
         } else if (msg instanceof APIGetVlanAutoMsg) {
             handle((APIGetVlanAutoMsg) msg);
+        } else if (msg instanceof APIGetTunnelVsiAutoMsg) {
+            handle((APIGetTunnelVsiAutoMsg) msg);
         } else if (msg instanceof APIGetInterfacePriceMsg) {
             handle((APIGetInterfacePriceMsg) msg);
         } else if (msg instanceof APIGetUnscribeInterfacePriceDiffMsg) {
@@ -1145,7 +1147,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
-        vo.setVsi(tunnelBase.getVsiAuto());
+        vo.setVsi(msg.getVsi());
         vo.setMonitorCidr(null);
         vo.setName(msg.getName());
         vo.setDuration(msg.getDuration());
@@ -2242,6 +2244,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         reply.setInventories(InnerConnectedEndpointInventory.valueOf(innerEndpoints));
         bus.reply(msg, reply);
+    }
+
+    /**
+     * 自动分配VSI
+     * */
+    private void handle(APIGetTunnelVsiAutoMsg msg){
+        APIGetTunnelVsiAutoReply reply = new APIGetTunnelVsiAutoReply();
+
+        TunnelBase tunnelBase = new TunnelBase();
+        reply.setVsi(tunnelBase.getVsiAuto());
+
+        bus.reply(msg, reply);
+
     }
 
     /**
