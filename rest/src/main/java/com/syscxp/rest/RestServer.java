@@ -417,7 +417,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 responseMappingFields = new HashMap<>();
 
                 if (annotation.superclassFieldsTo().length == 1 && "all".equals(annotation.superclassFieldsTo()[0])) {
-                    Field[] fields = apiResponseClass.getDeclaredFields();
+                    Field[] fields = apiResponseClass.getSuperclass().getDeclaredFields();
 
                     List<Field> apiFields = Arrays.stream(fields).filter(f -> !f.isAnnotationPresent(APINoSee.class)
                             && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
