@@ -160,6 +160,16 @@ public class RenewJob {
                         renewCmd.setUuid(renewVO.getProductUuid());
                         String body = JSONObjectUtil.toJsonString(renewCmd);
                         syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                    }else if (renewVO.getProductType().equals(ProductType.IP)) {
+                        Map<String, String> header = new HashMap<>();
+                        header.put(RESTConstant.COMMAND_PATH, "autoRenewElasticIp");
+                        RenewCmd renewCmd = new RenewCmd();
+                        renewCmd.setAccountUuid(renewVO.getAccountUuid());
+                        renewCmd.setDuration(1);
+                        renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
+                        renewCmd.setUuid(renewVO.getProductUuid());
+                        String body = JSONObjectUtil.toJsonString(renewCmd);
+                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
                     }
 
                 } finally {

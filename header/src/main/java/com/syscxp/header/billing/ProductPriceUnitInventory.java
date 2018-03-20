@@ -33,7 +33,7 @@ public class ProductPriceUnitInventory {
     private Timestamp lastOpDate;
 
     private int discount;
-    private ProductCategoryVO productCategoryVO;
+    private ProductCategoryInventory productCategoryInventory;
 
     public static ProductPriceUnitInventory valueOf(ProductPriceUnitVO vo) {
         ProductPriceUnitInventory inv = new ProductPriceUnitInventory();
@@ -50,7 +50,7 @@ public class ProductPriceUnitInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setProductCategoryUuid(vo.getProductCategoryUuid());
         if(vo.getProductCategoryVO()!=null)
-        inv.setProductCategoryVO(vo.getProductCategoryVO());
+        inv.setProductCategoryInventory(ProductCategoryInventory.valueOf(vo.getProductCategoryVO()));
 
         return inv;
     }
@@ -161,11 +161,11 @@ public class ProductPriceUnitInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public ProductCategoryVO getProductCategoryVO() {
-        return productCategoryVO;
+    public ProductCategoryInventory getProductCategoryInventory() {
+        return productCategoryInventory;
     }
 
-    public void setProductCategoryVO(ProductCategoryVO productCategoryVO) {
-        this.productCategoryVO = productCategoryVO;
+    public void setProductCategoryInventory(ProductCategoryInventory productCategoryInventory) {
+        this.productCategoryInventory = productCategoryInventory;
     }
 }
