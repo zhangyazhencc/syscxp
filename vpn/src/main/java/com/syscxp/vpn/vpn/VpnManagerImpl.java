@@ -384,7 +384,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIGetVpnPriceMsg msg) {
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), msg.getEndpointUuid()));

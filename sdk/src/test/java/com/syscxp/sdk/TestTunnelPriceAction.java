@@ -45,7 +45,7 @@ public class TestTunnelPriceAction extends TestSDK {
         GetModifyTunnelPriceDiffAction action = new GetModifyTunnelPriceDiffAction();
 
         action.uuid = tunnelUuid;
-        action.bandwidthOfferingUuid = "";
+        action.bandwidthOfferingUuid = "20M";
 
         GetModifyTunnelPriceDiffResult result = action.call().throwExceptionIfError().value;
 
