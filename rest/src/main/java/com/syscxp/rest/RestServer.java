@@ -406,15 +406,15 @@ public class RestServer implements Component, CloudBusEventListener {
 
     class RestResponseWrapper {
         RestResponse annotation;
-        Map<String, String> responseMappingFields = new HashMap<>();
+        Map<String, String> responseMappingFields;
         Class apiResponseClass;
 
         public RestResponseWrapper(RestResponse annotation, Class apiResponseClass) {
             this.annotation = annotation;
             this.apiResponseClass = apiResponseClass;
 
-            if (annotation.fieldsTo().length > 0) {
-                responseMappingFields = new HashMap<>();
+            responseMappingFields = new HashMap<>();
+            if (annotation.superclassFieldsTo().length > 0) {
 
                 if (annotation.superclassFieldsTo().length == 1 && "all".equals(annotation.superclassFieldsTo()[0])) {
                     Field[] fields = apiResponseClass.getSuperclass().getDeclaredFields();
@@ -426,7 +426,7 @@ public class RestServer implements Component, CloudBusEventListener {
                         responseMappingFields.put(f.getName(), f.getName());
                     }
                 } else {
-                    for (String mf : annotation.fieldsTo()) {
+                    for (String mf : annotation.superclassFieldsTo()) {
                         String[] kv = mf.split("=");
                         if (kv.length == 2) {
                             responseMappingFields.put(kv[0].trim(), kv[1].trim());
@@ -438,7 +438,8 @@ public class RestServer implements Component, CloudBusEventListener {
 
                     }
                 }
-
+            }
+            if (annotation.fieldsTo().length > 0) {
                 if (annotation.fieldsTo().length == 1 && "all".equals(annotation.fieldsTo()[0])) {
                     Field[] fields = apiResponseClass.getDeclaredFields();
 
