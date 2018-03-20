@@ -19,7 +19,7 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
     private String solutionUuid;
     @APIParam(numberRange = {0,Long.MAX_VALUE})
     private BigDecimal cost;
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
     private int duration;

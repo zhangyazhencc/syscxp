@@ -16,7 +16,7 @@ public class APIGetVPNPriceMsg extends APISyncCallMessage {
     @APIParam(maxLength = 128, resourceType = EndpointVO.class)
     private String endpointUuid;
 
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
     private int duration;

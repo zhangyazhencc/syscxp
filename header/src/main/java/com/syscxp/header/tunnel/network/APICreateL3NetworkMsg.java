@@ -21,7 +21,7 @@ public class APICreateL3NetworkMsg extends APIMessage {
     private String description;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK","BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getAccountUuid() {

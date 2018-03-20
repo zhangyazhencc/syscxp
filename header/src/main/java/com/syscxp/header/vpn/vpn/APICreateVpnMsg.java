@@ -1,5 +1,6 @@
 package com.syscxp.header.vpn.vpn;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
@@ -22,6 +23,8 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private String endpointUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
+    @APIParam(required = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
+    private ProductChargeModel productChargeModel;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer vlan;
     @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
@@ -89,6 +92,14 @@ public class APICreateVpnMsg extends APIVpnMessage {
 
     public void setDuration(Integer duration) {
         this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
     }
 
     public ApiNotification __notification__() {
