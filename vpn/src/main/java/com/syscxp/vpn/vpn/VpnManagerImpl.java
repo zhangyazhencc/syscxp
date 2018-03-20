@@ -1091,6 +1091,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(DeleteVpnMsg msg) {
         DeleteVpnReply reply = new DeleteVpnReply();
         VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
+        if (vpn == null) {
+            bus.reply(msg, reply);
+            return;
+        }
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-vpn-%s", msg.getVpnUuid()));
         chain.then(new NoRollbackFlow() {
