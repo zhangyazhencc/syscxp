@@ -80,7 +80,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
     private String getSessionUuid(String secretId, String secretKey, String ip) throws RestServletRequestInterceptorException {
         String sessionUuid = identityInterceptor.getSessionUuid(secretId, secretKey, ip);
         if (sessionUuid == null) {
-            throw new RestServletRequestInterceptorException(401, String.format("secretId:%s 身份认证失败", secretId));
+            throw new RestServletRequestInterceptorException(403, String.format("secretId:%s 身份认证失败", secretId));
         }
         return sessionUuid;
     }

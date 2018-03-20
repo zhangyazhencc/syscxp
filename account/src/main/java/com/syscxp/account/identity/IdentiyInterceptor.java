@@ -107,7 +107,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public String getSessionUuid(String secretId, String secretKey) {
+    public String getSessionUuid(String secretId, String secretKey, String id) {
         return null;
     }
 
