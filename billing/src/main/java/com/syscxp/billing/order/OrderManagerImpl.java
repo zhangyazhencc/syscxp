@@ -1,5 +1,7 @@
 package com.syscxp.billing.order;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.syscxp.billing.balance.DealDetailVOHelper;
 import com.syscxp.billing.header.balance.*;
 import com.syscxp.header.billing.APIUpdateOrderExpiredTimeReply;
@@ -35,6 +37,8 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -200,7 +204,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setPrice(amount);
             orderVo.setType(OrderType.BUY);
             payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, amount, currentTimestamp);
-            LocalDateTime expiredTime = LocalDateTime.now().plusMonths(duration.intValue());
+            Class<LocalDateTime> clazz = LocalDateTime.class;
+
+            LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
             orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
 
@@ -339,7 +345,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setOriginalPrice(discountPrice);
             orderVo.setPrice(discountPrice);
             orderVo.setProductEffectTimeStart(msg.getExpiredTime());
-            orderVo.setProductEffectTimeEnd(Timestamp.valueOf(msg.getExpiredTime().toLocalDateTime().plusMonths(duration.intValue())));
+            orderVo.setProductEffectTimeEnd(Timestamp.valueOf(getExpiredTime(msg.getProductChargeModel(),msg.getDuration())));
             orderVo.setLastPriceOneMonth(renewVO.getPriceOneMonth());
             renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
             renewVO.setProductChargeModel(msg.getProductChargeModel());
@@ -707,11 +713,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private BigDecimal getValuablePayCash(String accountUuid, String productUuid) {
         BigDecimal total = BigDecimal.ZERO;
         List<OrderVO> orderVOs = getValidOrder(accountUuid, productUuid);
-        if (orderVOs == null || orderVOs.size() == 0) {//有有效订单才能退费
-            throw new IllegalArgumentException("the productUuid is not valid");
-        }
-        for (OrderVO orderVO : orderVOs) {
-            total = total.add(orderVO.getPayCash());
+        if (orderVOs != null && orderVOs.size() > 0) {//有有效订单才能退费
+            for (OrderVO orderVO : orderVOs) {
+                total = total.add(orderVO.getPayCash());
+            }
         }
         return total;
     }
@@ -856,7 +861,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                     orderVo.setProductStatus(0);
                 }
                 payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
-                LocalDateTime expiredTime = LocalDateTime.now().plusMonths(duration.intValue());
+                LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
                 orderVo.setProductEffectTimeStart(currentTimestamp);
                 orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
 
@@ -932,6 +937,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal durationMonth = BigDecimal.valueOf(duration);
         if (model.equals(ProductChargeModel.BY_YEAR)) {
             durationMonth = durationMonth.multiply(BigDecimal.valueOf(12));
+        }else if (model.equals(ProductChargeModel.BY_WEEK)) {
+            durationMonth = durationMonth.divide(BigDecimal.valueOf(30),4,BigDecimal.ROUND_HALF_DOWN).multiply(BigDecimal.valueOf(7));
         }
         return durationMonth;
     }
@@ -952,6 +959,16 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             int base = catECPBaseWidth(unit);
 
             ProductPriceUnitVO productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), unit.getLineCode(), unit.getConfigCode());
+
+            if (unit.getCategoryCode().equals(ProductCategory.ABROAD) && productPriceUnitVO == null) {
+                String lineCode = unit.getLineCode();
+                List<String> lineCodes = Splitter.on("/").splitToList(lineCode);
+                if (lineCodes.size() == 2) {
+                    String newLineCode = Joiner.on("/").join(lineCodes.get(1), lineCodes.get(0));
+                    productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), newLineCode, unit.getConfigCode());
+                }
+            }
+
             if (productPriceUnitVO == null) {
                 productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), "DEFAULT", unit.getConfigCode());
                 if (productPriceUnitVO == null) {
@@ -1070,6 +1087,34 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         reply.setDiscountPrice(discountPrice);
         reply.setPayable(payable);
         bus.reply(msg, reply);
+    }
+
+    private static LocalDateTime getExpiredTime(ProductChargeModel productChargeModel,int duration){
+        try {
+            Method m = LocalDateTime.class.getDeclaredMethod(getMethod(productChargeModel),new Class[]{long.class});
+            return  (LocalDateTime) m.invoke(LocalDateTime.now(),new Long[]{Long.valueOf(duration)});
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    private static String getMethod(ProductChargeModel productChargeModel) {
+        switch (productChargeModel) {
+            case BY_DAY:
+                return "plusDays";
+            case BY_WEEK:
+                return "plusWeeks";
+            case BY_YEAR:
+                return "plusYears";
+            case BY_MONTH:
+                return "plusMonths";
+            default:
+                return "plusMonths";
+        }
     }
 
 

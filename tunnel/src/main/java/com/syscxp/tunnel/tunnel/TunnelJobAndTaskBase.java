@@ -98,34 +98,6 @@ public class TunnelJobAndTaskBase {
     }
 
     /**
-     *恢复专线控制器下发
-     * */
-    public void taskRevertTunnel(TunnelVO vo, String commands){
-        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Revert);
-
-        RevertTunnelMsg revertTunnelMsg = new RevertTunnelMsg();
-        revertTunnelMsg.setCommands(commands);
-        revertTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeLocalServiceId(revertTunnelMsg, TunnelConstant.SERVICE_ID);
-        bus.send(revertTunnelMsg, new CloudBusCallBack(null) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-                    jobf.removeJob(vo.getUuid(), RevertTunnelControlJob.class);
-
-                    logger.info("恢复专线成功");
-                } else {
-                    logger.info("下发恢复通道失败，创建任务：RevertTunnelControlJob");
-                    RevertTunnelControlJob job = new RevertTunnelControlJob();
-                    job.setTunnelUuid(vo.getUuid());
-                    job.setCommands(commands);
-                    jobf.execute("恢复专线-控制器下发", Platform.getManagementServerId(), job);
-                }
-            }
-        });
-    }
-
-    /**
      *删除专线控制器下发
      * */
     public void taskDeleteTunnel(TunnelVO vo) {

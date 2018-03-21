@@ -119,6 +119,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APICreateInterfaceMsg) msg);
         } else if (msg instanceof APIGetVlanAutoMsg) {
             handle((APIGetVlanAutoMsg) msg);
+        } else if (msg instanceof APIGetTunnelVsiAutoMsg) {
+            handle((APIGetTunnelVsiAutoMsg) msg);
         } else if (msg instanceof APIGetInterfacePriceMsg) {
             handle((APIGetInterfacePriceMsg) msg);
         } else if (msg instanceof APIGetUnscribeInterfacePriceDiffMsg) {
@@ -560,8 +562,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
                     //删除产品
                     dbf.remove(vo);
-
-                    evt.setInventory(InterfaceInventory.valueOf(vo));
                 } else {
                     //退订失败
                     evt.setError(errf.stringToOperationError("退订失败"));
@@ -1147,7 +1147,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
-        vo.setVsi(tunnelBase.getVsiAuto());
+        vo.setVsi(msg.getVsi());
         vo.setMonitorCidr(null);
         vo.setName(msg.getName());
         vo.setDuration(msg.getDuration());
@@ -1908,6 +1908,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      **/
     private void handle(APIOpenTunnelMsg msg) {
         TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+        TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         APIOpenTunnelEvent evt = new APIOpenTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
@@ -1916,11 +1917,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             vo.setState(TunnelState.Enabled);
             vo.setStatus(TunnelStatus.Connected);
-            if (vo.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(vo.getDuration())));
-            } else if (vo.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(vo.getDuration())));
-            }
+            vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(), vo.getProductChargeModel(), vo.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
 
@@ -2244,6 +2241,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         reply.setInventories(InnerConnectedEndpointInventory.valueOf(innerEndpoints));
         bus.reply(msg, reply);
+    }
+
+    /**
+     * 自动分配VSI
+     * */
+    private void handle(APIGetTunnelVsiAutoMsg msg){
+        APIGetTunnelVsiAutoReply reply = new APIGetTunnelVsiAutoReply();
+
+        TunnelBase tunnelBase = new TunnelBase();
+        reply.setVsi(tunnelBase.getVsiAuto());
+
+        bus.reply(msg, reply);
+
     }
 
     /**

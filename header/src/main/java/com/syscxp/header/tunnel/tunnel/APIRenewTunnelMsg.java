@@ -26,7 +26,7 @@ public class APIRenewTunnelMsg extends APISyncCallMessage {
     private String uuid;
     @APIParam
     private Integer duration;
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getUuid() {

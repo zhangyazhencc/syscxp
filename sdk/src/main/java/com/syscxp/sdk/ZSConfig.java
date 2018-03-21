@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
  * Author: wj
  */
 public class ZSConfig {
+    String scheme = "http";
     String hostname = "localhost";
     int port = 8080;
     long defaultPollingTimeout = TimeUnit.HOURS.toMillis(3);
@@ -17,6 +18,13 @@ public class ZSConfig {
     Long readTimeout;
     Long writeTimeout;
     String contextPath;
+    String SecretKey;
+    String SecretId;
+    String SignatureMethod = "HmacMD5";
+
+    public String getScheme() {
+        return scheme;
+    }
 
     public String getHostname() {
         return hostname;
@@ -37,6 +45,11 @@ public class ZSConfig {
     public static class Builder {
         ZSConfig config = new ZSConfig();
 
+        public Builder setScheme(String scheme) {
+            config.scheme = scheme;
+            return this;
+        }
+
         public Builder setHostname(String hostname) {
             config.hostname = hostname;
             return this;
@@ -49,6 +62,17 @@ public class ZSConfig {
 
         public Builder setPort(int port) {
             config.port = port;
+            return this;
+        }
+
+        public Builder setSecret(String SecretId, String SecretKey ){
+            config.SecretId = SecretId;
+            config.SecretKey = SecretKey;
+            return this;
+        }
+
+        public Builder setSignatureMethod(String SignatureMethod) {
+            config.SignatureMethod = SignatureMethod;
             return this;
         }
 

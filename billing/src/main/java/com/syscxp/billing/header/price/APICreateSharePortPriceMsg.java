@@ -2,10 +2,13 @@ package com.syscxp.billing.header.price;
 
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.ProductCategory;
+import com.syscxp.header.billing.ProductPriceUnitVO;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE, adminOnly = true)
 public class APICreateSharePortPriceMsg extends APIMessage {
@@ -172,5 +175,19 @@ public class APICreateSharePortPriceMsg extends APIMessage {
 
     public void setConfigGT2GPrice(Integer configGT2GPrice) {
         this.configGT2GPrice = configGT2GPrice;
+    }
+
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Create Share Port Price")
+                        .resource(null, ProductPriceUnitVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

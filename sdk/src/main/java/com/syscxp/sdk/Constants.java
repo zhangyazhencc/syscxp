@@ -12,7 +12,8 @@ interface Constants {
     String SESSION_ID = "sessionId";
     String HEADER_AUTHORIZATION = "Authorization";
     String OAUTH = "OAuth";
-    String LOCATION = "location";
+    String RESULT = "result";
+    String ASYNC_JOB_ACTION = "ApiResult";
 
     MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
@@ -24,4 +25,12 @@ interface Constants {
     String HEADER_JOB_UUID = "X-Job-UUID";
     String HEADER_WEBHOOK = "X-Web-Hook";
     String HEADER_JOB_SUCCESS = "X-Job-Success";
+
+    String SIGNATURE = "Signature";
+    String SECRET_ID = "SecretId";
+    String SECRET_KEY = "SecretKey";
+    String TIMESTAMP = "Timestamp";
+    String ACTION = "Action";
+    String NONCE = "Nonce";
+    String SIGNATURE_METHOD = "SignatureMethod";
 }

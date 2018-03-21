@@ -26,4 +26,6 @@ public class VpnGlobalConfig {
 
     @GlobalConfigValidation
     public static GlobalConfig EXPIRED_VPN_CLEAN_RUN = new GlobalConfig(CATEGORY, "expiredVpnClean.run");
+    @GlobalConfigValidation
+    public static GlobalConfig CONF_DOWNLOAD_URL = new GlobalConfig(CATEGORY, "vpnConf.downloadUrl");
 }

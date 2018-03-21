@@ -1,19 +1,21 @@
 package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
+import org.springframework.http.HttpMethod;
 
 import java.math.BigDecimal;
+
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionTunnelMsg extends  APIMessage {
@@ -22,7 +24,7 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
     private String solutionUuid;
     @APIParam(numberRange = {0,Long.MAX_VALUE})
     private BigDecimal cost;
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
     private int duration;

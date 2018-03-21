@@ -23,7 +23,5 @@ public interface RestConstants {
     String NONCE = "Nonce";
     String SIGNATURE_METHOD = "SignatureMethod";
 
-    String CONDITION = "^condition\\.\\d+$";
-
     String SESSION_UUID = "sessionUuid";
 }

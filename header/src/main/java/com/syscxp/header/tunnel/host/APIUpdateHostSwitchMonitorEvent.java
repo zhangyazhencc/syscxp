@@ -1,14 +1,12 @@
 package com.syscxp.header.tunnel.host;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
  * @Description: .
  */
-@RestResponse(allTo = "inventory")
 public class APIUpdateHostSwitchMonitorEvent extends APIEvent {
     private HostSwitchMonitorInventory inventory;
 

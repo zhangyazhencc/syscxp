@@ -1,5 +1,6 @@
 package com.syscxp.header.vpn.vpn;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -16,6 +17,9 @@ public class APIRenewVpnMsg extends APISyncCallMessage {
     @APIParam
     private Integer duration;
 
+    @APIParam(required = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
+    private ProductChargeModel productChargeModel;
+
     public String getUuid() {
         return uuid;
     }
@@ -30,6 +34,14 @@ public class APIRenewVpnMsg extends APISyncCallMessage {
 
     public void setDuration(Integer duration) {
         this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
     }
 
     public ApiNotification __notification__() {

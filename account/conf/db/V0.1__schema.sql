@@ -301,15 +301,20 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["billing:.*:read"],"effect":"Allow"}'),
 ('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["billing:.*"],"effect":"Allow"}'),
 ('BillingPriceFullAccess','管理费用中心价格的权限','billing','SystemAdmin','2','{"actions":["billing:price:.*"],"effect":"Allow"}'),
+('BillingRecharge','现金充值权限','billing','Normal','10','{"actions":["billing:recharge:.*"],"effect":"Allow"}'),
+('BillingPresent','赠送金额充值权限','billing','SystemAdmin','11','{"actions":["billing:present:.*"],"effect":"Allow"}'),
 
 
 ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:.*:read"],"effect":"Allow"}'),
 ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*"],"effect":"Allow"}'),
 ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["account:user:.*"],"effect":"Allow"}'),
+('AlarmReadOnlyAccess','只读访问报警的权限','alarm','Normal','0','{"actions":["alarm:.*:read"],"effect":"Allow"}'),
+('AlarmFullAccess','管理报警的权限','alarm','Normal','1','{"actions":["alarm:.*"],"effect":"Allow"}'),
+
 ('ECPReadOnlyAccess','只读访问互联云的权限','ecp','Normal','0','{"actions":["ecp:.*:read"],"effect":"Allow"}'),
 ('ECPFullAccess','管理互联云的权限','ecp','Normal','1','{"actions":["ecp:.*"],"effect":"Allow"}'),
-('AlarmReadOnlyAccess','只读访问报警的权限','alarm','Normal','0','{"actions":["alarm:.*:read"],"effect":"Allow"}'),
-('AlarmFullAccess','管理报警的权限','alarm','Normal','1','{"actions":["alarm:.*"],"effect":"Allow"}');
+('ECPFullQuotaAccess','修改配额的权限','ecp','Normal','0','{"actions":["ecp:identity:APIUpdateQuotaMsg"],"effect":"Allow"}'),
+('ECPFullHostAccess','管理云主机的权限','ecp','Normal','0','{"actions":["ecp:identity:APIUpdateQuotaMsg"],"effect":"Allow"}'),
 
 UPDATE `PolicyVO` p set p.lastOpDate = current_timestamp(), p.createDate = current_timestamp();
 
@@ -367,6 +372,7 @@ INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('ConnectedCloud','互联
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('VPN','VPN网关', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('InternetTools','网络工具', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('AlertManager','报警管理', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('EdgeLine','最后一公里','console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Others','其他','console');
 
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('cloudLine','申请云专线工单','officialWebsite');

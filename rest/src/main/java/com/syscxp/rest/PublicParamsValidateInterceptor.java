@@ -17,18 +17,21 @@ public class PublicParamsValidateInterceptor implements RestServletRequestInterc
         if (StringUtils.isEmpty(req.getParameter(RestConstants.ACTION))) {
             throw new RestServletRequestInterceptorException(401, "缺少签名参数：Action");
         }
+        if (StringUtils.isEmpty(req.getParameter(RestConstants.TIMESTAMP))) {
+            throw new RestServletRequestInterceptorException(401, "缺少密钥参数：Timestamp");
+        }
+        if (StringUtils.isEmpty(req.getParameter(RestConstants.NONCE))) {
+            throw new RestServletRequestInterceptorException(401, "缺少签名参数：Nonce");
+        }
+        if (RestConstants.ASYNC_JOB_ACTION.equals(req.getParameter(RestConstants.ACTION))) {
+            return;
+        }
         if (StringUtils.isEmpty(req.getParameter(RestConstants.SECRET_ID))) {
             throw new RestServletRequestInterceptorException(401, "缺少密钥参数：SecretId");
         }
         if (StringUtils.isEmpty(req.getParameter(RestConstants.SIGNATURE))) {
             throw new RestServletRequestInterceptorException(401, "缺少签名参数：Signature");
         }
-        if (StringUtils.isEmpty(req.getParameter(RestConstants.TIMESTAMP))) {
-            throw new RestServletRequestInterceptorException(401, "缺少密钥参数：Timestamp");
-        }
 
-        if (StringUtils.isEmpty(req.getParameter(RestConstants.NONCE))) {
-            throw new RestServletRequestInterceptorException(401, "缺少签名参数：Nonce");
-        }
     }
 }

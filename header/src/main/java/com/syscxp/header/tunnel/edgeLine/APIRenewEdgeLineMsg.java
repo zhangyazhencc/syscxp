@@ -7,12 +7,20 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.EdgeLineConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsReply;
+import org.springframework.http.HttpMethod;
 
 /**
  * Create by DCY on 2018/1/12
  */
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIRenewEdgeLineReply.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewEdgeLineMsg extends APISyncCallMessage {
 
@@ -22,7 +30,7 @@ public class APIRenewEdgeLineMsg extends APISyncCallMessage {
     @APIParam
     private Integer duration;
 
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getUuid() {

@@ -6,13 +6,21 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.EdgeLineConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
+import org.springframework.http.HttpMethod;
 
 /**
  * Create by DCY on 2018/1/11
  */
+
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APICreateEdgeLineEvent.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateEdgeLineMsg extends APIMessage {
 

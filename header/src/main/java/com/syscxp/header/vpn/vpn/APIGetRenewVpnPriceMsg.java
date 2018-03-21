@@ -9,7 +9,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 public class APIGetRenewVpnPriceMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;

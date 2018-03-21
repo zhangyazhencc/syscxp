@@ -37,7 +37,7 @@ public class APIGetTunnelPriceMsg extends APISyncCallMessage {
     private String innerEndpointUuid;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK","BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getAccountUuid() {

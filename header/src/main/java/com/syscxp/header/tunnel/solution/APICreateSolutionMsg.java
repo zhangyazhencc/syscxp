@@ -6,9 +6,10 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.switchs.APICreateSwitchVlanEvent;
-import com.syscxp.header.tunnel.switchs.SwitchVlanVO;
+import org.springframework.http.HttpMethod;
+
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionMsg extends  APIMessage {

@@ -1,9 +1,7 @@
 package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(fieldsTo = {"vpnInventory","solutionInventory"})
 public class APICreateSolutionVpnEvent extends APIEvent {
     private SolutionVpnInventory vpnInventory;
     private SolutionInventory solutionInventory;

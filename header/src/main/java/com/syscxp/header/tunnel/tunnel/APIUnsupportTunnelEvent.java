@@ -6,7 +6,6 @@ import com.syscxp.header.rest.RestResponse;
 /**
  * Create by DCY on 2018/1/26
  */
-@RestResponse(allTo = "inventory")
 public class APIUnsupportTunnelEvent extends APIEvent {
     private TunnelInventory inventory;
 

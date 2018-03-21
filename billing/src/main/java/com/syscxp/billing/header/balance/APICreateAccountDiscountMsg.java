@@ -1,11 +1,11 @@
 package com.syscxp.billing.header.balance;
 
-import com.syscxp.header.billing.BillingConstant;
-import com.syscxp.header.billing.ProductCategory;
-import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.billing.*;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"create"})
 public class APICreateAccountDiscountMsg extends APIMessage {
@@ -52,5 +52,22 @@ public class APICreateAccountDiscountMsg extends APIMessage {
 
     public void setProductType(ProductType productType) {
         this.productType = productType;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateAccountDiscountEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create AccountDiscountVO")
+                        .resource(uuid, AccountDiscountVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

@@ -2,8 +2,10 @@ package com.syscxp.billing.header.renew;
 
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 
 import java.math.BigDecimal;
 
@@ -30,5 +32,18 @@ public class APIUpdateRenewPriceMsg extends APIMessage {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update RenewVO Price")
+                        .resource(uuid, RenewVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

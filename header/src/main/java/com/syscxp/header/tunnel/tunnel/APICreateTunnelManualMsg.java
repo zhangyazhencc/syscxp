@@ -24,6 +24,8 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false, maxLength = 32, resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
+    @APIParam
+    private Integer vsi;
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(numberRange = {1, 4094})
@@ -34,7 +36,7 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private Integer zVlan;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(emptyString = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(emptyString = false, required = false)
     private String description;
@@ -158,6 +160,14 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setQinqZ(boolean qinqZ) {
         isQinqZ = qinqZ;
+    }
+
+    public Integer getVsi() {
+        return vsi;
+    }
+
+    public void setVsi(Integer vsi) {
+        this.vsi = vsi;
     }
 
     public ApiNotification __notification__() {

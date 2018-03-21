@@ -406,19 +406,44 @@ public class RestServer implements Component, CloudBusEventListener {
 
     class RestResponseWrapper {
         RestResponse annotation;
-        Map<String, String> responseMappingFields = new HashMap<>();
+        Map<String, String> responseMappingFields;
         Class apiResponseClass;
 
         public RestResponseWrapper(RestResponse annotation, Class apiResponseClass) {
             this.annotation = annotation;
             this.apiResponseClass = apiResponseClass;
 
-            if (annotation.fieldsTo().length > 0) {
-                responseMappingFields = new HashMap<>();
+            responseMappingFields = new HashMap<>();
+            if (annotation.superclassFieldsTo().length > 0) {
 
+                if (annotation.superclassFieldsTo().length == 1 && "all".equals(annotation.superclassFieldsTo()[0])) {
+                    Field[] fields = apiResponseClass.getSuperclass().getDeclaredFields();
+
+                    List<Field> apiFields = Arrays.stream(fields).filter(f -> !f.isAnnotationPresent(APINoSee.class)
+                            && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
+
+                    for (Field f : apiFields) {
+                        responseMappingFields.put(f.getName(), f.getName());
+                    }
+                } else {
+                    for (String mf : annotation.superclassFieldsTo()) {
+                        String[] kv = mf.split("=");
+                        if (kv.length == 2) {
+                            responseMappingFields.put(kv[0].trim(), kv[1].trim());
+                        } else if (kv.length == 1) {
+                            responseMappingFields.put(kv[0].trim(), kv[0].trim());
+                        } else {
+                            throw new CloudRuntimeException(String.format("bad mappingFields[%s] of %s", mf, apiResponseClass));
+                        }
+
+                    }
+                }
+            }
+            if (annotation.fieldsTo().length > 0) {
                 if (annotation.fieldsTo().length == 1 && "all".equals(annotation.fieldsTo()[0])) {
-                    List<Field> apiFields = FieldUtils.getAllFields(apiResponseClass);
-                    apiFields = apiFields.stream().filter(f -> !f.isAnnotationPresent(APINoSee.class)
+                    Field[] fields = apiResponseClass.getDeclaredFields();
+
+                    List<Field> apiFields = Arrays.stream(fields).filter(f -> !f.isAnnotationPresent(APINoSee.class)
                             && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
 
                     for (Field f : apiFields) {
@@ -442,6 +467,8 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     void init() throws IllegalAccessException, InstantiationException {
+        //todo 按类名订阅
+
         bus.subscribeEvent(this, new APIEvent());
     }
 
@@ -756,44 +783,47 @@ public class RestServer implements Component, CloudBusEventListener {
                 }
 
                 msg.setSortBy(varvalue);
-            } else if (Pattern.matches(RestConstants.CONDITION, varname)) {
+            } else if ("q".startsWith(varname)) {
+                String[] conds = e.getValue();
 
-                String OP = null;
-                String delimiter = null;
-                for (String op : QUERY_OP_MAPPING.keySet()) {
-                    if (varvalue.contains(op)) {
-                        OP = QUERY_OP_MAPPING.get(op);
-                        delimiter = op;
-                        break;
+                for (String cond : conds) {
+                    String OP = null;
+                    String delimiter = null;
+                    for (String op : QUERY_OP_MAPPING.keySet()) {
+                        if (cond.contains(op)) {
+                            OP = QUERY_OP_MAPPING.get(op);
+                            delimiter = op;
+                            break;
+                        }
                     }
-                }
 
-                if (OP == null) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
-                            " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
-                            " %s", varvalue, asList(QUERY_OP_MAPPING.keySet())));
-                }
-
-                QueryCondition qc = new QueryCondition();
-                String[] ks = StringUtils.splitByWholeSeparator(varvalue, delimiter, 2);
-                if (OP.equals(QueryOp.IS_NULL.toString()) || OP.equals(QueryOp.NOT_NULL.toString())) {
-                    String cname = ks[0].trim();
-                    qc.setName(cname);
-                    qc.setOp(OP);
-                } else {
-                    if (ks.length != 2) {
+                    if (OP == null) {
                         throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
-                                " The '%s' in parameter[q] is not a key-value pair split by %s", varvalue, OP));
+                                " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
+                                " %s", cond, asList(QUERY_OP_MAPPING.keySet())));
                     }
 
-                    String cname = ks[0].trim();
-                    String cvalue = ks[1]; // don't trim the value, a space is valid in some conditions
-                    qc.setName(cname);
-                    qc.setOp(OP);
-                    qc.setValue(cvalue);
-                }
+                    QueryCondition qc = new QueryCondition();
+                    String[] ks = StringUtils.splitByWholeSeparator(cond, delimiter, 2);
+                    if (OP.equals(QueryOp.IS_NULL.toString()) || OP.equals(QueryOp.NOT_NULL.toString())) {
+                        String cname = ks[0].trim();
+                        qc.setName(cname);
+                        qc.setOp(OP);
+                    } else {
+                        if (ks.length != 2) {
+                            throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
+                                    " The '%s' in parameter[q] is not a key-value pair split by %s", cond, OP));
+                        }
 
-                msg.getConditions().add(qc);
+                        String cname = ks[0].trim();
+                        String cvalue = ks[1]; // don't trim the value, a space is valid in some conditions
+                        qc.setName(cname);
+                        qc.setOp(OP);
+                        qc.setValue(cvalue);
+                    }
+
+                    msg.getConditions().add(qc);
+                }
             } else if ("fields".equals(varname)) {
                 List<String> fs = new ArrayList<>();
                 for (String f : varvalue.split(",")) {
@@ -911,6 +941,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 .filter(it -> it.isAnnotationPresent(RestRequest.class)).collect(Collectors.toSet());
 
         List<String> errorApiList = new ArrayList<>();
+        Set<APIEvent> boundEvents = new HashSet<>();
         for (Class clz : classes) {
             RestRequest at = (RestRequest) clz.getAnnotation(RestRequest.class);
 
@@ -939,6 +970,20 @@ public class RestServer implements Component, CloudBusEventListener {
 
 
             responseAnnotationByClass.put(api.apiResponseClass, new RestResponseWrapper(api.responseAnnotation, api.apiResponseClass));
+
+
+            try {
+                Object evt = api.apiResponseClass.newInstance();
+                if (evt instanceof APIEvent) {
+                    boundEvents.add((APIEvent) evt);
+                }
+            } catch (Exception ex) {
+                throw new CloudRuntimeException(String.format("failed to subscribe APIEvent[%s]. ", api.apiResponseClass));
+            }
+        }
+
+        for (APIEvent e : boundEvents) {
+            bus.subscribeEvent(this, e);
         }
 
         responseAnnotationByClass.put(APIEvent.class, new RestResponseWrapper(new RestResponse() {
@@ -954,6 +999,11 @@ public class RestServer implements Component, CloudBusEventListener {
 
             @Override
             public String[] fieldsTo() {
+                return new String[0];
+            }
+
+            @Override
+            public String[] superclassFieldsTo() {
                 return new String[0];
             }
 

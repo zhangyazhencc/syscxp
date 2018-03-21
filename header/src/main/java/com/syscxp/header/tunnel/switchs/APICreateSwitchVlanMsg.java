@@ -17,6 +17,9 @@ public class APICreateSwitchVlanMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 32,resourceType = SwitchVO.class)
     private String switchUuid;
 
+    @APIParam(emptyString = false,maxLength = 32,validValues = {"L2", "L3"})
+    private SwitchVlanType type;
+
     @APIParam(numberRange = {1, 4094})
     private Integer startVlan;
 
@@ -45,6 +48,14 @@ public class APICreateSwitchVlanMsg extends APIMessage {
 
     public void setEndVlan(Integer endVlan) {
         this.endVlan = endVlan;
+    }
+
+    public SwitchVlanType getType() {
+        return type;
+    }
+
+    public void setType(SwitchVlanType type) {
+        this.type = type;
     }
 
     public ApiNotification __notification__() {

@@ -3,7 +3,6 @@ package com.syscxp.header.tunnel.solution;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(fieldsTo = {"tunnelInventory","solutionInventory"})
 public class APICreateSolutionTunnelEvent extends APIEvent {
     private SolutionTunnelInventory tunnelInventory;
     private SolutionInventory solutionInventory;

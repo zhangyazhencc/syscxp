@@ -168,15 +168,16 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
         q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
         q.add(AccountApiSecurityVO_.secretKey, SimpleQuery.Op.EQ, msg.getSecretKey());
-
-        if (q.isExists()) {
+        AccountApiSecurityVO vo = q.find();
+        if (vo != null && (vo.getAllowIp() == null ||
+                vo.getAllowIp().trim().equals("") || vo.getAllowIp().contains(msg.getIP()))) {
             AccountApiSecurityVO api = q.find();
             reply.setSessionUuid(identiyInterceptor.initSession(
                     dbf.findByUuid(api.getAccountUuid(), AccountVO.class), null).getUuid());
 
         } else {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "Incorrect secretId or secretKey"));
+                    "Incorrect secretId or secretKey or illegal ip"));
         }
 
         bus.reply(msg, reply);
@@ -652,6 +653,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         account = accountq.find();
         if (account == null) {
             throw new OperationFailureException(argerr("account[%s] not found", msg.getAccountName()));
+        }
+
+        if (account.getStatus() == AccountStatus.Disabled) {
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "frozen account"
+            ));
+            bus.reply(msg, reply);
+            return;
         }
 
         SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);

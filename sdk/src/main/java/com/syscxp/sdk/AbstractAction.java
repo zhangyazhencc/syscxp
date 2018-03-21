@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractAction {
     public String apiId;
+    public String Action;
 
     abstract RestInfo getRestInfo();
 
@@ -61,11 +62,11 @@ public abstract class AbstractAction {
         return getParameterMap().keySet();
     }
 
-    Object getParameterValue(String name){
+    Object getParameterValue(String name) {
         return getParameterValue(name, true);
     }
 
-    Object getParameterValue(String name, boolean exceptionOnNotFound){
+    Object getParameterValue(String name, boolean exceptionOnNotFound) {
         Parameter p = getParameterMap().get(name);
         if (p == null) {
             if (exceptionOnNotFound) {
@@ -117,7 +118,7 @@ public abstract class AbstractAction {
 
                 if (value != null && at.validValues().length > 0) {
                     List<String> vals = new ArrayList<>();
-                    for (String val: at.validValues()) {
+                    for (String val : at.validValues()) {
                         vals.add(val.toLowerCase());
                     }
                     if (!vals.contains(value.toString().toLowerCase())) {
@@ -186,5 +187,13 @@ public abstract class AbstractAction {
         } catch (Exception e) {
             throw new ApiException(e);
         }
+    }
+
+    public String getActionName(String suffix) {
+        String clsName = getClass().getSimpleName();
+        if (!clsName.endsWith(suffix)) {
+            return clsName;
+        }
+        return clsName.substring(0, clsName.indexOf(suffix));
     }
 }

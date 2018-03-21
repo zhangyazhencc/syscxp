@@ -37,7 +37,7 @@ public class APICreateInterfaceMsg extends APIMessage {
     private String description;
     @APIParam(required = false)
     private Integer duration;
-    @APIParam(required = false,validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    @APIParam(required = false,validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getName() {

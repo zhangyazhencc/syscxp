@@ -37,6 +37,9 @@ public class ProductCaller {
             case RESOURCEPOOL:
                 this.productUrl = AlipayGlobalProperty.ECP_SERVER_URL;
                 break;
+            case IP:
+                this.productUrl = AlipayGlobalProperty.ECP_SERVER_URL;
+                break;
         }
     }
 

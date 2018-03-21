@@ -132,6 +132,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetTunnelVsiAutoMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelVlanMsg</name>
     </message>
 

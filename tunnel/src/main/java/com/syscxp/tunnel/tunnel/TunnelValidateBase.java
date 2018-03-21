@@ -19,6 +19,8 @@ import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineVO_;
 import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.network.L3EndPointVO;
+import com.syscxp.header.tunnel.network.L3EndPointVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
@@ -63,11 +65,17 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
 
-        //共享端口或者扩展端口不让改
+        //判断物理接口有没有被最后一公里绑定
+        if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("该物理接口[uuid:%s] 被最后一公里绑定, 先删除最后一公里!", msg.getUuid()));
+        }
+
+        /*//共享端口或者扩展端口不让改
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
         if (switchPort.getPortType().equals("SHARE") || switchPort.getPortType().equals("EXTENDPORT"))
             throw new ApiMessageInterceptionException(
-                    argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));
+                    argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));*/
 
         //接口类型暂时不支持改成ACCESS
         if(msg.getNetworkType() == NetworkType.ACCESS){
@@ -212,6 +220,12 @@ public class TunnelValidateBase {
                     argerr("该物理接口[uuid:%s] 被最后一公里绑定, 先删除最后一公里!", msg.getUuid()));
         }
 
+        //判断物理接口有没有被L3使用
+        if(Q.New(L3EndPointVO.class).eq(L3EndPointVO_.interfaceUuid, msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("该物理接口[uuid:%s] 被云网络绑定, 先删除云网络!", msg.getUuid()));
+        }
+
         //判断该产品是否有未完成订单
         checkOrderNoPay(iface.getAccountUuid(), msg.getUuid());
     }
@@ -313,6 +327,11 @@ public class TunnelValidateBase {
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
         SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
+
+        //验证VSI
+        if(Q.New(TunnelVO.class).eq(TunnelVO_.vsi, msg.getVsi()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该vsi已经被专线使用！"));
+        }
 
         //如果是同一个物理交换机的接入和接出，VLAN必须一样
         if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)){

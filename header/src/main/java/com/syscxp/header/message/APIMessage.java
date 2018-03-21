@@ -52,7 +52,6 @@ public abstract class APIMessage extends NeedReplyMessage {
         return msgFields;
     }
 
-    @APINoSee
     private String signature;
 
     public String getSignature() {

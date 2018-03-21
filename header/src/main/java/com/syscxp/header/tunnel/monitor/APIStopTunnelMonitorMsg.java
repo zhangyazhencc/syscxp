@@ -5,9 +5,11 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
+import org.springframework.http.HttpMethod;
 
 /**
  * @Author: sunxuelong.
@@ -15,6 +17,11 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 创建监控通道.
  */
 
+@RestRequest(
+        method = HttpMethod.GET,
+        isAction = true,
+        responseClass = APIStopTunnelMonitorEvent.class
+)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"update"})
 public class APIStopTunnelMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true, maxLength = 32)

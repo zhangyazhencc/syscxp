@@ -1,6 +1,6 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.configuration.BandwidthOfferingVO;
+import com.syscxp.header.configuration.BandwidthOfferingInventory;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
@@ -18,6 +18,6 @@ import org.springframework.http.HttpMethod;
         responseClass = APIQueryBandwidthOfferingReply.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
-@AutoQuery(replyClass = APIQueryBandwidthOfferingReply.class, inventoryClass = BandwidthOfferingVO.class)
+@AutoQuery(replyClass = APIQueryBandwidthOfferingReply.class, inventoryClass = BandwidthOfferingInventory.class)
 public class APIQueryBandwidthOfferingMsg extends APIQueryMessage {
 }
