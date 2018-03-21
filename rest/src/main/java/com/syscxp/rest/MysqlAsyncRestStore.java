@@ -4,12 +4,13 @@ import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
-import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.Component;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIEvent;
+import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.utils.ExceptionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -17,6 +18,9 @@ import org.apache.commons.collections.map.LRUMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import java.util.Collections;
 import java.util.Map;
@@ -32,8 +36,7 @@ import java.util.concurrent.TimeUnit;
 public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
     private static final CLogger logger = Utils.getLogger(MysqlAsyncRestStore.class);
 
-    @Autowired
-    private DatabaseFacade dbf;
+    private EntityManagerFactory entityManagerFactory;
     @Autowired
     private ResourceDestinationMaker destinationMaker;
     @Autowired
@@ -43,13 +46,36 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
     private Map<String, APIEvent> results = Collections.synchronizedMap(new LRUMap(RestGlobalProperty.MAX_CACHED_API_RESULTS));
     private Future cleanupThread;
 
+    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
+    private synchronized EntityManager getEntityManager() {
+        return entityManagerFactory.createEntityManager();
+    }
+
     @Override
     public void save(RequestData d) {
         AsyncRestVO vo = new AsyncRestVO();
         vo.setUuid(d.apiMessage.getId());
         vo.setRequestData(d.toJson());
         vo.setState(AsyncRestState.processing);
-        dbf.persist(vo);
+//        dbf.persist(vo);
+
+        EntityManager mgr = getEntityManager();
+        EntityTransaction tran = mgr.getTransaction();
+        try {
+            tran.begin();
+            mgr.persist(vo);
+            mgr.flush();
+            mgr.refresh(vo);
+            tran.commit();
+        } catch (Exception e) {
+            ExceptionDSL.exceptionSafe(tran::rollback);
+            throw new CloudRuntimeException(e);
+        } finally {
+            ExceptionDSL.exceptionSafe(mgr::close);
+        }
     }
 
     @Override
@@ -57,7 +83,7 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
         RequestData d = null;
 
         if (destinationMaker.isManagedByUs(evt.getApiId())) {
-            AsyncRestVO vo = dbf.findByUuid(evt.getApiId(), AsyncRestVO.class);
+            AsyncRestVO vo = find(evt.getApiId());
 
             if (vo == null) {
                 // for cases that directly send API message which we don't
@@ -69,9 +95,7 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
                 return null;
             }
 
-            vo.setState(AsyncRestState.done);
-            vo.setResult(ApiEventResult.toJson(evt));
-            dbf.update(vo);
+            update(evt);
 
             d = RequestData.fromJson(vo.getRequestData());
         }
@@ -83,6 +107,43 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
         }
 
         return d;
+    }
+
+    private boolean update(APIEvent evt) {
+        String sql = "update AsyncRestVO r set r.result = :result, r.state = :state where r.uuid = :uuid";
+        EntityManager mgr = getEntityManager();
+        EntityTransaction tran = mgr.getTransaction();
+        try {
+            tran.begin();
+            Query query = mgr.createQuery(sql);
+            query.setParameter("result", ApiEventResult.toJson(evt));
+            query.setParameter("state", RestAPIState.Done);
+            query.setParameter("uuid", evt.getApiId());
+            int ret = query.executeUpdate();
+            tran.commit();
+            return ret > 0;
+        } catch (Exception ex) {
+            tran.rollback();
+            throw new CloudRuntimeException(ex);
+        } finally {
+            mgr.close();
+        }
+    }
+
+    private AsyncRestVO find(String uuid) {
+        EntityManager mgr = getEntityManager();
+        EntityTransaction tran = mgr.getTransaction();
+        try {
+            tran.begin();
+            AsyncRestVO vo = mgr.find(AsyncRestVO.class, uuid);
+            tran.commit();
+            return vo;
+        } catch (Exception e) {
+            tran.rollback();
+            throw new CloudRuntimeException(e);
+        } finally {
+            mgr.close();
+        }
     }
 
     @Override
@@ -97,7 +158,8 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
             return result;
         }
 
-        AsyncRestVO vo = dbf.findByUuid(uuid, AsyncRestVO.class);
+        AsyncRestVO vo = find(uuid);
+
         if (vo == null) {
             result.setState(AsyncRestState.expired);
             return result;
@@ -166,10 +228,21 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
             @Transactional
             private void cleanup() {
                 String sql = "DELETE FROM AsyncRestVO vo WHERE vo.state = :state and vo.createDate < (NOW() - INTERVAL :period SECOND)";
-                Query q = dbf.getEntityManager().createQuery(sql);
-                q.setParameter("state", AsyncRestState.done);
-                q.setParameter("period", RestGlobalConfig.COMPLETED_API_EXPIRED_PERIOD.value(Integer.class));
-                q.executeUpdate();
+                EntityManager mgr = getEntityManager();
+                EntityTransaction tran = mgr.getTransaction();
+                try {
+                    tran.begin();
+                    Query query = mgr.createQuery(sql);
+                    query.setParameter("state", RestAPIState.Done);
+                    query.setParameter("period", RestGlobalConfig.COMPLETED_API_EXPIRED_PERIOD.value(Integer.class));
+                    query.executeUpdate();
+                    tran.commit();
+                } catch (Exception ex) {
+                    tran.rollback();
+                    throw new CloudRuntimeException(ex);
+                } finally {
+                    mgr.close();
+                }
             }
         });
     }
