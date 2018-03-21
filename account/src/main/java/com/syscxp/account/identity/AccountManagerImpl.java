@@ -655,6 +655,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new OperationFailureException(argerr("account[%s] not found", msg.getAccountName()));
         }
 
+        if (account.getStatus() == AccountStatus.Disabled) {
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "frozen account"
+            ));
+            bus.reply(msg, reply);
+            return;
+        }
+
         SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
         q.add(UserVO_.accountUuid, Op.EQ, account.getUuid());
         q.add(UserVO_.password, Op.EQ, msg.getPassword());
