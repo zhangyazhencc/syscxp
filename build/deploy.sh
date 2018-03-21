@@ -2,7 +2,7 @@
 set -u
 
 cd ..
-mvn -DskipTests clean install
+mvn -DskipTests clean install -Dmaven.test.skip=true
 cd -
 
 #### mvn war:war

@@ -16,11 +16,7 @@ import org.springframework.http.HttpMethod;
 
 import java.math.BigDecimal;
 
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APICreateSolutionTunnelEvent.class
-)
+
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionTunnelMsg extends  APIMessage {
 

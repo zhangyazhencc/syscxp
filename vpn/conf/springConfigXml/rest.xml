@@ -15,7 +15,12 @@
     http://syscxp.com/schema/syscxp/plugin.xsd"
     default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="MysqlAsyncRestStore" class="com.syscxp.rest.MysqlAsyncRestStore" />
+    <bean id="MysqlAsyncRestStore" class="com.syscxp.rest.MysqlAsyncRestStore">
+        <property name="entityManagerFactory" ref="RESTApiEntityManagerFactory" />
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component" />
+        </syscxp:plugin>
+    </bean>
 
 
     <bean id="PublicParamsInterceptor" class="com.syscxp.rest.PublicParamsValidateInterceptor">

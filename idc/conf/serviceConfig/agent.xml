@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>agent</id>
+    <interceptor>VpnHostApiInterceptor</interceptor>
+
+    <message>
+        <name>com.syscxp.header.vpn.host.APICreateHostInterfaceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.host.APIDeleteHostInterfaceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.vpn.host.APIQueryHostInterfaceMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

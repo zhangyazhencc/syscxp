@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:zstack="http://syscxp.com/schema/syscxp"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:syscxp="http://syscxp.com/schema/syscxp"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/aop
@@ -12,7 +12,5 @@
     http://syscxp.com/schema/syscxp/plugin.xsd"
     default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="LogFacade" class = "com.syscxp.core.logging.LogFacadeImpl" />
-
-    <bean id="Log4jBackend" class = "com.syscxp.core.logging.Log4jBackend" />
+    <bean id="ErrorFacade" class="com.syscxp.core.errorcode.ErrorFacadeImpl" />
 </beans>

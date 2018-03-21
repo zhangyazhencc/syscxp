@@ -101,6 +101,15 @@ public class TestTunnelAction extends TestSDK {
         System.out.println(prettyGson.toJson(result));
 
     }
+    @Test
+    public void testGetVsi() {
+        GetTunnelVsiAutoAction action = new GetTunnelVsiAutoAction();
+
+        GetTunnelVsiAutoResult result = action.call().throwExceptionIfError().value;
+
+        System.out.println(prettyGson.toJson(result));
+
+    }
 
     @Test
     public void testQueryBandwidthOffering() {
@@ -137,13 +146,24 @@ public class TestTunnelAction extends TestSDK {
     }
 
     @Test
-    public void testEnable() {
+    public void testEnableTunnel() {
         EnableTunnelAction action = new EnableTunnelAction();
         action.uuid = tunnelUuid;
 
         action.saveOnly = false;
 
         EnableTunnelResult result = action.call().throwExceptionIfError().value;
+
+        System.out.println(prettyGson.toJson(result));
+    }
+    @Test
+    public void testDisableTunnel() {
+        DisableTunnelAction action = new DisableTunnelAction();
+        action.uuid = tunnelUuid;
+
+        action.saveOnly = false;
+
+        DisableTunnelResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
     }

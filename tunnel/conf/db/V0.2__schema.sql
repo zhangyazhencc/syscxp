@@ -73,7 +73,7 @@ CREATE TABLE `L3RouteVO` (
 
 
 # REST API
-CREATE TABLE  `syscxp_tunnel`.`AsyncRestVO` (
+CREATE TABLE  `syscxp_tunnel_rest`.`AsyncRestVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `requestData` TEXT NOT NULL,
   `state` varchar(32) NOT NULL,

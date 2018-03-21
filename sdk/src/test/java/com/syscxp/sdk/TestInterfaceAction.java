@@ -7,14 +7,15 @@ import java.util.List;
 
 public class TestInterfaceAction extends TestSDK {
 
-    private String interfaceUuid;
+    private String interfaceUuid = "b803575118be4b60a5a415ddf2189ea5";
 
     @Test
     public void testQuery() {
 
         QueryInterfaceAction action = new QueryInterfaceAction();
         List<String> conditions = new ArrayList<>();
-        conditions.add("uuid=cb0f4a9a8ed841b1bc3f5a3651b24b09");
+//        conditions.add("uuid=cb0f4a9a8ed841b1bc3f5a3651b24b09");
+        conditions.add("name=api-test");
         action.conditions = conditions;
 
         QueryInterfaceResult result = action.call().throwExceptionIfError().value;
@@ -56,7 +57,6 @@ public class TestInterfaceAction extends TestSDK {
         CreateInterfaceResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
-        interfaceUuid = result.inventory.uuid;
 
     }
 
@@ -78,21 +78,22 @@ public class TestInterfaceAction extends TestSDK {
 
         DeleteInterfaceAction action = new DeleteInterfaceAction();
         action.uuid = interfaceUuid;
-
+//        DeleteInterfaceAction.Result result = action.call();
         DeleteInterfaceResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
 
     }
+
     @Test(expectedExceptions = ApiException.class)
     public void testRenew() {
 
-        RenewInterfaceAction action = new RenewInterfaceAction();
-        action.uuid = interfaceUuid;
+        RenewEdgeLineAction action = new RenewEdgeLineAction();
+        action.uuid = "";
         action.duration = 1;
         action.productChargeModel = ProductChargeModel.BY_MONTH;
 
-        RenewInterfaceResult result = action.call().throwExceptionIfError().value;
+        RenewEdgeLineResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
 

@@ -5,7 +5,6 @@ import com.syscxp.header.rest.RestResponse;
 
 import java.util.List;
 
-@RestResponse(allTo = "inventories")
 public class APIQueryL3EndPointReply extends APIQueryReply {
     private List<L3EndPointInventory> inventories;
 
