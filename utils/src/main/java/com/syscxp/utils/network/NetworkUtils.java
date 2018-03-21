@@ -597,5 +597,38 @@ public class NetworkUtils {
 
         return a + startVlan;
     }
+
+    public static boolean isIpv4sInNetmask(String ipA, String ipB, String netmask){
+        String[] arrA = ipA.split("\\.");
+        String[] arrB = ipB.split("\\.");
+        String[] arrM = netmask.split("\\.");
+
+        String[] ipResult1s = new String[4];
+        String[] ipResult2s = new String[4];
+
+        for (int i = 0; i < arrA.length; ++i) {
+            ipResult1s[i] = String.valueOf(Integer.parseInt(arrA[i]) & Integer.parseInt(arrM[i]));
+        }
+        for (int i = 0; i < arrB.length; ++i) {
+            ipResult2s[i] = String.valueOf(Integer.parseInt(arrB[i]) & Integer.parseInt(arrM[i]));
+        }
+        String newIp1 = ipResult1s[0] + ipResult1s[1] + ipResult1s[2] + ipResult1s[3];
+        String newIp2 = ipResult2s[0] + ipResult2s[1] + ipResult2s[2] + ipResult2s[3];
+
+        return newIp1.equals(newIp2);
+
+    }
+
+    public static String getIpCidrFromIpv4Netmask(String ip, String netmask){
+        String[] arrIp = ip.split("\\.");
+        String[] arrM = netmask.split("\\.");
+
+        String[] ipResults = new String[4];
+        for (int i = 0; i < arrIp.length; ++i) {
+            ipResults[i] = String.valueOf(Integer.parseInt(arrIp[i]) & Integer.parseInt(arrM[i]));
+        }
+
+        return ipResults[0] +"."+ ipResults[1] +"."+ ipResults[2] +"."+ ipResults[3];
+    }
 }
 

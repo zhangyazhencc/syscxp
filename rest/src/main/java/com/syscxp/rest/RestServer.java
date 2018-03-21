@@ -406,7 +406,7 @@ public class RestServer implements Component, CloudBusEventListener {
 
     class RestResponseWrapper {
         RestResponse annotation;
-        Map<String, String> responseMappingFields = new HashMap<>();
+        Map<String, String> responseMappingFields;
         Class apiResponseClass;
 
         public RestResponseWrapper(RestResponse annotation, Class apiResponseClass) {

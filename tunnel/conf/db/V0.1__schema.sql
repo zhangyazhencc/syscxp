@@ -289,6 +289,8 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchVlanVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `syscxp_tunnel`.`SwitchVlanVO` ADD COLUMN `type` varchar(32) NOT NULL COMMENT 'vlan类型：L2，L3';
+
 ##物理接口
 CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',

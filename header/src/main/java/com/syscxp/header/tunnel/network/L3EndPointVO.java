@@ -55,6 +55,9 @@ public class L3EndPointVO {
     private String netmask;
 
     @Column
+    private String ipCidr;
+
+    @Column
     private String interfaceUuid;
 
     @Column
@@ -266,5 +269,13 @@ public class L3EndPointVO {
 
     public void setState(L3EndpointState state) {
         this.state = state;
+    }
+
+    public String getIpCidr() {
+        return ipCidr;
+    }
+
+    public void setIpCidr(String ipCidr) {
+        this.ipCidr = ipCidr;
     }
 }

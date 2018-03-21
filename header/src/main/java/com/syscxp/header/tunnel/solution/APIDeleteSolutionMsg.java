@@ -9,11 +9,6 @@ import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
 import org.springframework.http.HttpMethod;
 
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIDeleteSolutionEvent.class
-)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "delete")
 public class APIDeleteSolutionMsg extends APIMessage {
 

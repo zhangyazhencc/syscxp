@@ -8,9 +8,7 @@ import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
-import com.syscxp.header.tunnel.network.CreateL3EndpointMsg;
-import com.syscxp.header.tunnel.network.L3EndPointInventory;
-import com.syscxp.header.tunnel.network.L3EndPointVO;
+import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.network.job.*;
 import com.syscxp.utils.Utils;
@@ -35,58 +33,6 @@ public class L3NetworkTaskBase {
     @Autowired
     private DatabaseFacade dbf;
 
-
-    /**
-     * 创建L3连接点失败的回滚任务
-     * */
-    public void taskRollBackCreateTunnel(String l3EndpointUuid){
-        logger.info("下发回滚创建L3Endpoint，创建任务：CreateL3EndpointRollBackJob");
-        CreateL3EndpointRollBackJob job = new CreateL3EndpointRollBackJob();
-        job.setL3EndpointUuid(l3EndpointUuid);
-        jobf.execute("创建L3连接点失败-控制器回滚", Platform.getManagementServerId(), job);
-    }
-
-    /**
-     * 创建L3连接点下发
-     * */
-    public void taskCreateL3Endpoint(L3EndPointVO vo, ReturnValueCompletion<L3EndPointInventory> completionTask) {
-        L3NetworkBase l3NetworkBase = new L3NetworkBase();
-        TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.CreateL3Endpoint);
-
-        CreateL3EndpointMsg createL3EndpointMsg = new CreateL3EndpointMsg();
-        createL3EndpointMsg.setL3EndpointUuid(vo.getUuid());
-        createL3EndpointMsg.setTaskUuid(taskResourceVO.getUuid());
-
-        bus.makeLocalServiceId(createL3EndpointMsg, L3NetWorkConstant.SERVICE_ID);
-        bus.send(createL3EndpointMsg, new CloudBusCallBack(null) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-
-                    completionTask.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
-                } else {
-
-                    if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
-                        logger.info("创建L3连接点下发失败，控制器回滚失败，开始回滚控制器");
-                        taskRollBackCreateTunnel(vo.getUuid());
-                    }
-
-                    completionTask.fail(reply.getError());
-                }
-            }
-        });
-    }
-
-    /**
-     * 修改互联IP下发
-     * */
-    public void taskUpdateL3EndpointIP(String l3EndpointUuid){
-        logger.info("修改L3互联IP，创建任务：UpdateL3EndpointIPJob");
-        UpdateL3EndpointIPJob job = new UpdateL3EndpointIPJob();
-        job.setL3EndpointUuid(l3EndpointUuid);
-        jobf.execute("修改L3互联IP-控制器下发", Platform.getManagementServerId(), job);
-    }
-
     /**
      * 修改L3带宽下发
      * */
@@ -95,16 +41,6 @@ public class L3NetworkTaskBase {
         UpdateL3EndpointBandwidthJob job = new UpdateL3EndpointBandwidthJob();
         job.setL3EndpointUuid(l3EndpointUuid);
         jobf.execute("修改L3带宽-控制器下发", Platform.getManagementServerId(), job);
-    }
-
-    /**
-     * 删除L3连接点下发
-     * */
-    public void taskDeleteL3Endpoint(String l3EndpointUuid){
-        logger.info("删除L3连接点，创建任务：DeleteL3EndpointJob");
-        DeleteL3EndpointJob job = new DeleteL3EndpointJob();
-        job.setL3EndpointUuid(l3EndpointUuid);
-        jobf.execute("删除L3连接点-控制器下发", Platform.getManagementServerId(), job);
     }
 
     /**
@@ -126,4 +62,71 @@ public class L3NetworkTaskBase {
         job.setL3RouteUuid(l3RouteUuid);
         jobf.execute("删除L3连接点路由-控制器下发", Platform.getManagementServerId(), job);
     }
+
+
+    /**
+     * 开通连接点控制器下发
+     * */
+    public void taskEnableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndPointInventory> completionTask){
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+        TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.CreateL3Endpoint);
+
+        CreateL3EndpointMsg createL3EndpointMsg = new CreateL3EndpointMsg();
+        createL3EndpointMsg.setL3EndpointUuid(vo.getUuid());
+        createL3EndpointMsg.setTaskUuid(taskResourceVO.getUuid());
+
+        bus.makeLocalServiceId(createL3EndpointMsg, L3NetWorkConstant.SERVICE_ID);
+        bus.send(createL3EndpointMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    jobf.removeJob(vo.getUuid(), EnabledOrDisabledL3EndPointJob.class);
+
+                    completionTask.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
+                } else {
+
+                    logger.info("开通L3连接点失败，创建任务：EnabledOrDisabledL3EndPointJob");
+                    EnabledOrDisabledL3EndPointJob job = new EnabledOrDisabledL3EndPointJob();
+                    job.setL3EndPointUuid(vo.getUuid());
+                    job.setJobType(L3EndpointState.Enabled);
+                    jobf.execute("开通L3连接点-控制器下发", Platform.getManagementServerId(), job);
+
+                    completionTask.fail(reply.getError());
+                }
+            }
+        });
+    }
+
+    /**
+     * 中止连接点控制器下发
+     * */
+    public void taskDisableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndPointInventory> completionTask){
+        TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.DeleteL3Endpoint);
+
+        DeleteL3EndPointMsg deleteL3EndPointMsg = new DeleteL3EndPointMsg();
+        deleteL3EndPointMsg.setL3EndpointUuid(vo.getUuid());
+        deleteL3EndPointMsg.setTaskUuid(taskResourceVO.getUuid());
+        bus.makeLocalServiceId(deleteL3EndPointMsg, L3NetWorkConstant.SERVICE_ID);
+        bus.send(deleteL3EndPointMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    jobf.removeJob(vo.getUuid(), EnabledOrDisabledL3EndPointJob.class);
+
+                    completionTask.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
+                } else {
+                    logger.info("中止L3连接点失败，创建任务：EnabledOrDisabledL3EndPointJob");
+                    EnabledOrDisabledL3EndPointJob job = new EnabledOrDisabledL3EndPointJob();
+                    job.setL3EndPointUuid(vo.getUuid());
+                    job.setJobType(L3EndpointState.Disabled);
+                    jobf.execute("中止L3连接点-控制器下发", Platform.getManagementServerId(), job);
+
+                    completionTask.fail(reply.getError());
+                }
+            }
+        });
+    }
+
+
 }
+

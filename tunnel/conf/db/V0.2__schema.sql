@@ -21,6 +21,11 @@ CREATE TABLE `L3NetworkEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `syscxp_tunnel`.`L3NetworkEO` ADD COLUMN `number` bigint unsigned AUTO_INCREMENT Unique, AUTO_INCREMENT=1000;
+
+CREATE VIEW `L3NetworkVO` AS SELECT `uuid`, `accountUuid`, `ownerAccountUuid`, `name`, `code`, `vid`, `type`,  `endPointNum`, `description`, `duration`, `productChargeModel`, `maxModifies`, `expireDate`, `lastOpDate`, `createDate`, `number` FROM `L3NetworkEO` WHERE deleted IS NULL;
+
+
 CREATE TABLE `L3EndPointVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `l3NetworkUuid` VARCHAR(32),
@@ -34,6 +39,7 @@ CREATE TABLE `L3EndPointVO` (
   `localIP` varchar(128) DEFAULT NULL COMMENT '犀思云端 ip',
   `remoteIp` varchar(128) DEFAULT NULL COMMENT '客户端 ip',
   `netmask` varchar(128) DEFAULT NULL COMMENT '子网掩码',
+  `ipCidr` varchar(128) DEFAULT NULL COMMENT '互联地址所属网段',
   `interfaceUuid` varchar(32) COMMENT '所属物理接口',
   `switchPortUuid` varchar(32) NOT NULL COMMENT '所属端口',
   `physicalSwitchUuid` varchar(32) DEFAULT NULL COMMENT '物理交换机',
@@ -65,10 +71,9 @@ CREATE TABLE `L3RouteVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `L3NetworkVO` AS SELECT `uuid`, `accountUuid`, `ownerAccountUuid`, `name`, `code`, `vid`, `type`,  `endPointNum`, `description`, `duration`, `productChargeModel`, `maxModifies`, `expireDate`, `lastOpDate`, `createDate` FROM `L3NetworkEO` WHERE deleted IS NULL;
 
 # REST API
-CREATE TABLE  `syscxp_tunnel`.`AsyncRestVO` (
+CREATE TABLE  `syscxp_tunnel_rest`.`AsyncRestVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `requestData` TEXT NOT NULL,
   `state` varchar(32) NOT NULL,

@@ -18,6 +18,7 @@ import java.util.List;
 public class L3NetworkInventory {
 
     private String uuid;
+    private Long number;
     private String accountUuid;
     private String ownerAccountUuid;
     private String name;
@@ -38,6 +39,7 @@ public class L3NetworkInventory {
     public static L3NetworkInventory valueOf(L3NetworkVO vo){
         L3NetworkInventory inv = new L3NetworkInventory();
         inv.setUuid(vo.getUuid());
+        inv.setNumber(vo.getNumber());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setName(vo.getName());
@@ -205,5 +207,13 @@ public class L3NetworkInventory {
 
     public void setExpired(boolean expired) {
         this.expired = expired;
+    }
+
+    public Long getNumber() {
+        return number;
+    }
+
+    public void setNumber(Long number) {
+        this.number = number;
     }
 }

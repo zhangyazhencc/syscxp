@@ -13,6 +13,10 @@ public class L3NetworkAO {
     @Column
     private String uuid;
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
+    private long number;
+
     @Column
     private String accountUuid;
 
@@ -179,5 +183,13 @@ public class L3NetworkAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public long getNumber() {
+        return number;
+    }
+
+    public void setNumber(long number) {
+        this.number = number;
     }
 }

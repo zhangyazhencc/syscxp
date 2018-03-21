@@ -3,13 +3,13 @@ package com.syscxp.tunnel.network;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.job.JobQueueEntryVO;
-import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.tunnel.network.*;
-import com.syscxp.tunnel.network.job.CreateL3EndpointRollBackJob;
+import com.syscxp.header.tunnel.tunnel.InterfaceVO;
+import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -41,6 +42,22 @@ public class L3NetworkValidateBase {
                 .eq(L3NetworkVO_.accountUuid, msg.getAccountUuid());
         if (q1.isExists()) {
             throw new ApiMessageInterceptionException(argerr("该用户云网络名称【%s】已经存在!", msg.getName()));
+        }
+
+    }
+
+    public void validate(APICreateL3NetworkManualMsg msg){
+        //判断同一个用户的云网络名称是否已经存在
+        Q q1 = Q.New(L3NetworkVO.class)
+                .eq(L3NetworkVO_.name, msg.getName())
+                .eq(L3NetworkVO_.accountUuid, msg.getAccountUuid());
+        if (q1.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("该用户云网络名称【%s】已经存在!", msg.getName()));
+        }
+
+        //验证vid
+        if(Q.New(L3NetworkEO.class).eq(L3NetworkEO_.vid, msg.getVid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该vid已经被云网络使用！"));
         }
 
     }
@@ -76,10 +93,28 @@ public class L3NetworkValidateBase {
         }
     }
 
+    public void validate(APICreateL3EndPointManualMsg msg){
+        TunnelBase tunnelBase = new TunnelBase();
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+
+        if(Q.New(L3EndPointVO.class)
+                .eq(L3EndPointVO_.l3NetworkUuid, msg.getL3NetworkUuid())
+                .eq(L3EndPointVO_.endpointUuid, msg.getEndpointUuid())
+                .isExists()){
+            throw new ApiMessageInterceptionException(argerr("该云网络已经添加过该连接点!"));
+        }
+
+        InterfaceVO interfaceVO = dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class);
+        String physicalSwitchUuid = tunnelBase.getPhysicalSwitchBySwitchPortUuid(interfaceVO.getSwitchPortUuid()).getUuid();
+        List<Integer> allocatedVlans = l3NetworkBase.findAllocateVlanByPhysicalSwitch(physicalSwitchUuid);
+
+        if (!allocatedVlans.isEmpty() && allocatedVlans.contains(msg.getVlan())) {
+            throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", msg.getVlan()));
+        }
+    }
+
     public void validate(APIUpdateL3EndpointIPMsg msg){
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
-
-        L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
         if(!NetworkUtils.isIpv4Address(msg.getLocalIP())){
             throw new ApiMessageInterceptionException(argerr("该犀思云端IP不是合法的IPV4地址！"));
@@ -93,24 +128,34 @@ public class L3NetworkValidateBase {
             throw new ApiMessageInterceptionException(argerr("该子网掩码不合法！"));
         }
 
-        if(vo.getState() == L3EndpointState.Disabled){
-            if(!l3NetworkBase.isFirstSetEndpointIP(vo)){
-                if(l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())) {
-                    if (Q.New(JobQueueEntryVO.class)
-                            .eq(JobQueueEntryVO_.resourceUuid, vo.getUuid())
-                            .eq(JobQueueEntryVO_.name, CreateL3EndpointRollBackJob.class.getName())
-                            .eq(JobQueueEntryVO_.restartable, true)
-                            .isExists()) {
-                        throw new ApiMessageInterceptionException(argerr("该连接点有回滚任务尚未完成，稍后再试！"));
-                    }
-                }
-            }
-        }else if(vo.getState() == L3EndpointState.Deploying){
-            throw new ApiMessageInterceptionException(argerr("该连接点有正在下发的任务，稍后再试！"));
-        }else{
-            if(!l3NetworkBase.isChangeEndpointIP(vo, msg.getLocalIP(), msg.getRemoteIp(), msg.getNetmask())){
-                throw new ApiMessageInterceptionException(argerr("该连接点互联IP没有改变，勿重复操作！"));
-            }
+        if(msg.getLocalIP().equals(msg.getRemoteIp())){
+            throw new ApiMessageInterceptionException(argerr("客户端IP和犀思云端IP不能相同！"));
+        }
+
+        if(!NetworkUtils.isIpv4sInNetmask(msg.getLocalIP(),msg.getRemoteIp(),msg.getNetmask())){
+            throw new ApiMessageInterceptionException(argerr("客户端IP和犀思云端IP必须属于同一网段！"));
+        }
+
+        //同一网络的所有连接点网段唯一
+        String ipCidr = NetworkUtils.getIpCidrFromIpv4Netmask(msg.getLocalIP(),msg.getNetmask());
+        if(Q.New(L3EndPointVO.class)
+                .eq(L3EndPointVO_.l3NetworkUuid, vo.getL3NetworkUuid())
+                .notEq(L3EndPointVO_.uuid, msg.getUuid())
+                .eq(L3EndPointVO_.ipCidr, ipCidr)
+                .isExists()){
+            throw new ApiMessageInterceptionException(argerr("该网段已经被该云网络的其他连接点使用！"));
+        }
+
+        //验证网段的第一个IP和最后一个不可用
+
+
+
+        if(vo.getState() == L3EndpointState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("设置互联IP，请先断开连接！"));
+        }
+
+        if(vo.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
         }
     }
 
@@ -132,46 +177,49 @@ public class L3NetworkValidateBase {
         }
 
         if(vo.getState() == L3EndpointState.Deploying){
-            throw new ApiMessageInterceptionException(argerr("该连接点有正在下发的任务，稍后再试！"));
-        }else if((vo.getState() == L3EndpointState.Disabled)){
-            throw new ApiMessageInterceptionException(argerr("该连接点还未开通！"));
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
         }
+
     }
 
     public void validate(APIDeleteL3EndPointMsg msg){
 
         L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
 
+        if(vo.getState() == L3EndpointState.Enabled){
+            throw new ApiMessageInterceptionException(argerr("删除L3连接点，请先断开连接！"));
+        }
+
         if(vo.getState() == L3EndpointState.Deploying){
-            throw new ApiMessageInterceptionException(argerr("该连接点有正在下发的任务，稍后再试！"));
-        }else if(vo.getState() == L3EndpointState.Disabled){
-            if (Q.New(JobQueueEntryVO.class)
-                    .eq(JobQueueEntryVO_.resourceUuid, vo.getUuid())
-                    .eq(JobQueueEntryVO_.name, CreateL3EndpointRollBackJob.class.getName())
-                    .eq(JobQueueEntryVO_.restartable, true)
-                    .isExists()) {
-                throw new ApiMessageInterceptionException(argerr("该连接点有回滚任务尚未完成，稍后再试！"));
-            }
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
         }
     }
 
     public void validate(APICreateL3RouteMsg msg){
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
         if(!NetworkUtils.isCidr(msg.getCidr())){
             throw new ApiMessageInterceptionException(argerr("该目标网段不合法！"));
         }
 
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndPointVO.class);
+
+        List<String> l3EndpointUuids = Q.New(L3EndPointVO.class)
+                .eq(L3EndPointVO_.l3NetworkUuid, l3EndPointVO.getL3NetworkUuid())
+                .select(L3EndPointVO_.uuid)
+                .listValues();
+
         //目标网段不可重复添加
         if(Q.New(L3RouteVO.class)
-                .eq(L3RouteVO_.l3EndPointUuid, msg.getL3EndPointUuid())
+                .in(L3RouteVO_.l3EndPointUuid, l3EndpointUuids)
                 .eq(L3RouteVO_.cidr, msg.getCidr())
                 .isExists()){
             throw new ApiMessageInterceptionException(
-                    argerr("该目标网段在该L3连接点下已经存在."));
+                    argerr("该目标网段在该云网络下已经存在."));
         }
 
         //判断路由条目是否已达上限
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndPointVO.class);
+
         Integer max = l3EndPointVO.getMaxRouteNum();
 
         Long count = Q.New(L3RouteVO.class)
@@ -182,12 +230,12 @@ public class L3NetworkValidateBase {
                     argerr("该连接点下路由条目已达上限."));
         }
 
-        if(l3EndPointVO.getState() == L3EndpointState.Disabled){
-            throw new ApiMessageInterceptionException(
-                    argerr("设置路由必须先设置互联IP并成功开启."));
-        }else if(l3EndPointVO.getState() == L3EndpointState.Deploying){
-            throw new ApiMessageInterceptionException(
-                    argerr("该连接点有未完成下发任务，不可操作."));
+        if(l3EndPointVO.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
+        }
+
+        if(!l3NetworkBase.isControllerReady(l3EndPointVO)){
+            throw new ApiMessageInterceptionException(argerr("设置路由，请先设置互联IP！"));
         }
 
     }
@@ -196,12 +244,35 @@ public class L3NetworkValidateBase {
         L3RouteVO l3RouteVO = dbf.findByUuid(msg.getUuid(), L3RouteVO.class);
         L3EndPointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(), L3EndPointVO.class);
 
-        if(l3EndPointVO.getState() == L3EndpointState.Disabled){
-            throw new ApiMessageInterceptionException(
-                    argerr("设置路由必须先设置互联IP并成功开启."));
-        }else if(l3EndPointVO.getState() == L3EndpointState.Deploying){
-            throw new ApiMessageInterceptionException(
-                    argerr("该连接点有未完成下发任务，不可操作."));
+        if(l3EndPointVO.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
+        }
+    }
+
+    public void validate(APIEnableL3EndPointMsg msg){
+        if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
+            throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
+        }
+
+        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        L3NetworkBase l3NetworkBase = new L3NetworkBase();
+        if(!l3NetworkBase.isControllerReady(vo)){
+            throw new ApiMessageInterceptionException(argerr("未设置互联IP！"));
+        }
+
+        if(vo.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
+        }
+    }
+
+    public void validate(APIDisableL3EndPointMsg msg){
+        if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
+            throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
+        }
+
+        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        if(vo.getState() == L3EndpointState.Deploying){
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
         }
     }
 }

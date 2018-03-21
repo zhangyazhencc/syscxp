@@ -107,49 +107,6 @@ public class L3NetworkBase {
 
     }
 
-    /**
-     * 判断互联IP是否改变
-     * */
-    public boolean isChangeEndpointIP(L3EndPointVO vo, String localIP, String remoteIp, String netmask){
-        boolean isChange = false;
-
-        if(!localIP.equals(vo.getLocalIP())){
-            isChange = true;
-        }
-
-        if(!remoteIp.equals(vo.getRemoteIp())){
-            isChange = true;
-        }
-
-        if(!netmask.equals(vo.getNetmask())){
-            isChange = true;
-        }
-
-        return isChange;
-
-    }
-
-    /**
-     * 判断是否第一次设置互联IP
-     * */
-    public boolean isFirstSetEndpointIP(L3EndPointVO vo){
-        boolean isFirst = false;
-        if(vo.getRemoteIp() == null){
-            isFirst = true;
-        }
-
-        if(vo.getLocalIP() == null){
-            isFirst = true;
-        }
-
-        if(vo.getNetmask() == null){
-            isFirst = true;
-        }
-
-        return isFirst;
-
-    }
-
 
     /**
      * 分配VLAN
@@ -160,13 +117,16 @@ public class L3NetworkBase {
 
         //查询该虚拟交换机下所有的Vlan段
         SwitchPortVO switchPortVO = dbf.findByUuid(switchPortUuid, SwitchPortVO.class);
-        List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class).eq(SwitchVlanVO_.switchUuid, switchPortVO.getSwitchUuid()).list();
+        List<SwitchVlanVO> vlanList = Q.New(SwitchVlanVO.class)
+                .eq(SwitchVlanVO_.switchUuid, switchPortVO.getSwitchUuid())
+                .eq(SwitchVlanVO_.type, SwitchVlanType.L3)
+                .list();
 
         //查询该虚拟交换机所属物理交换机下已经分配的Vlan
         List<Integer> allocatedVlans = findAllocateVlanByPhysicalSwitch(physicalSwitchUuid);
 
         if(vlanList.isEmpty()){
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置3层Vlan段，请联系系统管理员 "));
         }
         if(allocatedVlans.isEmpty()){
             return vlanList.get(0).getStartVlan();

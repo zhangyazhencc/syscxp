@@ -75,14 +75,10 @@ public class TunnelControllerBase extends AbstractTunnel {
             handle((DisabledTunnelMsg) msg);
         }else if(msg instanceof ModifyTunnelBandwidthMsg){
             handle((ModifyTunnelBandwidthMsg) msg);
-        }else if(msg instanceof ModifyTunnelPortsMsg){
-            handle((ModifyTunnelPortsMsg) msg);
         }else if(msg instanceof ModifyTunnelPortsZKMsg){
             handle((ModifyTunnelPortsZKMsg) msg);
         }else if(msg instanceof ListTraceRouteMsg){
             handle((ListTraceRouteMsg) msg);
-        }else if(msg instanceof RevertTunnelMsg){
-            handle((RevertTunnelMsg) msg);
         }else if(msg instanceof RollBackCreateTunnelMsg){
             handle((RollBackCreateTunnelMsg) msg);
         }else{
@@ -122,42 +118,6 @@ public class TunnelControllerBase extends AbstractTunnel {
 
             bus.reply(msg, reply);
         }
-    }
-
-    private void handle(RevertTunnelMsg msg){
-        RevertTunnelReply reply = new RevertTunnelReply();
-
-        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
-
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-
-        crf.sendCommand(ControllerRestConstant.START_TUNNEL, msg.getCommands(), new Completion(null) {
-            @Override
-            public void success() {
-                logger.info("下发恢复成功！");
-
-                //更新任务状态
-                taskResourceVO.setBody(msg.getCommands());
-                taskResourceVO.setStatus(TaskStatus.Success);
-                dbf.updateAndRefresh(taskResourceVO);
-
-                bus.reply(msg, reply);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("下发恢复失败！");
-
-                //更新任务状态
-                taskResourceVO.setStatus(TaskStatus.Fail);
-                taskResourceVO.setBody(msg.getCommands());
-                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                dbf.updateAndRefresh(taskResourceVO);
-
-                reply.setError(errorCode);
-                bus.reply(msg, reply);
-            }
-        });
     }
 
     private void handle(RollBackCreateTunnelMsg msg){
@@ -201,6 +161,7 @@ public class TunnelControllerBase extends AbstractTunnel {
 
     private void handle(CreateTunnelMsg msg){
         CreateTunnelReply reply = new CreateTunnelReply();
+        TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
@@ -217,11 +178,8 @@ public class TunnelControllerBase extends AbstractTunnel {
                 //修改产品状态,设置到期时间
                 tunnelVO.setState(TunnelState.Enabled);
                 tunnelVO.setStatus(TunnelStatus.Connected);
-                if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                    tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(tunnelVO.getDuration())));
-                }else if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                    tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(tunnelVO.getDuration())));
-                }
+                tunnelVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(), tunnelVO.getProductChargeModel(), tunnelVO.getDuration()));
+
                 dbf.updateAndRefresh(tunnelVO);
 
                 //更新任务状态
@@ -295,6 +253,7 @@ public class TunnelControllerBase extends AbstractTunnel {
 
     private void handle(EnabledTunnelMsg msg){
         EnabledTunnelReply reply = new EnabledTunnelReply();
+        TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
@@ -312,11 +271,7 @@ public class TunnelControllerBase extends AbstractTunnel {
                 tunnelVO.setStatus(TunnelStatus.Connected);
 
                 if(tunnelVO.getExpireDate()==null){
-                    if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(tunnelVO.getDuration())));
-                    }else if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(tunnelVO.getDuration())));
-                    }
+                    tunnelVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(), tunnelVO.getProductChargeModel(), tunnelVO.getDuration()));
                 }
 
                 dbf.updateAndRefresh(tunnelVO);
@@ -425,45 +380,6 @@ public class TunnelControllerBase extends AbstractTunnel {
                 bus.reply(msg, reply);
             }
         });
-    }
-
-    private void handle(ModifyTunnelPortsMsg msg){
-        ModifyTunnelPortsReply reply = new ModifyTunnelPortsReply();
-
-        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
-        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
-
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO, false);
-        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-
-        crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_PORTS, command, new Completion(null) {
-            @Override
-            public void success() {
-                logger.info("下发更改端口成功！");
-
-                //更新任务状态
-                taskResourceVO.setBody(command);
-                taskResourceVO.setStatus(TaskStatus.Success);
-                dbf.updateAndRefresh(taskResourceVO);
-                bus.reply(msg, reply);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("下发更改端口失败！");
-
-                //更新任务状态
-                taskResourceVO.setStatus(TaskStatus.Fail);
-                taskResourceVO.setBody(command);
-                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                dbf.updateAndRefresh(taskResourceVO);
-
-                reply.setError(errorCode);
-                bus.reply(msg, reply);
-            }
-        });
-
     }
 
     /***********************************************************************************************************************************************************************/
