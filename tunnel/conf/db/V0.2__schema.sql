@@ -21,6 +21,11 @@ CREATE TABLE `L3NetworkEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `syscxp_tunnel`.`L3NetworkEO` ADD COLUMN `number` bigint unsigned AUTO_INCREMENT Unique, AUTO_INCREMENT=1000;
+
+CREATE VIEW `L3NetworkVO` AS SELECT `uuid`, `accountUuid`, `ownerAccountUuid`, `name`, `code`, `vid`, `type`,  `endPointNum`, `description`, `duration`, `productChargeModel`, `maxModifies`, `expireDate`, `lastOpDate`, `createDate`, `number` FROM `L3NetworkEO` WHERE deleted IS NULL;
+
+
 CREATE TABLE `L3EndPointVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `l3NetworkUuid` VARCHAR(32),
@@ -65,7 +70,6 @@ CREATE TABLE `L3RouteVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `L3NetworkVO` AS SELECT `uuid`, `accountUuid`, `ownerAccountUuid`, `name`, `code`, `vid`, `type`,  `endPointNum`, `description`, `duration`, `productChargeModel`, `maxModifies`, `expireDate`, `lastOpDate`, `createDate` FROM `L3NetworkEO` WHERE deleted IS NULL;
 
 # REST API
 CREATE TABLE  `syscxp_tunnel_rest`.`AsyncRestVO` (

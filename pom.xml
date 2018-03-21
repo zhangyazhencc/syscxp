@@ -30,6 +30,7 @@
         <module>sms</module>
         <module>vpn</module>
         <module>alarm</module>
+        <module>idc</module>
         <module>sdk</module>
         <module>rest</module>
     </modules>

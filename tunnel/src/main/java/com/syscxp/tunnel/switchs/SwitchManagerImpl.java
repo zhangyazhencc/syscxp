@@ -492,6 +492,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         vo.setSwitchUuid(msg.getSwitchUuid());
         vo.setStartVlan(msg.getStartVlan());
         vo.setEndVlan(msg.getEndVlan());
+        vo.setType(msg.getType());
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -899,7 +900,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
     private void validate(APIDeleteSwitchVlanMsg msg) {
         //判断该Vlan段有没有被使用
         SwitchVlanVO vo = dbf.findByUuid(msg.getUuid(), SwitchVlanVO.class);
-        List<Integer> vlanList = fingAllocateVlanBySwitch(vo.getSwitchUuid());
+        List<Integer> vlanList = fingAllocateVlanBySwitch(vo.getUuid(), vo.getSwitchUuid());
         if (vlanList.size() > 0) {
             for (Integer vlan : vlanList) {
                 if (vlan >= vo.getStartVlan() && vlan <= vo.getEndVlan()) {
@@ -909,14 +910,26 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         }
     }
 
-    //查询该虚拟交换机下Tunnel已经分配的Vlan
-    public List<Integer> fingAllocateVlanBySwitch(String switchUuid) {
+    //查询该虚拟交换机下Tunnel和L3已经分配的Vlan
+    public List<Integer> fingAllocateVlanBySwitch(String switchVlanUuid, String switchUuid) {
 
-        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b " +
-                "where a.switchPortUuid = b.uuid " +
-                "and b.switchUuid = :switchUuid ";
-        TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql, Integer.class);
-        avq.setParameter("switchUuid", switchUuid);
-        return avq.getResultList();
+        SwitchVlanVO vo = dbf.findByUuid(switchVlanUuid, SwitchVlanVO.class);
+
+        if(vo.getType() == SwitchVlanType.L2){
+            String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b " +
+                    "where a.switchPortUuid = b.uuid " +
+                    "and b.switchUuid = :switchUuid ";
+            TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql, Integer.class);
+            avq.setParameter("switchUuid", switchUuid);
+            return avq.getResultList();
+        }else{
+            String sql = "select distinct a.vlan from L3EndPointVO a,SwitchPortVO b " +
+                    "where a.switchPortUuid = b.uuid " +
+                    "and b.switchUuid = :switchUuid ";
+            TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql, Integer.class);
+            avq.setParameter("switchUuid", switchUuid);
+            return avq.getResultList();
+        }
+
     }
 }

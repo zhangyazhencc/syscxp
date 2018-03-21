@@ -19,6 +19,8 @@ import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineVO_;
 import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.network.L3EndPointVO;
+import com.syscxp.header.tunnel.network.L3EndPointVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
@@ -62,6 +64,12 @@ public class TunnelValidateBase {
         if (q.count() > 1)
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
+
+        //判断物理接口有没有被最后一公里绑定
+        if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("该物理接口[uuid:%s] 被最后一公里绑定, 先删除最后一公里!", msg.getUuid()));
+        }
 
         /*//共享端口或者扩展端口不让改
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
@@ -210,6 +218,12 @@ public class TunnelValidateBase {
         if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getUuid()).isExists()){
             throw new ApiMessageInterceptionException(
                     argerr("该物理接口[uuid:%s] 被最后一公里绑定, 先删除最后一公里!", msg.getUuid()));
+        }
+
+        //判断物理接口有没有被L3使用
+        if(Q.New(L3EndPointVO.class).eq(L3EndPointVO_.interfaceUuid, msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("该物理接口[uuid:%s] 被云网络绑定, 先删除云网络!", msg.getUuid()));
         }
 
         //判断该产品是否有未完成订单

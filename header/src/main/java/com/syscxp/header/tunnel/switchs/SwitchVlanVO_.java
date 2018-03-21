@@ -13,6 +13,7 @@ public class SwitchVlanVO_ {
     public static volatile SingularAttribute<SwitchVlanVO, String> switchUuid;
     public static volatile SingularAttribute<SwitchVlanVO, Integer> startVlan;
     public static volatile SingularAttribute<SwitchVlanVO, Integer> endVlan;
+    public static volatile SingularAttribute<SwitchVlanVO, SwitchVlanType> type;
     public static volatile SingularAttribute<SwitchVlanVO, Timestamp> createDate;
     public static volatile SingularAttribute<SwitchVlanVO, Timestamp> lastOpDate;
 }
