@@ -60,12 +60,10 @@ public class L3NetworkControllerBase {
     private void handleLocalMessage(Message msg){
         if(msg instanceof CreateL3EndpointMsg){
             handle((CreateL3EndpointMsg) msg);
-        }else if(msg instanceof UpdateL3EndpointIPMsg){
-            handle((UpdateL3EndpointIPMsg) msg);
-        }else if(msg instanceof UpdateL3EndpointBandwidthMsg){
-            handle((UpdateL3EndpointBandwidthMsg) msg);
         }else if(msg instanceof DeleteL3EndPointMsg){
             handle((DeleteL3EndPointMsg) msg);
+        }else if(msg instanceof UpdateL3EndpointBandwidthMsg){
+            handle((UpdateL3EndpointBandwidthMsg) msg);
         }else if(msg instanceof CreateL3RouteMsg){
             handle((CreateL3RouteMsg) msg);
         }else if(msg instanceof DeleteL3RouteMsg){
@@ -76,193 +74,6 @@ public class L3NetworkControllerBase {
     }
 
     private void handleApiMessage(APIMessage msg){}
-
-    private void handle(CreateL3EndpointMsg msg){
-        CreateL3EndpointReply reply = new CreateL3EndpointReply();
-
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
-        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
-
-        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
-        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-
-        crf.sendCommand(ControllerRestConstant.CREATE_L3ENDPOINT, command, new Completion(null) {
-            @Override
-            public void success() {
-                logger.info("下发创建云网络连接点成功！");
-
-                //更新状态
-                l3EndPointVO.setState(L3EndpointState.Enabled);
-                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
-                dbf.updateAndRefresh(l3EndPointVO);
-
-                //更新任务状态
-                taskResourceVO.setBody(command);
-                taskResourceVO.setStatus(TaskStatus.Success);
-                dbf.updateAndRefresh(taskResourceVO);
-
-                bus.reply(msg, reply);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("下发创建云网络连接点失败！");
-
-                //修改状况
-                l3EndPointVO.setState(L3EndpointState.Disabled);
-                l3EndPointVO.setStatus(L3EndpointStatus.Disconnected);
-                dbf.updateAndRefresh(l3EndPointVO);
-
-                //更新任务状态
-                taskResourceVO.setStatus(TaskStatus.Fail);
-                taskResourceVO.setBody(command);
-                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                dbf.updateAndRefresh(taskResourceVO);
-
-                reply.setError(errorCode);
-                bus.reply(msg, reply);
-            }
-        });
-    }
-
-    private void handle(UpdateL3EndpointIPMsg msg){
-        UpdateL3EndpointIPReply reply = new UpdateL3EndpointIPReply();
-
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
-        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
-
-        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
-        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-
-        crf.sendCommand(ControllerRestConstant.MODIFY_CONNECT_IP, command, new Completion(null) {
-            @Override
-            public void success() {
-                logger.info("下发设置互联IP成功！");
-
-                //更新状态
-                l3EndPointVO.setState(L3EndpointState.Enabled);
-                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
-                dbf.updateAndRefresh(l3EndPointVO);
-
-                //更新任务状态
-                taskResourceVO.setBody(command);
-                taskResourceVO.setStatus(TaskStatus.Success);
-                dbf.updateAndRefresh(taskResourceVO);
-
-                bus.reply(msg, reply);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("下发设置互联IP失败！");
-
-                //更新任务状态
-                taskResourceVO.setStatus(TaskStatus.Fail);
-                taskResourceVO.setBody(command);
-                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                dbf.updateAndRefresh(taskResourceVO);
-
-                reply.setError(errorCode);
-                bus.reply(msg, reply);
-            }
-        });
-    }
-
-    private void handle(UpdateL3EndpointBandwidthMsg msg){
-        UpdateL3EndpointBandwidthReply reply = new UpdateL3EndpointBandwidthReply();
-
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
-        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
-
-        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
-        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-
-        crf.sendCommand(ControllerRestConstant.MODIFY_L3BANDWIDTH, command, new Completion(null) {
-            @Override
-            public void success() {
-                logger.info("下发修改L3带宽成功！");
-
-                //更新状态
-                l3EndPointVO.setState(L3EndpointState.Enabled);
-                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
-                dbf.updateAndRefresh(l3EndPointVO);
-
-                //更新任务状态
-                taskResourceVO.setBody(command);
-                taskResourceVO.setStatus(TaskStatus.Success);
-                dbf.updateAndRefresh(taskResourceVO);
-
-                bus.reply(msg, reply);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("下发修改L3带宽失败！");
-
-                //更新任务状态
-                taskResourceVO.setStatus(TaskStatus.Fail);
-                taskResourceVO.setBody(command);
-                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                dbf.updateAndRefresh(taskResourceVO);
-
-                reply.setError(errorCode);
-                bus.reply(msg, reply);
-            }
-        });
-    }
-
-    private void handle(DeleteL3EndPointMsg msg){
-        DeleteL3EndPointReply reply = new DeleteL3EndPointReply();
-
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
-        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
-
-        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
-        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-
-        crf.sendCommand(ControllerRestConstant.DELETE_L3ENDPOINT, command, new Completion(null) {
-            @Override
-            public void success() {
-                logger.info("删除L3连接点成功！");
-
-                //更新状态
-                l3EndPointVO.setState(L3EndpointState.Enabled);
-                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
-                dbf.updateAndRefresh(l3EndPointVO);
-
-                //删除连接点
-                L3NetworkBase l3NetworkBase = new L3NetworkBase();
-
-                l3NetworkBase.deleteL3EndpointDB(msg.getL3EndpointUuid());
-                l3NetworkBase.updateEndPointNum(l3EndPointVO.getL3NetworkUuid());
-
-                //更新任务状态
-                taskResourceVO.setBody(command);
-                taskResourceVO.setStatus(TaskStatus.Success);
-                dbf.updateAndRefresh(taskResourceVO);
-
-                bus.reply(msg, reply);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("删除L3连接点失败！");
-
-                //更新任务状态
-                taskResourceVO.setStatus(TaskStatus.Fail);
-                taskResourceVO.setBody(command);
-                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                dbf.updateAndRefresh(taskResourceVO);
-
-                reply.setError(errorCode);
-                bus.reply(msg, reply);
-            }
-        });
-    }
 
     private void handle(CreateL3RouteMsg msg){
         CreateL3RouteReply reply = new CreateL3RouteReply();
@@ -355,6 +166,140 @@ public class L3NetworkControllerBase {
             }
         });
     }
+
+    private void handle(UpdateL3EndpointBandwidthMsg msg){
+        UpdateL3EndpointBandwidthReply reply = new UpdateL3EndpointBandwidthReply();
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_L3BANDWIDTH, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发修改L3带宽成功！");
+
+                //更新状态
+                l3EndPointVO.setState(L3EndpointState.Enabled);
+                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发修改L3带宽失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(CreateL3EndpointMsg msg){
+        CreateL3EndpointReply reply = new CreateL3EndpointReply();
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.CREATE_L3ENDPOINT, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发创建云网络连接点成功！");
+
+                //更新状态
+                l3EndPointVO.setState(L3EndpointState.Enabled);
+                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发创建云网络连接点失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(DeleteL3EndPointMsg msg){
+        DeleteL3EndPointReply reply = new DeleteL3EndPointReply();
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.DELETE_L3ENDPOINT, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发删除L3连接点成功！");
+
+                //更新状态
+                l3EndPointVO.setState(L3EndpointState.Disabled);
+                l3EndPointVO.setStatus(L3EndpointStatus.Disconnected);
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发删除L3连接点失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+
 
     /**
      * 控制器下发配置--下发单位为连接点

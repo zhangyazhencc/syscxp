@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 public class L3NetworkAO_ {
 
     public static volatile SingularAttribute<L3NetworkAO,String> uuid;
+    public static volatile SingularAttribute<L3NetworkAO, Long> number;
     public static volatile SingularAttribute<L3NetworkAO,String> accountUuid;
     public static volatile SingularAttribute<L3NetworkAO,String> ownerAccountUuid;
     public static volatile SingularAttribute<L3NetworkAO,String> name;

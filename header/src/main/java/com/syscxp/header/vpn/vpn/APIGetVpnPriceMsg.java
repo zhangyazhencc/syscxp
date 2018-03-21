@@ -1,5 +1,6 @@
 package com.syscxp.header.vpn.vpn;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
@@ -10,6 +11,9 @@ public class APIGetVpnPriceMsg extends APISyncCallMessage {
     private String bandwidthOfferingUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
+
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
+    private ProductChargeModel productChargeModel;
 
     @APIParam(emptyString = false)
     private String endpointUuid;
@@ -49,5 +53,13 @@ public class APIGetVpnPriceMsg extends APISyncCallMessage {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
     }
 }

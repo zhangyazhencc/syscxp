@@ -384,7 +384,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIGetVpnPriceMsg msg) {
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), msg.getEndpointUuid()));
@@ -819,6 +819,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         }
                     });
                 } else {
+                    vpn.setAccountUuid(null);
+                    vpn.setState(VpnState.Disabled);
+                    dbf.updateAndRefresh(vpn);
+                    LOGGER.debug(String.format("VPN[UUID:%s] 过期退订成功", vpn.getUuid()));
                     trigger.next();
                 }
             }
@@ -1087,6 +1091,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(DeleteVpnMsg msg) {
         DeleteVpnReply reply = new DeleteVpnReply();
         VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
+        if (vpn == null) {
+            bus.reply(msg, reply);
+            return;
+        }
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-vpn-%s", msg.getVpnUuid()));
         chain.then(new NoRollbackFlow() {

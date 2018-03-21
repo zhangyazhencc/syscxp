@@ -7,11 +7,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import org.springframework.http.HttpMethod;
 
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIGetHostTypesReply.class
-)
 @Action(services = {TunnelConstant.ACTION_SERVICE, VpnConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 public class APIGetHostTypesMsg extends APISyncCallMessage {
  

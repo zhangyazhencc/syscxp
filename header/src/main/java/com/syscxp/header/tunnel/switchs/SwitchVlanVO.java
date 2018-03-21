@@ -31,6 +31,10 @@ public class SwitchVlanVO {
     private Integer endVlan;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private SwitchVlanType type;
+
+    @Column
     private Timestamp createDate;
 
     @Column
@@ -95,5 +99,13 @@ public class SwitchVlanVO {
 
     public void setSwitchs(SwitchVO switchs) {
         this.switchs = switchs;
+    }
+
+    public SwitchVlanType getType() {
+        return type;
+    }
+
+    public void setType(SwitchVlanType type) {
+        this.type = type;
     }
 }

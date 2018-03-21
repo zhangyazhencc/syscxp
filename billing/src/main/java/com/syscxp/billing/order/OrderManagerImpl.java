@@ -933,6 +933,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal durationMonth = BigDecimal.valueOf(duration);
         if (model.equals(ProductChargeModel.BY_YEAR)) {
             durationMonth = durationMonth.multiply(BigDecimal.valueOf(12));
+        }else if (model.equals(ProductChargeModel.BY_WEEK)) {
+            durationMonth = durationMonth.divide(BigDecimal.valueOf(30),4,BigDecimal.ROUND_HALF_DOWN).multiply(BigDecimal.valueOf(7));
         }
         return durationMonth;
     }

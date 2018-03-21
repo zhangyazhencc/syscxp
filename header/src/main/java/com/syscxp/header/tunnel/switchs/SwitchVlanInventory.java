@@ -23,6 +23,8 @@ public class SwitchVlanInventory {
 
     private Integer endVlan;
 
+    private String type;
+
     private Timestamp createDate;
 
     private Timestamp lastOpDate;
@@ -35,6 +37,7 @@ public class SwitchVlanInventory {
         inv.setSwitchs(SwitchInventory.valueOf(vo.getSwitchs()));
         inv.setStartVlan(vo.getStartVlan());
         inv.setEndVlan(vo.getEndVlan());
+        inv.setType(vo.getType().toString());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
 
@@ -103,5 +106,13 @@ public class SwitchVlanInventory {
 
     public void setSwitchs(SwitchInventory switchs) {
         this.switchs = switchs;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

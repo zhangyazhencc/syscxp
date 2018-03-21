@@ -1908,6 +1908,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      **/
     private void handle(APIOpenTunnelMsg msg) {
         TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
+        TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         APIOpenTunnelEvent evt = new APIOpenTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
@@ -1916,11 +1917,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             vo.setState(TunnelState.Enabled);
             vo.setStatus(TunnelStatus.Connected);
-            if (vo.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(vo.getDuration())));
-            } else if (vo.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(vo.getDuration())));
-            }
+            vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(), vo.getProductChargeModel(), vo.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
 

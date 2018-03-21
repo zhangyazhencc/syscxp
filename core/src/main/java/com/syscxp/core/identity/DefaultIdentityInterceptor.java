@@ -79,10 +79,11 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public String getSessionUuid(String secretId, String secretKey) {
+    public String getSessionUuid(String secretId, String secretKey, String ip) {
         APILogInBySecretIdMsg aMsg = new APILogInBySecretIdMsg();
         aMsg.setSecretId(secretId);
         aMsg.setSecretKey(secretKey);
+        aMsg.setIP(ip);
         InnerMessageHelper.setMD5(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
 
