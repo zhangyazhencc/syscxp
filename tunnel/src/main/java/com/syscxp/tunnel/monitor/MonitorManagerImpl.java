@@ -182,19 +182,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format("can only stop monitor for tunnels which monitor status is [%s]!"
                     , TunnelMonitorState.Enabled));
 
-        if (tunnelVO.getState() == TunnelState.Enabled) {
-            tunnelVO.setStatus(TunnelStatus.Connected);
-        }
-        tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
-        tunnelVO.setMonitorCidr("");
-        tunnelVO = dbf.getEntityManager().merge(tunnelVO);
-
-        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid())
-                .list();
-        for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
-            dbf.getEntityManager().remove(tunnelMonitorVO);
-
         try {
             stopAgentMonitor(tunnelVO.getUuid());
         } catch (Exception e) {
@@ -210,6 +197,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             monitorJob.setJobType(MonitorJobType.STOP);
             jobf.execute("关闭监控失败-关闭监控", Platform.getManagementServerId(), monitorJob);
         }
+
+        if (tunnelVO.getState() == TunnelState.Enabled) {
+            tunnelVO.setStatus(TunnelStatus.Connected);
+        }
+        tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
+        tunnelVO.setMonitorCidr("");
+        tunnelVO = dbf.getEntityManager().merge(tunnelVO);
+
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                .eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid())
+                .list();
+        for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
+            dbf.getEntityManager().remove(tunnelMonitorVO);
 
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
@@ -733,6 +733,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @param tunnelUuid
      */
+    @Transactional
     private void stopAgentMonitor(String tunnelUuid) {
         List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
