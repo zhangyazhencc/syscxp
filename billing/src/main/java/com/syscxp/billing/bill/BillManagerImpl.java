@@ -7,6 +7,7 @@ import com.syscxp.core.config.GlobalConfigVO;
 import com.syscxp.core.db.GLock;
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.OrderType;
+import net.sf.cglib.core.Local;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,6 +26,9 @@ import com.syscxp.utils.logging.CLogger;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,9 +67,20 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIGetBillMsg) {
             handle((APIGetBillMsg) msg);
+        }else if(msg instanceof APIGetCurrentMonthBillMsg){
+            handle((APIGetCurrentMonthBillMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetCurrentMonthBillMsg msg) {
+        APIGetCurrentMonthBillReply reply = new APIGetCurrentMonthBillReply();
+        LocalDateTime now = dbf.getCurrentSqlTime().toLocalDateTime();
+        LocalDate localDate = LocalDate.of(now.getYear(), now.getMonth(), 1);
+        List<MonetaryResult> bills = getBills(msg.getAccountUuid(), Timestamp.valueOf(LocalDateTime.of(localDate, LocalTime.MIN)), Timestamp.valueOf(now));
+        reply.setInventory(bills);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIGetBillMsg msg) {
@@ -73,11 +88,22 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
         Timestamp billTimestamp = vo.getBillDate();
         Timestamp startTime = new BillJob(dbf).getLastMonthFirstDay(billTimestamp);
         Timestamp endTime = new BillJob(dbf).getLastMonthLastDay(billTimestamp);
-        List<MonetaryResult> bills = getProudctTypeCount(vo.getAccountUuid(), startTime, endTime);
+        List<MonetaryResult> bills = getBills(vo.getAccountUuid(), startTime, endTime);
+        BillInventory inventory = BillInventory.valueOf(vo);
+        APIGetBillReply reply = new APIGetBillReply();
+        inventory.setBills(bills);
+        reply.setInventory(inventory);
+        bus.reply(msg, reply);
+
+    }
+
+    private List<MonetaryResult> getBills(String accountUuid, Timestamp startTime,Timestamp endTime ){
+
+        List<MonetaryResult> bills = getProudctTypeCount(accountUuid, startTime, endTime);
         Map<String, MonetaryResult> map = new HashMap<>();
         if (bills != null && bills.size() > 0) {
             map = list2Map(bills);
-            List<MonetaryOrderType> monetaries = getMonetaryOrderType(vo.getAccountUuid(), startTime, endTime);
+            List<MonetaryOrderType> monetaries = getMonetaryOrderType(accountUuid, startTime, endTime);
             for (MonetaryOrderType monetary : monetaries) {
                 MonetaryResult result = map.get(monetary.getType().name());
                 if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.AUTORENEW || monetary.getOrderType() == OrderType.UPGRADE) {
@@ -89,13 +115,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
                 }
             }
         }
-        bills = map2List(map);
-        BillInventory inventory = BillInventory.valueOf(vo);
-        APIGetBillReply reply = new APIGetBillReply();
-        inventory.setBills(bills);
-        reply.setInventory(inventory);
-        bus.reply(msg, reply);
-
+        return map2List(map);
     }
 
     private List<MonetaryResult> map2List(Map<String, MonetaryResult> map) {
