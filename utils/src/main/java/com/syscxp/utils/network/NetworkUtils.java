@@ -21,41 +21,81 @@ public class NetworkUtils {
 
     private static final Set<String> validNetmasks = new HashSet<String>();
 
+    private static final HashMap netmaskMap = new HashMap();
+
+    public static String intNetmask(String netmask){
+        return (String) netmaskMap.get(netmask);
+    }
+
 
     static {
-        validNetmasks.add("255.255.255.255");
-        validNetmasks.add("255.255.255.254");
-        validNetmasks.add("255.255.255.252");
-        validNetmasks.add("255.255.255.248");
-        validNetmasks.add("255.255.255.240");
-        validNetmasks.add("255.255.255.224");
-        validNetmasks.add("255.255.255.192");
-        validNetmasks.add("255.255.255.128");
-        validNetmasks.add("255.255.255.0");
-        validNetmasks.add("255.255.254.0");
-        validNetmasks.add("255.255.252.0");
-        validNetmasks.add("255.255.248.0");
-        validNetmasks.add("255.255.240.0");
-        validNetmasks.add("255.255.224.0");
-        validNetmasks.add("255.255.192.0");
-        validNetmasks.add("255.255.128.0");
-        validNetmasks.add("255.255.0.0");
-        validNetmasks.add("255.254.0.0");
-        validNetmasks.add("255.252.0.0");
-        validNetmasks.add("255.248.0.0");
-        validNetmasks.add("255.240.0.0");
-        validNetmasks.add("255.224.0.0");
-        validNetmasks.add("255.192.0.0");
-        validNetmasks.add("255.128.0.0");
-        validNetmasks.add("255.0.0.0");
-        validNetmasks.add("254.0.0.0");
-        validNetmasks.add("252.0.0.0");
-        validNetmasks.add("248.0.0.0");
-        validNetmasks.add("240.0.0.0");
-        validNetmasks.add("224.0.0.0");
-        validNetmasks.add("192.0.0.0");
-        validNetmasks.add("128.0.0.0");
-        validNetmasks.add("0.0.0.0");
+        validNetmasks.add("255.255.255.255");//32
+        validNetmasks.add("255.255.255.254");//31
+        validNetmasks.add("255.255.255.252");//30
+        validNetmasks.add("255.255.255.248");//29
+        validNetmasks.add("255.255.255.240");//28
+        validNetmasks.add("255.255.255.224");//27
+        validNetmasks.add("255.255.255.192");//26
+        validNetmasks.add("255.255.255.128");//25
+        validNetmasks.add("255.255.255.0");//24
+        validNetmasks.add("255.255.254.0");//23
+        validNetmasks.add("255.255.252.0");//22
+        validNetmasks.add("255.255.248.0");//21
+        validNetmasks.add("255.255.240.0");//20
+        validNetmasks.add("255.255.224.0");//19
+        validNetmasks.add("255.255.192.0");//18
+        validNetmasks.add("255.255.128.0");//17
+        validNetmasks.add("255.255.0.0");//16
+        validNetmasks.add("255.254.0.0");//15
+        validNetmasks.add("255.252.0.0");//14
+        validNetmasks.add("255.248.0.0");//13
+        validNetmasks.add("255.240.0.0");//12
+        validNetmasks.add("255.224.0.0");//11
+        validNetmasks.add("255.192.0.0");//10
+        validNetmasks.add("255.128.0.0");//9
+        validNetmasks.add("255.0.0.0");//8
+        validNetmasks.add("254.0.0.0");//7
+        validNetmasks.add("252.0.0.0");//6
+        validNetmasks.add("248.0.0.0");//5
+        validNetmasks.add("240.0.0.0");//4
+        validNetmasks.add("224.0.0.0");//3
+        validNetmasks.add("192.0.0.0");//2
+        validNetmasks.add("128.0.0.0");//1
+        validNetmasks.add("0.0.0.0");//0
+
+        netmaskMap.put("255.255.255.255","32");
+        netmaskMap.put("255.255.255.254","31");
+        netmaskMap.put("255.255.255.252","30");
+        netmaskMap.put("255.255.255.248","29");
+        netmaskMap.put("255.255.255.240","28");
+        netmaskMap.put("255.255.255.224","27");
+        netmaskMap.put("255.255.255.192","26");
+        netmaskMap.put("255.255.255.128","25");
+        netmaskMap.put("255.255.255.0","24");
+        netmaskMap.put("255.255.254.0","23");
+        netmaskMap.put("255.255.252.0","22");
+        netmaskMap.put("255.255.248.0","21");
+        netmaskMap.put("255.255.240.0","20");
+        netmaskMap.put("255.255.224.0","19");
+        netmaskMap.put("255.255.192.0","18");
+        netmaskMap.put("255.255.128.0","17");
+        netmaskMap.put("255.255.0.0","16");
+        netmaskMap.put("255.254.0.0","15");
+        netmaskMap.put("255.252.0.0","14");
+        netmaskMap.put("255.248.0.0","13");
+        netmaskMap.put("255.240.0.0","12");
+        netmaskMap.put("255.224.0.0","11");
+        netmaskMap.put("255.192.0.0","10");
+        netmaskMap.put("255.128.0.0","9");
+        netmaskMap.put("255.0.0.0","8");
+        netmaskMap.put("254.0.0.0","7");
+        netmaskMap.put("252.0.0.0","6");
+        netmaskMap.put("248.0.0.0","5");
+        netmaskMap.put("240.0.0.0","4");
+        netmaskMap.put("224.0.0.0","3");
+        netmaskMap.put("192.0.0.0","2");
+        netmaskMap.put("128.0.0.0","1");
+        netmaskMap.put("0.0.0.0","0");
     }
 
     public static boolean isHostname(String hostname) {
@@ -582,6 +622,7 @@ public class NetworkUtils {
         return sb.toString();
     }
 
+    /************************************************************************************************************************/
     public static int randomAllocateVlan(int startVlan, int endVlan, List<Integer> allocatedVlans) {
         int total = endVlan - startVlan + 1;
         if (total == allocatedVlans.size()) {
@@ -629,6 +670,48 @@ public class NetworkUtils {
         }
 
         return ipResults[0] +"."+ ipResults[1] +"."+ ipResults[2] +"."+ ipResults[3];
+    }
+
+    public static String charge(String ip) {
+        StringBuilder str = new StringBuilder();
+        for (int j = 0; j < ip.length(); j += 8) {
+            String ip1 = ip.substring(j, j + 8);
+            ip1 = Integer.valueOf(ip1, 2).toString();
+            str.append(ip1).append(".");
+        }
+        str = new StringBuilder(str.substring(0, str.length() - 1));
+        return str.toString();
+    }
+
+
+    public static String startIP(String ip) {
+        return ip.replaceAll("1", "0");
+    }
+
+
+    public static String endIP(String ip) {
+        return ip.replaceAll("0", "1");
+    }
+
+
+    public static String[] ipSplit(String ip) {
+        String[] ipString = ip.split("\\/");
+        ip = ipString[0];
+        int i = Integer.parseInt(ipString[1]);
+        String[] strings = ip.split("\\.");
+        StringBuilder str1 = new StringBuilder();
+        for (String string : strings) {
+            String str = Integer.toBinaryString(Integer.parseInt(string));
+            if (str.length() < 8) {
+                int j = (int) Math.pow(10, 8 - str.length());
+                str = ("" + j + str);
+                str = str.substring(1, str.length());
+            }
+            str1.append(str);
+        }
+        ipString[0] = charge(str1.substring(0, i) + startIP(str1.substring(i, 32)));
+        ipString[1] = charge(str1.substring(0, i) + endIP(str1.substring(i, 32)));
+        return ipString;
     }
 }
 

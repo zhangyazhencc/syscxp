@@ -147,7 +147,17 @@ public class L3NetworkValidateBase {
         }
 
         //验证网段的第一个IP和最后一个不可用
+        String ipPart1 = msg.getLocalIP();
+        String ipPart2 = NetworkUtils.intNetmask(msg.getNetmask());
+        String ipPart = ipPart1 + "/" + ipPart2;
 
+        String[] ipFirstAndEnd = NetworkUtils.ipSplit(ipPart);
+        if(msg.getLocalIP().equals(ipFirstAndEnd[0]) || msg.getLocalIP().equals(ipFirstAndEnd[1])){
+            throw new ApiMessageInterceptionException(argerr("该犀思云端IP不能是网段的起始IP或结束IP！"));
+        }
+        if(msg.getRemoteIp().equals(ipFirstAndEnd[0]) || msg.getRemoteIp().equals(ipFirstAndEnd[1])){
+            throw new ApiMessageInterceptionException(argerr("该客户端IP不能是网段的起始IP或结束IP！"));
+        }
 
 
         if(vo.getState() == L3EndpointState.Enabled){
