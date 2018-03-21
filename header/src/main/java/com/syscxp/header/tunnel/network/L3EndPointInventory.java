@@ -23,6 +23,7 @@ public class L3EndPointInventory {
     private String localIP;
     private String remoteIp;
     private String netmask;
+    private String ipCidr;
     private String interfaceUuid;
     private String switchPortUuid;
     private String physicalSwitchUuid;
@@ -49,6 +50,7 @@ public class L3EndPointInventory {
         inv.setLocalIP(vo.getLocalIP());
         inv.setRemoteIp(vo.getRemoteIp());
         inv.setNetmask(vo.getNetmask());
+        inv.setIpCidr(vo.getIpCidr());
         inv.setInterfaceUuid(vo.getInterfaceUuid());
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
         inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
@@ -246,5 +248,13 @@ public class L3EndPointInventory {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getIpCidr() {
+        return ipCidr;
+    }
+
+    public void setIpCidr(String ipCidr) {
+        this.ipCidr = ipCidr;
     }
 }

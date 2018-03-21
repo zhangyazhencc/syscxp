@@ -39,6 +39,7 @@ CREATE TABLE `L3EndPointVO` (
   `localIP` varchar(128) DEFAULT NULL COMMENT '犀思云端 ip',
   `remoteIp` varchar(128) DEFAULT NULL COMMENT '客户端 ip',
   `netmask` varchar(128) DEFAULT NULL COMMENT '子网掩码',
+  `ipCidr` varchar(128) DEFAULT NULL COMMENT '互联地址所属网段',
   `interfaceUuid` varchar(32) COMMENT '所属物理接口',
   `switchPortUuid` varchar(32) NOT NULL COMMENT '所属端口',
   `physicalSwitchUuid` varchar(32) DEFAULT NULL COMMENT '物理交换机',
