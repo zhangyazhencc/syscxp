@@ -117,7 +117,7 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
             tran.begin();
             Query query = mgr.createQuery(sql);
             query.setParameter("result", ApiEventResult.toJson(evt));
-            query.setParameter("state", RestAPIState.Done);
+            query.setParameter("state", AsyncRestState.done);
             query.setParameter("uuid", evt.getApiId());
             int ret = query.executeUpdate();
             tran.commit();
@@ -233,7 +233,7 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
                 try {
                     tran.begin();
                     Query query = mgr.createQuery(sql);
-                    query.setParameter("state", RestAPIState.Done);
+                    query.setParameter("state", AsyncRestState.done);
                     query.setParameter("period", RestGlobalConfig.COMPLETED_API_EXPIRED_PERIOD.value(Integer.class));
                     query.executeUpdate();
                     tran.commit();
