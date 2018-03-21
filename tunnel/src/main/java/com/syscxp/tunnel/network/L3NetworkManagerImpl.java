@@ -25,6 +25,7 @@ import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.network.NetworkUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -257,6 +258,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setLocalIP(null);
         vo.setRemoteIp(null);
         vo.setNetmask(null);
+        vo.setIpCidr(null);
         vo.setInterfaceUuid(msg.getInterfaceUuid());
         vo.setSwitchPortUuid(switchPortUuid);
         vo.setPhysicalSwitchUuid(physicalSwitchUuid);
@@ -299,6 +301,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setLocalIP(null);
         vo.setRemoteIp(null);
         vo.setNetmask(null);
+        vo.setIpCidr(null);
         vo.setInterfaceUuid(msg.getInterfaceUuid());
         vo.setSwitchPortUuid(switchPortUuid);
         vo.setPhysicalSwitchUuid(physicalSwitchUuid);
@@ -335,6 +338,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setRemoteIp(msg.getRemoteIp());
         vo.setLocalIP(msg.getLocalIP());
         vo.setNetmask(msg.getNetmask());
+        vo.setIpCidr(NetworkUtils.getIpCidrFromIpv4Netmask(msg.getLocalIP(), msg.getNetmask()));
 
         dbf.getEntityManager().merge(vo);
 
@@ -369,6 +373,13 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
         vo = dbf.updateAndRefresh(vo);
 
+        if(vo.getState() == L3EndpointState.Enabled){
+            vo.setState(L3EndpointState.Deploying);
+            vo = dbf.updateAndRefresh(vo);
+
+            new L3NetworkTaskBase().taskUpdateL3EndpointBandwidth(vo.getUuid());
+        }
+
         evt.setInventory(L3EndPointInventory.valueOf(vo));
         bus.publish(evt);
     }
@@ -402,7 +413,14 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setNextIp(l3EndPointVO.getRemoteIp());
         vo.setIndexNum(index);
 
-        dbf.persistAndRefresh(vo);
+        vo = dbf.persistAndRefresh(vo);
+
+        if(l3EndPointVO.getState() == L3EndpointState.Enabled){
+            l3EndPointVO.setState(L3EndpointState.Deploying);
+            l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
+
+            new L3NetworkTaskBase().taskAddL3EndpointRoutes(vo.getUuid());
+        }
 
         evt.setInventory(L3EndPointInventory.valueOf(dbf.reload(l3EndPointVO)));
         bus.publish(evt);
@@ -412,9 +430,17 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         APIDeleteL3RouteEvent evt = new APIDeleteL3RouteEvent(msg.getId());
 
         L3RouteVO vo = dbf.findByUuid(msg.getUuid(), L3RouteVO.class);
-        dbf.remove(vo);
-
         L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
+
+        if(l3EndPointVO.getState() == L3EndpointState.Enabled){
+            l3EndPointVO.setState(L3EndpointState.Deploying);
+            l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
+
+            new L3NetworkTaskBase().taskDeleteL3EndpointRoutes(vo.getUuid());
+        }else{
+            dbf.remove(vo);
+        }
+
         evt.setInventory(L3EndPointInventory.valueOf(l3EndPointVO));
         bus.publish(evt);
     }
@@ -436,6 +462,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
             bus.publish(evt);
         }else{
+            vo.setState(L3EndpointState.Deploying);
+            vo = dbf.updateAndRefresh(vo);
             l3NetworkTaskBase.taskEnableL3EndPoint(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
                 @Override
                 public void success(L3EndPointInventory inv) {
@@ -469,6 +497,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
             bus.publish(evt);
         }else{
+            vo.setState(L3EndpointState.Deploying);
+            vo = dbf.updateAndRefresh(vo);
             l3NetworkTaskBase.taskDisableL3EndPoint(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
                 @Override
                 public void success(L3EndPointInventory inv) {

@@ -19,6 +19,7 @@ public class L3EndPointVO_ {
     public static volatile SingularAttribute<L3EndPointVO,String> localIP;
     public static volatile SingularAttribute<L3EndPointVO,String> remoteIp;
     public static volatile SingularAttribute<L3EndPointVO,String> netmask;
+    public static volatile SingularAttribute<L3EndPointVO,String> ipCidr;
     public static volatile SingularAttribute<L3EndPointVO,String> interfaceUuid;
     public static volatile SingularAttribute<L3EndPointVO,String> switchPortUuid;
     public static volatile SingularAttribute<L3EndPointVO,String> physicalSwitchUuid;

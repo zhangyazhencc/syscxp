@@ -33,6 +33,36 @@ public class L3NetworkTaskBase {
     @Autowired
     private DatabaseFacade dbf;
 
+    /**
+     * 修改L3带宽下发
+     * */
+    public void taskUpdateL3EndpointBandwidth(String l3EndpointUuid){
+        logger.info("修改L3带宽，创建任务：UpdateL3EndpointBandwidthJob");
+        UpdateL3EndpointBandwidthJob job = new UpdateL3EndpointBandwidthJob();
+        job.setL3EndpointUuid(l3EndpointUuid);
+        jobf.execute("修改L3带宽-控制器下发", Platform.getManagementServerId(), job);
+    }
+
+    /**
+     * 添加L3连接点路由下发
+     * */
+    public void taskAddL3EndpointRoutes(String l3RouteUuid){
+        logger.info("添加L3连接点路由，创建任务：AddL3EndpointRoutesJob");
+        AddL3EndpointRoutesJob job = new AddL3EndpointRoutesJob();
+        job.setL3RouteUuid(l3RouteUuid);
+        jobf.execute("添加L3连接点路由-控制器下发", Platform.getManagementServerId(), job);
+    }
+
+    /**
+     * 删除L3连接点路由下发
+     * */
+    public void taskDeleteL3EndpointRoutes(String l3RouteUuid){
+        logger.info("删除L3连接点路由，创建任务：DeleteL3EndpointRoutesJob");
+        DeleteL3EndpointRoutesJob job = new DeleteL3EndpointRoutesJob();
+        job.setL3RouteUuid(l3RouteUuid);
+        jobf.execute("删除L3连接点路由-控制器下发", Platform.getManagementServerId(), job);
+    }
+
 
     /**
      * 开通连接点控制器下发

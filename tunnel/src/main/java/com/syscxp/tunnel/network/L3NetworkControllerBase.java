@@ -62,12 +62,154 @@ public class L3NetworkControllerBase {
             handle((CreateL3EndpointMsg) msg);
         }else if(msg instanceof DeleteL3EndPointMsg){
             handle((DeleteL3EndPointMsg) msg);
+        }else if(msg instanceof UpdateL3EndpointBandwidthMsg){
+            handle((UpdateL3EndpointBandwidthMsg) msg);
+        }else if(msg instanceof CreateL3RouteMsg){
+            handle((CreateL3RouteMsg) msg);
+        }else if(msg instanceof DeleteL3RouteMsg){
+            handle((DeleteL3RouteMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
     }
 
     private void handleApiMessage(APIMessage msg){}
+
+    private void handle(CreateL3RouteMsg msg){
+        CreateL3RouteReply reply = new CreateL3RouteReply();
+
+        L3RouteVO l3RouteVO = dbf.findByUuid(msg.getL3RouteUuid(),L3RouteVO.class);
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3RouteVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.ADD_ROUTES, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("添加路由条目成功！");
+
+                //更新状态
+                l3EndPointVO.setState(L3EndpointState.Enabled);
+                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("添加路由条目失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(DeleteL3RouteMsg msg){
+        DeleteL3RouteReply reply = new DeleteL3RouteReply();
+
+        L3RouteVO l3RouteVO = dbf.findByUuid(msg.getL3RouteUuid(),L3RouteVO.class);
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3RouteVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.DELETE_ROUTES, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("删除路由条目成功！");
+
+                //更新状态
+                l3EndPointVO.setState(L3EndpointState.Enabled);
+                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                dbf.remove(l3RouteVO);
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("删除路由条目失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
+    private void handle(UpdateL3EndpointBandwidthMsg msg){
+        UpdateL3EndpointBandwidthReply reply = new UpdateL3EndpointBandwidthReply();
+
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
+        String command = JSONObjectUtil.toJsonString(l3NetworkConfig);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_L3BANDWIDTH, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发修改L3带宽成功！");
+
+                //更新状态
+                l3EndPointVO.setState(L3EndpointState.Enabled);
+                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
+                dbf.updateAndRefresh(l3EndPointVO);
+
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发修改L3带宽失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
 
     private void handle(CreateL3EndpointMsg msg){
         CreateL3EndpointReply reply = new CreateL3EndpointReply();
