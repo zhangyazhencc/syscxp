@@ -108,6 +108,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
         vo.setState(EdgeLineState.Applying);
         vo.setPrices(null);
         vo.setExpireDate(null);
+        vo.setImplementType(null);
 
         vo = dbf.persistAndRefresh(vo);
         evt.setInventory(EdgeLineInventory.valueOf(vo));
@@ -136,6 +137,10 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
         }
         if(msg.getType() != null){
             vo.setType(msg.getType());
+            update = true;
+        }
+        if(msg.getImplementType() != null){
+            vo.setImplementType(msg.getImplementType());
             update = true;
         }
 

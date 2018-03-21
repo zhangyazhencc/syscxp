@@ -21,6 +21,9 @@ public class APIUpdateEdgeLineMsg extends APIMessage {
     private Integer prices;
 
     @APIParam(required = false,emptyString = false, maxLength = 32)
+    private String implementType;
+
+    @APIParam(required = false,emptyString = false, maxLength = 32)
     private String type;
 
     @APIParam(required = false,emptyString = false, maxLength = 255)
@@ -67,6 +70,14 @@ public class APIUpdateEdgeLineMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getImplementType() {
+        return implementType;
+    }
+
+    public void setImplementType(String implementType) {
+        this.implementType = implementType;
     }
 
     public ApiNotification __notification__() {
