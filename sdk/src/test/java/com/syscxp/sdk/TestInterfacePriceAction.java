@@ -4,7 +4,7 @@ import org.testng.annotations.Test;
 
 public class TestInterfacePriceAction extends TestSDK {
 
-    private String interfaceUuid= "11f521d844b14daa819864f7ea095cc5";
+    private String interfaceUuid= "01de0b10efe44099827076c20f011762";
 
     @Test
     public void testGetInterfacePriceAction() {
