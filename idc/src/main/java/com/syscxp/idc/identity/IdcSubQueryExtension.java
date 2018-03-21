@@ -1,11 +1,9 @@
 package com.syscxp.idc.identity;
 
-import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.query.AbstractMysqlQuerySubQueryExtension;
 import com.syscxp.query.QueryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 /**
  */
