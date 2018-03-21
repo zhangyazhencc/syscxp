@@ -7,8 +7,7 @@ import java.util.List;
 
 public class TestEdgelineAction extends TestSDK {
 
-
-    @Test
+    @Test(expectedExceptions = {ApiException.class})
     public void testCreate() {
         CreateEdgeLineAction action = new CreateEdgeLineAction();
         action.interfaceUuid = "";
@@ -21,12 +20,14 @@ public class TestEdgelineAction extends TestSDK {
         System.out.println(prettyGson.toJson(result));
 
     }
+
+    private String edgeLineUuid = "76a4678d83a54056b2e8af134cd2cdfc";
     @Test
     public void testQuery() {
         QueryEdgeLineAction action = new QueryEdgeLineAction();
 
         List<String> conditions = new ArrayList<>();
-        conditions.add("name=api-test");
+        conditions.add("uuid=" + edgeLineUuid);
         action.conditions = conditions;
 
         QueryEdgeLineResult result = action.call().throwExceptionIfError().value;
@@ -35,25 +36,25 @@ public class TestEdgelineAction extends TestSDK {
 
     }
 
-    @Test(expectedExceptions = ApiException.class)
+    @Test
     public void testRenew() {
 
-        RenewInterfaceAction action = new RenewInterfaceAction();
-        action.uuid = "";
+        RenewEdgeLineAction action = new RenewEdgeLineAction();
+        action.uuid = edgeLineUuid;
         action.duration = 1;
         action.productChargeModel = ProductChargeModel.BY_MONTH;
 
-        RenewInterfaceResult result = action.call().throwExceptionIfError().value;
+        RenewEdgeLineResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
 
     }
 
-    @Test(expectedExceptions = ApiException.class)
+    @Test
     public void testUnscribe() {
 
         GetUnscribeEdgeLinePriceDiffAction action = new GetUnscribeEdgeLinePriceDiffAction();
-        action.uuid = "";
+        action.uuid = edgeLineUuid;
 
         GetUnscribeEdgeLinePriceDiffResult result = action.call().throwExceptionIfError().value;
 

@@ -5,9 +5,9 @@ package com.syscxp.utils.network;
  */
 public class NetworkTest {
     public static void main(String[] args) {
-        String ipA = "202.194.128.9";
-        String ipB = "202.194.128.14";
-        String netmask = "255.255.255.0";
+        String ipA = "192.168.1.1";
+        String ipB = "192.168.2.1";
+        String netmask = "255.255.255.255";
 
         //System.out.println(NetworkUtils.ipv4StringToLong("202"));
         //System.out.println(Integer.toBinaryString(202));

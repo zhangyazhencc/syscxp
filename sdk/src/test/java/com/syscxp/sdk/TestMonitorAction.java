@@ -22,7 +22,6 @@ public class TestMonitorAction extends TestSDK {
     public void testQueryNettoolMonitorHost() {
         QueryNettoolMonitorHostAction action = new QueryNettoolMonitorHostAction();
 
-
         QueryNettoolMonitorHostResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
