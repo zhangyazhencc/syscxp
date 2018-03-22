@@ -298,10 +298,10 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0','{"actions":["vpn:.*:read"],"effect":"Allow"}'),
 ('VPNFullAccess','管理VPN权限','vpn','Normal','1','{"actions":["vpn:.*"],"effect":"Allow"}'),
 
-('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["billing:.*:read"],"effect":"Allow"}'),
-('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["billing:.*"],"effect":"Allow"}'),
+('BillingReadOnlyAccess','只读访问账务中心的权限','billing','Normal','0','{"actions":["billing:.*:read"],"effect":"Allow"}'),
+('BillingFullAccess','管理账务中心的权限','billing','Normal','1','{"actions":["billing:.*"],"effect":"Allow"}'),
 
-('BillingPriceFullAccess','管理费用中心价格的权限','billing','SystemAdmin','2','{"actions":["billing:price:.*"],"effect":"Allow"}'),
+('BillingPriceFullAccess','管理价格表的权限','billing','SystemAdmin','2','{"actions":["billing:price:.*"],"effect":"Allow"}'),
 ('BillingRecharge','现金充值权限','billing','Normal','10','{"actions":["billing:recharge:.*"],"effect":"Allow"}'),
 ('BillingPresent','赠送金额充值权限','billing','SystemAdmin','11','{"actions":["billing:present:.*"],"effect":"Allow"}'),
 ('BillingCredit','设置信用额度权限','billing','SystemAdmin','12','{"actions":["billing:credit:.*"],"effect":"Allow"}'),
