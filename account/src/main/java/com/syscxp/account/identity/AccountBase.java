@@ -528,6 +528,10 @@ public class AccountBase extends AbstractAccount {
             account.setDescription(msg.getDescription());
             update = true;
         }
+        if (msg.getExpiredClean() != null) {
+            account.setExpiredClean(msg.getExpiredClean());
+            update = true;
+        }
         if (msg.getEmail() != null && !msg.getEmail().equalsIgnoreCase(account.getEmail())) {
             account.setEmail(msg.getEmail());
             account.setEmailStatus(ValidateStatus.Unvalidated);

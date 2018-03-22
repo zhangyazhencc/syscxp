@@ -162,6 +162,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         if(accountOptional.isPresent()){
             reply.setExpiredClean(accountOptional.get().isExpiredClean());
+            reply.setUuid(msg.getUuid());
         }else{
             reply.setError(Platform.argerr("no this account[%s]",msg.getUuid()));
         }
