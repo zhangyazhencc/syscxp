@@ -44,16 +44,6 @@ public class L3NetworkTaskBase {
     }
 
     /**
-     * 添加L3连接点路由下发
-     * */
-    public void taskAddL3EndpointRoutes(String l3RouteUuid){
-        logger.info("添加L3连接点路由，创建任务：AddL3EndpointRoutesJob");
-        AddL3EndpointRoutesJob job = new AddL3EndpointRoutesJob();
-        job.setL3RouteUuid(l3RouteUuid);
-        jobf.execute("添加L3连接点路由-控制器下发", Platform.getManagementServerId(), job);
-    }
-
-    /**
      * 删除L3连接点路由下发
      * */
     public void taskDeleteL3EndpointRoutes(String l3RouteUuid){
@@ -85,11 +75,14 @@ public class L3NetworkTaskBase {
                     completionTask.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
                 } else {
 
-                    logger.info("开通L3连接点失败，创建任务：EnabledOrDisabledL3EndPointJob");
-                    EnabledOrDisabledL3EndPointJob job = new EnabledOrDisabledL3EndPointJob();
-                    job.setL3EndPointUuid(vo.getUuid());
-                    job.setJobType(L3EndpointState.Enabled);
-                    jobf.execute("开通L3连接点-控制器下发", Platform.getManagementServerId(), job);
+                    if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                        logger.info("开通L3连接点失败，控制器回滚失败，开始回滚控制器.");
+
+                        EnabledOrDisabledL3EndPointJob job = new EnabledOrDisabledL3EndPointJob();
+                        job.setL3EndPointUuid(vo.getUuid());
+                        job.setJobType(L3EndpointState.Disabled);
+                        jobf.execute("中止L3连接点-控制器下发", Platform.getManagementServerId(), job);
+                    }
 
                     completionTask.fail(reply.getError());
                 }
@@ -127,6 +120,30 @@ public class L3NetworkTaskBase {
         });
     }
 
+    /**
+     * 添加L3连接点路由下发
+     * */
+    public void taskAddL3EndpointRoutes(L3RouteVO vo, ReturnValueCompletion<L3EndPointInventory> completionTask){
+        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
 
+        TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.AddL3EndpointRoutes);
+
+        CreateL3RouteMsg createL3RouteMsg = new CreateL3RouteMsg();
+        createL3RouteMsg.setL3RouteUuid(vo.getUuid());
+        createL3RouteMsg.setTaskUuid(taskResourceVO.getUuid());
+        bus.makeLocalServiceId(createL3RouteMsg, L3NetWorkConstant.SERVICE_ID);
+        bus.send(createL3RouteMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+
+                    completionTask.success(L3EndPointInventory.valueOf(l3EndPointVO));
+                } else {
+                    dbf.remove(vo);
+                    completionTask.fail(reply.getError());
+                }
+            }
+        });
+    }
 }
 

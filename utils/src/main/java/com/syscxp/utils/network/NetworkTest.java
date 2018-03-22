@@ -8,6 +8,7 @@ public class NetworkTest {
         String ipA = "192.168.1.1";
         String ipB = "192.168.2.1";
         String netmask = "255.255.255.255";
+        String cidr = "192.168.1.1/32";
 
         //System.out.println(NetworkUtils.ipv4StringToLong("202"));
         //System.out.println(Integer.toBinaryString(202));
@@ -16,6 +17,8 @@ public class NetworkTest {
         String[] arrA = ipA.split("\\.");
         String[] arrB = ipB.split("\\.");
         String[] arrM = netmask.split("\\.");
+
+        String[] cidrs = cidr.split("\\/");
 
         String[] ipResult1s = new String[4];
         String[] ipResult2s = new String[4];
@@ -37,6 +40,11 @@ public class NetworkTest {
         System.out.println(ipResult1s[3]);
         System.out.println(newIp1);
         System.out.println(newIp2);
+
+        System.out.println(NetworkUtils.isCidr(cidr));
+
+        System.out.println(cidrs[0]);
+        System.out.println(cidrs[1]);
 
         if (newIp1.equals(newIp2)) {
             //System.out.println(true);

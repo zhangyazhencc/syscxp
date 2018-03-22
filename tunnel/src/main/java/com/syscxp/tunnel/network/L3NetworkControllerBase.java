@@ -91,11 +91,6 @@ public class L3NetworkControllerBase {
             public void success() {
                 logger.info("添加路由条目成功！");
 
-                //更新状态
-                l3EndPointVO.setState(L3EndpointState.Enabled);
-                l3EndPointVO.setStatus(L3EndpointStatus.Connected);
-                dbf.updateAndRefresh(l3EndPointVO);
-
                 //更新任务状态
                 taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);

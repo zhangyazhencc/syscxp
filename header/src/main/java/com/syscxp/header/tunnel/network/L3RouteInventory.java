@@ -13,6 +13,7 @@ public class L3RouteInventory {
     private String uuid;
     private String l3EndPointUuid;
     private String cidr;
+    private String truthCidr;
     private String nextIp;
     private Integer indexNum;
     private Timestamp lastOpDate;
@@ -22,6 +23,7 @@ public class L3RouteInventory {
         L3RouteInventory inv = new L3RouteInventory();
         inv.setUuid(vo.getUuid());
         inv.setCidr(vo.getCidr());
+        inv.setTruthCidr(vo.getTruthCidr());
         inv.setL3EndPointUuid(vo.getL3EndPointUuid());
         inv.setNextIp(vo.getNextIp());
         inv.setIndexNum(vo.getIndexNum());
@@ -92,5 +94,13 @@ public class L3RouteInventory {
 
     public void setIndexNum(Integer indexNum) {
         this.indexNum = indexNum;
+    }
+
+    public String getTruthCidr() {
+        return truthCidr;
+    }
+
+    public void setTruthCidr(String truthCidr) {
+        this.truthCidr = truthCidr;
     }
 }

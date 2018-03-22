@@ -148,7 +148,7 @@ public class L3NetworkValidateBase {
 
         //验证网段的第一个IP和最后一个不可用
         String ipPart1 = msg.getLocalIP();
-        String ipPart2 = NetworkUtils.intNetmask(msg.getNetmask());
+        String ipPart2 = NetworkUtils.intFromNetmask(msg.getNetmask());
         String ipPart = ipPart1 + "/" + ipPart2;
 
         String[] ipFirstAndEnd = NetworkUtils.ipSplit(ipPart);
@@ -219,10 +219,13 @@ public class L3NetworkValidateBase {
                 .select(L3EndPointVO_.uuid)
                 .listValues();
 
+        String[] cidrArr = msg.getCidr().split("/");
+        String truthCidr = NetworkUtils.getIpCidrFromIpv4Netmask(cidrArr[0],NetworkUtils.netmaskFromInt(cidrArr[1]));
+
         //目标网段不可重复添加
         if(Q.New(L3RouteVO.class)
                 .in(L3RouteVO_.l3EndPointUuid, l3EndpointUuids)
-                .eq(L3RouteVO_.cidr, msg.getCidr())
+                .eq(L3RouteVO_.truthCidr, truthCidr)
                 .isExists()){
             throw new ApiMessageInterceptionException(
                     argerr("该目标网段在该云网络下已经存在."));
