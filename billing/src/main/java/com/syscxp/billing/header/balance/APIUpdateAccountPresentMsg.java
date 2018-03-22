@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 import java.math.BigDecimal;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRESENT, names = {"update"}, adminOnly = true)
-public class APIUpdatePresentMsg extends APIMessage{
+public class APIUpdateAccountPresentMsg extends APIMessage{
 
     @APIParam(emptyString = false)
     private String accountUuid;

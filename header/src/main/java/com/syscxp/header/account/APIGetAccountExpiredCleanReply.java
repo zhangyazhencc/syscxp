@@ -5,7 +5,17 @@ import com.syscxp.header.message.APIReply;
 
 public class APIGetAccountExpiredCleanReply extends APIReply{
 
+    private String uuid;
+
     private boolean expiredClean;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public boolean isExpiredClean() {
         return expiredClean;
