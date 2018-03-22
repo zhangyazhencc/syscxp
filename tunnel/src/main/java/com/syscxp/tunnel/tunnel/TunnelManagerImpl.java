@@ -51,6 +51,7 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.header.vpn.vpn.APICheckVpnForTunnelMsg;
 import com.syscxp.header.vpn.vpn.APICheckVpnForTunnelReply;
 import com.syscxp.header.vpn.vpn.APIDestroyVpnMsg;
+import com.syscxp.tunnel.cleanExpiredProduct.CleanExpiredProductBase;
 import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
@@ -91,8 +92,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private RESTFacade restf;
     @Autowired
     private ErrorFacade errf;
-    @Autowired
-    private ThreadFacade thdf;
     @Autowired
     private PluginRegistry pluginRgty;
     @Autowired
@@ -1745,7 +1744,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     }
 
-    private void doDeleteTunnel(TunnelVO vo, boolean isForcibly, String opAccountUuid, ReturnValueCompletion<TunnelInventory> completion){
+    public void doDeleteTunnel(TunnelVO vo, boolean isForcibly, String opAccountUuid, ReturnValueCompletion<TunnelInventory> completion){
         TunnelBase tunnelBase = new TunnelBase();
 
         try {
@@ -2672,175 +2671,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 //        bus.publish(evt);
     }
 
-
-    /**************************************** The following clean the expired Products **************************************************/
-
-    private Future<Void> cleanExpiredProductThread = null;
-    private int cleanExpiredProductInterval;
-    private int expiredProductCloseTime;
-    private int expiredProductDeleteTime;
-
-    private void startCleanExpiredProduct() {
-        cleanExpiredProductInterval = TunnelGlobalConfig.CLEAN_EXPIRED_PRODUCT_INTERVAL.value(Integer.class);
-        expiredProductCloseTime = TunnelGlobalConfig.EXPIRED_PRODUCT_CLOSE_TIME.value(Integer.class);
-        expiredProductDeleteTime = TunnelGlobalConfig.EXPIRED_PRODUCT_DELETE_TIME.value(Integer.class);
-
-        if (cleanExpiredProductThread != null) {
-            cleanExpiredProductThread.cancel(true);
-        }
-
-        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toSeconds(3600));
-        logger.debug(String
-                .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s hours]", cleanExpiredProductInterval));
-    }
-
-    private void restartCleanExpiredProduct() {
-
-        startCleanExpiredProduct();
-
-        TunnelGlobalConfig.CLEAN_EXPIRED_PRODUCT_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
-                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startCleanExpiredProduct();
-            }
-        });
-        TunnelGlobalConfig.EXPIRED_PRODUCT_CLOSE_TIME.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
-                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startCleanExpiredProduct();
-            }
-        });
-        TunnelGlobalConfig.EXPIRED_PRODUCT_DELETE_TIME.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
-                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startCleanExpiredProduct();
-            }
-        });
-    }
-
-    private class CleanExpiredProductThread implements PeriodicTask {
-
-        @Override
-        public TimeUnit getTimeUnit() {
-            return TimeUnit.SECONDS;
-        }
-
-        @Override
-        public long getInterval() {
-            return TimeUnit.HOURS.toSeconds(cleanExpiredProductInterval);
-        }
-
-        @Override
-        public String getName() {
-            return "clean-expired-product-" + Platform.getManagementServerId();
-        }
-
-        private Timestamp getCloseTime(){
-            Timestamp time = Timestamp.valueOf(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(expiredProductCloseTime < expiredProductDeleteTime ? expiredProductCloseTime : expiredProductDeleteTime));
-            return time;
-        }
-
-        private List<TunnelVO> getTunnels() {
-            return Q.New(TunnelVO.class)
-                    .lte(TunnelVO_.expireDate, getCloseTime())
-                    .list();
-        }
-
-        private List<InterfaceVO> getInterfaces() {
-
-            return Q.New(InterfaceVO.class)
-                    .lte(InterfaceVO_.expireDate, getCloseTime())
-                    .list();
-        }
-
-        private void deleteInterface(List<InterfaceVO> ifaces, Timestamp close, Timestamp delete) {
-
-            for (InterfaceVO vo : ifaces) {
-                if (vo.getExpireDate().before(delete)) {
-                    if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists()
-                            && !Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid, vo.getUuid()).isExists()) {
-                        dbf.remove(vo);
-                        //删除续费表
-                        logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
-                        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
-                        job.setAccountUuid(vo.getOwnerAccountUuid());
-                        job.setResourceType(vo.getClass().getSimpleName());
-                        job.setResourceUuid(vo.getUuid());
-                        jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
-                    }
-
-                }else if (vo.getExpireDate().before(close) && vo.getState() == InterfaceState.Unpaid) {
-                    dbf.remove(vo);
-                }
-            }
-        }
-
-        @Override
-        public void run() {
-            if (!TunnelGlobalConfig.EXPIRED_PRODUCT_CLEAN_RUN.value(Boolean.class)){
-                return;
-            }
-
-            TunnelBase tunnelBase = new TunnelBase();
-            Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductCloseTime));
-            Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductDeleteTime));
-
-            try {
-                List<TunnelVO> tunnelVOs = getTunnels();
-                logger.debug("delete expired tunnel.");
-                if (tunnelVOs.isEmpty())
-                    return;
-                for (TunnelVO vo : tunnelVOs) {
-                    if (vo.getExpireDate().before(deleteTime)) {
-                        vo.setAccountUuid(null);
-                        final TunnelVO vo2 = dbf.updateAndRefresh(vo);
-                        doDeleteTunnel(vo2, false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
-                            @Override
-                            public void success(TunnelInventory inv) {
-                            }
-
-                            @Override
-                            public void fail(ErrorCode errorCode) {
-                            }
-                        });
-                    } else if (vo.getExpireDate().before(closeTime)) {
-                        if (vo.getState() == TunnelState.Unpaid) {
-                            tunnelBase.deleteTunnelDB(vo);
-                        } else if (vo.getState() == TunnelState.Enabled) {
-                            new TunnelJobAndTaskBase().taskDisableTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
-                                @Override
-                                public void success(TunnelInventory inv) {
-                                }
-
-                                @Override
-                                public void fail(ErrorCode errorCode) {
-                                }
-                            });
-                        }
-                    }
-                }
-
-                List<InterfaceVO> ifaces = getInterfaces();
-                logger.debug("delete expired interface.");
-                if (ifaces.isEmpty())
-                    return;
-                deleteInterface(ifaces, closeTime, deleteTime);
-            } catch (Throwable t) {
-                logger.warn("unhandled exception", t);
-            }
-        }
-
-    }
-
     @Override
     public boolean start() {
-        restartCleanExpiredProduct();
+        new CleanExpiredProductBase().restartCleanExpiredProduct();
         return true;
     }
 

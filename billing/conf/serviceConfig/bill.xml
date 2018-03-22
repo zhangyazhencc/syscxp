@@ -8,6 +8,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.billing.header.bill.APIGetCurrentMonthBillMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.bill.APIQueryBillMsg</name>
         <serviceId>query</serviceId>
     </message>

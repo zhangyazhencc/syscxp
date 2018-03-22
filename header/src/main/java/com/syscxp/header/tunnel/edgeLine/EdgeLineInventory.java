@@ -34,6 +34,7 @@ public class EdgeLineInventory {
     private String description;
     private String state;
     private Integer prices;
+    private String implementType;
     private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -53,6 +54,7 @@ public class EdgeLineInventory {
         inv.setDescription(vo.getDescription());
         inv.setState(vo.getState().toString());
         inv.setPrices(vo.getPrices());
+        inv.setImplementType(vo.getImplementType());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -199,5 +201,13 @@ public class EdgeLineInventory {
 
     public void setNumber(Long number) {
         this.number = number;
+    }
+
+    public String getImplementType() {
+        return implementType;
+    }
+
+    public void setImplementType(String implementType) {
+        this.implementType = implementType;
     }
 }

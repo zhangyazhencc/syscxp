@@ -56,6 +56,9 @@ public class AccountVO {
     private String description;
 
     @Column
+    private boolean expiredClean;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
@@ -204,5 +207,13 @@ public class AccountVO {
 
     public void setAccountExtraInfo(AccountExtraInfoVO accountExtraInfo) {
         this.accountExtraInfo = accountExtraInfo;
+    }
+
+    public boolean isExpiredClean() {
+        return expiredClean;
+    }
+
+    public void setExpiredClean(boolean expiredClean) {
+        this.expiredClean = expiredClean;
     }
 }
