@@ -40,7 +40,7 @@ public class APIUpdateAccountCreditMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update AccountBalanceVO")
+                ntfy("Update AccountBalanceVO Credit")
                         .resource(accountUuid, AccountBalanceVO.class)
                         .messageAndEvent(that, evt).done();
             }

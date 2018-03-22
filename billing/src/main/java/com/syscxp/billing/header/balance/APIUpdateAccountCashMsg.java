@@ -63,7 +63,7 @@ public class APIUpdateAccountCashMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update AccountBalanceVO")
+                ntfy("Update AccountBalanceVO Cash")
                         .resource(accountUuid, AccountBalanceVO.class)
                         .messageAndEvent(that, evt).done();
             }
