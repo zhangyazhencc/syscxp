@@ -79,7 +79,6 @@ CREATE TABLE  `AccountVO` (
     `type` varchar(128) NOT NULL COMMENT 'account type',
     `status` varchar(128) NOT NULL COMMENT '状态',
     `description` varchar(255),
-    `expiredClean` boolean NOT NULL COMMENT '是否过期清理',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
