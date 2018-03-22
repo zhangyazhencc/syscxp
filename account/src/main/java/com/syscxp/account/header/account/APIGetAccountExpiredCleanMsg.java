@@ -1,11 +1,11 @@
 package com.syscxp.account.header.account;
 
 import com.syscxp.header.identity.InnerCredentialCheck;
-import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APISyncCallMessage;
 
 @InnerCredentialCheck
-public class APIGetAccountExpiredCleanMsg extends APIMessage {
+public class APIGetAccountExpiredCleanMsg extends APISyncCallMessage {
 
     @APIParam
     private String uuid;
