@@ -12,11 +12,15 @@
     </message>
 
     <message>
-        <name>com.syscxp.billing.header.balance.APIUpdateAccountBalanceMsg</name>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountCashMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.billing.header.balance.APIUpdatePresentMsg</name>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountCreditMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountPresentMsg</name>
     </message>
 
     <message>

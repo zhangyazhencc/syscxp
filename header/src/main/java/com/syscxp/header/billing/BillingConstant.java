@@ -16,10 +16,13 @@ public interface BillingConstant {
     public static final String ACTION_CATEGORY_PRICE = "price";
     public static final String ACTION_CATEGORY_SLA = "sla";
     public static final String ACTION_CATEGORY_ORDER = "order";
-    public static final String ACTION_CATEGORY_RECHARGE = "recharge";
     public static final String ACTION_CATEGORY_RENEW = "renew";
     public static final String ACTION_CATEGORY_RECEIPT = "receipt";
     public static final String ACTION_CATEGORY_REPORT = "report";
+
+    public static final String ACTION_CATEGORY_CREDIT = "credit";
     public static final String ACTION_CATEGORY_PRESENT = "present";
+    public static final String ACTION_CATEGORY_RECHARGE = "recharge";
+
 
 }
