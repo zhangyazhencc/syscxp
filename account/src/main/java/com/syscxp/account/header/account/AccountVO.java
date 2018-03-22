@@ -56,7 +56,7 @@ public class AccountVO {
     private String description;
 
     @Column
-    private boolean overdueClean;
+    private boolean expiredClean;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -209,11 +209,11 @@ public class AccountVO {
         this.accountExtraInfo = accountExtraInfo;
     }
 
-    public boolean isOverdueClean() {
-        return overdueClean;
+    public boolean isExpiredClean() {
+        return expiredClean;
     }
 
-    public void setOverdueClean(boolean overdueClean) {
-        this.overdueClean = overdueClean;
+    public void setExpiredClean(boolean expiredClean) {
+        this.expiredClean = expiredClean;
     }
 }

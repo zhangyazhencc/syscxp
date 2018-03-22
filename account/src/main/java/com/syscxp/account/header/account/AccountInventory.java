@@ -23,7 +23,7 @@ public class AccountInventory {
     private String status;
     private String description;
     private String type;
-    private boolean overdueClean;
+    private boolean expiredClean;
 
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -46,7 +46,7 @@ public class AccountInventory {
         inv.setType(vo.getType().toString());
         inv.setIndustry(vo.getIndustry());
 
-        inv.setOverdueClean(vo.isOverdueClean());
+        inv.setExpiredClean(vo.isExpiredClean());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
@@ -188,11 +188,11 @@ public class AccountInventory {
         this.extraInfo = extraInfo;
     }
 
-    public boolean isOverdueClean() {
-        return overdueClean;
+    public boolean isExpiredClean() {
+        return expiredClean;
     }
 
-    public void setOverdueClean(boolean overdueClean) {
-        this.overdueClean = overdueClean;
+    public void setExpiredClean(boolean expiredClean) {
+        this.expiredClean = expiredClean;
     }
 }

@@ -693,7 +693,7 @@ public class AccountBase extends AbstractAccount {
         } else {
             ext.setGrade(AccountGrade.Normal);
         }
-
+        accountVO.setExpiredClean(true);
         ext.setUserUuid(msg.getUserUuid());
 
         accountVO.setAccountExtraInfo(ext);

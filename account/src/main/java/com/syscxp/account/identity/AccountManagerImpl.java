@@ -144,9 +144,29 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetSecretKeyMsg) msg);
         } else if (msg instanceof APILogInBySecretIdMsg) {
             handle((APILogInBySecretIdMsg) msg);
+        } else if (msg instanceof APIGetAccountExpiredCleanMsg) {
+            handle((APIGetAccountExpiredCleanMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+
+    }
+
+    private void handle(APIGetAccountExpiredCleanMsg msg) {
+
+        APIGetAccountExpiredCleanReply reply = new APIGetAccountExpiredCleanReply();
+
+        Optional<AccountVO> accountOptional =  Optional.ofNullable(
+                dbf.findByUuid(msg.getUuid(),AccountVO.class)
+        );
+
+        if(accountOptional.isPresent()){
+            reply.setExpiredClean(accountOptional.get().isExpiredClean());
+        }else{
+            reply.setError(Platform.argerr("no this account[%s]",msg.getUuid()));
+        }
+
+        bus.reply(msg,reply);
 
     }
 

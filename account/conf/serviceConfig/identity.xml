@@ -241,5 +241,9 @@
         <name>com.syscxp.account.header.identity.APIMailOrPhoneIsExistentMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.account.header.account.APIGetAccountExpiredCleanMsg</name>
+    </message>
+
 
 </service>
