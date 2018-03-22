@@ -20,6 +20,7 @@ public interface BillingConstant {
     public static final String ACTION_CATEGORY_RECEIPT = "receipt";
     public static final String ACTION_CATEGORY_REPORT = "report";
 
+    public static final String ACTION_CATEGORY_DISCOUNT = "discount";
     public static final String ACTION_CATEGORY_CREDIT = "credit";
     public static final String ACTION_CATEGORY_PRESENT = "present";
     public static final String ACTION_CATEGORY_RECHARGE = "recharge";
