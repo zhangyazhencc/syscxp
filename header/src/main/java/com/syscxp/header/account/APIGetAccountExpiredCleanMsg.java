@@ -1,4 +1,4 @@
-package com.syscxp.account.header.account;
+package com.syscxp.header.account;
 
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
