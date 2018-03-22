@@ -64,6 +64,7 @@ CREATE TABLE `L3RouteVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `l3EndPointUuid` VARCHAR(32) COMMENT '所属L3连接点',
   `cidr` varchar(50) NOT NULL COMMENT 'cidr',
+  `truthCidr` varchar(50) NOT NULL COMMENT '真实网段',
   `nextIp` varchar(50) NOT NULL COMMENT 'nextIp',
   `indexNum` INT(11) NOT NULL COMMENT 'index',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
