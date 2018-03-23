@@ -362,6 +362,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
 
     }
 
+    @Transactional
     private void handle(APIUpdateAccountCreditMsg msg) {
 
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
