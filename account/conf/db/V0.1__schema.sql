@@ -298,12 +298,19 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0','{"actions":["vpn:.*:read"],"effect":"Allow"}'),
 ('VPNFullAccess','管理VPN权限','vpn','Normal','1','{"actions":["vpn:.*"],"effect":"Allow"}'),
 
-('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["billing:.*:read"],"effect":"Allow"}'),
-('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["billing:.*"],"effect":"Allow"}'),
-('BillingPriceFullAccess','管理费用中心价格的权限','billing','SystemAdmin','2','{"actions":["billing:price:.*"],"effect":"Allow"}'),
+('BillingReadOnlyAccess','只读访问账务中心的权限','billing','Normal','0','{"actions":["billing:.*:read"],"effect":"Allow"}'),
+('BillingFullAccess','管理账务中心的权限','billing','Normal','1','{"actions":["billing:.*"],"effect":"Allow"}'),
+
+('BillingPriceFullAccess','管理价格表的权限','billing','SystemAdmin','2','{"actions":["billing:price:.*"],"effect":"Allow"}'),
 ('BillingRecharge','现金充值权限','billing','Normal','10','{"actions":["billing:recharge:.*"],"effect":"Allow"}'),
 ('BillingPresent','赠送金额充值权限','billing','SystemAdmin','11','{"actions":["billing:present:.*"],"effect":"Allow"}'),
+('BillingCredit','设置信用额度权限','billing','SystemAdmin','12','{"actions":["billing:credit:.*"],"effect":"Allow"}'),
+('BillingDiscount','设置折扣权限','billing','SystemAdmin','15','{"actions":["billing:discount:.*"],"effect":"Allow"}'),
 
+('BillingRenew','续费权限','billing','SystemAdmin','20','{"actions":["billing:renew:.*"],"effect":"Allow"}'),
+('BillingReceipt','发票权限','billing','SystemAdmin','22','{"actions":["billing:receipt:.*"],"effect":"Allow"}'),
+('BillingSla','SLA赔偿权限','billing','SystemAdmin','25','{"actions":["billing:sla:.*"],"effect":"Allow"}'),
+('BillingReport','查看报表权限','billing','SystemAdmin','27','{"actions":["billing:report:.*"],"effect":"Allow"}'),
 
 ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:.*:read"],"effect":"Allow"}'),
 ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*"],"effect":"Allow"}'),

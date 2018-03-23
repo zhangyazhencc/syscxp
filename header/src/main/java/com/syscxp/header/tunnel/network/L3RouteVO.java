@@ -22,6 +22,9 @@ public class L3RouteVO {
     private String cidr;
 
     @Column
+    private String truthCidr;
+
+    @Column
     private String nextIp;
 
     @Column
@@ -92,5 +95,13 @@ public class L3RouteVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public String getTruthCidr() {
+        return truthCidr;
+    }
+
+    public void setTruthCidr(String truthCidr) {
+        this.truthCidr = truthCidr;
     }
 }

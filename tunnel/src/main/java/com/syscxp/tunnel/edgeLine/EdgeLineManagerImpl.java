@@ -106,8 +106,10 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
         vo.setDestinationInfo(msg.getDestinationInfo());
         vo.setDescription(msg.getDescription());
         vo.setState(EdgeLineState.Applying);
+        vo.setCostPrices(null);
         vo.setPrices(null);
         vo.setExpireDate(null);
+        vo.setImplementType(null);
 
         vo = dbf.persistAndRefresh(vo);
         evt.setInventory(EdgeLineInventory.valueOf(vo));
@@ -130,12 +132,20 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
             vo.setDestinationInfo(msg.getDestinationInfo());
             update = true;
         }
+        if(msg.getCostPrices() != null){
+            vo.setCostPrices(msg.getCostPrices());
+            update = true;
+        }
         if(msg.getPrices() != null){
             vo.setPrices(msg.getPrices());
             update = true;
         }
         if(msg.getType() != null){
             vo.setType(msg.getType());
+            update = true;
+        }
+        if(msg.getImplementType() != null){
+            vo.setImplementType(msg.getImplementType());
             update = true;
         }
 

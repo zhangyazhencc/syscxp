@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -31,5 +33,18 @@ public class APIEnableL3EndPointMsg extends APIMessage {
 
     public void setSaveOnly(boolean saveOnly) {
         this.saveOnly = saveOnly;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Enable L3EndPointVO")
+                        .resource(uuid, L3EndPointVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

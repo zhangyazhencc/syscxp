@@ -20,7 +20,7 @@ public abstract class APIMessage extends NeedReplyMessage {
     private SessionInventory session;
 
     @APINoSee
-    private String ip;
+    private String ip = "127.0.0.1";
 
     public SessionInventory getSession() {
         return session;

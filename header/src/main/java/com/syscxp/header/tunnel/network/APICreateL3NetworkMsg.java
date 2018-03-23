@@ -3,10 +3,14 @@ package com.syscxp.header.tunnel.network;
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.endpoint.APICreateEndpointEvent;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 
 import java.sql.Timestamp;
 
@@ -66,5 +70,22 @@ public class APICreateL3NetworkMsg extends APIMessage {
 
     public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateL3NetworkEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create MPLS L3NetworkVO")
+                        .resource(uuid, L3NetworkVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

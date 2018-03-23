@@ -23,6 +23,7 @@ public class AccountVO_ {
     public static volatile SingularAttribute<AccountVO, String> industry;
     public static volatile SingularAttribute<AccountVO, AccountStatus> status;
     public static volatile SingularAttribute<AccountVO, String> description;
+    public static volatile SingularAttribute<AccountVO, Boolean> expiredClean;
     public static volatile SingularAttribute<AccountVO, AccountType> type;
     public static volatile SingularAttribute<AccountVO, Timestamp> createDate;
     public static volatile SingularAttribute<AccountVO, Timestamp> lastOpDate;

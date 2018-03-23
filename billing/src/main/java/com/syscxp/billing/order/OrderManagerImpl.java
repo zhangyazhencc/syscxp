@@ -1064,7 +1064,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
 
     private void handle(APIGetProductPriceMsg msg) {
-        List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
+//        List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
 
         OrderTempProp orderTempProp = calculatePrice(msg.getUnits(), msg.getAccountUuid());
         BigDecimal discountPrice = orderTempProp.getDiscountPrice();
@@ -1081,7 +1081,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         boolean payable = discountPrice.compareTo(mayPayTotal) <= 0;
 
         APIGetProductPriceReply reply = new APIGetProductPriceReply();
-        reply.setProductPriceInventories(productPriceUnits);
+//        reply.setProductPriceInventories(productPriceUnits);
         reply.setMayPayTotal(mayPayTotal);
         reply.setOriginalPrice(originalPrice);
         reply.setDiscountPrice(discountPrice);

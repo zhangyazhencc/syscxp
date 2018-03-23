@@ -84,10 +84,6 @@ public class L3EndPointVO {
 
     @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(name = "l3EndPointUuid", insertable = false, updatable = false)
-    private List<L3RouteVO> l3RouteVOS = new ArrayList<L3RouteVO>();
-
-    @OneToMany(fetch= FetchType.EAGER)
-    @JoinColumn(name = "l3EndPointUuid", insertable = false, updatable = false)
     private List<L3RtVO> l3RtVOS = new ArrayList<L3RtVO>();
 
     @PreUpdate
@@ -245,14 +241,6 @@ public class L3EndPointVO {
 
     public void setEndpointVO(EndpointVO endpointVO) {
         this.endpointVO = endpointVO;
-    }
-
-    public List<L3RouteVO> getL3RouteVOS() {
-        return l3RouteVOS;
-    }
-
-    public void setL3RouteVOS(List<L3RouteVO> l3RouteVOS) {
-        this.l3RouteVOS = l3RouteVOS;
     }
 
     public List<L3RtVO> getL3RtVOS() {

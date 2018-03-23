@@ -42,12 +42,6 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private RESTFacade restf;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private JobQueueFacade jobf;
 
     private VOAddAllOfMsg vOAddAllOfMsg = new VOAddAllOfMsg();
 
@@ -406,24 +400,41 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         Integer index = l3NetworkBase.getIndexForRoute(msg.getL3EndPointUuid());
 
+        String[] cidrArr = msg.getCidr().split("/");
+        String truthCidr = NetworkUtils.getIpCidrFromIpv4Netmask(cidrArr[0],NetworkUtils.netmaskFromInt(cidrArr[1]));
+
         L3RouteVO vo = new L3RouteVO();
         vo.setUuid(Platform.getUuid());
         vo.setL3EndPointUuid(msg.getL3EndPointUuid());
         vo.setCidr(msg.getCidr());
+        vo.setTruthCidr(truthCidr);
         vo.setNextIp(l3EndPointVO.getRemoteIp());
         vo.setIndexNum(index);
 
         vo = dbf.persistAndRefresh(vo);
 
         if(l3EndPointVO.getState() == L3EndpointState.Enabled){
-            l3EndPointVO.setState(L3EndpointState.Deploying);
-            l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
 
-            new L3NetworkTaskBase().taskAddL3EndpointRoutes(vo.getUuid());
+            new L3NetworkTaskBase().taskAddL3EndpointRoutes(vo, new ReturnValueCompletion<L3RouteInventory>(null) {
+                @Override
+                public void success(L3RouteInventory inv) {
+                    evt.setInventory(inv);
+                    bus.publish(evt);
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    evt.setError(errorCode);
+                    bus.publish(evt);
+                }
+            });
+
+        }else{
+            evt.setInventory(L3RouteInventory.valueOf(vo));
+            bus.publish(evt);
         }
 
-        evt.setInventory(L3EndPointInventory.valueOf(dbf.reload(l3EndPointVO)));
-        bus.publish(evt);
+
     }
 
     private void handle(APIDeleteL3RouteMsg msg) {
@@ -434,14 +445,13 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         if(l3EndPointVO.getState() == L3EndpointState.Enabled){
             l3EndPointVO.setState(L3EndpointState.Deploying);
-            l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
+            dbf.updateAndRefresh(l3EndPointVO);
 
             new L3NetworkTaskBase().taskDeleteL3EndpointRoutes(vo.getUuid());
         }else{
             dbf.remove(vo);
         }
 
-        evt.setInventory(L3EndPointInventory.valueOf(l3EndPointVO));
         bus.publish(evt);
     }
 
@@ -462,8 +472,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
             bus.publish(evt);
         }else{
-            vo.setState(L3EndpointState.Deploying);
-            vo = dbf.updateAndRefresh(vo);
+
             l3NetworkTaskBase.taskEnableL3EndPoint(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
                 @Override
                 public void success(L3EndPointInventory inv) {

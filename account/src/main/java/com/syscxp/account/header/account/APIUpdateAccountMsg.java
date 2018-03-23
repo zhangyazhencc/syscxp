@@ -40,8 +40,16 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 255, required = false)
     private String description;
 
+    @APIParam(required = false)
+    private Boolean expiredClean;
 
+    public Boolean getExpiredClean() {
+        return expiredClean;
+    }
 
+    public void setExpiredClean(Boolean expiredClean) {
+        this.expiredClean = expiredClean;
+    }
 
     public String getDescription() {
         return description;

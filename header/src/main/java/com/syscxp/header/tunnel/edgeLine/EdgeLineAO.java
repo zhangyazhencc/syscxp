@@ -39,7 +39,13 @@ public class EdgeLineAO {
     private EdgeLineState state;
 
     @Column
+    private Integer costPrices;
+
+    @Column
     private Integer prices;
+
+    @Column
+    private String implementType;
 
     @Column
     private Timestamp expireDate;
@@ -157,5 +163,21 @@ public class EdgeLineAO {
 
     public void setNumber(long number) {
         this.number = number;
+    }
+
+    public String getImplementType() {
+        return implementType;
+    }
+
+    public void setImplementType(String implementType) {
+        this.implementType = implementType;
+    }
+
+    public Integer getCostPrices() {
+        return costPrices;
+    }
+
+    public void setCostPrices(Integer costPrices) {
+        this.costPrices = costPrices;
     }
 }
