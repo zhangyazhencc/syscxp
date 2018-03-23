@@ -63,10 +63,10 @@ public class APICreateL3EndPointMsg extends APIMessage {
             public void after(APIEvent evt) {
                 String uuid = null;
                 if (evt.isSuccess()) {
-                    uuid = ((APICreateL3EndPointEvent) evt).getInventory().getUuid();
+                    uuid = ((APICreateL3EndpointEvent) evt).getInventory().getUuid();
                 }
-                ntfy("Create L3EndPointVO")
-                        .resource(uuid, L3EndPointVO.class)
+                ntfy("Create L3EndpointVO")
+                        .resource(uuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

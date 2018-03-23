@@ -5,7 +5,7 @@ import com.syscxp.header.message.NeedReplyMessage;
 /**
  * Create by DCY on 2018/3/12
  */
-public class DeleteL3EndPointMsg extends NeedReplyMessage {
+public class DeleteL3EndpointMsg extends NeedReplyMessage {
     private String l3EndpointUuid;
 
     private String taskUuid;

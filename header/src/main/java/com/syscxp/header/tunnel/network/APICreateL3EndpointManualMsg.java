@@ -15,7 +15,7 @@ import com.syscxp.header.tunnel.tunnel.InterfaceVO;
  * Create by DCY on 2018/3/20
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
-public class APICreateL3EndPointManualMsg extends APIMessage {
+public class APICreateL3EndpointManualMsg extends APIMessage {
 
     @APIParam(emptyString = false, resourceType = L3NetworkVO.class, checkAccount = true)
     private String l3NetworkUuid;
@@ -76,10 +76,10 @@ public class APICreateL3EndPointManualMsg extends APIMessage {
             public void after(APIEvent evt) {
                 String uuid = null;
                 if (evt.isSuccess()) {
-                    uuid = ((APICreateL3EndPointManualEvent) evt).getInventory().getUuid();
+                    uuid = ((APICreateL3EndpointManualEvent) evt).getInventory().getUuid();
                 }
-                ntfy("Create L3EndPointVO")
-                        .resource(uuid, L3EndPointVO.class)
+                ntfy("Create L3EndpointVO")
+                        .resource(uuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

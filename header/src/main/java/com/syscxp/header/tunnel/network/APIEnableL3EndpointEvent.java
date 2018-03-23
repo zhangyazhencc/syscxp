@@ -5,12 +5,14 @@ import com.syscxp.header.message.APIEvent;
 /**
  * Create by DCY on 2018/3/20
  */
-public class APICreateL3EndPointManualEvent extends APIEvent {
+
+public class APIEnableL3EndpointEvent extends APIEvent {
+
     private L3EndpointInventory inventory;
 
-    public APICreateL3EndPointManualEvent(){super(null);}
+    public APIEnableL3EndpointEvent(){super(null);}
 
-    public APICreateL3EndPointManualEvent(String apiId){super(apiId);}
+    public APIEnableL3EndpointEvent(String apiId){super(apiId);}
 
     public L3EndpointInventory getInventory() {
         return inventory;

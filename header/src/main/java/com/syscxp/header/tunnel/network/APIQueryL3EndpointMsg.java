@@ -7,7 +7,7 @@ import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"read"})
-@AutoQuery(replyClass = APIQueryL3EndPointReply.class, inventoryClass = L3EndpointInventory.class)
-public class APIQueryL3EndPointMsg extends APIQueryMessage {
+@AutoQuery(replyClass = APIQueryL3EndpointReply.class, inventoryClass = L3EndpointInventory.class)
+public class APIQueryL3EndpointMsg extends APIQueryMessage {
 
 }

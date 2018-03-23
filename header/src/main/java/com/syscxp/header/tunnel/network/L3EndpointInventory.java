@@ -3,14 +3,13 @@ package com.syscxp.header.tunnel.network;
 import com.syscxp.header.query.ExpandedQueries;
 import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.tunnel.endpoint.EndpointInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = L3EndPointVO.class)
+@Inventory(mappingVOClass = L3EndpointVO.class)
 @ExpandedQueries({
         @ExpandedQuery(expandedField = "l3Network", inventoryClass = L3NetworkInventory.class,
                 foreignKey = "l3NetworkUuid", expandedInventoryKey = "uuid")})
@@ -39,7 +38,7 @@ public class L3EndpointInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static L3EndpointInventory valueOf(L3EndPointVO vo){
+    public static L3EndpointInventory valueOf(L3EndpointVO vo){
         L3EndpointInventory inv = new L3EndpointInventory();
         inv.setUuid(vo.getUuid());
         inv.setL3NetworkUuid(vo.getL3NetworkUuid());
@@ -67,9 +66,9 @@ public class L3EndpointInventory {
         return inv;
     }
 
-    public static List<L3EndpointInventory> valueOf(Collection<L3EndPointVO> vos) {
+    public static List<L3EndpointInventory> valueOf(Collection<L3EndpointVO> vos) {
         List<L3EndpointInventory> invs = new ArrayList<>(vos.size());
-        for (L3EndPointVO vo : vos) {
+        for (L3EndpointVO vo : vos) {
             invs.add(L3EndpointInventory.valueOf(vo));
         }
         return invs;

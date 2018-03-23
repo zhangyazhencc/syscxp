@@ -89,7 +89,7 @@ public class L3NetworkBase {
     /**
      * 判断是否满足下发条件
      */
-    public boolean isControllerReady(L3EndPointVO vo){
+    public boolean isControllerReady(L3EndpointVO vo){
         boolean isReady = true;
         if(vo.getRemoteIp() == null){
             isReady = false;
@@ -147,7 +147,7 @@ public class L3NetworkBase {
         avq1.setParameter("physicalSwitchUuid", physicalSwitchUuid);
         List<Integer> list1 = avq1.getResultList();
 
-        String sql2 = "select distinct a.vlan from L3EndPointVO a " +
+        String sql2 = "select distinct a.vlan from L3EndpointVO a " +
                 "where a.physicalSwitchUuid = :physicalSwitchUuid";
         TypedQuery<Integer> avq2 = dbf.getEntityManager().createQuery(sql2,Integer.class);
         avq2.setParameter("physicalSwitchUuid", physicalSwitchUuid);
@@ -162,8 +162,8 @@ public class L3NetworkBase {
      * 删除连接点及其关联
      * */
     public void deleteL3EndpointDB(String l3EndpointUuid){
-        UpdateQuery.New(L3EndPointVO.class)
-                .eq(L3EndPointVO_.uuid, l3EndpointUuid)
+        UpdateQuery.New(L3EndpointVO.class)
+                .eq(L3EndpointVO_.uuid, l3EndpointUuid)
                 .delete();
         UpdateQuery.New(L3RtVO.class)
                 .eq(L3RtVO_.l3EndPointUuid, l3EndpointUuid)
@@ -179,8 +179,8 @@ public class L3NetworkBase {
      * */
     public void updateEndPointNum(String l3Networkuuid){
 
-        Long num = Q.New(L3EndPointVO.class)
-                .eq(L3EndPointVO_.l3NetworkUuid, l3Networkuuid)
+        Long num = Q.New(L3EndpointVO.class)
+                .eq(L3EndpointVO_.l3NetworkUuid, l3Networkuuid)
                 .count();
 
         UpdateQuery.New(L3NetworkVO.class)
@@ -193,7 +193,7 @@ public class L3NetworkBase {
     /**
      * 创建L3连接点下发任务
      */
-    public TaskResourceVO newTaskResourceVO(L3EndPointVO vo, TaskType taskType) {
+    public TaskResourceVO newTaskResourceVO(L3EndpointVO vo, TaskType taskType) {
         TaskResourceVO taskResourceVO = new TaskResourceVO();
         L3NetworkVO l3NetworkVO = dbf.findByUuid(vo.getL3NetworkUuid(), L3NetworkVO.class);
 
@@ -214,7 +214,7 @@ public class L3NetworkBase {
      */
     public TaskResourceVO newTaskResourceVO(L3RouteVO vo, TaskType taskType) {
         TaskResourceVO taskResourceVO = new TaskResourceVO();
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
+        L3EndpointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndpointVO.class);
         L3NetworkVO l3NetworkVO = dbf.findByUuid(l3EndPointVO.getL3NetworkUuid(), L3NetworkVO.class);
 
         taskResourceVO.setUuid(Platform.getUuid());

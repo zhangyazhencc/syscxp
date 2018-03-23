@@ -15,7 +15,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateL3EndpointBandwidthMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = L3EndPointVO.class)
+    @APIParam(emptyString = false,resourceType = L3EndpointVO.class)
     private String uuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
@@ -43,7 +43,7 @@ public class APIUpdateL3EndpointBandwidthMsg extends APIMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update L3EndPoint Bandwidth")
-                        .resource(uuid, L3EndPointVO.class)
+                        .resource(uuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

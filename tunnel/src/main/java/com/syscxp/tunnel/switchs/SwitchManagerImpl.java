@@ -923,7 +923,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
             avq.setParameter("switchUuid", switchUuid);
             return avq.getResultList();
         }else{
-            String sql = "select distinct a.vlan from L3EndPointVO a,SwitchPortVO b " +
+            String sql = "select distinct a.vlan from L3EndpointVO a,SwitchPortVO b " +
                     "where a.switchPortUuid = b.uuid " +
                     "and b.switchUuid = :switchUuid ";
             TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql, Integer.class);

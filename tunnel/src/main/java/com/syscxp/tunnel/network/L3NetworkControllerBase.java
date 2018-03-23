@@ -5,8 +5,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
@@ -28,8 +26,6 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,8 +56,8 @@ public class L3NetworkControllerBase {
     private void handleLocalMessage(Message msg){
         if(msg instanceof CreateL3EndpointMsg){
             handle((CreateL3EndpointMsg) msg);
-        }else if(msg instanceof DeleteL3EndPointMsg){
-            handle((DeleteL3EndPointMsg) msg);
+        }else if(msg instanceof DeleteL3EndpointMsg){
+            handle((DeleteL3EndpointMsg) msg);
         }else if(msg instanceof UpdateL3EndpointBandwidthMsg){
             handle((UpdateL3EndpointBandwidthMsg) msg);
         }else if(msg instanceof CreateL3RouteMsg){
@@ -79,7 +75,7 @@ public class L3NetworkControllerBase {
         CreateL3RouteReply reply = new CreateL3RouteReply();
 
         L3RouteVO l3RouteVO = dbf.findByUuid(msg.getL3RouteUuid(),L3RouteVO.class);
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(),L3EndPointVO.class);
+        L3EndpointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(),L3EndpointVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
         ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3RouteVO);
@@ -119,7 +115,7 @@ public class L3NetworkControllerBase {
         DeleteL3RouteReply reply = new DeleteL3RouteReply();
 
         L3RouteVO l3RouteVO = dbf.findByUuid(msg.getL3RouteUuid(),L3RouteVO.class);
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(),L3EndPointVO.class);
+        L3EndpointVO l3EndPointVO = dbf.findByUuid(l3RouteVO.getL3EndPointUuid(),L3EndpointVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
         ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3RouteVO);
@@ -165,7 +161,7 @@ public class L3NetworkControllerBase {
     private void handle(UpdateL3EndpointBandwidthMsg msg){
         UpdateL3EndpointBandwidthReply reply = new UpdateL3EndpointBandwidthReply();
 
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        L3EndpointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndpointVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
         ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
@@ -209,7 +205,7 @@ public class L3NetworkControllerBase {
     private void handle(CreateL3EndpointMsg msg){
         CreateL3EndpointReply reply = new CreateL3EndpointReply();
 
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        L3EndpointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndpointVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
         ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
@@ -250,10 +246,10 @@ public class L3NetworkControllerBase {
         });
     }
 
-    private void handle(DeleteL3EndPointMsg msg){
-        DeleteL3EndPointReply reply = new DeleteL3EndPointReply();
+    private void handle(DeleteL3EndpointMsg msg){
+        DeleteL3EndpointReply reply = new DeleteL3EndpointReply();
 
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndPointVO.class);
+        L3EndpointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndpointUuid(),L3EndpointVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
         ControllerCommands.L3NetworkConfig l3NetworkConfig = getL3NetworkConfigInfo(l3EndPointVO);
@@ -299,7 +295,7 @@ public class L3NetworkControllerBase {
     /**
      * 控制器下发配置--下发单位为连接点
      * */
-    public ControllerCommands.L3NetworkConfig getL3NetworkConfigInfo(L3EndPointVO vo){
+    public ControllerCommands.L3NetworkConfig getL3NetworkConfigInfo(L3EndpointVO vo){
         ControllerCommands.L3NetworkConfig l3NetworkConfig = new ControllerCommands.L3NetworkConfig();
 
         List<ControllerCommands.L3RoutesConfig> routes = new ArrayList<>();
@@ -365,7 +361,7 @@ public class L3NetworkControllerBase {
         l3RoutesConfig.setIndex(vo.getIndexNum());
         routes.add(l3RoutesConfig);
 
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
+        L3EndpointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndpointVO.class);
         List<ControllerCommands.L3MplsConfig> mpls_switches = new ArrayList<>();
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndPointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
         SwitchModelVO switchModelVO = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(), SwitchModelVO.class);

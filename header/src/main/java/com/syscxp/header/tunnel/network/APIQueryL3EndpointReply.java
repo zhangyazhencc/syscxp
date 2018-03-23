@@ -4,7 +4,7 @@ import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;
 
-public class APIQueryL3EndPointReply extends APIQueryReply {
+public class APIQueryL3EndpointReply extends APIQueryReply {
     private List<L3EndpointInventory> inventories;
 
     public List<L3EndpointInventory> getInventories() {

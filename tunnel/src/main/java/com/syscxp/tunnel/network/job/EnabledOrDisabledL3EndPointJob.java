@@ -49,8 +49,8 @@ public class EnabledOrDisabledL3EndPointJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            if(dbf.isExist(l3EndPointUuid, L3EndPointVO.class)){
-                L3EndPointVO vo = dbf.findByUuid(l3EndPointUuid,L3EndPointVO.class);
+            if(dbf.isExist(l3EndPointUuid, L3EndpointVO.class)){
+                L3EndpointVO vo = dbf.findByUuid(l3EndPointUuid,L3EndpointVO.class);
                 if(jobType != vo.getState()){
                     L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
@@ -81,7 +81,7 @@ public class EnabledOrDisabledL3EndPointJob implements Job {
 
                         TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.DeleteL3Endpoint);
 
-                        DeleteL3EndPointMsg deleteL3EndPointMsg = new DeleteL3EndPointMsg();
+                        DeleteL3EndpointMsg deleteL3EndPointMsg = new DeleteL3EndpointMsg();
                         deleteL3EndPointMsg.setL3EndpointUuid(vo.getUuid());
                         deleteL3EndPointMsg.setTaskUuid(taskResourceVO.getUuid());
                         bus.makeLocalServiceId(deleteL3EndPointMsg, L3NetWorkConstant.SERVICE_ID);

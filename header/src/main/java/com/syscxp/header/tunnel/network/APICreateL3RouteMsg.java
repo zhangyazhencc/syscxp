@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateL3RouteMsg extends APIMessage {
 
-    @APIParam(emptyString = false, resourceType = L3EndPointVO.class)
+    @APIParam(emptyString = false, resourceType = L3EndpointVO.class)
     private String l3EndPointUuid;
     @APIParam(emptyString = false)
     private String cidr;

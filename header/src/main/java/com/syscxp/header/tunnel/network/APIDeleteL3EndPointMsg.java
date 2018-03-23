@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"delete"})
 public class APIDeleteL3EndPointMsg extends APIMessage{
 
-    @APIParam(emptyString = false, resourceType = L3EndPointVO.class)
+    @APIParam(emptyString = false, resourceType = L3EndpointVO.class)
     private String uuid;
 
     public String getUuid() {
@@ -28,8 +28,8 @@ public class APIDeleteL3EndPointMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Delete L3EndPointVO")
-                        .resource(uuid, L3EndPointVO.class)
+                ntfy("Delete L3EndpointVO")
+                        .resource(uuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

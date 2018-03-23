@@ -16,7 +16,7 @@ public class L3RtVO {
     private String uuid;
 
     @Column
-    @ForeignKey(parentEntityClass = L3EndPointVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @ForeignKey(parentEntityClass = L3EndpointVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String l3EndPointUuid;
 
     @Column

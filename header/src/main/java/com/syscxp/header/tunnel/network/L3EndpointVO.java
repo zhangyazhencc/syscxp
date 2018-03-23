@@ -13,7 +13,7 @@ import java.util.Set;
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class L3EndPointVO {
+public class L3EndpointVO {
 
     @Id
     @Column

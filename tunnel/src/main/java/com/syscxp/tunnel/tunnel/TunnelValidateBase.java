@@ -19,8 +19,8 @@ import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineVO_;
 import com.syscxp.header.tunnel.endpoint.EndpointType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.network.L3EndPointVO;
-import com.syscxp.header.tunnel.network.L3EndPointVO_;
+import com.syscxp.header.tunnel.network.L3EndpointVO;
+import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
@@ -221,7 +221,7 @@ public class TunnelValidateBase {
         }
 
         //判断物理接口有没有被L3使用
-        if(Q.New(L3EndPointVO.class).eq(L3EndPointVO_.interfaceUuid, msg.getUuid()).isExists()){
+        if(Q.New(L3EndpointVO.class).eq(L3EndpointVO_.interfaceUuid, msg.getUuid()).isExists()){
             throw new ApiMessageInterceptionException(
                     argerr("该物理接口[uuid:%s] 被云网络绑定, 先删除云网络!", msg.getUuid()));
         }

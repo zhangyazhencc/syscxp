@@ -57,7 +57,7 @@ public class L3NetworkTaskBase {
     /**
      * 开通连接点控制器下发
      * */
-    public void taskEnableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndpointInventory> completionTask){
+    public void taskEnableL3EndPoint(L3EndpointVO vo, ReturnValueCompletion<L3EndpointInventory> completionTask){
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
         TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.CreateL3Endpoint);
 
@@ -93,10 +93,10 @@ public class L3NetworkTaskBase {
     /**
      * 中止连接点控制器下发
      * */
-    public void taskDisableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndpointInventory> completionTask){
+    public void taskDisableL3EndPoint(L3EndpointVO vo, ReturnValueCompletion<L3EndpointInventory> completionTask){
         TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.DeleteL3Endpoint);
 
-        DeleteL3EndPointMsg deleteL3EndPointMsg = new DeleteL3EndPointMsg();
+        DeleteL3EndpointMsg deleteL3EndPointMsg = new DeleteL3EndpointMsg();
         deleteL3EndPointMsg.setL3EndpointUuid(vo.getUuid());
         deleteL3EndPointMsg.setTaskUuid(taskResourceVO.getUuid());
         bus.makeLocalServiceId(deleteL3EndPointMsg, L3NetWorkConstant.SERVICE_ID);
