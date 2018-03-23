@@ -33,7 +33,6 @@ public class L3EndPointInventory {
     private Timestamp createDate;
 
     private EndpointInventory endpoint;
-    private List<L3RouteInventory> l3Routes = new ArrayList<L3RouteInventory>();
     private List<L3RtInventory> l3Rts = new ArrayList<L3RtInventory>();
 
     public static L3EndPointInventory valueOf(L3EndPointVO vo){
@@ -60,7 +59,6 @@ public class L3EndPointInventory {
         inv.setCreateDate(vo.getCreateDate());
 
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
-        inv.setL3Routes(L3RouteInventory.valueOf(vo.getL3RouteVOS()));
         inv.setL3Rts(L3RtInventory.valueOf(vo.getL3RtVOS()));
 
         return inv;
@@ -224,14 +222,6 @@ public class L3EndPointInventory {
 
     public void setEndpoint(EndpointInventory endpoint) {
         this.endpoint = endpoint;
-    }
-
-    public List<L3RouteInventory> getL3Routes() {
-        return l3Routes;
-    }
-
-    public void setL3Routes(List<L3RouteInventory> l3Routes) {
-        this.l3Routes = l3Routes;
     }
 
     public List<L3RtInventory> getL3Rts() {
