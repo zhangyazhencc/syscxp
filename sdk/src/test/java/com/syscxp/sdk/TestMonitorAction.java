@@ -3,6 +3,7 @@ package com.syscxp.sdk;
 import org.testng.annotations.Test;
 
 public class TestMonitorAction extends TestSDK {
+
     @Test
     public void testCreate() {
         CreateHostSwitchMonitorAction action = new CreateHostSwitchMonitorAction();
@@ -32,7 +33,8 @@ public class TestMonitorAction extends TestSDK {
     public void testQuerySpeedRecords() {
         QuerySpeedRecordsAction action = new QuerySpeedRecordsAction();
 
-
+        action.start = 0;
+        action.limit = 10;
         QuerySpeedRecordsResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
