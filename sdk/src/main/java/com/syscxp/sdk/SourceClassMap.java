@@ -5,8 +5,6 @@ import java.util.HashMap;
 public class SourceClassMap {
     final static HashMap<String, String> srcToDstMapping = new HashMap() {
         {
-			put("com.syscxp.header.billing.ProductCategoryInventory", "com.syscxp.sdk.ProductCategoryInventory");
-			put("com.syscxp.header.billing.ProductPriceUnitInventory", "com.syscxp.sdk.ProductPriceUnitInventory");
 			put("com.syscxp.header.configuration.BandwidthOfferingInventory", "com.syscxp.sdk.BandwidthOfferingInventory");
 			put("com.syscxp.header.tunnel.edgeLine.EdgeLineInventory", "com.syscxp.sdk.EdgeLineInventory");
 			put("com.syscxp.header.tunnel.endpoint.EndpointInventory", "com.syscxp.sdk.EndpointInventory");
@@ -34,8 +32,6 @@ public class SourceClassMap {
 			put("com.syscxp.sdk.NettoolMonitorHostInventory", "com.syscxp.header.tunnel.host.NettoolMonitorHostInventory");
 			put("com.syscxp.sdk.NodeInventory", "com.syscxp.header.tunnel.node.NodeInventory");
 			put("com.syscxp.sdk.PortOfferingInventory", "com.syscxp.header.tunnel.tunnel.PortOfferingInventory");
-			put("com.syscxp.sdk.ProductCategoryInventory", "com.syscxp.header.billing.ProductCategoryInventory");
-			put("com.syscxp.sdk.ProductPriceUnitInventory", "com.syscxp.header.billing.ProductPriceUnitInventory");
 			put("com.syscxp.sdk.SpeedRecordsInventory", "com.syscxp.header.tunnel.monitor.SpeedRecordsInventory");
 			put("com.syscxp.sdk.SwitchPortInventory", "com.syscxp.header.tunnel.switchs.SwitchPortInventory");
 			put("com.syscxp.sdk.TunnelInventory", "com.syscxp.header.tunnel.tunnel.TunnelInventory");
