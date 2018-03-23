@@ -18,6 +18,9 @@ public class APIUpdateEdgeLineMsg extends APIMessage {
     private String uuid;
 
     @APIParam(required = false,numberRange = {0,Integer.MAX_VALUE})
+    private Integer costPrices;
+
+    @APIParam(required = false,numberRange = {0,Integer.MAX_VALUE})
     private Integer prices;
 
     @APIParam(required = false,emptyString = false, maxLength = 32)
@@ -78,6 +81,14 @@ public class APIUpdateEdgeLineMsg extends APIMessage {
 
     public void setImplementType(String implementType) {
         this.implementType = implementType;
+    }
+
+    public Integer getCostPrices() {
+        return costPrices;
+    }
+
+    public void setCostPrices(Integer costPrices) {
+        this.costPrices = costPrices;
     }
 
     public ApiNotification __notification__() {

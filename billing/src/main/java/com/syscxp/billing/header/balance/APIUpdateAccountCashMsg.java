@@ -12,15 +12,9 @@ import com.syscxp.header.notification.ApiNotification;
 import java.math.BigDecimal;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECHARGE, names = {"update"}, adminOnly = true)
-public class APIUpdateAccountBalanceMsg extends APIMessage {
+public class APIUpdateAccountCashMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String accountUuid;
-
-    @APIParam(required = false)
-    private BigDecimal present;
-
-    @APIParam(required = false)
-    private BigDecimal credit;
 
     @APIParam(required = false)
     private BigDecimal cash;
@@ -37,22 +31,6 @@ public class APIUpdateAccountBalanceMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public BigDecimal getPresent() {
-        return present;
-    }
-
-    public void setPresent(BigDecimal present) {
-        this.present = present;
-    }
-
-    public BigDecimal getCredit() {
-        return credit;
-    }
-
-    public void setCredit(BigDecimal credit) {
-        this.credit = credit;
     }
 
     public BigDecimal getCash() {
@@ -85,7 +63,7 @@ public class APIUpdateAccountBalanceMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update AccountBalanceVO")
+                ntfy("Update AccountBalanceVO Cash")
                         .resource(accountUuid, AccountBalanceVO.class)
                         .messageAndEvent(that, evt).done();
             }

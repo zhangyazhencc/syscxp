@@ -3,13 +3,13 @@ package com.syscxp.billing.header.balance;
 import com.syscxp.header.billing.AccountBalanceInventory;
 import com.syscxp.header.message.APIEvent;
 
-public class APIUpdateAccountBalanceEvent extends APIEvent {
+public class APIUpdateAccountCreditEvent extends APIEvent {
 
     private AccountBalanceInventory inventory;
 
-    public APIUpdateAccountBalanceEvent(String apiId) {super(apiId);}
+    public APIUpdateAccountCreditEvent(String apiId) {super(apiId);}
 
-    public APIUpdateAccountBalanceEvent(){}
+    public APIUpdateAccountCreditEvent(){}
 
     public AccountBalanceInventory getInventory() {
         return inventory;
