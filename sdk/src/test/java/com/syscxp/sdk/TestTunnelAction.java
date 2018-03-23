@@ -8,7 +8,7 @@ import java.util.List;
 
 public class TestTunnelAction extends TestSDK {
 
-    private String tunnelUuid = "3f50e8be7a1d49deb7254b98943e96b5";
+    private String tunnelUuid = "6a96c9022f284fc383cdfe9fa75fa321";
     // 昆山
     private String endpointAUuid = "bdaa7f043dcd48bf94f0e8ebbc185438";
     // 法国
@@ -57,7 +57,7 @@ public class TestTunnelAction extends TestSDK {
     public void testListCrossTunnel() {
         ListCrossTunnelAction action = new ListCrossTunnelAction();
 
-        action.uuid = tunnelUuid;
+        action.uuid = "17821444f3a241b18068bb515343c11c";
 
         ListCrossTunnelResult result = action.call().throwExceptionIfError().value;
 

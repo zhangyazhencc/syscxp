@@ -263,17 +263,17 @@ public class NotificationManager extends AbstractService {
             lst.add(notificationsQueue.take());
             notificationsQueue.drainTo(lst);
 
-            try {
-                for (NotificationBuilder builder : lst) {
-                    if (builder == quitToken) {
-                        exitQueue = true;
-                        continue;
-                    }
 
-                    SessionInventory session = (SessionInventory) builder.opaque.get("session");
+            for (NotificationBuilder builder : lst) {
+                if (builder == quitToken) {
+                    exitQueue = true;
+                    continue;
+                }
 
-                    APICreateNotificationMsg msg = new APICreateNotificationMsg();
+                SessionInventory session = (SessionInventory) builder.opaque.get("session");
 
+                APICreateNotificationMsg msg = new APICreateNotificationMsg();
+                try {
                     if (session != null) {
                         msg.setOpAccountUuid(session.getAccountUuid());
                         msg.setOpUserUuid(session.getUserUuid());
@@ -309,11 +309,12 @@ public class NotificationManager extends AbstractService {
                     } else {
                         saveNotificationVO(msg);
                     }
+                } catch (Throwable t) {
+                    logger.warn(String.format("failed to persists notifications:\n %s", JSONObjectUtil.toJsonString(msg)), t);
                 }
-
-            } catch (Throwable t) {
-                logger.warn(String.format("failed to persists notifications:\n %s", JSONObjectUtil.toJsonString(lst)), t);
             }
+
+
         }
     }
 
@@ -321,7 +322,7 @@ public class NotificationManager extends AbstractService {
     private void callWebhook(APIMessage msg) {
 
         RestAPIResponse rsp = restf.syncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(msg), RestAPIResponse.class);
-        if (rsp.getState().equals(RestAPIState.Processing.toString())){
+        if (rsp.getState().equals(RestAPIState.Processing.toString())) {
             logger.debug(String.format("Message[%s]:日志发送成功", msg.getClass().getSimpleName()));
         }
     }
