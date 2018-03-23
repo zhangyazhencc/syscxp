@@ -39,6 +39,9 @@ public class EdgeLineAO {
     private EdgeLineState state;
 
     @Column
+    private Integer costPrices;
+
+    @Column
     private Integer prices;
 
     @Column
@@ -168,5 +171,13 @@ public class EdgeLineAO {
 
     public void setImplementType(String implementType) {
         this.implementType = implementType;
+    }
+
+    public Integer getCostPrices() {
+        return costPrices;
+    }
+
+    public void setCostPrices(Integer costPrices) {
+        this.costPrices = costPrices;
     }
 }
