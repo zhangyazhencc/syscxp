@@ -497,25 +497,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private Timestamp generateExpireDate(Timestamp start, Integer duration, ProductChargeModel model) {
-        Timestamp end;
         switch (model) {
             case BY_DAY:
-                end = Timestamp.valueOf(start.toLocalDateTime().plusDays(duration));
-                break;
+                return Timestamp.valueOf(start.toLocalDateTime().plusDays(duration));
             case BY_WEEK:
-                end = Timestamp.valueOf(start.toLocalDateTime().plusWeeks(duration));
-                break;
+                return Timestamp.valueOf(start.toLocalDateTime().plusWeeks(duration));
             case BY_MONTH:
-                end = Timestamp.valueOf(start.toLocalDateTime().plusMonths(duration));
-                break;
+                return Timestamp.valueOf(start.toLocalDateTime().plusMonths(duration));
             case BY_YEAR:
-                end = Timestamp.valueOf(start.toLocalDateTime().plusYears(duration));
-                break;
+                return Timestamp.valueOf(start.toLocalDateTime().plusYears(duration));
             default:
-                end = Timestamp.valueOf(start.toLocalDateTime().plusMonths(duration));
-                break;
+                return Timestamp.valueOf(start.toLocalDateTime().plusMonths(duration));
         }
-        return end;
     }
 
     private void handle(APICreateVpnMsg msg) {
