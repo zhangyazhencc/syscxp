@@ -123,8 +123,7 @@ public class L3NetworkTaskBase {
     /**
      * 添加L3连接点路由下发
      * */
-    public void taskAddL3EndpointRoutes(L3RouteVO vo, ReturnValueCompletion<L3EndPointInventory> completionTask){
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
+    public void taskAddL3EndpointRoutes(L3RouteVO vo, ReturnValueCompletion<L3RouteInventory> completionTask){
 
         TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.AddL3EndpointRoutes);
 
@@ -137,7 +136,7 @@ public class L3NetworkTaskBase {
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
 
-                    completionTask.success(L3EndPointInventory.valueOf(l3EndPointVO));
+                    completionTask.success(L3RouteInventory.valueOf(vo));
                 } else {
                     dbf.remove(vo);
                     completionTask.fail(reply.getError());

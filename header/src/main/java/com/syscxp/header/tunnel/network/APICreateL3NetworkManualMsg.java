@@ -2,8 +2,10 @@ package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -73,5 +75,22 @@ public class APICreateL3NetworkManualMsg extends APIMessage {
 
     public void setVid(Integer vid) {
         this.vid = vid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateL3NetworkManualEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create MPLS L3NetworkVO")
+                        .resource(uuid, L3NetworkVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

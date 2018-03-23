@@ -415,9 +415,9 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         if(l3EndPointVO.getState() == L3EndpointState.Enabled){
 
-            new L3NetworkTaskBase().taskAddL3EndpointRoutes(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
+            new L3NetworkTaskBase().taskAddL3EndpointRoutes(vo, new ReturnValueCompletion<L3RouteInventory>(null) {
                 @Override
-                public void success(L3EndPointInventory inv) {
+                public void success(L3RouteInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
                 }
@@ -430,7 +430,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             });
 
         }else{
-            evt.setInventory(L3EndPointInventory.valueOf(dbf.reload(l3EndPointVO)));
+            evt.setInventory(L3RouteInventory.valueOf(vo));
             bus.publish(evt);
         }
 
@@ -445,14 +445,13 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         if(l3EndPointVO.getState() == L3EndpointState.Enabled){
             l3EndPointVO.setState(L3EndpointState.Deploying);
-            l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
+            dbf.updateAndRefresh(l3EndPointVO);
 
             new L3NetworkTaskBase().taskDeleteL3EndpointRoutes(vo.getUuid());
         }else{
             dbf.remove(vo);
         }
 
-        evt.setInventory(L3EndPointInventory.valueOf(l3EndPointVO));
         bus.publish(evt);
     }
 
