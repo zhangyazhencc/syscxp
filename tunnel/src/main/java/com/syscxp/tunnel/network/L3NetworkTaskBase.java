@@ -57,7 +57,7 @@ public class L3NetworkTaskBase {
     /**
      * 开通连接点控制器下发
      * */
-    public void taskEnableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndPointInventory> completionTask){
+    public void taskEnableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndpointInventory> completionTask){
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
         TaskResourceVO taskResourceVO = l3NetworkBase.newTaskResourceVO(vo, TaskType.CreateL3Endpoint);
 
@@ -72,7 +72,7 @@ public class L3NetworkTaskBase {
                 if (reply.isSuccess()) {
                     jobf.removeJob(vo.getUuid(), EnabledOrDisabledL3EndPointJob.class);
 
-                    completionTask.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
+                    completionTask.success(L3EndpointInventory.valueOf(dbf.reload(vo)));
                 } else {
 
                     if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
@@ -93,7 +93,7 @@ public class L3NetworkTaskBase {
     /**
      * 中止连接点控制器下发
      * */
-    public void taskDisableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndPointInventory> completionTask){
+    public void taskDisableL3EndPoint(L3EndPointVO vo, ReturnValueCompletion<L3EndpointInventory> completionTask){
         TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.DeleteL3Endpoint);
 
         DeleteL3EndPointMsg deleteL3EndPointMsg = new DeleteL3EndPointMsg();
@@ -106,7 +106,7 @@ public class L3NetworkTaskBase {
                 if (reply.isSuccess()) {
                     jobf.removeJob(vo.getUuid(), EnabledOrDisabledL3EndPointJob.class);
 
-                    completionTask.success(L3EndPointInventory.valueOf(dbf.reload(vo)));
+                    completionTask.success(L3EndpointInventory.valueOf(dbf.reload(vo)));
                 } else {
                     logger.info("中止L3连接点失败，创建任务：EnabledOrDisabledL3EndPointJob");
                     EnabledOrDisabledL3EndPointJob job = new EnabledOrDisabledL3EndPointJob();

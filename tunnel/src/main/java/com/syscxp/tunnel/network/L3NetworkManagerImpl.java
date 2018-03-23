@@ -6,8 +6,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -18,7 +16,6 @@ import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
@@ -202,7 +199,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         l3NetworkBase.updateEndPointNum(msg.getL3NetworkUuid());
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -216,7 +213,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         l3NetworkBase.updateEndPointNum(msg.getL3NetworkUuid());
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
 
     }
@@ -320,7 +317,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         String l3EndpointUuid = doUpdateL3EndpointIP(msg);
         L3EndPointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndPointVO.class);
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
 
     }
@@ -374,7 +371,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             new L3NetworkTaskBase().taskUpdateL3EndpointBandwidth(vo.getUuid());
         }
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -468,14 +465,14 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             vo.setStatus(L3EndpointStatus.Connected);
             vo = dbf.updateAndRefresh(vo);
 
-            evt.setInventory(L3EndPointInventory.valueOf(vo));
+            evt.setInventory(L3EndpointInventory.valueOf(vo));
 
             bus.publish(evt);
         }else{
 
-            l3NetworkTaskBase.taskEnableL3EndPoint(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
+            l3NetworkTaskBase.taskEnableL3EndPoint(vo, new ReturnValueCompletion<L3EndpointInventory>(null) {
                 @Override
-                public void success(L3EndPointInventory inv) {
+                public void success(L3EndpointInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
                 }
@@ -502,15 +499,15 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             vo.setStatus(L3EndpointStatus.Disconnected);
             vo = dbf.updateAndRefresh(vo);
 
-            evt.setInventory(L3EndPointInventory.valueOf(vo));
+            evt.setInventory(L3EndpointInventory.valueOf(vo));
 
             bus.publish(evt);
         }else{
             vo.setState(L3EndpointState.Deploying);
             vo = dbf.updateAndRefresh(vo);
-            l3NetworkTaskBase.taskDisableL3EndPoint(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
+            l3NetworkTaskBase.taskDisableL3EndPoint(vo, new ReturnValueCompletion<L3EndpointInventory>(null) {
                 @Override
-                public void success(L3EndPointInventory inv) {
+                public void success(L3EndpointInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
                 }

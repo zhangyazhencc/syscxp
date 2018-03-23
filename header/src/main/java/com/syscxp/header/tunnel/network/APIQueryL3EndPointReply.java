@@ -1,18 +1,17 @@
 package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.query.APIQueryReply;
-import com.syscxp.header.rest.RestResponse;
 
 import java.util.List;
 
 public class APIQueryL3EndPointReply extends APIQueryReply {
-    private List<L3EndPointInventory> inventories;
+    private List<L3EndpointInventory> inventories;
 
-    public List<L3EndPointInventory> getInventories() {
+    public List<L3EndpointInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<L3EndPointInventory> inventories) {
+    public void setInventories(List<L3EndpointInventory> inventories) {
         this.inventories = inventories;
     }
 

@@ -4,7 +4,7 @@ import com.syscxp.header.message.APIEvent;
 
 public class APIDeleteL3EndPointEvent extends APIEvent {
 
-    private L3EndPointInventory inventory;
+    private L3EndpointInventory inventory;
 
     public APIDeleteL3EndPointEvent() {
         super(null);
@@ -14,11 +14,11 @@ public class APIDeleteL3EndPointEvent extends APIEvent {
         super(apiId);
     }
 
-    public L3EndPointInventory getInventory() {
+    public L3EndpointInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(L3EndPointInventory inventory) {
+    public void setInventory(L3EndpointInventory inventory) {
         this.inventory = inventory;
     }
 }
