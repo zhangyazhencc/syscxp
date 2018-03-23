@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"delete"})
-public class APIDeleteL3EndPointMsg extends APIMessage{
+public class APIDeleteL3EndpointMsg extends APIMessage{
 
     @APIParam(emptyString = false, resourceType = L3EndpointVO.class)
     private String uuid;

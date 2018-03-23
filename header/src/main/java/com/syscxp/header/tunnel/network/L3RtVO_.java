@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(L3RtVO.class)
 public class L3RtVO_ {
     public static volatile SingularAttribute<L3RtVO,String> uuid;
-    public static volatile SingularAttribute<L3RtVO,String> l3EndPointUuid;
+    public static volatile SingularAttribute<L3RtVO,String> l3EndpointUuid;
     public static volatile SingularAttribute<L3RtVO,String> impor;
     public static volatile SingularAttribute<L3RtVO,String> export;
     public static volatile SingularAttribute<L3RtVO,Timestamp> lastOpDate;

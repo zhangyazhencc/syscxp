@@ -17,7 +17,7 @@ public class L3NetworkAO_ {
     public static volatile SingularAttribute<L3NetworkAO,String> code;
     public static volatile SingularAttribute<L3NetworkAO,Integer> vid;
     public static volatile SingularAttribute<L3NetworkAO,String> type;
-    public static volatile SingularAttribute<L3NetworkAO,Integer> endPointNum;
+    public static volatile SingularAttribute<L3NetworkAO,Integer> endpointNum;
     public static volatile SingularAttribute<L3NetworkAO,String> description;
     public static volatile SingularAttribute<L3NetworkAO,Integer> duration;
     public static volatile SingularAttribute<L3NetworkAO,ProductChargeModel> productChargeModel;

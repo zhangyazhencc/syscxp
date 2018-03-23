@@ -12,7 +12,7 @@ import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"create"})
-public class APICreateL3EndPointMsg extends APIMessage {
+public class APICreateL3EndpointMsg extends APIMessage {
 
     @APIParam(emptyString = false, resourceType = L3NetworkVO.class, checkAccount = true)
     private String l3NetworkUuid;

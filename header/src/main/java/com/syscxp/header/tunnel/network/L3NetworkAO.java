@@ -36,7 +36,7 @@ public class L3NetworkAO {
     private String type;
 
     @Column
-    private Integer endPointNum;
+    private Integer endpointNum;
 
     @Column
     private String description;
@@ -121,12 +121,12 @@ public class L3NetworkAO {
         this.type = type;
     }
 
-    public Integer getEndPointNum() {
-        return endPointNum;
+    public Integer getEndpointNum() {
+        return endpointNum;
     }
 
-    public void setEndPointNum(Integer endPointNum) {
-        this.endPointNum = endPointNum;
+    public void setEndpointNum(Integer endpointNum) {
+        this.endpointNum = endpointNum;
     }
 
     public String getDescription() {

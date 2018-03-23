@@ -42,7 +42,7 @@ public class APIUpdateL3EndpointBandwidthMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update L3EndPoint Bandwidth")
+                ntfy("Update L3Endpoint Bandwidth")
                         .resource(uuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }

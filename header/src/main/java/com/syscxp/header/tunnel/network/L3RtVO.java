@@ -17,7 +17,7 @@ public class L3RtVO {
 
     @Column
     @ForeignKey(parentEntityClass = L3EndpointVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
-    private String l3EndPointUuid;
+    private String l3EndpointUuid;
 
     @Column
     private String impor;
@@ -44,12 +44,12 @@ public class L3RtVO {
         this.uuid = uuid;
     }
 
-    public String getL3EndPointUuid() {
-        return l3EndPointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setL3EndPointUuid(String l3EndPointUuid) {
-        this.l3EndPointUuid = l3EndPointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
     public String getImpor() {

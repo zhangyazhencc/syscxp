@@ -88,7 +88,7 @@ public class L3EndpointVO {
     private L3NetworkEO l3NetworkEO;
 
 //    @OneToMany(fetch= FetchType.EAGER)
-//    @JoinColumn(name = "l3EndPointUuid", insertable = false, updatable = false)
+//    @JoinColumn(name = "l3EndpointUuid", insertable = false, updatable = false)
 //    private List<L3RtVO> l3RtVOS = new ArrayList<L3RtVO>();
 
     @PreUpdate

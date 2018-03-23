@@ -39,11 +39,11 @@ public class L3NetworkBase {
         Integer index = 10;
 
         if(Q.New(L3RouteVO.class)
-                .eq(L3RouteVO_.l3EndPointUuid, l3EndpointUuid)
+                .eq(L3RouteVO_.l3EndpointUuid, l3EndpointUuid)
                 .isExists()){
 
             List<Integer> allocationIndexs = Q.New(L3RouteVO.class)
-                    .eq(L3RouteVO_.l3EndPointUuid, l3EndpointUuid)
+                    .eq(L3RouteVO_.l3EndpointUuid, l3EndpointUuid)
                     .select(L3RouteVO_.indexNum)
                     .listValues();
 
@@ -166,10 +166,10 @@ public class L3NetworkBase {
                 .eq(L3EndpointVO_.uuid, l3EndpointUuid)
                 .delete();
         UpdateQuery.New(L3RtVO.class)
-                .eq(L3RtVO_.l3EndPointUuid, l3EndpointUuid)
+                .eq(L3RtVO_.l3EndpointUuid, l3EndpointUuid)
                 .delete();
         UpdateQuery.New(L3RouteVO.class)
-                .eq(L3RouteVO_.l3EndPointUuid, l3EndpointUuid)
+                .eq(L3RouteVO_.l3EndpointUuid, l3EndpointUuid)
                 .delete();
 
     }
@@ -177,14 +177,14 @@ public class L3NetworkBase {
     /**
      * 更新云网络连接点数量
      * */
-    public void updateEndPointNum(String l3Networkuuid){
+    public void updateEndpointNum(String l3Networkuuid){
 
         Long num = Q.New(L3EndpointVO.class)
                 .eq(L3EndpointVO_.l3NetworkUuid, l3Networkuuid)
                 .count();
 
         UpdateQuery.New(L3NetworkVO.class)
-                .set(L3NetworkVO_.endPointNum, num.intValue())
+                .set(L3NetworkVO_.endpointNum, num.intValue())
                 .eq(L3NetworkVO_.uuid, l3Networkuuid)
                 .update();
 
@@ -214,8 +214,8 @@ public class L3NetworkBase {
      */
     public TaskResourceVO newTaskResourceVO(L3RouteVO vo, TaskType taskType) {
         TaskResourceVO taskResourceVO = new TaskResourceVO();
-        L3EndpointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndpointVO.class);
-        L3NetworkVO l3NetworkVO = dbf.findByUuid(l3EndPointVO.getL3NetworkUuid(), L3NetworkVO.class);
+        L3EndpointVO l3EndpointVO = dbf.findByUuid(vo.getL3EndpointUuid(), L3EndpointVO.class);
+        L3NetworkVO l3NetworkVO = dbf.findByUuid(l3EndpointVO.getL3NetworkUuid(), L3NetworkVO.class);
 
         taskResourceVO.setUuid(Platform.getUuid());
         taskResourceVO.setAccountUuid(l3NetworkVO.getOwnerAccountUuid());

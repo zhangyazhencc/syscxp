@@ -25,7 +25,7 @@ public class L3NetworkInventory {
     private String code;
     private Integer vid;
     private String type;
-    private Integer endPointNum;
+    private Integer endpointNum;
     private String description;
     private Integer duration;
     private String productChargeModel;
@@ -45,7 +45,7 @@ public class L3NetworkInventory {
         inv.setCode(vo.getCode());
         inv.setVid(vo.getVid());
         inv.setType(vo.getType());
-        inv.setEndPointNum(vo.getEndPointNum());
+        inv.setEndpointNum(vo.getEndpointNum());
         inv.setDescription(vo.getDescription());
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel().toString());
@@ -120,12 +120,12 @@ public class L3NetworkInventory {
         this.type = type;
     }
 
-    public Integer getEndPointNum() {
-        return endPointNum;
+    public Integer getEndpointNum() {
+        return endpointNum;
     }
 
-    public void setEndPointNum(Integer endPointNum) {
-        this.endPointNum = endPointNum;
+    public void setEndpointNum(Integer endpointNum) {
+        this.endpointNum = endpointNum;
     }
 
     public String getDescription() {

@@ -2,15 +2,15 @@ package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APIDeleteL3EndPointEvent extends APIEvent {
+public class APIDeleteL3EndpointEvent extends APIEvent {
 
     private L3EndpointInventory inventory;
 
-    public APIDeleteL3EndPointEvent() {
+    public APIDeleteL3EndpointEvent() {
         super(null);
     }
 
-    public APIDeleteL3EndPointEvent(String apiId) {
+    public APIDeleteL3EndpointEvent(String apiId) {
         super(apiId);
     }
 
