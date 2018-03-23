@@ -20,7 +20,6 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>com.syscxp.header.billing.AccountBalanceVO</value>
                 <value>com.syscxp.header.billing.OrderVO</value>
                 <value>com.syscxp.billing.header.bill.BillVO</value>
                 <value>com.syscxp.billing.header.renew.RenewVO</value>
