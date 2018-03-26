@@ -136,7 +136,7 @@ sdk() {
     if [ -d premium/test-premium ]; then
    	cd premium/test-premium
     else
-    	cd vpn
+    	cd tunnel
     fi
     
     mvn test -Dtest=TestGenerateSDK
