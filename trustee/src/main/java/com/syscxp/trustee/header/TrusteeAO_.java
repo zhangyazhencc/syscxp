@@ -21,6 +21,7 @@ public class TrusteeAO_ {
     public static volatile SingularAttribute<TrusteeAO,String> nodeUuid;
     public static volatile SingularAttribute<TrusteeAO,String> nodeName;
     public static volatile SingularAttribute<TrusteeAO,ProductChargeModel> productChargeModel;
+    public static volatile SingularAttribute<TrusteeAO,Integer> duration;
     public static volatile SingularAttribute<TrusteeAO,BigDecimal> totalCost;
     public static volatile SingularAttribute<TrusteeAO,Timestamp> expireDate;
     public static volatile SingularAttribute<TrusteeAO,Timestamp> lastOpDate;
