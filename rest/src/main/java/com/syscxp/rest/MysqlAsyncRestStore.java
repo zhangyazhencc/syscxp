@@ -9,7 +9,6 @@ import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.Component;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.utils.ExceptionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;

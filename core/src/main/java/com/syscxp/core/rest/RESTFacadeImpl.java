@@ -23,7 +23,6 @@ import com.syscxp.utils.ExceptionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -118,25 +117,25 @@ public class RESTFacadeImpl implements RESTFacade {
         try {
             HttpEntity<String> entity = this.httpServletRequestToHttpEntity(req);
             if (taskUuid == null) {
-                rsp.sendError(HttpStatus.SC_BAD_REQUEST, "No 'taskUuid' found in the header");
+                rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "No 'taskUuid' found in the header");
                 logger.warn(String.format("Received a callback request, but no 'taskUuid' found in headers. request body: %s", entity.getBody()));
                 return;
             }
 
             AsyncHttpWrapper wrapper = wrappers.get(taskUuid);
             if (wrapper == null) {
-                rsp.sendError(HttpStatus.SC_NOT_FOUND, String.format("No callback found for taskUuid[%s]", taskUuid));
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("No callback found for taskUuid[%s]", taskUuid));
                 logger.warn(String.format("Received a callback request, but no 'callback found for taskUuid[%s]. request body: %s", taskUuid, entity.getBody()));
                 return;
             }
 
-            rsp.setStatus(HttpStatus.SC_OK);
+            rsp.setStatus(HttpServletResponse.SC_OK);
             wrapper.success(entity);
         } catch (IOException e) {
             logger.warn(e.getMessage(), e);
         } catch (Throwable t) {
             try {
-                rsp.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, t.getMessage());
+                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getMessage());
             } catch (IOException e) {
                 logger.warn(e.getMessage(), e);
             }
@@ -149,20 +148,20 @@ public class RESTFacadeImpl implements RESTFacade {
         try {
             HttpEntity<String> entity = this.httpServletRequestToHttpEntity(req);
             if (commandPath == null) {
-                rsp.sendError(HttpStatus.SC_BAD_REQUEST, "No 'commandPath' found in the header");
+                rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "No 'commandPath' found in the header");
                 logger.warn(String.format("Received a command, but no 'taskUuid' found in headers. request body: %s", entity.getBody()));
                 return;
             }
 
             HttpCallHandlerWrapper handler = httpCallhandlers.get(commandPath);
             if (handler == null) {
-                rsp.sendError(HttpStatus.SC_NOT_FOUND, String.format("no handler found for the command path[%s]", commandPath));
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("no handler found for the command path[%s]", commandPath));
                 logger.warn(String.format("Received a command, but no handler found for the path[%s]. request body: %s", commandPath, entity.getBody()));
                 return;
             }
             logger.info(String.format("from %s call back. body: %s", req.getRequestURL().toString(), entity.getBody()));
             String ret = handler.handle(entity);
-            rsp.setStatus(HttpStatus.SC_OK);
+            rsp.setStatus(HttpServletResponse.SC_OK);
             if (ret != null) {
                 rsp.setCharacterEncoding("UTF-8");
                 rsp.setContentType("application/json; charset=utf-8");
@@ -175,7 +174,7 @@ public class RESTFacadeImpl implements RESTFacade {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
             try {
-                rsp.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, t.getMessage());
+                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getMessage());
             } catch (IOException e) {
                 logger.warn(e.getMessage(), e);
             }

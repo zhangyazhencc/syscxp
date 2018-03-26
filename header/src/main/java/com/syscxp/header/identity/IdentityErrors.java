@@ -1,7 +1,5 @@
 package com.syscxp.header.identity;
 
-import javax.security.auth.login.AccountNotFoundException;
-
 /**
  */
 public enum IdentityErrors {

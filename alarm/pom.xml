@@ -16,19 +16,14 @@
     <dependencies>
         <dependency>
             <groupId>com.syscxp</groupId>
-            <artifactId>utils</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.syscxp</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.syscxp</groupId>
             <artifactId>header</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.syscxp</groupId>
             <artifactId>search</artifactId>
@@ -54,12 +49,10 @@
         <dependency>
             <groupId>org.alibaba</groupId>
             <artifactId>alipay-skd</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.1.36</version>
         </dependency>
     </dependencies>
 

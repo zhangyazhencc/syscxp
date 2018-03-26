@@ -2,7 +2,7 @@ package com.syscxp.header.quota;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 /**
  * Created by frank on 7/13/2015.
