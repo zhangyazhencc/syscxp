@@ -20,8 +20,8 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineVO_;
-import com.syscxp.header.tunnel.network.L3EndPointVO;
-import com.syscxp.header.tunnel.network.L3EndPointVO_;
+import com.syscxp.header.tunnel.network.L3EndpointVO;
+import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.tunnel.TunnelBase;
@@ -183,7 +183,7 @@ public class CleanExpiredProductBase {
                     if (vo.getExpireDate().before(delete)) {
                         if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists()
                                 && !Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid, vo.getUuid()).isExists()
-                                && !Q.New(L3EndPointVO.class).eq(L3EndPointVO_.interfaceUuid, vo.getUuid()).isExists()) {
+                                && !Q.New(L3EndpointVO.class).eq(L3EndpointVO_.interfaceUuid, vo.getUuid()).isExists()) {
                             dbf.remove(vo);
                             //删除续费表
                             logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");

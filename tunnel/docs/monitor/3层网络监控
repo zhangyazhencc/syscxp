@@ -11,7 +11,7 @@
                             新增L3NetworkMonitorVO数据
                             job开启agent监控
 
-                    循环L3NetworkMonitorVO数据（L3NetworkMonitorVO.l3EndPointUuid = 当前连接点uuid）
+                    循环L3NetworkMonitorVO数据（L3NetworkMonitorVO.l3EndpointUuid = 当前连接点uuid）
                         如果在前端数据中不存在
                             删除L3NetworkMonitorVO数据
                             job停止agent监控
@@ -69,7 +69,7 @@
     配置路由：/l3net/add_route
         数据结构：
             {
-        　　　　"l3EndPointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
         　　　　"localIp":"192.168.112.2",                            -- 互联ip，L3EndPointVO.localIp
         　　　　"vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
         　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
@@ -87,7 +87,7 @@
     删除路由：/l3net/del_route
         数据结构：
             {
-        　　　　"l3EndPointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf"   -- L3EndPointVO.uuid
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf"   -- L3EndPointVO.uuid
     　　　　}
 
         命令：
@@ -99,7 +99,7 @@
     更新路由：/l3net/update_route
         数据结构：
             {
-        　　　　"l3EndPointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
         　　　　"localIp":"192.168.112.2",                            -- 互联ip，L3EndPointVO.localIp
         　　　　"vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
         　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
@@ -115,7 +115,7 @@
         启动ping线程
         数据结构：
             {
-        　　　　"l3EndPointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
         　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
         　　　　"src_monitor_ip":"192.168.0.2/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
         　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
@@ -128,7 +128,7 @@
         修改ping线程
         数据结构：
             {
-        　　　　"l3EndPointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
         　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
         　　　　"src_monitor_ip":"192.168.0.3/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
         　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
@@ -144,7 +144,7 @@
         停止ping线程
         数据结构：
             {
-        　　　　"l3EndPointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
         　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
         　　　　"src_monitor_ip":"192.168.0.2/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
         　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
@@ -215,7 +215,7 @@
     Agent定时获取监控数据：/MONITOR/L3INFO
         [
         　　{
-        　　　　"l3EndPointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
         　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
         　　　　"src_monitor_ip":"192.168.0.2/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
         　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
@@ -223,7 +223,7 @@
         　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
         　　},
         　　{
-        　　　　"l3EndPointUuid":"c3a80d75e01d4e4b976ff95d6ec5848e",
+        　　　　"l3EndpointUuid":"c3a80d75e01d4e4b976ff95d6ec5848e",
         　　　　"localIp":"192.168.211.11",
         　　　　"src_monitor_ip":"192.168.0.2/24",
         　　　　"dst_monitor_ip":"192.168.0.1/24",

@@ -11,7 +11,7 @@ import java.util.List;
 public class L3RouteInventory {
 
     private String uuid;
-    private String l3EndPointUuid;
+    private String l3EndpointUuid;
     private String cidr;
     private String truthCidr;
     private String nextIp;
@@ -24,7 +24,7 @@ public class L3RouteInventory {
         inv.setUuid(vo.getUuid());
         inv.setCidr(vo.getCidr());
         inv.setTruthCidr(vo.getTruthCidr());
-        inv.setL3EndPointUuid(vo.getL3EndPointUuid());
+        inv.setL3EndpointUuid(vo.getL3EndpointUuid());
         inv.setNextIp(vo.getNextIp());
         inv.setIndexNum(vo.getIndexNum());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -48,12 +48,12 @@ public class L3RouteInventory {
         this.uuid = uuid;
     }
 
-    public String getL3EndPointUuid() {
-        return l3EndPointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setL3EndPointUuid(String l3EndPointUuid) {
-        this.l3EndPointUuid = l3EndPointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
     public String getCidr() {
