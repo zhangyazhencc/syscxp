@@ -10,7 +10,7 @@
         <class>com.syscxp.core.job.JobQueueEntryVO</class>
 
         <class>com.syscxp.trustee.header.TrusteeVO</class>
-
+        <class>com.syscxp.trustee.header.TrustDetailVO</class>
 
     </persistence-unit>
 </persistence>
