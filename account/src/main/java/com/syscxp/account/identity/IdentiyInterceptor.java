@@ -12,12 +12,12 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.identity.AbstractIdentityInterceptor;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.IdentityErrors;
 import com.syscxp.header.identity.PolicyStatement;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +40,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         long count = query.count();
         if (count >= maxLoginTimes) {
             String err = String.format("Login sessions hit limit of max allowed concurrent login sessions, max allowed: %s", maxLoginTimes);
-            throw new BadCredentialsException(err);
+            throw new CloudRuntimeException(err);
         }
 
         int sessionTimeout = IdentityGlobalConfig.SESSION_TIMEOUT.value(Integer.class);
