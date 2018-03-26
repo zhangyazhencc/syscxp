@@ -18,6 +18,7 @@ public class L3EndpointVO_ {
     public static volatile SingularAttribute<L3EndpointVO,Integer> maxRouteNum;
     public static volatile SingularAttribute<L3EndpointVO,String> localIP;
     public static volatile SingularAttribute<L3EndpointVO,String> remoteIp;
+    public static volatile SingularAttribute<L3EndpointVO,String> monitorIp;
     public static volatile SingularAttribute<L3EndpointVO,String> netmask;
     public static volatile SingularAttribute<L3EndpointVO,String> ipCidr;
     public static volatile SingularAttribute<L3EndpointVO,String> interfaceUuid;

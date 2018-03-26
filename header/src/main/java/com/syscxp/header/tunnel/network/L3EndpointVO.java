@@ -53,6 +53,9 @@ public class L3EndpointVO {
     private String remoteIp;
 
     @Column
+    private String monitorIp;
+
+    @Column
     private String netmask;
 
     @Column
@@ -270,5 +273,13 @@ public class L3EndpointVO {
 
     public void setL3NetworkEO(L3NetworkEO l3NetworkEO) {
         this.l3NetworkEO = l3NetworkEO;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
     }
 }

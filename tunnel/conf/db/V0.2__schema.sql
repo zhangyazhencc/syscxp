@@ -38,6 +38,7 @@ CREATE TABLE `L3EndpointVO` (
   `maxRouteNum` INT(11) NOT NULL COMMENT '改点允许最大路由数量',
   `localIP` varchar(128) DEFAULT NULL COMMENT '犀思云端 ip',
   `remoteIp` varchar(128) DEFAULT NULL COMMENT '客户端 ip',
+  `monitorIp` varchar(128) DEFAULT NULL COMMENT '监控 ip',
   `netmask` varchar(128) DEFAULT NULL COMMENT '子网掩码',
   `ipCidr` varchar(128) DEFAULT NULL COMMENT '互联地址所属网段',
   `interfaceUuid` varchar(32) COMMENT '所属物理接口',
