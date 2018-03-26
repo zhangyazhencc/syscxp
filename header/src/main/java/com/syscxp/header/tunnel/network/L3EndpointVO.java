@@ -20,7 +20,7 @@ public class L3EndpointVO {
     private String uuid;
 
     @Column
-    @ForeignKey(parentEntityClass = L3NetworkEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @ForeignKey(parentEntityClass = L3NetworkVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String l3NetworkUuid;
 
     @Column
@@ -51,6 +51,9 @@ public class L3EndpointVO {
 
     @Column
     private String remoteIp;
+
+    @Column
+    private String monitorIp;
 
     @Column
     private String netmask;
@@ -85,7 +88,7 @@ public class L3EndpointVO {
 
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="l3NetworkUuid", insertable=false, updatable=false)
-    private L3NetworkEO l3NetworkEO;
+    private L3NetworkVO l3NetworkVO;
 
 //    @OneToMany(fetch= FetchType.EAGER)
 //    @JoinColumn(name = "l3EndpointUuid", insertable = false, updatable = false)
@@ -264,11 +267,19 @@ public class L3EndpointVO {
         this.ipCidr = ipCidr;
     }
 
-    public L3NetworkEO getL3NetworkEO() {
-        return l3NetworkEO;
+    public L3NetworkVO getL3NetworkVO() {
+        return l3NetworkVO;
     }
 
-    public void setL3NetworkEO(L3NetworkEO l3NetworkEO) {
-        this.l3NetworkEO = l3NetworkEO;
+    public void setL3NetworkVO(L3NetworkVO l3NetworkVO) {
+        this.l3NetworkVO = l3NetworkVO;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
     }
 }

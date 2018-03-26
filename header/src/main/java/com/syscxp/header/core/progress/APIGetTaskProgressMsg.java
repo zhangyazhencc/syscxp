@@ -1,8 +1,6 @@
 package com.syscxp.header.core.progress;
 
 import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.header.rest.RestRequest;
-import org.springframework.http.HttpMethod;
 
 /**
  * Created by xing5 on 2017/3/21.

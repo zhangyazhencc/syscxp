@@ -28,6 +28,7 @@ public class L3EndpointInventory {
     private Integer maxRouteNum;
     private String localIP;
     private String remoteIp;
+    private String monitorIp;
     private String netmask;
     private String ipCidr;
     private String interfaceUuid;
@@ -51,6 +52,7 @@ public class L3EndpointInventory {
         inv.setMaxRouteNum(vo.getMaxRouteNum());
         inv.setLocalIP(vo.getLocalIP());
         inv.setRemoteIp(vo.getRemoteIp());
+        inv.setMonitorIp(vo.getMonitorIp());
         inv.setNetmask(vo.getNetmask());
         inv.setIpCidr(vo.getIpCidr());
         inv.setInterfaceUuid(vo.getInterfaceUuid());
@@ -60,7 +62,7 @@ public class L3EndpointInventory {
         inv.setRd(vo.getRd());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        inv.setL3NetworkName(vo.getL3NetworkEO().getName());
+        inv.setL3NetworkName(vo.getL3NetworkVO().getName());
         inv.setEndpointName(vo.getEndpointEO().getName());
 
         return inv;
@@ -248,5 +250,13 @@ public class L3EndpointInventory {
 
     public void setIpCidr(String ipCidr) {
         this.ipCidr = ipCidr;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
     }
 }

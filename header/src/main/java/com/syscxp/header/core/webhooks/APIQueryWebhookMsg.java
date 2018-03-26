@@ -1,7 +1,5 @@
 package com.syscxp.header.core.webhooks;
 
-import com.syscxp.header.rest.RestRequest;
-import org.springframework.http.HttpMethod;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 

@@ -1,9 +1,7 @@
 package com.syscxp.header.core.webhooks;
 
-import com.syscxp.header.message.APIParam;
-import com.syscxp.header.rest.RestRequest;
-import org.springframework.http.HttpMethod;
 import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIParam;
 
 /**
  * Created by xing5 on 2017/5/7.

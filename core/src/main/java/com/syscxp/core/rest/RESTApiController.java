@@ -9,7 +9,6 @@ import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Controller;
@@ -35,17 +34,17 @@ public class RESTApiController {
         try {
             RestAPIResponse apiRsp = restApi.getResult(uuid);
             if (apiRsp == null) {
-                rsp.sendError(HttpStatus.SC_NOT_FOUND, String.format("No api result[uuid:%s] found", uuid));
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("No api result[uuid:%s] found", uuid));
                 return;
             }
             rsp.setCharacterEncoding("UTF-8");
             PrintWriter writer = rsp.getWriter();
             String res = JSONObjectUtil.toJsonString(apiRsp);
-            rsp.setStatus(HttpStatus.SC_OK);
+            rsp.setStatus(HttpServletResponse.SC_OK);
             writer.write(res);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
-            rsp.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, t.getMessage());
+            rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getMessage());
         }
     }
 
@@ -76,7 +75,7 @@ public class RESTApiController {
         HttpEntity<String> entity = restf.httpServletRequestToHttpEntity(request);
         try {
             String ret = handleByMessageType(entity.getBody(), getRemortIP(request));
-            response.setStatus(HttpStatus.SC_OK);
+            response.setStatus(HttpServletResponse.SC_OK);
             response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
             writer.write(ret);
@@ -86,7 +85,7 @@ public class RESTApiController {
             sb.append(String.format("\nbody: %s", entity.getBody()));
             sb.append(String.format("\nexception message: %s", t.getMessage()));
             logger.debug(sb.toString(), t);
-            response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, sb.toString());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, sb.toString());
         }
     }
 

@@ -22,6 +22,9 @@ public class APIUpdateL3EndpointIPMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String remoteIp;
 
+    @APIParam(emptyString = false,required = false)
+    private String monitorIp;
+
     @APIParam(emptyString = false)
     private String netmask;
 
@@ -55,6 +58,14 @@ public class APIUpdateL3EndpointIPMsg extends APIMessage {
 
     public void setNetmask(String netmask) {
         this.netmask = netmask;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
     }
 
     public ApiNotification __notification__() {
