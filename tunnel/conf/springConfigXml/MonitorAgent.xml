@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:syscxp="http://syscxp.com/schema/syscxp"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://syscxp.com/schema/syscxp
+    http://syscxp.com/schema/syscxp/plugin.xsd"
+       default-init-method="init" default-destroy-method="destroy">
+
+    <bean id="MonitorAgentBase" class="com.syscxp.tunnel.monitor.MonitorAgentBaseImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"></syscxp:extension>
+        </syscxp:plugin>
+    </bean>
+</beans>

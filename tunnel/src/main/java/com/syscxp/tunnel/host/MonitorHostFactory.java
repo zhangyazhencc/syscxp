@@ -22,7 +22,10 @@ import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
 import com.syscxp.header.host.*;
 import com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint;
-import com.syscxp.header.message.*;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.Message;
+import com.syscxp.header.message.MessageReply;
+import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.host.*;
 import com.syscxp.header.tunnel.monitor.TunnelMonitorVO;
@@ -31,16 +34,13 @@ import com.syscxp.header.tunnel.tunnel.TunnelMonitorState;
 import com.syscxp.header.tunnel.tunnel.TunnelState;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.tunnel.host.MonitorAgentCommands.ReconnectMeCmd;
-import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.tunnel.tunnel.job.MonitorJobType;
 import com.syscxp.tunnel.tunnel.job.TunnelMonitorJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -284,7 +284,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
                             && tunnelVO.getMonitorState() == TunnelMonitorState.Enabled) {
                         TunnelMonitorJob monitorJob = new TunnelMonitorJob();
                         monitorJob.setTunnelUuid(hostTunnelMonitorVO.getTunnelUuid());
-                        monitorJob.setJobType(MonitorJobType.MODIFY);
+                        monitorJob.setJobType(MonitorJobType.CONTROLLER_MODIFY);
                         jobf.execute("修改监控接口-修改监控", Platform.getManagementServerId(), monitorJob);
                     }
                 }

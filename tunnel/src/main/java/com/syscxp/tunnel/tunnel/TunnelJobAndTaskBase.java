@@ -226,7 +226,7 @@ public class TunnelJobAndTaskBase {
             logger.info("删除通道成功，并创建任务：TunnelMonitorJob");
             TunnelMonitorJob job = new TunnelMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            job.setJobType(MonitorJobType.DELETE);
+            job.setJobType(MonitorJobType.CONTROLLER_DELETE);
             jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
         }
         logger.info("删除通道成功，并创建任务：DeleteResourcePolicyRefJob");
@@ -250,7 +250,7 @@ public class TunnelJobAndTaskBase {
             logger.info("修改带宽成功，并创建任务：TunnelMonitorJob");
             TunnelMonitorJob job = new TunnelMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            job.setJobType(MonitorJobType.MODIFY);
+            job.setJobType(MonitorJobType.CONTROLLER_MODIFY);
             jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
 
 
@@ -283,7 +283,7 @@ public class TunnelJobAndTaskBase {
             logger.info("专线恢复连接成功，并创建任务：TunnelMonitorJob");
             TunnelMonitorJob job = new TunnelMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            job.setJobType(MonitorJobType.START);
+            job.setJobType(MonitorJobType.CONTROLLER_START);
             jobf.execute(queueName + "-开启监控", Platform.getManagementServerId(), job);
         }
 
@@ -302,7 +302,7 @@ public class TunnelJobAndTaskBase {
             logger.info("专线关闭连接成功，并创建任务：TunnelMonitorJob");
             TunnelMonitorJob job = new TunnelMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            job.setJobType(MonitorJobType.STOP);
+            job.setJobType(MonitorJobType.CONTROLLER_STOP);
             jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
         }
 

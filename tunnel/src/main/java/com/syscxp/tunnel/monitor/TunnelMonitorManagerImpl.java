@@ -58,9 +58,9 @@ import static com.syscxp.core.Platform.argerr;
  * Created by DCY on 2017-09-07
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
-public class MonitorManagerImpl extends AbstractService implements MonitorManager, ApiMessageInterceptor, HostDeleteExtensionPoint {
+public class TunnelMonitorManagerImpl extends AbstractService implements TunnelMonitorManager, ApiMessageInterceptor, HostDeleteExtensionPoint {
 
-    private static final CLogger logger = Utils.getLogger(MonitorManagerImpl.class);
+    private static final CLogger logger = Utils.getLogger(TunnelMonitorManagerImpl.class);
 
     @Autowired
     private CloudBus bus;
@@ -74,6 +74,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private IdentityInterceptor identityInterceptor;
     @Autowired
     private JobQueueFacade jobf;
+    @Autowired
+    private MonitorAgentBase monitorAgent;
+
+    public static class TunnelAgentResp extends MonitorAgentBaseImpl.AgentResponse{
+
+    }
 
     @Override
     @MessageSafe

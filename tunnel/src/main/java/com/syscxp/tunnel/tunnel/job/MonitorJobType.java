@@ -6,9 +6,14 @@ package com.syscxp.tunnel.tunnel.job;
  * @Description: .
  */
 public enum  MonitorJobType {
-    START,
-    STOP,
-    MODIFY,
-    ROLLBACK,
-    DELETE
+    CONTROLLER_START,
+    CONTROLLER_STOP,
+    CONTROLLER_MODIFY,
+    CONTROLLER_ROLLBACK,
+    CONTROLLER_DELETE,
+    AGENT_START,
+    AGENT_STOP,
+    AGENT_MODIFY,
+    AGENT_ADD_ROUTE,
+    AGENT_DELETE_ROUTE
 }

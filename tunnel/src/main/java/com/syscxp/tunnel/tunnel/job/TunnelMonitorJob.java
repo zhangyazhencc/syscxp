@@ -6,7 +6,7 @@ import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
 import com.syscxp.core.job.UniqueResourceJob;
 import com.syscxp.header.core.ReturnValueCompletion;
-import com.syscxp.tunnel.monitor.MonitorManagerImpl;
+import com.syscxp.tunnel.monitor.TunnelMonitorManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -32,33 +32,33 @@ public class TunnelMonitorJob implements Job {
     private ErrorFacade errf;
 
     @Autowired
-    private MonitorManagerImpl monitorManager;
+    private TunnelMonitorManagerImpl monitorManager;
 
     @Override
     public void run(ReturnValueCompletion<Object> completion) {
 
 		try {
-		    if(jobType == MonitorJobType.START){
+		    if(jobType == MonitorJobType.CONTROLLER_START){
                 logger.info("开始执行JOB【开启监控】");
                 monitorManager.startControllerMonitorNoRollback(tunnelUuid);
 
                 completion.success(null);
-            }else if(jobType == MonitorJobType.STOP){
+            }else if(jobType == MonitorJobType.CONTROLLER_STOP){
                 logger.info("开始执行JOB【关闭监控】");
                 monitorManager.stopControllerMonitor(tunnelUuid);
 
                 completion.success(null);
-            }else if(jobType == MonitorJobType.MODIFY){
+            }else if(jobType == MonitorJobType.CONTROLLER_MODIFY){
                 logger.info("开始执行JOB【修改监控】");
                 monitorManager.modifyControllerMonitor(tunnelUuid);
 
                 completion.success(null);
-            }else if(jobType == MonitorJobType.ROLLBACK){
+            }else if(jobType == MonitorJobType.CONTROLLER_ROLLBACK){
                 logger.info("开始执行JOB【开启监控失败-回滚】");
                 monitorManager.startControllerMonitorRollback(tunnelUuid);
 
                 completion.success(null);
-            }else if(jobType == MonitorJobType.DELETE){
+            }else if(jobType == MonitorJobType.CONTROLLER_DELETE){
                 logger.info("开始执行JOB【删除监控】");
                 monitorManager.deleteControllerMonitor(tunnelUuid);
 
