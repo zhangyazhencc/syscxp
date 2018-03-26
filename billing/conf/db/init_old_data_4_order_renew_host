@@ -47,7 +47,7 @@ CREATE
 INNER JOIN zstack.`AccountResourceRefVO` a ON a.`resourceUuid` = v.`uuid`
 INNER JOIN zstack.`InstanceOfferingEO` i ON v.`instanceOfferingUuid` = i.`uuid`
 INNER JOIN zstack.`VmNicVO` n ON v.`uuid`=n.`vmInstanceUuid`
-INNER JOIN zstack.`L3NetworkEO` l3 ON v.`defaultL3NetworkUuid` =  l3.`uuid`
+INNER JOIN zstack.`L3NetworkVO` l3 ON v.`defaultL3NetworkUuid` =  l3.`uuid`
 AND v.`defaultL3NetworkUuid` = n.`l3NetworkUuid`
 AND  v.hostType ='Public' AND a.`resourceType`='VmInstanceVO';
 

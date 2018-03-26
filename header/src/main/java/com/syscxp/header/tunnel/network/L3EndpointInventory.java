@@ -62,7 +62,7 @@ public class L3EndpointInventory {
         inv.setRd(vo.getRd());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        inv.setL3NetworkName(vo.getL3NetworkEO().getName());
+        inv.setL3NetworkName(vo.getL3NetworkVO().getName());
         inv.setEndpointName(vo.getEndpointEO().getName());
 
         return inv;
