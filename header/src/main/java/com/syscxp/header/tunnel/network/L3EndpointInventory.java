@@ -1,19 +1,25 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.tunnel.endpoint.EndpointInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = L3EndPointVO.class)
-public class L3EndPointInventory {
+@Inventory(mappingVOClass = L3EndpointVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "l3Network", inventoryClass = L3NetworkInventory.class,
+                foreignKey = "l3NetworkUuid", expandedInventoryKey = "uuid")})
+public class L3EndpointInventory {
 
     private String uuid;
     private String l3NetworkUuid;
+    private String l3NetworkName;
     private String endpointUuid;
+    private String endpointName;
     private String bandwidthOffering;
     private Long bandwidth;
     private String routeType;
@@ -32,12 +38,8 @@ public class L3EndPointInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private EndpointInventory endpoint;
-    private List<L3RouteInventory> l3Routes = new ArrayList<L3RouteInventory>();
-    private List<L3RtInventory> l3Rts = new ArrayList<L3RtInventory>();
-
-    public static L3EndPointInventory valueOf(L3EndPointVO vo){
-        L3EndPointInventory inv = new L3EndPointInventory();
+    public static L3EndpointInventory valueOf(L3EndpointVO vo){
+        L3EndpointInventory inv = new L3EndpointInventory();
         inv.setUuid(vo.getUuid());
         inv.setL3NetworkUuid(vo.getL3NetworkUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
@@ -58,18 +60,16 @@ public class L3EndPointInventory {
         inv.setRd(vo.getRd());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-
-        inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
-        inv.setL3Routes(L3RouteInventory.valueOf(vo.getL3RouteVOS()));
-        inv.setL3Rts(L3RtInventory.valueOf(vo.getL3RtVOS()));
+        inv.setL3NetworkName(vo.getL3NetworkEO().getName());
+        inv.setEndpointName(vo.getEndpointEO().getName());
 
         return inv;
     }
 
-    public static List<L3EndPointInventory> valueOf(Collection<L3EndPointVO> vos) {
-        List<L3EndPointInventory> invs = new ArrayList<>(vos.size());
-        for (L3EndPointVO vo : vos) {
-            invs.add(L3EndPointInventory.valueOf(vo));
+    public static List<L3EndpointInventory> valueOf(Collection<L3EndpointVO> vos) {
+        List<L3EndpointInventory> invs = new ArrayList<>(vos.size());
+        for (L3EndpointVO vo : vos) {
+            invs.add(L3EndpointInventory.valueOf(vo));
         }
         return invs;
     }
@@ -218,28 +218,20 @@ public class L3EndPointInventory {
         this.createDate = createDate;
     }
 
-    public EndpointInventory getEndpoint() {
-        return endpoint;
+    public String getEndpointName() {
+        return endpointName;
     }
 
-    public void setEndpoint(EndpointInventory endpoint) {
-        this.endpoint = endpoint;
+    public void setEndpointName(String endpointName) {
+        this.endpointName = endpointName;
     }
 
-    public List<L3RouteInventory> getL3Routes() {
-        return l3Routes;
+    public String getL3NetworkName() {
+        return l3NetworkName;
     }
 
-    public void setL3Routes(List<L3RouteInventory> l3Routes) {
-        this.l3Routes = l3Routes;
-    }
-
-    public List<L3RtInventory> getL3Rts() {
-        return l3Rts;
-    }
-
-    public void setL3Rts(List<L3RtInventory> l3Rts) {
-        this.l3Rts = l3Rts;
+    public void setL3NetworkName(String l3NetworkName) {
+        this.l3NetworkName = l3NetworkName;
     }
 
     public String getState() {

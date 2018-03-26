@@ -1,0 +1,254 @@
+
+一：设置监控
+    监控ip不为空
+        如果已存在监控ip
+            判断传入的监控ip与已存在监控ip是否一致
+                一致
+                    循环前端数据，判断是否在L3NetworkMonitorVO存在
+                        存在
+                            忽略
+                        不存在
+                            新增L3NetworkMonitorVO数据
+                            job开启agent监控
+
+                    循环L3NetworkMonitorVO数据（L3NetworkMonitorVO.l3EndpointUuid = 当前连接点uuid）
+                        如果在前端数据中不存在
+                            删除L3NetworkMonitorVO数据
+                            job停止agent监控
+                不一致（修改监控ip）
+                    验证监控ip
+                        监控IP与连接的交换机、客户端IP、犀思云端IP都在同一个网段（前三码一致）
+                        监控IP与连接的交换机、客户端IP、犀思云端IP都不能重复（ip冲突，后期VPN可以验证）
+                    修改L3EndPointVO.monitorIp
+                    job下发修改监控机路由命令
+                    遍历所有与该连接点关联的L3NetworkMonitorVO数据(l3NetworkUuid=当前l3NetworkUuid,dstL3EndPointUuid=当前连接点uuid)
+                        job下发监控机更新监控命令（下发到对端监控机）
+        不存在
+            设置L3EndPointVO.monitorIp
+            job下发控制器开启监控命令
+            job下发监控机配置路由命令
+            循环前端数据，判断是否在L3NetworkMonitorVO存在
+                新增L3NetworkMonitorVO数据
+                job开启agent监控
+
+    监控ip为空（如果原监控ip不为空，前端页面提示用户，将删除所有与此连接点关联的监控）
+        如果原监控ip不为空，则为删除监控IP
+            判断连接点状态
+                中止
+                    无操作
+                正常
+                    job下发控制器停止监控命令
+                    job下发监控机删除路由命令
+                    遍历所有与该连接点关联的的L3NetworkMonitorVO数据（srcL3EndPointUuid=当前连接点uuid 或 dstL3EndPointUuid=当前连接点uuid）
+                        job下发监控机关闭监控命令
+
+            清空L3EndPointVO.monitorIp
+            清空与该连接点关联的L3NetworkMonitorVO数据（srcL3EndPointUuid = 当前连接点uuid 或 dstL3EndPointUuid = 当前连接点uuid）
+
+三：连接点操作流程
+    中止连接点：
+        监控ip不为空
+            job下发停止控制器监控配置
+            job下发监控机删除路由命令
+            遍历所有与该连接点关联的的L3NetworkMonitorVO数据（srcL3EndPointUuid=当前连接点uuid 或 dstL3EndPointUuid=当前连接点uuid）
+                job下发监控机关闭监控命令
+
+    中止后删除连接点：
+        监控ip不为空
+            清空L3EndPointVO.monitorIp
+            清空与该连接点关联的L3NetworkMonitorVO数据（srcL3EndPointUuid = 当前连接点uuid 或 dstL3EndPointUuid = 当前连接点uuid）
+
+    中止后恢复连接点
+        监控ip不为空
+            job下发开启控制器监控配置
+            job下发监控机配置路由命令
+            遍历所有与该连接点关联的的L3NetworkMonitorVO数据（srcL3EndPointUuid=当前连接点uuid 或 dstL3EndPointUuid=当前连接点uuid）
+                job下发监控机开启监控命令
+
+四：监控机接口
+    配置路由：/l3net/add_route
+        数据结构：
+            {
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"localIp":"192.168.112.2",                            -- 互联ip，L3EndPointVO.localIp
+        　　　　"vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
+        　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
+    　　　　    "monitorIp":192.168.112.4                             -- 监控ip，L3EndPointVO.monitorIp
+            }
+
+        命令：
+            vconfig add enp2s0 2055                                                     -- 创建带VLAN的网络子接口
+            ip netns add enp2s0_2055                                                    -- 创建虚拟命名空间
+            ip li set enp2s0.2055 netns enp2s0_2055                                     -- 把网卡子接口放入命名空间
+            ip netns exec enp2s0_2055 ip addr add dev enp2s0.2055 192.168.112.4         -- 进入命名空间把带VLAN的网卡配上IP
+            ip netns exec enp2s0_2055  ip link set up dev enp2s0.2055                   -- 进入命名空间把网卡启起来
+            ip netns exec enp2s0_2555 ip route add default via 192.168.112.2(互联ip)     -- 配置命名空间路由
+
+    删除路由：/l3net/del_route
+        数据结构：
+            {
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf"   -- L3EndPointVO.uuid
+    　　　　}
+
+        命令：
+            ip netns exec enp2s0_2055 ip addr delete dev enp2s0.2055 192.168.112.4      -- 进入命名空间把带VLAN的网卡删除IP
+            ip netns exec enp2s0_2555 ip route del default（测试）      -- 删除命名空间路由
+            ip netns exec enp2s0_2055 ip link delete dev enp2s0.2055  -- 删除命名空间中的网卡子接口
+            ip netns delete enp2s0_2055                               -- 删除虚拟命名空间
+
+    更新路由：/l3net/update_route
+        数据结构：
+            {
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"localIp":"192.168.112.2",                            -- 互联ip，L3EndPointVO.localIp
+        　　　　"vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
+        　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
+    　　　　    "monitorIp":192.168.112.5                             -- 监控ip，L3EndPointVO.monitorIp
+            }
+
+        命令：
+            ip netns exec enp2s0_2055 ip addr add dev enp2s0.2055 192.168.112.4         -- 进入命名空间把带VLAN的网卡删除IP
+            ip netns exec enp2s0_2055 ip delete add dev enp2s0.2055 192.168.112.5       -- 进入命名空间把带VLAN的网卡配上新IP
+
+
+    开启监控：/l3net/start_monitor
+        启动ping线程
+        数据结构：
+            {
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
+        　　　　"src_monitor_ip":"192.168.0.2/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
+        　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
+        　　　　"vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
+        　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
+    　　　　}
+
+
+    修改监控ip：/l3net/update_monitor
+        修改ping线程
+        数据结构：
+            {
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
+        　　　　"src_monitor_ip":"192.168.0.3/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
+        　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
+        　　　　"vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
+        　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
+    　　　　  }
+        命令：
+            ip netns exec enp2s0_2055 ip addr delete dev enp2s0.2055 192.168.0.2   -- 进入命名空间删除IP
+            ip netns exec enp2s0_2055 ip addr add dev enp2s0.2055 192.168.0.3      -- 进入命名空间把带VLAN的网卡配上IP
+
+
+    停止监控：/l3net/stop_monitor
+        停止ping线程
+        数据结构：
+            {
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
+        　　　　"src_monitor_ip":"192.168.0.2/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
+        　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
+        　　　　"vlan":2032,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
+        　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
+    　　　　  }
+
+    定时获取监控数据
+        启动线程获取数据
+        根据获取的数据，修改配置
+
+    ping命令
+        ip netns exec enp2s0_2055 ping -c 100 -i 0.3 192.168.0.1
+
+五：控制器接口
+    接口：
+        开启监控：/l3net_monitor/start
+        停止监控：/l3net_monitor/stop
+    数据结构：
+        {
+        　　"net_id":"123456",
+        　　"mpls_switches":[
+        　　　　{
+        　　　　　　"uuid":"abc",
+        　　　　　　"switch_type":"huawei_s",
+        　　　　　　"sub_type":"huawei_S6700",
+        　　　　　　"port_name":"XGigabitEthernet0/0/2",
+        　　　　　　"vlan_id":100,
+        　　　　　　"m_ip":"192.168.211.12",
+        　　　　　　"username":"admin",
+        　　　　　　"password":"syscloud.cn",
+        　　　　　　"protocol":"TELNET",
+        　　　　　　"port":23
+        　　　　},
+        　　　　{
+        　　　　　　"uuid":"abc",
+        　　　　　　"switch_type":"huawei_s",
+        　　　　　　"sub_type":"huawei_S6700",
+        　　　　　　"port_name":"XGigabitEthernet0/0/2",
+        　　　　　　"vlan_id":100,
+        　　　　　　"m_ip":"192.168.211.12",
+        　　　　　　"username":"admin",
+        　　　　　　"password":"syscloud.cn",
+        　　　　　　"protocol":"TELNET",
+        　　　　　　"port":23
+        　　　　}
+        　　]
+        }
+
+六：tunnel接口
+    表结构调整
+        L3EndPointVO: 增加监控IP（monitorIp）
+        新增表：L3NetworkMonitor(uuid, l3NetworkUuid, srcL3EndPointUuid, dstL3EndPointUuid)
+
+    配置监控
+        保存监控ip
+
+        删除监控ip
+
+        查询可用监控点
+
+        保存监控配置
+
+        查询监控查询条件
+
+        查询已开通监控对端数据（丢包、流量查询）
+
+    Agent定时获取监控数据：/MONITOR/L3INFO
+        [
+        　　{
+        　　　　"l3EndpointUuid":"f56e79ca94454cf0b1a209c4e3e8cfcf",  -- L3EndPointVO.uuid
+        　　　　"localIp":"192.168.211.11",                           -- 互联ip，L3EndPointVO.localIp
+        　　　　"src_monitor_ip":"192.168.0.2/24",                    -- 本地监控ip，L3EndPointVO.monitorIp
+        　　　　"dst_monitor_ip":"192.168.0.1/24",                    -- 远端监控ip，L3EndPointVO.monitorIp
+        　　　　"vlan":2032,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
+        　　　　"interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
+        　　},
+        　　{
+        　　　　"l3EndpointUuid":"c3a80d75e01d4e4b976ff95d6ec5848e",
+        　　　　"localIp":"192.168.211.11",
+        　　　　"src_monitor_ip":"192.168.0.2/24",
+        　　　　"dst_monitor_ip":"192.168.0.1/24",
+        　　　　"vlan":2007,
+        　　　　"interface_name":"enp2s0"
+        　　}
+        ]
+
+七：监控数据
+    流量：swcollect收集
+    丢包、延迟
+        两个连接点之间的ping丢包延迟数据
+        命令：ip netns exec enp2s0_2555 ping 对端监控机IP
+    连接点状态
+        监控机ping交换机网关
+        命令：ip netns exec enp2s0_2555 ping 192.168.112.1（连接交换机的互联IP）
+    测速
+        确认是否有需求
+
+八. 告警
+    告警策略
+        监控对象
+            l3.packets.lost
+            l3.packets.rtt
+        tag：{endpoint=192.168.211.11 metric=l3.packets.lost ifName=Vlanif2017 l3EndpointUuid="xxxxx"}
+
+    告警查询
+

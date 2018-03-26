@@ -6,8 +6,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -18,7 +16,6 @@ import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
@@ -74,24 +71,24 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             handle((APIUpdateL3NetworkMsg) msg);
         }else if(msg instanceof APIDeleteL3NetworkMsg){
             handle((APIDeleteL3NetworkMsg) msg);
-        }else if(msg instanceof APICreateL3EndPointMsg){
-            handle((APICreateL3EndPointMsg) msg);
-        }else if(msg instanceof APICreateL3EndPointManualMsg){
-            handle((APICreateL3EndPointManualMsg) msg);
+        }else if(msg instanceof APICreateL3EndpointMsg){
+            handle((APICreateL3EndpointMsg) msg);
+        }else if(msg instanceof APICreateL3EndpointManualMsg){
+            handle((APICreateL3EndpointManualMsg) msg);
         }else if(msg instanceof APIUpdateL3EndpointIPMsg){
             handle((APIUpdateL3EndpointIPMsg) msg);
         }else if(msg instanceof APIUpdateL3EndpointBandwidthMsg){
             handle((APIUpdateL3EndpointBandwidthMsg) msg);
-        }else if(msg instanceof APIDeleteL3EndPointMsg){
-            handle((APIDeleteL3EndPointMsg) msg);
+        }else if(msg instanceof APIDeleteL3EndpointMsg){
+            handle((APIDeleteL3EndpointMsg) msg);
         }else if(msg instanceof APICreateL3RouteMsg){
             handle((APICreateL3RouteMsg) msg);
         }else if(msg instanceof APIDeleteL3RouteMsg){
             handle((APIDeleteL3RouteMsg) msg);
-        }else if(msg instanceof APIEnableL3EndPointMsg){
-            handle((APIEnableL3EndPointMsg) msg);
-        }else if(msg instanceof APIDisableL3EndPointMsg){
-            handle((APIDisableL3EndPointMsg) msg);
+        }else if(msg instanceof APIEnableL3EndpointMsg){
+            handle((APIEnableL3EndpointMsg) msg);
+        }else if(msg instanceof APIDisableL3EndpointMsg){
+            handle((APIDisableL3EndpointMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -110,7 +107,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setCode(msg.getAccountUuid().substring(0,10));
         vo.setVid(l3NetworkBase.getVidAuto());
         vo.setType("MPLSVPN");
-        vo.setEndPointNum(0);
+        vo.setEndpointNum(0);
         vo.setDescription(msg.getDescription());
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
@@ -133,7 +130,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setCode(msg.getAccountUuid().substring(0,10));
         vo.setVid(msg.getVid());
         vo.setType("MPLSVPN");
-        vo.setEndPointNum(0);
+        vo.setEndpointNum(0);
         vo.setDescription(msg.getDescription());
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
@@ -192,37 +189,37 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         bus.publish(evt);
     }
 
-    private void handle(APICreateL3EndPointMsg msg) {
-        APICreateL3EndPointEvent evt = new APICreateL3EndPointEvent(msg.getId());
+    private void handle(APICreateL3EndpointMsg msg) {
+        APICreateL3EndpointEvent evt = new APICreateL3EndpointEvent(msg.getId());
 
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
-        String l3EndpointUuid = doCreateL3EndPointVO(msg);
-        L3EndPointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndPointVO.class);
+        String l3EndpointUuid = doCreateL3EndpointVO(msg);
+        L3EndpointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
 
-        l3NetworkBase.updateEndPointNum(msg.getL3NetworkUuid());
+        l3NetworkBase.updateEndpointNum(msg.getL3NetworkUuid());
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
     }
 
-    private void handle(APICreateL3EndPointManualMsg msg){
-        APICreateL3EndPointManualEvent evt = new APICreateL3EndPointManualEvent(msg.getId());
+    private void handle(APICreateL3EndpointManualMsg msg){
+        APICreateL3EndpointManualEvent evt = new APICreateL3EndpointManualEvent(msg.getId());
 
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
-        String l3EndpointUuid = doCreateL3EndPointManualVO(msg);
-        L3EndPointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndPointVO.class);
+        String l3EndpointUuid = doCreateL3EndpointManualVO(msg);
+        L3EndpointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
 
-        l3NetworkBase.updateEndPointNum(msg.getL3NetworkUuid());
+        l3NetworkBase.updateEndpointNum(msg.getL3NetworkUuid());
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
 
     }
 
     @Transactional
-    private String doCreateL3EndPointVO(APICreateL3EndPointMsg msg){
+    private String doCreateL3EndpointVO(APICreateL3EndpointMsg msg){
         TunnelBase tunnelBase = new TunnelBase();
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
@@ -239,7 +236,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortUuid));
         }
 
-        L3EndPointVO vo = new L3EndPointVO();
+        L3EndpointVO vo = new L3EndpointVO();
         vo.setUuid(Platform.getUuid());
         vo.setL3NetworkUuid(msg.getL3NetworkUuid());
         vo.setEndpointUuid(msg.getEndpointUuid());
@@ -261,7 +258,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         L3RtVO rtVO = new L3RtVO();
         rtVO.setUuid(Platform.getUuid());
-        rtVO.setL3EndPointUuid(vo.getUuid());
+        rtVO.setL3EndpointUuid(vo.getUuid());
         rtVO.setImpor("58991:"+Integer.toString(l3NetworkVO.getVid()));
         rtVO.setExport("58991:"+Integer.toString(l3NetworkVO.getVid()));
 
@@ -272,7 +269,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
     }
 
     @Transactional
-    private String doCreateL3EndPointManualVO(APICreateL3EndPointManualMsg msg){
+    private String doCreateL3EndpointManualVO(APICreateL3EndpointManualMsg msg){
         TunnelBase tunnelBase = new TunnelBase();
 
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
@@ -282,7 +279,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         String switchPortUuid = interfaceVO.getSwitchPortUuid();
         String physicalSwitchUuid = tunnelBase.getPhysicalSwitchBySwitchPortUuid(interfaceVO.getSwitchPortUuid()).getUuid();
 
-        L3EndPointVO vo = new L3EndPointVO();
+        L3EndpointVO vo = new L3EndpointVO();
         vo.setUuid(Platform.getUuid());
         vo.setL3NetworkUuid(msg.getL3NetworkUuid());
         vo.setEndpointUuid(msg.getEndpointUuid());
@@ -304,7 +301,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         L3RtVO rtVO = new L3RtVO();
         rtVO.setUuid(Platform.getUuid());
-        rtVO.setL3EndPointUuid(vo.getUuid());
+        rtVO.setL3EndpointUuid(vo.getUuid());
         rtVO.setImpor("58991:"+Integer.toString(l3NetworkVO.getVid()));
         rtVO.setExport("58991:"+Integer.toString(l3NetworkVO.getVid()));
 
@@ -318,16 +315,16 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         APIUpdateL3EndpointIPEvent evt = new APIUpdateL3EndpointIPEvent(msg.getId());
 
         String l3EndpointUuid = doUpdateL3EndpointIP(msg);
-        L3EndPointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndPointVO.class);
+        L3EndpointVO vo = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
 
     }
 
     @Transactional
     private String doUpdateL3EndpointIP(APIUpdateL3EndpointIPMsg msg){
-        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
         vo.setRemoteIp(msg.getRemoteIp());
         vo.setLocalIP(msg.getLocalIP());
@@ -336,8 +333,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         dbf.getEntityManager().merge(vo);
 
-        if(Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndPointUuid, msg.getUuid()).isExists()){
-            List<L3RouteVO> l3RouteVOs = Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndPointUuid, msg.getUuid()).list();
+        if(Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndpointUuid, msg.getUuid()).isExists()){
+            List<L3RouteVO> l3RouteVOs = Q.New(L3RouteVO.class).eq(L3RouteVO_.l3EndpointUuid, msg.getUuid()).list();
             for(L3RouteVO l3RouteVO : l3RouteVOs){
                 l3RouteVO.setNextIp(msg.getRemoteIp());
                 dbf.getEntityManager().merge(l3RouteVO);
@@ -350,7 +347,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
     private void handle(APIUpdateL3EndpointBandwidthMsg msg){
         APIUpdateL3EndpointBandwidthEvent evt = new APIUpdateL3EndpointBandwidthEvent(msg.getId());
 
-        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
@@ -374,19 +371,19 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             new L3NetworkTaskBase().taskUpdateL3EndpointBandwidth(vo.getUuid());
         }
 
-        evt.setInventory(L3EndPointInventory.valueOf(vo));
+        evt.setInventory(L3EndpointInventory.valueOf(vo));
         bus.publish(evt);
     }
 
-    private void handle(APIDeleteL3EndPointMsg msg) {
-        APIDeleteL3EndPointEvent evt = new APIDeleteL3EndPointEvent(msg.getId());
+    private void handle(APIDeleteL3EndpointMsg msg) {
+        APIDeleteL3EndpointEvent evt = new APIDeleteL3EndpointEvent(msg.getId());
 
-        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
         l3NetworkBase.deleteL3EndpointDB(msg.getUuid());
-        l3NetworkBase.updateEndPointNum(vo.getL3NetworkUuid());
+        l3NetworkBase.updateEndpointNum(vo.getL3NetworkUuid());
 
         bus.publish(evt);
 
@@ -396,28 +393,28 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         APICreateL3RouteEvent evt = new APICreateL3RouteEvent(msg.getId());
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndPointVO.class);
+        L3EndpointVO l3EndpointVO = dbf.findByUuid(msg.getL3EndpointUuid(), L3EndpointVO.class);
 
-        Integer index = l3NetworkBase.getIndexForRoute(msg.getL3EndPointUuid());
+        Integer index = l3NetworkBase.getIndexForRoute(msg.getL3EndpointUuid());
 
         String[] cidrArr = msg.getCidr().split("/");
         String truthCidr = NetworkUtils.getIpCidrFromIpv4Netmask(cidrArr[0],NetworkUtils.netmaskFromInt(cidrArr[1]));
 
         L3RouteVO vo = new L3RouteVO();
         vo.setUuid(Platform.getUuid());
-        vo.setL3EndPointUuid(msg.getL3EndPointUuid());
+        vo.setL3EndpointUuid(msg.getL3EndpointUuid());
         vo.setCidr(msg.getCidr());
         vo.setTruthCidr(truthCidr);
-        vo.setNextIp(l3EndPointVO.getRemoteIp());
+        vo.setNextIp(l3EndpointVO.getRemoteIp());
         vo.setIndexNum(index);
 
         vo = dbf.persistAndRefresh(vo);
 
-        if(l3EndPointVO.getState() == L3EndpointState.Enabled){
+        if(l3EndpointVO.getState() == L3EndpointState.Enabled){
 
-            new L3NetworkTaskBase().taskAddL3EndpointRoutes(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
+            new L3NetworkTaskBase().taskAddL3EndpointRoutes(vo, new ReturnValueCompletion<L3RouteInventory>(null) {
                 @Override
-                public void success(L3EndPointInventory inv) {
+                public void success(L3RouteInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
                 }
@@ -430,7 +427,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             });
 
         }else{
-            evt.setInventory(L3EndPointInventory.valueOf(dbf.reload(l3EndPointVO)));
+            evt.setInventory(L3RouteInventory.valueOf(vo));
             bus.publish(evt);
         }
 
@@ -441,27 +438,26 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         APIDeleteL3RouteEvent evt = new APIDeleteL3RouteEvent(msg.getId());
 
         L3RouteVO vo = dbf.findByUuid(msg.getUuid(), L3RouteVO.class);
-        L3EndPointVO l3EndPointVO = dbf.findByUuid(vo.getL3EndPointUuid(), L3EndPointVO.class);
+        L3EndpointVO l3EndpointVO = dbf.findByUuid(vo.getL3EndpointUuid(), L3EndpointVO.class);
 
-        if(l3EndPointVO.getState() == L3EndpointState.Enabled){
-            l3EndPointVO.setState(L3EndpointState.Deploying);
-            l3EndPointVO = dbf.updateAndRefresh(l3EndPointVO);
+        if(l3EndpointVO.getState() == L3EndpointState.Enabled){
+            l3EndpointVO.setState(L3EndpointState.Deploying);
+            dbf.updateAndRefresh(l3EndpointVO);
 
             new L3NetworkTaskBase().taskDeleteL3EndpointRoutes(vo.getUuid());
         }else{
             dbf.remove(vo);
         }
 
-        evt.setInventory(L3EndPointInventory.valueOf(l3EndPointVO));
         bus.publish(evt);
     }
 
-    private void handle(APIEnableL3EndPointMsg msg){
-        APIEnableL3EndPointEvent evt = new APIEnableL3EndPointEvent(msg.getId());
+    private void handle(APIEnableL3EndpointMsg msg){
+        APIEnableL3EndpointEvent evt = new APIEnableL3EndpointEvent(msg.getId());
 
         L3NetworkTaskBase l3NetworkTaskBase = new L3NetworkTaskBase();
 
-        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
         if(msg.isSaveOnly()){
 
@@ -469,14 +465,14 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             vo.setStatus(L3EndpointStatus.Connected);
             vo = dbf.updateAndRefresh(vo);
 
-            evt.setInventory(L3EndPointInventory.valueOf(vo));
+            evt.setInventory(L3EndpointInventory.valueOf(vo));
 
             bus.publish(evt);
         }else{
 
-            l3NetworkTaskBase.taskEnableL3EndPoint(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
+            l3NetworkTaskBase.taskEnableL3Endpoint(vo, new ReturnValueCompletion<L3EndpointInventory>(null) {
                 @Override
-                public void success(L3EndPointInventory inv) {
+                public void success(L3EndpointInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
                 }
@@ -490,12 +486,12 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         }
     }
 
-    private void handle(APIDisableL3EndPointMsg msg){
-        APIDisableL3EndPointEvent evt = new APIDisableL3EndPointEvent(msg.getId());
+    private void handle(APIDisableL3EndpointMsg msg){
+        APIDisableL3EndpointEvent evt = new APIDisableL3EndpointEvent(msg.getId());
 
         L3NetworkTaskBase l3NetworkTaskBase = new L3NetworkTaskBase();
 
-        L3EndPointVO vo = dbf.findByUuid(msg.getUuid(), L3EndPointVO.class);
+        L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
         if(msg.isSaveOnly()){
 
@@ -503,15 +499,15 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             vo.setStatus(L3EndpointStatus.Disconnected);
             vo = dbf.updateAndRefresh(vo);
 
-            evt.setInventory(L3EndPointInventory.valueOf(vo));
+            evt.setInventory(L3EndpointInventory.valueOf(vo));
 
             bus.publish(evt);
         }else{
             vo.setState(L3EndpointState.Deploying);
             vo = dbf.updateAndRefresh(vo);
-            l3NetworkTaskBase.taskDisableL3EndPoint(vo, new ReturnValueCompletion<L3EndPointInventory>(null) {
+            l3NetworkTaskBase.taskDisableL3Endpoint(vo, new ReturnValueCompletion<L3EndpointInventory>(null) {
                 @Override
-                public void success(L3EndPointInventory inv) {
+                public void success(L3EndpointInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
                 }
@@ -554,24 +550,24 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             base.validate((APIUpdateL3NetworkMsg) msg);
         }else if(msg instanceof APIDeleteL3NetworkMsg){
             base.validate((APIDeleteL3NetworkMsg) msg);
-        }else if(msg instanceof APICreateL3EndPointMsg){
-            base.validate((APICreateL3EndPointMsg) msg);
+        }else if(msg instanceof APICreateL3EndpointMsg){
+            base.validate((APICreateL3EndpointMsg) msg);
         }else if(msg instanceof APIUpdateL3EndpointIPMsg){
             base.validate((APIUpdateL3EndpointIPMsg) msg);
         }else if(msg instanceof APIUpdateL3EndpointBandwidthMsg){
             base.validate((APIUpdateL3EndpointBandwidthMsg) msg);
-        }else if(msg instanceof APIDeleteL3EndPointMsg){
-            base.validate((APIDeleteL3EndPointMsg) msg);
+        }else if(msg instanceof APIDeleteL3EndpointMsg){
+            base.validate((APIDeleteL3EndpointMsg) msg);
         }else if(msg instanceof APICreateL3RouteMsg){
             base.validate((APICreateL3RouteMsg) msg);
         }else if(msg instanceof APIDeleteL3RouteMsg){
             base.validate((APIDeleteL3RouteMsg) msg);
-        }else if(msg instanceof APICreateL3EndPointManualMsg){
-            base.validate((APICreateL3EndPointManualMsg) msg);
-        }else if(msg instanceof APIEnableL3EndPointMsg){
-            base.validate((APIEnableL3EndPointMsg) msg);
-        }else if(msg instanceof APIDisableL3EndPointMsg){
-            base.validate((APIDisableL3EndPointMsg) msg);
+        }else if(msg instanceof APICreateL3EndpointManualMsg){
+            base.validate((APICreateL3EndpointManualMsg) msg);
+        }else if(msg instanceof APIEnableL3EndpointMsg){
+            base.validate((APIEnableL3EndpointMsg) msg);
+        }else if(msg instanceof APIDisableL3EndpointMsg){
+            base.validate((APIDisableL3EndpointMsg) msg);
         }
 
         return msg;

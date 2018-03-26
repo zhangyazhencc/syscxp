@@ -27,11 +27,11 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 @UniqueResourceJob
-public class EnabledOrDisabledL3EndPointJob implements Job {
-    private static final CLogger logger = Utils.getLogger(EnabledOrDisabledL3EndPointJob.class);
+public class EnabledOrDisabledL3EndpointJob implements Job {
+    private static final CLogger logger = Utils.getLogger(EnabledOrDisabledL3EndpointJob.class);
 
     @JobContext
-    private String l3EndPointUuid;
+    private String l3EndpointUuid;
 
     @JobContext
     private L3EndpointState jobType;
@@ -49,8 +49,8 @@ public class EnabledOrDisabledL3EndPointJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            if(dbf.isExist(l3EndPointUuid, L3EndPointVO.class)){
-                L3EndPointVO vo = dbf.findByUuid(l3EndPointUuid,L3EndPointVO.class);
+            if(dbf.isExist(l3EndpointUuid, L3EndpointVO.class)){
+                L3EndpointVO vo = dbf.findByUuid(l3EndpointUuid,L3EndpointVO.class);
                 if(jobType != vo.getState()){
                     L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
@@ -81,11 +81,11 @@ public class EnabledOrDisabledL3EndPointJob implements Job {
 
                         TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.DeleteL3Endpoint);
 
-                        DeleteL3EndPointMsg deleteL3EndPointMsg = new DeleteL3EndPointMsg();
-                        deleteL3EndPointMsg.setL3EndpointUuid(vo.getUuid());
-                        deleteL3EndPointMsg.setTaskUuid(taskResourceVO.getUuid());
-                        bus.makeLocalServiceId(deleteL3EndPointMsg, L3NetWorkConstant.SERVICE_ID);
-                        bus.send(deleteL3EndPointMsg, new CloudBusCallBack(null) {
+                        DeleteL3EndpointMsg deleteL3EndpointMsg = new DeleteL3EndpointMsg();
+                        deleteL3EndpointMsg.setL3EndpointUuid(vo.getUuid());
+                        deleteL3EndpointMsg.setTaskUuid(taskResourceVO.getUuid());
+                        bus.makeLocalServiceId(deleteL3EndpointMsg, L3NetWorkConstant.SERVICE_ID);
+                        bus.send(deleteL3EndpointMsg, new CloudBusCallBack(null) {
                             @Override
                             public void run(MessageReply reply) {
                                 if (reply.isSuccess()) {
@@ -113,12 +113,12 @@ public class EnabledOrDisabledL3EndPointJob implements Job {
 
     }
 
-    public String getL3EndPointUuid() {
-        return l3EndPointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setL3EndPointUuid(String l3EndPointUuid) {
-        this.l3EndPointUuid = l3EndPointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
     public L3EndpointState getJobType() {
@@ -131,6 +131,6 @@ public class EnabledOrDisabledL3EndPointJob implements Job {
 
     @Override
     public String getResourceUuid() {
-        return l3EndPointUuid;
+        return l3EndpointUuid;
     }
 }

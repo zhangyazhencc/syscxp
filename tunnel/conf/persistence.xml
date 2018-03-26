@@ -69,7 +69,7 @@
 
         <class>com.syscxp.header.tunnel.network.L3RouteVO</class>
         <class>com.syscxp.header.tunnel.network.L3RtVO</class>
-        <class>com.syscxp.header.tunnel.network.L3EndPointVO</class>
+        <class>com.syscxp.header.tunnel.network.L3EndpointVO</class>
         <class>com.syscxp.header.tunnel.network.L3NetworkEO</class>
         <class>com.syscxp.header.tunnel.network.L3NetworkVO</class>
 

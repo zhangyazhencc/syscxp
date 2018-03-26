@@ -11,7 +11,7 @@ import com.syscxp.core.job.UniqueResourceJob;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
-import com.syscxp.header.tunnel.network.L3EndPointVO;
+import com.syscxp.header.tunnel.network.L3EndpointVO;
 import com.syscxp.header.tunnel.network.UpdateL3EndpointBandwidthMsg;
 import com.syscxp.header.tunnel.tunnel.TaskResourceVO;
 import com.syscxp.header.tunnel.tunnel.TaskType;
@@ -47,10 +47,10 @@ public class UpdateL3EndpointBandwidthJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            if(dbf.isExist(l3EndpointUuid, L3EndPointVO.class)){
+            if(dbf.isExist(l3EndpointUuid, L3EndpointVO.class)){
                 logger.info("开始执行修改L3带宽 JOB【控制器下发修改L3 带宽】");
 
-                L3EndPointVO vo = dbf.findByUuid(l3EndpointUuid,L3EndPointVO.class);
+                L3EndpointVO vo = dbf.findByUuid(l3EndpointUuid,L3EndpointVO.class);
                 //创建任务
                 TaskResourceVO taskResourceVO = new L3NetworkBase().newTaskResourceVO(vo, TaskType.UpdateL3EndpointBandwidth);
 

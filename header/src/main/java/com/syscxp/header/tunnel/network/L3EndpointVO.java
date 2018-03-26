@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.network;
 
+import com.syscxp.header.tunnel.endpoint.EndpointEO;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.vo.ForeignKey;
 
@@ -12,7 +13,7 @@ import java.util.Set;
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class L3EndPointVO {
+public class L3EndpointVO {
 
     @Id
     @Column
@@ -80,15 +81,15 @@ public class L3EndPointVO {
 
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="endpointUuid", insertable=false, updatable=false)
-    private EndpointVO endpointVO;
+    private EndpointEO endpointEO;
 
-    @OneToMany(fetch= FetchType.EAGER)
-    @JoinColumn(name = "l3EndPointUuid", insertable = false, updatable = false)
-    private List<L3RouteVO> l3RouteVOS = new ArrayList<L3RouteVO>();
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="l3NetworkUuid", insertable=false, updatable=false)
+    private L3NetworkEO l3NetworkEO;
 
-    @OneToMany(fetch= FetchType.EAGER)
-    @JoinColumn(name = "l3EndPointUuid", insertable = false, updatable = false)
-    private List<L3RtVO> l3RtVOS = new ArrayList<L3RtVO>();
+//    @OneToMany(fetch= FetchType.EAGER)
+//    @JoinColumn(name = "l3EndpointUuid", insertable = false, updatable = false)
+//    private List<L3RtVO> l3RtVOS = new ArrayList<L3RtVO>();
 
     @PreUpdate
     private void preUpdate() {
@@ -239,28 +240,12 @@ public class L3EndPointVO {
         this.createDate = createDate;
     }
 
-    public EndpointVO getEndpointVO() {
-        return endpointVO;
+    public EndpointEO getEndpointEO() {
+        return endpointEO;
     }
 
-    public void setEndpointVO(EndpointVO endpointVO) {
-        this.endpointVO = endpointVO;
-    }
-
-    public List<L3RouteVO> getL3RouteVOS() {
-        return l3RouteVOS;
-    }
-
-    public void setL3RouteVOS(List<L3RouteVO> l3RouteVOS) {
-        this.l3RouteVOS = l3RouteVOS;
-    }
-
-    public List<L3RtVO> getL3RtVOS() {
-        return l3RtVOS;
-    }
-
-    public void setL3RtVOS(List<L3RtVO> l3RtVOS) {
-        this.l3RtVOS = l3RtVOS;
+    public void setEndpointEO(EndpointEO endpointEO) {
+        this.endpointEO = endpointEO;
     }
 
     public L3EndpointState getState() {
@@ -277,5 +262,13 @@ public class L3EndPointVO {
 
     public void setIpCidr(String ipCidr) {
         this.ipCidr = ipCidr;
+    }
+
+    public L3NetworkEO getL3NetworkEO() {
+        return l3NetworkEO;
+    }
+
+    public void setL3NetworkEO(L3NetworkEO l3NetworkEO) {
+        this.l3NetworkEO = l3NetworkEO;
     }
 }

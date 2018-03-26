@@ -45,7 +45,7 @@ public class TestMonitorAction extends TestSDK {
     public void testStartTunnelMonitor() {
         StartTunnelMonitorAction action = new StartTunnelMonitorAction();
 
-        action.tunnelUuid = "";
+        action.tunnelUuid = "9ea7c950ba2f4bcd9a0c02c8a183ec6d";
         action.monitorCidr = "";
         action.msg = "";
 
@@ -58,7 +58,7 @@ public class TestMonitorAction extends TestSDK {
     public void testStopTunnelMonitor() {
         StopTunnelMonitorAction action = new StopTunnelMonitorAction();
 
-        action.tunnelUuid = "";
+        action.tunnelUuid = "9ea7c950ba2f4bcd9a0c02c8a183ec6d";
 
         StopTunnelMonitorResult result = action.call().throwExceptionIfError().value;
 
@@ -70,7 +70,7 @@ public class TestMonitorAction extends TestSDK {
     public void testRestartTunnelMonitor() {
         RestartTunnelMonitorAction action = new RestartTunnelMonitorAction();
 
-        action.tunnelUuid = "";
+        action.tunnelUuid = "9ea7c950ba2f4bcd9a0c02c8a183ec6d";
         action.monitorCidr = "";
         RestartTunnelMonitorResult result = action.call().throwExceptionIfError().value;
 

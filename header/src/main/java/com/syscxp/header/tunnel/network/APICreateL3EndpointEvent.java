@@ -2,15 +2,13 @@ package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.message.APIEvent;
 
-/**
- * Create by DCY on 2018/3/12
- */
-public class APIUpdateL3EndpointIPEvent extends APIEvent {
+public class APICreateL3EndpointEvent extends APIEvent {
+
     private L3EndpointInventory inventory;
 
-    public APIUpdateL3EndpointIPEvent(){super(null);}
+    public APICreateL3EndpointEvent(){super(null);}
 
-    public APIUpdateL3EndpointIPEvent(String apiId){super(apiId);}
+    public APICreateL3EndpointEvent(String apiId){super(apiId);}
 
     public L3EndpointInventory getInventory() {
         return inventory;

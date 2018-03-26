@@ -21,8 +21,11 @@ public abstract class AbstractAction {
         Field field;
         Param annotation;
     }
-
+    // API parameter
     abstract Map<String, Parameter> getParameterMap();
+
+    // Non-API parameter, likes: timeout, pollingInterval
+    abstract Map<String, Parameter> getNonAPIParameterMap();
 
     private void initializeParametersIfNot() {
         synchronized (getParameterMap()) {
@@ -31,14 +34,21 @@ public abstract class AbstractAction {
 
                 for (Field f : fields) {
                     Param at = f.getAnnotation(Param.class);
+
+                    Parameter p = new Parameter();
+                    p.field = f;
+                    p.field.setAccessible(true);
+
+                    NonAPIParam nonAPIParamAnnotation = f.getAnnotation(NonAPIParam.class);
+
                     if (at == null) {
+                        if(nonAPIParamAnnotation != null){
+                            getNonAPIParameterMap().put(f.getName(), p);
+                        }
                         continue;
                     }
 
-                    Parameter p = new Parameter();
                     p.annotation = at;
-                    p.field = f;
-                    p.field.setAccessible(true);
 
                     getParameterMap().put(f.getName(), p);
                 }
@@ -67,7 +77,11 @@ public abstract class AbstractAction {
     }
 
     Object getParameterValue(String name, boolean exceptionOnNotFound) {
-        Parameter p = getParameterMap().get(name);
+        return getParameterValue(getParameterMap(), name, exceptionOnNotFound);
+    }
+
+    Object getParameterValue(Map<String, Parameter> map, String name, boolean exceptionOnNotFound){
+        Parameter p = map.get(name);
         if (p == null) {
             if (exceptionOnNotFound) {
                 throw new ApiException(String.format("no such parameter[%s]", name));
@@ -81,6 +95,10 @@ public abstract class AbstractAction {
         } catch (IllegalAccessException e) {
             throw new ApiException(e);
         }
+    }
+
+    Object getNonAPIParameterValue(String name, boolean exceptionOnNotFound){
+        return getParameterValue(getNonAPIParameterMap(), name, exceptionOnNotFound);
     }
 
     void checkParameters() {

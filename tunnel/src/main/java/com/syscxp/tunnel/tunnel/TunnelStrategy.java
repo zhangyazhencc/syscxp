@@ -169,7 +169,7 @@ public class TunnelStrategy  {
         avq.setParameter("mplsPhysicalSwitch2", mplsPhysicalSwitch.getUuid());
         List<Integer> list1 = avq.getResultList();
 
-        String sql2 = "select distinct a.vlan from L3EndPointVO a " +
+        String sql2 = "select distinct a.vlan from L3EndpointVO a " +
                 "where a.physicalSwitchUuid = :physicalSwitchUuid";
         TypedQuery<Integer> avq2 = dbf.getEntityManager().createQuery(sql2,Integer.class);
         avq2.setParameter("physicalSwitchUuid", mplsPhysicalSwitch.getUuid());
