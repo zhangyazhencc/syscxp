@@ -12,6 +12,20 @@
          http://syscxp.com/schema/syscxp/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
+
+    <bean id="IdentiyInterceptor" class="com.syscxp.trustee.identity.IdentityInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.apimediator.GlobalApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
+
+        <property name="resourceTypeForAccountRef">
+            <list>
+                <!--<value>com.syscxp.account.header.resourcePolicy.PolicyVO</value>-->
+            </list>
+        </property>
+    </bean>
+
     <bean id="TrusteeManager" class="com.syscxp.trustee.trustee.TrusteeManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
@@ -25,7 +39,11 @@
         </syscxp:plugin>
     </bean>
 
-
+    <bean id="TrusteeSubQueryExtension" class="com.syscxp.trustee.identity.TrusteeSubQueryExtension">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.query.MysqlQuerySubQueryExtension"/>
+        </syscxp:plugin>
+    </bean>
 </beans>
 
 
