@@ -2,54 +2,53 @@ package com.syscxp.trustee.header;
 
 import com.syscxp.header.message.APIMessage;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class VOAddAllOfMsg<T> {
 
-    private void handle(APIMessage msg, T ob)
-            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException{
+    public void addAll(APIMessage msg, T ob){
 
         Field[] declaredFields = msg.getClass().getDeclaredFields();
 
-        for(Field field : declaredFields){
+        Arrays.asList(declaredFields).stream().forEach((field)->{
             field.setAccessible(true);
             String name = field.getName();
             name = name.substring(0, 1).toUpperCase() + name.substring(1);
-            Method MsgGet;
-            if (field.getType().getName().equals("boolean")){
-                MsgGet = msg.getClass().getMethod("is"+ name);
-            }else{
-                MsgGet = msg.getClass().getMethod("get"+ name);
+            Method MsgGet = null ;
+            try{
+                if (field.getType().getName().equals("boolean")){
+                    MsgGet = msg.getClass().getMethod("is"+ name);
+                }else{
+                    MsgGet = msg.getClass().getMethod("get"+ name);
+                }
+            }catch (NoSuchMethodException e) {
+                e.printStackTrace();
             }
 
-            if(MsgGet.invoke(msg) != null){
-                Method obSet = null;
-                try{
-                    obSet = ob.getClass().getMethod("set"+ name,field.getType());
-                }catch (Exception e){
-                }
+            try{
+                if(MsgGet != null && MsgGet.invoke(msg) != null){
+                    Method obSet = null;
+                    try{
+                        obSet = ob.getClass().getMethod("set"+ name,field.getType());
+                    }catch (Exception e){
+                    }
 
-                if(obSet != null){
-                    obSet.invoke(ob,MsgGet.invoke(msg));
+                    if(obSet != null){
+                        obSet.invoke(ob,MsgGet.invoke(msg));
+                    }
                 }
-
+            }catch (IllegalAccessException e){
+                e.printStackTrace();
+            }catch (InvocationTargetException e){
+                e.printStackTrace();
             }
-        }
 
-    }
-
-    public void addAll(APIMessage msg, T ob) {
-        try {
-            handle(msg, ob);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        });
 
     }
 

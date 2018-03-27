@@ -12,8 +12,6 @@ public class VOAddAllOfMsg<T> {
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException{
 
         Field[] declaredFields = msg.getClass().getDeclaredFields();
-        Field[] obField = ob.getClass().getDeclaredFields();
-
 
         for(Field field : declaredFields){
             field.setAccessible(true);
@@ -27,8 +25,15 @@ public class VOAddAllOfMsg<T> {
             }
 
             if(MsgGet.invoke(msg) != null){
-                Method obSet = ob.getClass().getMethod("set"+ name,field.getType());
-                obSet.invoke(ob,MsgGet.invoke(msg));
+                Method obSet = null;
+                try{
+                    obSet = ob.getClass().getMethod("set"+ name,field.getType());
+                }catch (Exception e){
+                }
+
+                if(obSet != null){
+                    obSet.invoke(ob,MsgGet.invoke(msg));
+                }
             }
         }
 

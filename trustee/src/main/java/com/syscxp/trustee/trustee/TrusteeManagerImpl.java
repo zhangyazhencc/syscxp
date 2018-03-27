@@ -3,9 +3,12 @@ package com.syscxp.trustee.trustee;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.message.Message;
 import com.syscxp.trustee.header.*;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,17 +24,67 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
     @Autowired
     private DatabaseFacade dbf;
 
-    private VOAddAllOfMsg vOAddAllOfMsg = new VOAddAllOfMsg();
-    private TrusteeBaseUtil trusteeBaseUtil = new TrusteeBaseUtil();
+    private final VOAddAllOfMsg vOAddAllOfMsg = new VOAddAllOfMsg();
+
+    private final TrusteeBaseUtil trusteeBaseUtil = new TrusteeBaseUtil();
+
     @Override
     public void handleMessage(Message msg) {
 
         if(msg instanceof APICreateTrusteeMsg){
             handle((APICreateTrusteeMsg)msg);
-        }else{
+        } else if(msg instanceof APIDeleteTrusteeMsg){
+            handle((APIDeleteTrusteeMsg)msg);
+        } else if(msg instanceof APIUpdateTrusteeMsg){
+            handle((APIUpdateTrusteeMsg)msg);
+        } else if(msg instanceof APITrusteeRenewalMsg){
+            handle((APITrusteeRenewalMsg)msg);
+        } else{
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
+
+    private void handle(APITrusteeRenewalMsg msg) {
+
+    }
+
+    private void handle(APIUpdateTrusteeMsg msg) {
+
+        APIUpdateTrusteeEvent event = new APIUpdateTrusteeEvent(msg.getId());
+        TrusteeVO vo = dbf.findByUuid(msg.getUuid(), TrusteeVO.class);
+        vOAddAllOfMsg.addAll(msg, vo);
+
+        if(msg.getTotalCost() != null ){
+            if(msg.getTotalCost().compareTo(vo.getTotalCost()) > 0 ){
+                /*
+                * 扣费
+                *
+                * */
+            }else if(msg.getTotalCost().compareTo(vo.getTotalCost()) < 0){
+                /*
+                * 退费
+                *
+                * */
+            }
+        }
+        event.setInventory(TrusteeInventory.valueOf(dbf.persistAndRefresh(vo)));
+        bus.publish(event);
+
+    }
+
+    private void handle(APIDeleteTrusteeMsg msg) {
+
+        APIDeleteTrusteeEvent event = new APIDeleteTrusteeEvent(msg.getId());
+
+        /*
+        * 校验
+        *
+        * */
+        UpdateQuery.New(TrustDetailVO.class).condAnd(TrustDetailVO_.trusteeUuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+        UpdateQuery.New(TrusteeVO.class).condAnd(TrusteeVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+
+        bus.publish(event);
     }
 
     @Transactional
