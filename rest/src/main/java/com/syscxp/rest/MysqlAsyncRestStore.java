@@ -21,6 +21,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -226,14 +228,18 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
 
             @Transactional
             private void cleanup() {
-                String sql = "DELETE FROM AsyncRestVO vo WHERE vo.state = :state and vo.createDate < (NOW() - INTERVAL :period SECOND)";
+//                String sql = "DELETE FROM AsyncRestVO vo WHERE vo.state = :state and vo.createDate < (NOW() - INTERVAL :period SECOND)";
+                String sql = "DELETE FROM AsyncRestVO vo WHERE vo.state = :state and vo.createDate < :period";
                 EntityManager mgr = getEntityManager();
                 EntityTransaction tran = mgr.getTransaction();
                 try {
                     tran.begin();
                     Query query = mgr.createQuery(sql);
                     query.setParameter("state", AsyncRestState.done);
-                    query.setParameter("period", RestGlobalConfig.COMPLETED_API_EXPIRED_PERIOD.value(Integer.class));
+                    int completedApiExpiredPeriod =  RestGlobalConfig.COMPLETED_API_EXPIRED_PERIOD.value(Integer.class);
+                    Timestamp period = Timestamp.valueOf(LocalDateTime.now()
+                            .minusSeconds(completedApiExpiredPeriod));
+                    query.setParameter("period", period);
                     query.executeUpdate();
                     tran.commit();
                 } catch (Exception ex) {
