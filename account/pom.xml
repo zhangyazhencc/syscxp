@@ -15,19 +15,14 @@
     <dependencies>
         <dependency>
             <groupId>com.syscxp</groupId>
-            <artifactId>utils</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.syscxp</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.syscxp</groupId>
             <artifactId>header</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.syscxp</groupId>
             <artifactId>search</artifactId>

@@ -9,6 +9,7 @@ CREATE TABLE syscxp_trustee.TrusteeEO (
     `nodeUuid` varchar(32) NOT NULL COMMENT '节点uuid',
 		`nodeName` varchar(128) NOT NULL COMMENT '节点名',
 		`productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
+		`duration` int(11) NOT NULL COMMENT '最近一次购买时长',
 		`totalCost` decimal(12,4) DEFAULT 0 COMMENT '总价',
 		`expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
 		`deleted` varchar(32) DEFAULT NULL,

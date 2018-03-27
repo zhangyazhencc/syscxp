@@ -248,6 +248,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setMaxRouteNum(CoreGlobalProperty.L3_MAX_ROUTENUM);
         vo.setLocalIP(null);
         vo.setRemoteIp(null);
+        vo.setMonitorIp(null);
         vo.setNetmask(null);
         vo.setIpCidr(null);
         vo.setInterfaceUuid(msg.getInterfaceUuid());
@@ -291,6 +292,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setMaxRouteNum(CoreGlobalProperty.L3_MAX_ROUTENUM);
         vo.setLocalIP(null);
         vo.setRemoteIp(null);
+        vo.setMonitorIp(null);
         vo.setNetmask(null);
         vo.setIpCidr(null);
         vo.setInterfaceUuid(msg.getInterfaceUuid());
@@ -329,6 +331,7 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         vo.setRemoteIp(msg.getRemoteIp());
         vo.setLocalIP(msg.getLocalIP());
         vo.setNetmask(msg.getNetmask());
+        vo.setMonitorIp(msg.getMonitorIp());
         vo.setIpCidr(NetworkUtils.getIpCidrFromIpv4Netmask(msg.getLocalIP(), msg.getNetmask()));
 
         dbf.getEntityManager().merge(vo);

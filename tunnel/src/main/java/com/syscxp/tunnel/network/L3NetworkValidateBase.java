@@ -56,7 +56,7 @@ public class L3NetworkValidateBase {
         }
 
         //验证vid
-        if(Q.New(L3NetworkEO.class).eq(L3NetworkEO_.vid, msg.getVid()).isExists()){
+        if(Q.New(L3NetworkVO.class).eq(L3NetworkVO_.vid, msg.getVid()).isExists()){
             throw new ApiMessageInterceptionException(argerr("该vid已经被云网络使用！"));
         }
 
@@ -132,6 +132,7 @@ public class L3NetworkValidateBase {
             throw new ApiMessageInterceptionException(argerr("客户端IP和犀思云端IP不能相同！"));
         }
 
+
         if(!NetworkUtils.isIpv4sInNetmask(msg.getLocalIP(),msg.getRemoteIp(),msg.getNetmask())){
             throw new ApiMessageInterceptionException(argerr("客户端IP和犀思云端IP必须属于同一网段！"));
         }
@@ -157,6 +158,24 @@ public class L3NetworkValidateBase {
         }
         if(msg.getRemoteIp().equals(ipFirstAndEnd[0]) || msg.getRemoteIp().equals(ipFirstAndEnd[1])){
             throw new ApiMessageInterceptionException(argerr("该客户端IP不能是网段的起始IP或结束IP！"));
+        }
+
+        if(msg.getMonitorIp() != null){
+            if(!NetworkUtils.isIpv4Address(msg.getMonitorIp())){
+                throw new ApiMessageInterceptionException(argerr("该监控IP不是合法的IPV4地址！"));
+            }
+
+            if(msg.getMonitorIp().equals(msg.getRemoteIp()) || msg.getMonitorIp().equals(msg.getLocalIP())){
+                throw new ApiMessageInterceptionException(argerr("监控IP和互联IP不能相同！"));
+            }
+
+            if(!NetworkUtils.isIpv4sInNetmask(msg.getMonitorIp(),msg.getRemoteIp(),msg.getNetmask())){
+                throw new ApiMessageInterceptionException(argerr("监控IP和互联IP必须属于同一网段！"));
+            }
+
+            if(msg.getMonitorIp().equals(ipFirstAndEnd[0]) || msg.getMonitorIp().equals(ipFirstAndEnd[1])){
+                throw new ApiMessageInterceptionException(argerr("该监控IP不能是网段的起始IP或结束IP！"));
+            }
         }
 
 
