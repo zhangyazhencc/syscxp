@@ -85,7 +85,7 @@ FROM `TrusteeEO` WHERE deleted IS NULL;
 CREATE TABLE syscxp_trustee.TrustDetailVO (
 		`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 		`name` varchar(32) NOT NULL COMMENT '名称',
-    `TrusteeUuid` varchar(32) NOT NULL COMMENT '托管uuid',
+    `trusteeUuid` varchar(32) NOT NULL COMMENT '托管uuid',
 		`cost` decimal(12,4) DEFAULT 0 COMMENT '费用',
 		`description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
