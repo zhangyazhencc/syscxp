@@ -9,6 +9,7 @@ public class RestAPIVO_ {
     public static volatile SingularAttribute<RestAPIVO, String> uuid;
     public static volatile SingularAttribute<RestAPIVO, String> result;
     public static volatile SingularAttribute<RestAPIVO, String> apiMessageName;
+    public static volatile SingularAttribute<RestAPIVO, RestAPIState> state;
     public static volatile SingularAttribute<RestAPIVO, Timestamp> createDate;
     public static volatile SingularAttribute<RestAPIVO, Timestamp> lastOpDate;
 }
