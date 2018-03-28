@@ -525,10 +525,25 @@ public class TunnelValidateBase {
             }
         }
 
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
     }
 
     public void validate(APIUpdateTunnelBandwidthMsg msg) {
+
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
         //判断该产品是否有未完成订单
         checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
 
@@ -573,6 +588,14 @@ public class TunnelValidateBase {
 
     public void validate(APIDeleteTunnelMsg msg) {
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
         if (msg.getSession().getType() != AccountType.SystemAdmin && (vo.getState() == TunnelState.Enabled || vo.getState() == TunnelState.Disabled)) {
             int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
             if (vo.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
@@ -598,6 +621,12 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIEnableTunnelMsg msg){
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
 
         if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
             throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
@@ -605,6 +634,12 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIDisableTunnelMsg msg){
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
 
         if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
             throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
@@ -969,5 +1004,17 @@ public class TunnelValidateBase {
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
+    }
+
+    /**
+     * 设置为外采资源
+     * */
+    public void validate(APICreateOutsideResourceMsg msg) {
+        if(Q.New(OutsideResourceVO.class)
+                .eq(OutsideResourceVO_.resourceUuid, msg.getResourceUuid())
+                .isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("该资源已经是外采资源！"));
+        }
     }
 }
