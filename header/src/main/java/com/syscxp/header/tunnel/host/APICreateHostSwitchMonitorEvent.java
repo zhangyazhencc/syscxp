@@ -8,7 +8,6 @@ import com.syscxp.header.rest.RestResponse;
  * @Cretion Date: 2017-09-11.
  * @Description: .
  */
-@RestResponse(allTo = "inventory")
 public class APICreateHostSwitchMonitorEvent extends APIEvent {
     private HostSwitchMonitorInventory inventory;
 
