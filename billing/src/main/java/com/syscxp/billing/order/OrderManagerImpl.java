@@ -102,10 +102,53 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             handle((APIGetRenewProductPriceMsg) msg);
         } else if (msg instanceof APICreateBuyEdgeLineOrderMsg) {
             handle((APICreateBuyEdgeLineOrderMsg) msg);
+        }  else if (msg instanceof APICreateBuyIDCOrderMsg) {
+            handle((APICreateBuyIDCOrderMsg) msg);
         } else if (msg instanceof APIRefundOrderMsg) {
             handle((APIRefundOrderMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
+        }
+    }
+
+    private void handle(APICreateBuyIDCOrderMsg msg) {
+        GLock lock = new GLock(String.format("id-%s", msg.getAccountUuid()), 3);
+        lock.lock();
+        try {
+            Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+            AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+            BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+            BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
+            BigDecimal amount = duration.multiply(BigDecimal.valueOf(msg.getPrice()));
+            if (amount.compareTo(mayPayTotal) > 0) {
+                throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+            }
+
+            OrderVO orderVo = new OrderVO();
+            setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), ProductType.EDGELINE, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), msg.getDuration(), msg.getCallBackData());
+            orderVo.setOriginalPrice(amount);
+            orderVo.setPrice(amount);
+            orderVo.setType(OrderType.BUY);
+            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, amount, currentTimestamp);
+
+            LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
+            orderVo.setProductEffectTimeStart(currentTimestamp);
+            orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
+
+            saveRenewVO(orderVo.getProductChargeModel(), orderVo.getProductUuid(), orderVo.getAccountUuid(), orderVo.getProductName(), orderVo.getProductType(), orderVo.getDescriptionData(), Timestamp.valueOf(expiredTime), BigDecimal.valueOf(msg.getPrice()));
+
+            if (!StringUtils.isEmpty(msg.getNotifyUrl())) {
+                saveNotify(msg.getNotifyUrl(), msg.getAccountUuid(), msg.getProductUuid(), orderVo.getUuid());
+            }
+
+            dbf.getEntityManager().persist(orderVo);
+            dbf.getEntityManager().merge(abvo);
+            dbf.getEntityManager().flush();
+            APICreateBuyEdgeLineOrderReply reply = new APICreateBuyEdgeLineOrderReply();
+            reply.setInventory(OrderInventory.valueOf(orderVo));
+            bus.reply(msg, reply);
+        } finally {
+            lock.unlock();
         }
     }
 
