@@ -236,9 +236,8 @@ public class MysqlAsyncRestStore implements AsyncRestApiStore, Component {
                     tran.begin();
                     Query query = mgr.createQuery(sql);
                     query.setParameter("state", AsyncRestState.done);
-                    int completedApiExpiredPeriod =  RestGlobalConfig.COMPLETED_API_EXPIRED_PERIOD.value(Integer.class);
                     Timestamp period = Timestamp.valueOf(LocalDateTime.now()
-                            .minusSeconds(completedApiExpiredPeriod));
+                            .minusSeconds(RestGlobalConfig.COMPLETED_API_EXPIRED_PERIOD.value(Integer.class).longValue()));
                     query.setParameter("period", period);
                     query.executeUpdate();
                     tran.commit();
