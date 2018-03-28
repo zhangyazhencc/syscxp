@@ -14,6 +14,9 @@ public class APICreateBuyEdgeLineOrderMsg extends APISyncCallMessage {
     @APIParam(numberRange = {0,Integer.MAX_VALUE})
     private int price;
 
+    @APIParam(numberRange = {0, Integer.MAX_VALUE})
+    private double fixedCost;
+
     @APIParam
     private String productName;
 
@@ -119,5 +122,13 @@ public class APICreateBuyEdgeLineOrderMsg extends APISyncCallMessage {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public double getFixedCost() {
+        return fixedCost;
+    }
+
+    public void setFixedCost(double fixedCost) {
+        this.fixedCost = fixedCost;
     }
 }
