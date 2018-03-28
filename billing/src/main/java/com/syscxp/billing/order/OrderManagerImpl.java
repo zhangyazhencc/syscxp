@@ -549,7 +549,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setProductEffectTimeEnd(msg.getExpiredTime());
             orderVo.setLastPriceOneMonth(renewVO.getPriceOneMonth());
 
-            if (subMoney.compareTo(BigDecimal.ZERO) > 0) { //upgrade
+            if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
+                if (notUseMonth.intValue() == 0) {
+                    orderVo.setType(OrderType.DOWNGRADE);
+                }else{
+                    orderVo.setType(OrderType.UPGRADE);
+                }
 
                 notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
                 remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
@@ -559,7 +564,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 if (subMoney.compareTo(mayPayTotal) > 0) {
                     throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
                 }
-                orderVo.setType(OrderType.UPGRADE);
+
+
                 orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
                 orderVo.setPrice(subMoney);
                 payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, subMoney, currentTimestamp);
@@ -799,7 +805,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal needPayOriginMoney = originalPrice.multiply(notUseMonth);
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
 
-        if (subMoney.compareTo(BigDecimal.ZERO) > 0) { //upgrade
+        if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
 
             notUseMonth = getNotUseMonths(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
             remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
