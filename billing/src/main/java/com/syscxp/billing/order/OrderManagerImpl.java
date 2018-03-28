@@ -203,14 +203,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setOriginalPrice(amount);
             orderVo.setPrice(amount);
             orderVo.setType(OrderType.BUY);
-            OrderVO fixedOrder = new OrderVO();
-            setOrderValue(fixedOrder, msg.getAccountUuid(), msg.getProductName(), ProductType.FIXEDCOST, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
-            fixedOrder.setOriginalPrice(BigDecimal.valueOf(msg.getFixedCost()));
-            fixedOrder.setPrice(BigDecimal.valueOf(msg.getFixedCost()));
-            fixedOrder.setType(OrderType.BUY);
-            fixedOrder.setProductEffectTimeStart(currentTimestamp);
-            fixedOrder.setProductEffectTimeEnd(currentTimestamp);
-            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), fixedOrder, abvo, BigDecimal.valueOf(msg.getFixedCost()), currentTimestamp);
+            if (msg.getFixedCost() > 0) {
+                OrderVO fixedOrder = new OrderVO();
+                setOrderValue(fixedOrder, msg.getAccountUuid(), msg.getProductName(), ProductType.FIXEDCOST, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
+                fixedOrder.setOriginalPrice(BigDecimal.valueOf(msg.getFixedCost()));
+                fixedOrder.setPrice(BigDecimal.valueOf(msg.getFixedCost()));
+                fixedOrder.setType(OrderType.BUY);
+                fixedOrder.setProductEffectTimeStart(currentTimestamp);
+                fixedOrder.setProductEffectTimeEnd(currentTimestamp);
+                payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), fixedOrder, abvo, BigDecimal.valueOf(msg.getFixedCost()), currentTimestamp);
+                dbf.getEntityManager().persist(fixedOrder);
+            }
             payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, amount, currentTimestamp);
 
             LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
@@ -224,7 +227,6 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
 
             dbf.getEntityManager().persist(orderVo);
-            dbf.getEntityManager().persist(fixedOrder);
             dbf.getEntityManager().merge(abvo);
             dbf.getEntityManager().flush();
             APICreateBuyEdgeLineOrderReply reply = new APICreateBuyEdgeLineOrderReply();

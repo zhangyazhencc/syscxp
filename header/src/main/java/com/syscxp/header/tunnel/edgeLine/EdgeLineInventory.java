@@ -35,6 +35,7 @@ public class EdgeLineInventory {
     private String state;
     private Integer costPrices;
     private Integer prices;
+    private Integer fixedCost;
     private String implementType;
     private Timestamp expireDate;
     private Timestamp lastOpDate;
@@ -56,6 +57,7 @@ public class EdgeLineInventory {
         inv.setState(vo.getState().toString());
         inv.setCostPrices(vo.getCostPrices());
         inv.setPrices(vo.getPrices());
+        inv.setFixedCost(vo.getFixedCost());
         inv.setImplementType(vo.getImplementType());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -219,5 +221,13 @@ public class EdgeLineInventory {
 
     public void setCostPrices(Integer costPrices) {
         this.costPrices = costPrices;
+    }
+
+    public Integer getFixedCost() {
+        return fixedCost;
+    }
+
+    public void setFixedCost(Integer fixedCost) {
+        this.fixedCost = fixedCost;
     }
 }

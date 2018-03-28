@@ -23,6 +23,9 @@ public class APIUpdateEdgeLineMsg extends APIMessage {
     @APIParam(required = false,numberRange = {0,Integer.MAX_VALUE})
     private Integer prices;
 
+    @APIParam(required = false,numberRange = {0,Integer.MAX_VALUE})
+    private Integer fixedCost;
+
     @APIParam(required = false,emptyString = false, maxLength = 32)
     private String implementType;
 
@@ -89,6 +92,14 @@ public class APIUpdateEdgeLineMsg extends APIMessage {
 
     public void setCostPrices(Integer costPrices) {
         this.costPrices = costPrices;
+    }
+
+    public Integer getFixedCost() {
+        return fixedCost;
+    }
+
+    public void setFixedCost(Integer fixedCost) {
+        this.fixedCost = fixedCost;
     }
 
     public ApiNotification __notification__() {
