@@ -177,7 +177,7 @@ CREATE TABLE `OrderVO` (
   `payCash` decimal(12,4) DEFAULT NULL COMMENT '订单实付现金金额',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
   `productEffectTimeStart` timestamp NULL DEFAULT NULL COMMENT '产品使用开始时间',
-  `productEffectTimeEnd` datetime DEFAULT NULL COMMENT '产品使用结束时间',
+  `productEffectTimeEnd` timestamp DEFAULT NULL COMMENT '产品使用结束时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
   `productUuid` varchar(32) NOT NULL COMMENT '产品ID',
