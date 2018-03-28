@@ -18,7 +18,9 @@ public class EdgeLineAO_ {
     public static volatile SingularAttribute<EdgeLineAO, String> destinationInfo;
     public static volatile SingularAttribute<EdgeLineAO, String> description;
     public static volatile SingularAttribute<EdgeLineAO, EdgeLineState> state;
+    public static volatile SingularAttribute<EdgeLineAO, Integer> costPrices;
     public static volatile SingularAttribute<EdgeLineAO, Integer> prices;
+    public static volatile SingularAttribute<EdgeLineAO, String> implementType;
     public static volatile SingularAttribute<EdgeLineAO, Timestamp> expireDate;
     public static volatile SingularAttribute<EdgeLineAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<EdgeLineAO, Timestamp> createDate;

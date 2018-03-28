@@ -7,8 +7,9 @@ import java.sql.Timestamp;
 @StaticMetamodel(L3RouteVO.class)
 public class L3RouteVO_ {
     public static volatile SingularAttribute<L3RouteVO,String> uuid;
-    public static volatile SingularAttribute<L3RouteVO,String> l3EndPointUuid;
+    public static volatile SingularAttribute<L3RouteVO,String> l3EndpointUuid;
     public static volatile SingularAttribute<L3RouteVO,String> cidr;
+    public static volatile SingularAttribute<L3RouteVO,String> truthCidr;
     public static volatile SingularAttribute<L3RouteVO,String> nextIp;
     public static volatile SingularAttribute<L3RouteVO,Integer> indexNum;
     public static volatile SingularAttribute<L3RouteVO,Timestamp> lastOpDate;

@@ -15,11 +15,14 @@ public class L3RouteVO {
     private String uuid;
 
     @Column
-    @ForeignKey(parentEntityClass = L3EndPointVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
-    private String l3EndPointUuid;
+    @ForeignKey(parentEntityClass = L3EndpointVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    private String l3EndpointUuid;
 
     @Column
     private String cidr;
+
+    @Column
+    private String truthCidr;
 
     @Column
     private String nextIp;
@@ -46,12 +49,12 @@ public class L3RouteVO {
         this.uuid = uuid;
     }
 
-    public String getL3EndPointUuid() {
-        return l3EndPointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setL3EndPointUuid(String l3EndPointUuid) {
-        this.l3EndPointUuid = l3EndPointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
     public String getCidr() {
@@ -92,5 +95,13 @@ public class L3RouteVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public String getTruthCidr() {
+        return truthCidr;
+    }
+
+    public void setTruthCidr(String truthCidr) {
+        this.truthCidr = truthCidr;
     }
 }

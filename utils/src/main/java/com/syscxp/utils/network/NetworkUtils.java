@@ -23,8 +23,12 @@ public class NetworkUtils {
 
     private static final HashMap netmaskMap = new HashMap();
 
-    public static String intNetmask(String netmask){
+    public static String intFromNetmask(String netmask){
         return (String) netmaskMap.get(netmask);
+    }
+
+    public static String netmaskFromInt(String cidr){
+        return (String) netmaskMap.get(cidr);
     }
 
 
@@ -96,6 +100,40 @@ public class NetworkUtils {
         netmaskMap.put("192.0.0.0","2");
         netmaskMap.put("128.0.0.0","1");
         netmaskMap.put("0.0.0.0","0");
+
+        netmaskMap.put("32","255.255.255.255");
+        netmaskMap.put("31","255.255.255.254");
+        netmaskMap.put("30","255.255.255.252");
+        netmaskMap.put("29","255.255.255.248");
+        netmaskMap.put("28","255.255.255.240");
+        netmaskMap.put("27","255.255.255.224");
+        netmaskMap.put("26","255.255.255.192");
+        netmaskMap.put("25","255.255.255.128");
+        netmaskMap.put("24","255.255.255.0");
+        netmaskMap.put("23","255.255.254.0");
+        netmaskMap.put("22","255.255.252.0");
+        netmaskMap.put("21","255.255.248.0");
+        netmaskMap.put("20","255.255.240.0");
+        netmaskMap.put("19","255.255.224.0");
+        netmaskMap.put("18","255.255.192.0");
+        netmaskMap.put("17","255.255.128.0");
+        netmaskMap.put("16","255.255.0.0");
+        netmaskMap.put("15","255.254.0.0");
+        netmaskMap.put("14","255.252.0.0");
+        netmaskMap.put("13","255.248.0.0");
+        netmaskMap.put("12","255.240.0.0");
+        netmaskMap.put("11","255.224.0.0");
+        netmaskMap.put("10","255.192.0.0");
+        netmaskMap.put("9","255.128.0.0");
+        netmaskMap.put("8","255.0.0.0");
+        netmaskMap.put("7","254.0.0.0");
+        netmaskMap.put("6","252.0.0.0");
+        netmaskMap.put("5","248.0.0.0");
+        netmaskMap.put("4","240.0.0.0");
+        netmaskMap.put("3","224.0.0.0");
+        netmaskMap.put("2","192.0.0.0");
+        netmaskMap.put("1","128.0.0.0");
+        netmaskMap.put("0","0.0.0.0");
     }
 
     public static boolean isHostname(String hostname) {
@@ -669,7 +707,7 @@ public class NetworkUtils {
             ipResults[i] = String.valueOf(Integer.parseInt(arrIp[i]) & Integer.parseInt(arrM[i]));
         }
 
-        return ipResults[0] +"."+ ipResults[1] +"."+ ipResults[2] +"."+ ipResults[3];
+        return ipResults[0] +"."+ ipResults[1] +"."+ ipResults[2] +"."+ ipResults[3]+"/"+intFromNetmask(netmask);
     }
 
     public static String charge(String ip) {
@@ -695,7 +733,7 @@ public class NetworkUtils {
 
 
     public static String[] ipSplit(String ip) {
-        String[] ipString = ip.split("\\/");
+        String[] ipString = ip.split("/");
         ip = ipString[0];
         int i = Integer.parseInt(ipString[1]);
         String[] strings = ip.split("\\.");

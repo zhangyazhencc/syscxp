@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -11,7 +13,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateL3EndpointIPMsg extends APIMessage {
-    @APIParam(emptyString = false, resourceType = L3EndPointVO.class)
+    @APIParam(emptyString = false, resourceType = L3EndpointVO.class)
     private String uuid;
 
     @APIParam(emptyString = false)
@@ -19,6 +21,9 @@ public class APIUpdateL3EndpointIPMsg extends APIMessage {
 
     @APIParam(emptyString = false)
     private String remoteIp;
+
+    @APIParam(emptyString = false,required = false)
+    private String monitorIp;
 
     @APIParam(emptyString = false)
     private String netmask;
@@ -53,5 +58,26 @@ public class APIUpdateL3EndpointIPMsg extends APIMessage {
 
     public void setNetmask(String netmask) {
         this.netmask = netmask;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update L3EndpointVO")
+                        .resource(uuid, L3EndpointVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

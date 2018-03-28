@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ZSConfig {
     String scheme = "http";
-    String hostname = "localhost";
-    int port = 8080;
+    String hostname = "api.syscxp.com";
+    int port = 80;
     long defaultPollingTimeout = TimeUnit.HOURS.toMillis(3);
     long defaultPollingInterval = TimeUnit.SECONDS.toMillis(1);
     String webHook;

@@ -136,7 +136,7 @@ sdk() {
     if [ -d premium/test-premium ]; then
    	cd premium/test-premium
     else
-    	cd vpn
+    	cd tunnel
     fi
     
     mvn test -Dtest=TestGenerateSDK
@@ -147,7 +147,7 @@ sdk() {
     cd - > /dev/null
 
     cd sdk/src/main/java/com/syscxp/sdk/
-    find . -type f  | grep -E -v "(ZSClient|ZSConfig|ApiException|AsyncRestState|Completion|Constants|ErrorCode|ErrorCodeList|InternalCompletion|ApiResult|Param|RestInfo|AbstractAction|QueryAction|HMAC).java" | xargs rm -f
+    find . -type f  | grep -E -v "(ZSClient|ZSConfig|ApiException|AsyncRestState|Completion|Constants|ErrorCode|ErrorCodeList|InternalCompletion|ApiResult|Param|NonAPIParam|RestInfo|AbstractAction|QueryAction|HMAC).java" | xargs rm -f
     cd -
     yes | cp ~/syscxp-sdk/java/* sdk/src/main/java/com/syscxp/sdk/
     set +u

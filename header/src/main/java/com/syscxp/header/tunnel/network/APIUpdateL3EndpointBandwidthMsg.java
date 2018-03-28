@@ -2,8 +2,10 @@ package com.syscxp.header.tunnel.network;
 
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -13,7 +15,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = L3NetWorkConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateL3EndpointBandwidthMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = L3EndPointVO.class)
+    @APIParam(emptyString = false,resourceType = L3EndpointVO.class)
     private String uuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
@@ -32,5 +34,18 @@ public class APIUpdateL3EndpointBandwidthMsg extends APIMessage {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update L3Endpoint Bandwidth")
+                        .resource(uuid, L3EndpointVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

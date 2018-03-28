@@ -78,8 +78,12 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIGetAccountBalanceMsg) {
             handle((APIGetAccountBalanceMsg) msg);
-        } else if (msg instanceof APIUpdateAccountBalanceMsg) {
-            handle((APIUpdateAccountBalanceMsg) msg);
+        } else if (msg instanceof APIUpdateAccountCashMsg) {
+            handle((APIUpdateAccountCashMsg) msg);
+        } else if (msg instanceof APIUpdateAccountCreditMsg) {
+            handle((APIUpdateAccountCreditMsg) msg);
+        } else if (msg instanceof APIUpdateAccountPresentMsg) {
+            handle((APIUpdateAccountPresentMsg) msg);
         } else if (msg instanceof APIGetExpenseGrossMonthMsg) {
             handle((APIGetExpenseGrossMonthMsg) msg);
         } else if (msg instanceof APIUpdateAccountDiscountMsg) {
@@ -98,15 +102,13 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             handle((APIVerifyReturnMsg) msg);
         } else if (msg instanceof APIVerifyNotifyMsg) {
             handle((APIVerifyNotifyMsg) msg);
-        } else if (msg instanceof APIUpdatePresentMsg) {
-            handle((APIUpdatePresentMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
     @Transactional
-    private void handle(APIUpdatePresentMsg msg) {
+    private void handle(APIUpdateAccountPresentMsg msg) {
 
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if (vo == null) {
@@ -125,7 +127,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
 
         AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
         abi.setOutTradeNo(outTradeNO);
-        APIUpdatePresentEvent evt = new APIUpdatePresentEvent(msg.getId());
+        APIUpdateAccountPresentEvent evt = new APIUpdateAccountPresentEvent(msg.getId());
         evt.setInventory(abi);
         bus.publish(evt);
 
@@ -337,7 +339,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     }
 
     @Transactional
-    private void handle(APIUpdateAccountBalanceMsg msg) {
+    private void handle(APIUpdateAccountCashMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if (vo == null) {
             vo = initAccountBlance(msg.getAccountUuid());
@@ -346,13 +348,32 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
-        if (msg.getPresent() != null) {
-            vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getPresentBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null,msg.getSession().getUserUuid());
-        } else if (msg.getCash() != null) {
+        if (msg.getCash() != null) {
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
             new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null,msg.getSession().getUserUuid());
-        } else if (msg.getCredit() != null) {
+        }
+        dbf.getEntityManager().merge(vo);
+        dbf.getEntityManager().flush();
+        AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
+        abi.setOutTradeNo(outTradeNO);
+        APIUpdateAccountCashEvent evt = new APIUpdateAccountCashEvent(msg.getId());
+        evt.setInventory(abi);
+        bus.publish(evt);
+
+    }
+
+    @Transactional
+    private void handle(APIUpdateAccountCreditMsg msg) {
+
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        if (vo == null) {
+            vo = initAccountBlance(msg.getAccountUuid());
+        }
+
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+        int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+        String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+        if (msg.getCredit() != null) {
             if(vo.getCashBalance().compareTo(BigDecimal.ZERO)<0 && vo.getCashBalance().add(msg.getCredit()).compareTo(BigDecimal.ZERO)<0){
                 throw new IllegalArgumentException(" the credit point value can not  less than the repay value");
             }
@@ -362,12 +383,12 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         dbf.getEntityManager().flush();
         AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
         abi.setOutTradeNo(outTradeNO);
-        APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
+        APIUpdateAccountCashEvent evt = new APIUpdateAccountCashEvent(msg.getId());
         evt.setInventory(abi);
         bus.publish(evt);
 
-    }
 
+    }
     private void handle(APIGetAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if (vo == null) {

@@ -1,23 +1,25 @@
 package com.syscxp.account.identity;
 
+import com.syscxp.account.header.account.AccountApiSecurityVO;
+import com.syscxp.account.header.account.AccountApiSecurityVO_;
 import com.syscxp.account.header.account.AccountVO;
 import com.syscxp.account.header.identity.PolicyVO;
-import com.syscxp.account.header.identity.RoleVO;
 import com.syscxp.account.header.identity.SessionVO;
 import com.syscxp.account.header.identity.SessionVO_;
 import com.syscxp.account.header.user.UserVO;
-import com.syscxp.header.identity.IdentityErrors;
-import com.syscxp.header.identity.PolicyStatement;
-import com.syscxp.header.identity.SessionInventory;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.identity.AbstractIdentityInterceptor;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
-import com.syscxp.account.header.identity.*;
+import com.syscxp.header.identity.IdentityErrors;
+import com.syscxp.header.identity.PolicyStatement;
+import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -34,7 +36,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         int maxLoginTimes = IdentityGlobalConfig.MAX_CONCURRENT_SESSION.value(Integer.class);
         SimpleQuery<SessionVO> query = dbf.createQuery(SessionVO.class);
         query.add(SessionVO_.accountUuid, SimpleQuery.Op.EQ, account.getUuid());
-        query.add(SessionVO_.userUuid, SimpleQuery.Op.EQ, user == null ? account.getUuid():user.getUuid());
+        query.add(SessionVO_.userUuid, SimpleQuery.Op.EQ, user == null ? account.getUuid() : user.getUuid());
         long count = query.count();
         if (count >= maxLoginTimes) {
             String err = String.format("Login sessions hit limit of max allowed concurrent login sessions, max allowed: %s", maxLoginTimes);
@@ -45,7 +47,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         SessionVO svo = new SessionVO();
         svo.setUuid(Platform.getUuid());
         svo.setAccountUuid(account.getUuid());
-        svo.setUserUuid(user == null ? account.getUuid():user.getUuid());
+        svo.setUserUuid(user == null ? account.getUuid() : user.getUuid());
         svo.setType(account.getType());
         long expiredTime = getCurrentSqlDate().getTime() + TimeUnit.SECONDS.toMillis(sessionTimeout);
         svo.setExpiredDate(new Timestamp(expiredTime));
@@ -63,7 +65,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    public List<PolicyStatement> getUserPolicyStatements(String userUuid){
+    public List<PolicyStatement> getUserPolicyStatements(String userUuid) {
         List<PolicyStatement> policyStatements = new ArrayList<>();
         String sql = "select p" +
                 " from PolicyVO p, UserRoleRefVO ref, RolePolicyRefVO rref" +
@@ -84,14 +86,14 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
 
     @Override
     @Transactional
-    public void removeExpiredSession(List<String> sessionUuids){
+    public void removeExpiredSession(List<String> sessionUuids) {
         String dsql = "delete from SessionVO s where CURRENT_TIMESTAMP  >= s.expiredDate";
         Query dq = dbf.getEntityManager().createQuery(dsql);
         dq.executeUpdate();
     }
 
     @Override
-    protected SessionInventory logOutSessionRemove(String sessionUuid){
+    protected SessionInventory logOutSessionRemove(String sessionUuid) {
 
         SessionVO svo = dbf.findByUuid(sessionUuid, SessionVO.class);
         SessionInventory session = svo == null ? null : svo.toSessionInventory();
@@ -107,9 +109,37 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public String getSessionUuid(String secretId, String secretKey, String id) {
-        return null;
+    public String getSessionUuid(String secretId, String secretKey, String ip) {
+
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, secretId);
+        q.add(AccountApiSecurityVO_.secretKey, SimpleQuery.Op.EQ, secretKey);
+        AccountApiSecurityVO vo = q.find();
+
+        if (vo == null || (StringUtils.isNotBlank(vo.getAllowIp()) && !vo.getAllowIp().contains(ip))) {
+            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "Incorrect secretId or secretKey or illegal ip"));
+        }
+
+        AccountVO account = dbf.findByUuid(vo.getAccountUuid(), AccountVO.class);
+
+        SimpleQuery<SessionVO> query = dbf.createQuery(SessionVO.class);
+        query.add(SessionVO_.accountUuid, SimpleQuery.Op.EQ, account.getUuid());
+        query.add(SessionVO_.userUuid, SimpleQuery.Op.EQ, account.getUuid());
+        String sessionUuid = Q.New(SessionVO.class)
+                .eq(SessionVO_.accountUuid, account.getUuid())
+                .eq(SessionVO_.userUuid, account.getUuid())
+                .gte(SessionVO_.expiredDate, dbf.getCurrentSqlTime())
+                .select(SessionVO_.uuid)
+                .findValue();
+
+        if (sessionUuid == null) {
+            sessionUuid = initSession(account, null).getUuid();
+        }
+
+        return sessionUuid;
     }
+
 
     @Override
     protected SessionInventory getSessionInventory(String sessionUuid) {
