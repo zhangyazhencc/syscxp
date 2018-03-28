@@ -21,4 +21,36 @@ public class APICreateTrusteeDetailMsg extends APIMessage {
     @APIParam(required = false)
     private String description;
 
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTrusteeUuid() {
+        return trusteeUuid;
+    }
+
+    public void setTrusteeUuid(String trusteeUuid) {
+        this.trusteeUuid = trusteeUuid;
+    }
+
+    public BigDecimal getCost() {
+        return cost;
+    }
+
+    public void setCost(BigDecimal cost) {
+        this.cost = cost;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

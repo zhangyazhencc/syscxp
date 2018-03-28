@@ -39,13 +39,48 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
             handle((APIUpdateTrusteeMsg)msg);
         } else if(msg instanceof APITrusteeRenewalMsg){
             handle((APITrusteeRenewalMsg)msg);
+        } else if(msg instanceof APICreateTrusteeDetailMsg){
+            handle((APICreateTrusteeDetailMsg)msg);
+        } else if(msg instanceof APIDeleteTrusteeDetailMsg){
+            handle((APIDeleteTrusteeDetailMsg)msg);
         } else{
             bus.dealWithUnknownMessage(msg);
         }
 
     }
 
+    private void handle(APIDeleteTrusteeDetailMsg msg) {
+
+        APIDeleteTrusteeDetailEvent event = new APIDeleteTrusteeDetailEvent(msg.getId());
+        UpdateQuery.New(TrustDetailVO.class).condAnd(TrustDetailVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+        bus.publish(event);
+    }
+
+    private void handle(APICreateTrusteeDetailMsg msg) {
+
+        APICreateTrusteeDetailEvent event = new APICreateTrusteeDetailEvent(msg.getId());
+        TrustDetailVO vo = new TrustDetailVO();
+        vOAddAllOfMsg.addAll(msg,vo);
+        vo.setUuid(Platform.getUuid());
+        vo.setLastOpDate(dbf.getCurrentSqlTime());
+        vo.setCreateDate(dbf.getCurrentSqlTime());
+        event.setInventory(TrusteeDetailInventory.valueOf(dbf.persistAndRefresh(vo)));
+        bus.publish(event);
+    }
+
     private void handle(APITrusteeRenewalMsg msg) {
+
+        APITrusteeRenewalEvent event = new APITrusteeRenewalEvent(msg.getId());
+        /*
+        * 续费
+        *
+        * */
+        TrusteeVO vo = dbf.findByUuid(msg.getUuid(), TrusteeVO.class);
+        vOAddAllOfMsg.addAll(msg, vo);
+        vo.setExpireDate(trusteeBaseUtil.getExpireDate(vo.getExpireDate(),msg.getProductChargeModel(),msg.getDuration()));
+        vo.setTotalCost(vo.getTotalCost().add(msg.getCost()));
+        event.setInventory(TrusteeInventory.valueOf(dbf.updateAndRefresh(vo)));
+        bus.publish(event);
 
     }
 
@@ -91,6 +126,11 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
     private void handle(APICreateTrusteeMsg msg) {
 
         APICreateTrusteeEvent event = new APICreateTrusteeEvent(msg.getId());
+        /*
+        * 扣费
+        *
+        * */
+
         TrusteeVO vo = new TrusteeVO();
         vOAddAllOfMsg.addAll(msg,vo);
         vo.setUuid(Platform.getUuid());
@@ -109,7 +149,8 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
                 detailList.add(detailVO);
             });
 
-            detailList.stream().forEach((itVO)->{dbf.getEntityManager().persist(itVO);});
+            dbf.persistCollection(detailList);
+//            detailList.stream().forEach((itVO)->{dbf.getEntityManager().persist(itVO);});
         }
 
         dbf.getEntityManager().flush();
