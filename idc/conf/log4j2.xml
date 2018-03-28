@@ -6,7 +6,7 @@
             <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
         </console>
 
-        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/vpn.log"
+        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/idc.log"
                      filePattern="${sys:catalina.home}/logs/management-server-vpn-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{1}] %X{api,} %m%n</pattern>
