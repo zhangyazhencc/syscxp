@@ -549,7 +549,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setProductEffectTimeEnd(msg.getExpiredTime());
             orderVo.setLastPriceOneMonth(renewVO.getPriceOneMonth());
 
-            if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
+            if (subMoney.compareTo(BigDecimal.ZERO) > 0) { //upgrade
 
                 notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
                 remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
