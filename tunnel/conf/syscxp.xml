@@ -66,4 +66,5 @@
     <import resource="springConfigXml/L3NetworkMonitorManager.xml"/>
     <import resource="springConfigXml/MonitorAgent.xml"/>
     <import resource="springConfigXml/OpenTSDB.xml"/>
+    <import resource="springConfigXml/RyuController.xml"/>
 </beans>

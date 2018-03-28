@@ -2129,6 +2129,6 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(MonitorConstant.TUNNEL_MONITOR_SERVICE_ID);
     }
 }

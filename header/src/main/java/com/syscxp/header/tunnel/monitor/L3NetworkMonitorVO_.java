@@ -12,7 +12,6 @@ import javax.persistence.metamodel.StaticMetamodel;
 public class L3NetworkMonitorVO_ {
     public static volatile SingularAttribute<TunnelMonitorVO,String> uuid;
     public static volatile SingularAttribute<TunnelMonitorVO, String> l3NetworkUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> l3EndPointUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> hostUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> monitorIp;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> srcL3EndpointUuid;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> dstL3EndpointUuid;
 }

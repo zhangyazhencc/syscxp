@@ -8,6 +8,7 @@ import com.syscxp.header.configuration.PythonClass;
 @PythonClass
 public interface MonitorConstant {
 
-    String SERVICE_ID = "monitor";
+    String TUNNEL_MONITOR_SERVICE_ID = "tunnelMonitor";
+    String L3_MONITOR_SERVICE_ID = "l3Monitor";
     String ACTION_CATEGORY = "monitor";
 }

@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import java.util.List;
-
 /**
  * Create by DCY on 2017/12/6
  */
@@ -77,7 +75,7 @@ public class L3NetworkMonitorJob implements Job {
                 completion.success(null);
             }else if(jobType == MonitorJobType.AGENT_MODIFY){
                 logger.info("开始执行JOB【L3监控机修改监控】");
-                l3NetworkMonitor.modifyAgentMonitor(l3NetworkMonitorVO);
+                l3NetworkMonitor.updateAgentMonitor(l3NetworkMonitorVO);
 
                 completion.success(null);
             }

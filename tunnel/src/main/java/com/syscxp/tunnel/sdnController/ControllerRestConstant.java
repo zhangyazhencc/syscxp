@@ -37,4 +37,6 @@ public interface ControllerRestConstant {
     static final String MODIFY_L3BANDWIDTH = "/l3net/modify_bandwidth";
 
 
+    static final String START_L3_MONITOR = "/l3net_monitor/start";
+    static final String STOP_L3_MONITOR = "/l3net_monitor/stop";
 }

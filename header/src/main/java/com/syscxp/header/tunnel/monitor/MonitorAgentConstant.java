@@ -14,4 +14,12 @@ public interface MonitorAgentConstant {
     static final String START_MONITOR = "/icmp/start_monitor";
     static final String UPDATE_MONITOR = "/icmp/update_monitor";
     static final String STOP_MONITOR = "/icmp/stop_monitor";
+
+    static final String L3_ADD_ROUTE = "/l3net/add_route";
+    static final String L3_DELETE_ROUTE = "/l3net/delete_route";
+    static final String L3_UPDATE_ROUTE = "/l3net/update_route";
+    static final String L3_START_MONITOR = "/l3net/start_monitor";
+    static final String L3_UPDATE_MONITOR = "/l3net/update_monitor";
+    static final String L3_STOP_MONITOR = "/l3net/stop_monitor";
+
 }

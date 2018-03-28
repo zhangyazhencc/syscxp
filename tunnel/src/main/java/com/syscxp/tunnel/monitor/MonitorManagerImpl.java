@@ -2123,6 +2123,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(MonitorConstant.TUNNEL_MONITOR_SERVICE_ID);
     }
 }

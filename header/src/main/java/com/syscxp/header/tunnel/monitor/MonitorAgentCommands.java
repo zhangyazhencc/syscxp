@@ -14,7 +14,7 @@ public class MonitorAgentCommands {
      * @Cretion Date: 2017-11-02.
      * @Description: 测速命令下发.
      */
-    public static class SpeedRecord{
+    public static class SpeedRecord {
         private String tunnel_id;
         private MonitorAgentCommands.SpeedCommandType type;
         private Integer port;
@@ -83,7 +83,7 @@ public class MonitorAgentCommands {
     /**
      * 服务端命令
      */
-    public static class SpeedRecordServer extends SpeedRecord{
+    public static class SpeedRecordServer extends SpeedRecord {
         private String guid;
 
         public String getGuid() {
@@ -98,7 +98,7 @@ public class MonitorAgentCommands {
     /**
      * 客户端命令
      */
-    public static class SpeedRecordClient extends SpeedRecord{
+    public static class SpeedRecordClient extends SpeedRecord {
         private ProtocolType protocol;
         private Long bandwidth;
         private String dst_ip;
@@ -131,7 +131,7 @@ public class MonitorAgentCommands {
     /***
      * 测速结果
      */
-    public static class SpeedResult{
+    public static class SpeedResult {
         private String tunnel_id;
         private boolean complete_flag;
         private float iperf_data;
@@ -248,7 +248,7 @@ public class MonitorAgentCommands {
     /***
      * falcon alarm获取tunnel信息
      */
-    public static class EndpointTunnel{
+    public static class EndpointTunnel {
         private String tunnelUuid;
         private String tunnelName;
         private String endpoingAMip;
@@ -343,10 +343,11 @@ public class MonitorAgentCommands {
 
     /**
      * 获取端口
+     *
      * @return
      */
-    public static int getPort(){
-        if(ports.isEmpty())
+    public static int getPort() {
+        if (ports.isEmpty())
             initPorts();
 
         int port = ports.get(0);
@@ -361,18 +362,19 @@ public class MonitorAgentCommands {
 
     /**
      * 初始化端口列表
+     *
      * @return
      */
-    public static List initPorts(){
+    public static List initPorts() {
         List<Integer> ports = new LinkedList<>();
-        for(int i=7000;i<7500;i++){
+        for (int i = 7000; i < 7500; i++) {
             ports.add(i);
         }
 
         return ports;
     }
 
-    public enum SpeedCommandType{
+    public enum SpeedCommandType {
         server,
         client
     }
@@ -475,7 +477,7 @@ public class MonitorAgentCommands {
         }
     }
 
-    public static class FalconResponse{
+    public static class FalconResponse {
         private boolean success;
         private String msg;
         private List<EndpointTunnelsInventory> inventories;
@@ -502,6 +504,105 @@ public class MonitorAgentCommands {
 
         public void setInventories(List<EndpointTunnelsInventory> inventories) {
             this.inventories = inventories;
+        }
+    }
+
+    public static class L3EndpointBase{
+        private String l3_endpoint_uuid;
+
+        public String getL3_endpoint_uuid() {
+            return l3_endpoint_uuid;
+        }
+
+        public void setL3_endpoint_uuid(String l3_endpoint_uuid) {
+            this.l3_endpoint_uuid = l3_endpoint_uuid;
+        }
+    }
+
+    public static class L3RouteCommand extends L3EndpointBase{
+        private String local_ip;
+        private Integer vlan;
+        private String interface_name;
+        private String monitor_ip;
+
+        public String getLocal_ip() {
+            return local_ip;
+        }
+
+        public void setLocal_ip(String local_ip) {
+            this.local_ip = local_ip;
+        }
+
+        public Integer getVlan() {
+            return vlan;
+        }
+
+        public void setVlan(Integer vlan) {
+            this.vlan = vlan;
+        }
+
+        public String getInterface_name() {
+            return interface_name;
+        }
+
+        public void setInterface_name(String interface_name) {
+            this.interface_name = interface_name;
+        }
+
+        public String getMonitor_ip() {
+            return monitor_ip;
+        }
+
+        public void setMonitor_ip(String monitor_ip) {
+            this.monitor_ip = monitor_ip;
+        }
+    }
+
+    public static class L3MonitorCommand extends L3EndpointBase{
+        private String localIp;
+        private String src_monitor_ip;
+        private String dst_monitor_ip;
+        private Integer vlan;
+        private String interface_name;
+
+        public String getLocalIp() {
+            return localIp;
+        }
+
+        public void setLocalIp(String localIp) {
+            this.localIp = localIp;
+        }
+
+        public String getSrc_monitor_ip() {
+            return src_monitor_ip;
+        }
+
+        public void setSrc_monitor_ip(String src_monitor_ip) {
+            this.src_monitor_ip = src_monitor_ip;
+        }
+
+        public String getDst_monitor_ip() {
+            return dst_monitor_ip;
+        }
+
+        public void setDst_monitor_ip(String dst_monitor_ip) {
+            this.dst_monitor_ip = dst_monitor_ip;
+        }
+
+        public Integer getVlan() {
+            return vlan;
+        }
+
+        public void setVlan(Integer vlan) {
+            this.vlan = vlan;
+        }
+
+        public String getInterface_name() {
+            return interface_name;
+        }
+
+        public void setInterface_name(String interface_name) {
+            this.interface_name = interface_name;
         }
     }
 }

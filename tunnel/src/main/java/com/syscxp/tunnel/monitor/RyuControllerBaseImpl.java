@@ -80,7 +80,6 @@ public class RyuControllerBaseImpl implements RyuControllerBase, Component {
 
     /***
      * 发送监控agent命令
-     * @param hostIp:监控主机ip
      * @param method：调用方法
      * @param command：下发参数
      * @param returnClass:返回对象，继承
@@ -95,9 +94,11 @@ public class RyuControllerBaseImpl implements RyuControllerBase, Component {
         if (!baseResp.isAssignableFrom(returnClass.getClass()))
             throw new IllegalClassException("return class should extend RyuControllerBaseImpl.RyuBaseResponse");
 
-        logger.info(String.format("======= [Controller Request] url: %s command: %s", url, command));
+        //logger.info(String.format("======= [Controller Request] url: %s command: %s", url, command));
+
         String resp = restf.syncJsonPost(url, command, String.class);
-        logger.info(String.format("======= [Controller Response] %s", resp));
+
+        //logger.info(String.format("======= [Controller Response] %s", resp));
 
         if (StringUtils.isNotEmpty(resp) && returnClass != Void.class) {
             return JSONObjectUtil.toObject(resp, returnClass);

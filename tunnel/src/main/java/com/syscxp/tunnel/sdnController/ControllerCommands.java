@@ -1,5 +1,7 @@
 package com.syscxp.tunnel.sdnController;
 
+import com.syscxp.header.tunnel.switchs.RemoteProtocol;
+
 import java.util.List;
 
 /**
@@ -66,23 +68,49 @@ public class ControllerCommands {
         }
     }
 
+    public static class L3MonitorCommand{
+        private String net_id;
+        private List<L3MonitorMpls> mpls_switches;
+
+        public String getNet_id() {
+            return net_id;
+        }
+
+        public void setNet_id(String net_id) {
+            this.net_id = net_id;
+        }
+
+        public List<L3MonitorMpls> getMpls_switches() {
+            return mpls_switches;
+        }
+
+        public void setMpls_switches(List<L3MonitorMpls> mpls_switches) {
+            this.mpls_switches = mpls_switches;
+        }
+    }
     /**
      * @Author: sunxuelong.
      * @Cretion Date: 2017-09-26.
-     * @Description: RYU 控制器监控下发信息.
+     * @Description: mpls交换机信息.
      */
-    public static class TunnelMonitorMpls {
 
+    public static class MplsSwitchBase{
+        private String uuid; //物理交换机uuid
         private String switch_type;
         private String sub_type;
         private String port_name;
         private Integer vlan_id;
-        private String uuid; //物理交换机uuid
         private String m_ip;
         private String username;
         private String password;
-        private Long bandwidth;
-        private Integer vni;
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(String uuid) {
+            this.uuid = uuid;
+        }
 
         public String getSwitch_type() {
             return switch_type;
@@ -139,6 +167,12 @@ public class ControllerCommands {
         public void setPassword(String password) {
             this.password = password;
         }
+    }
+
+    public static class TunnelMonitorMpls extends MplsSwitchBase{
+
+        private Long bandwidth;
+        private Integer vni;
 
         public Long getBandwidth() {
             return bandwidth;
@@ -155,20 +189,33 @@ public class ControllerCommands {
         public void setVni(Integer vni) {
             this.vni = vni;
         }
+    }
 
-        public String getUuid() {
-            return uuid;
+    public static class L3MonitorMpls extends MplsSwitchBase{
+        private RemoteProtocol protocal;
+        private Integer port;
+
+        public RemoteProtocol getProtocal() {
+            return protocal;
         }
 
-        public void setUuid(String uuid) {
-            this.uuid = uuid;
+        public void setProtocal(RemoteProtocol protocal) {
+            this.protocal = protocal;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
         }
     }
 
     /**
      * @Author: sunxuelong.
      * @Cretion Date: 2017-09-26.
-     * @Description: RYU 控制器监控下发信息.
+     * @Description: sdn交换机信息.
      */
     public static class TunnelMonitorSdn {
 

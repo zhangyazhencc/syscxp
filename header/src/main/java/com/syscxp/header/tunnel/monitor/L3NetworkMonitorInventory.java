@@ -21,9 +21,6 @@ public class L3NetworkMonitorInventory {
 
     private String l3EndPointUuid;
 
-    private String hostUuid;
-
-    private String monitorIp;
 
     private Timestamp lastOpDate;
 
@@ -33,9 +30,6 @@ public class L3NetworkMonitorInventory {
         L3NetworkMonitorInventory inventory = new L3NetworkMonitorInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
-        inventory.setL3EndPointUuid(vo.getL3EndPointUuid());
-        inventory.setHostUuid(vo.getHostUuid());
-        inventory.setMonitorIp(vo.getMonitorIp());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
         return inventory;
@@ -74,21 +68,6 @@ public class L3NetworkMonitorInventory {
         this.l3EndPointUuid = l3EndPointUuid;
     }
 
-    public String getHostUuid() {
-        return hostUuid;
-    }
-
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
-    }
-
-    public String getMonitorIp() {
-        return monitorIp;
-    }
-
-    public void setMonitorIp(String monitorIp) {
-        this.monitorIp = monitorIp;
-    }
 
     public Timestamp getLastOpDate() {
         return lastOpDate;
