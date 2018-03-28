@@ -8,18 +8,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.monitor.APIStartL3NetworkMonitorMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.monitor.APIUpdateL3NetworkMonitorMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.monitor.APIStopL3NetworkMonitorMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.header.tunnel.monitor.APIQueryL3NetworkMonitorMsg</name>
         <serviceId>query</serviceId>
     </message>
