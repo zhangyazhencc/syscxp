@@ -194,7 +194,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
             BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
             BigDecimal amount = duration.multiply(BigDecimal.valueOf(msg.getPrice()));
-            if (amount.compareTo(mayPayTotal) > 0) {
+            if (amount.add(BigDecimal.valueOf(msg.getFixedCost())).compareTo(mayPayTotal) > 0) {
                 throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
             }
 
@@ -203,8 +203,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setOriginalPrice(amount);
             orderVo.setPrice(amount);
             orderVo.setType(OrderType.BUY);
+            OrderVO fixedOrder = new OrderVO();
+            setOrderValue(fixedOrder, msg.getAccountUuid(), msg.getProductName(), ProductType.FIXEDCOST, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
+            fixedOrder.setOriginalPrice(BigDecimal.valueOf(msg.getFixedCost()));
+            fixedOrder.setPrice(BigDecimal.valueOf(msg.getFixedCost()));
+            fixedOrder.setType(OrderType.BUY);
+            fixedOrder.setProductEffectTimeStart(currentTimestamp);
+            fixedOrder.setProductEffectTimeEnd(currentTimestamp);
+            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), fixedOrder, abvo, BigDecimal.valueOf(msg.getFixedCost()), currentTimestamp);
             payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, amount, currentTimestamp);
-            Class<LocalDateTime> clazz = LocalDateTime.class;
 
             LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
             orderVo.setProductEffectTimeStart(currentTimestamp);
@@ -217,6 +224,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
 
             dbf.getEntityManager().persist(orderVo);
+            dbf.getEntityManager().persist(fixedOrder);
             dbf.getEntityManager().merge(abvo);
             dbf.getEntityManager().flush();
             APICreateBuyEdgeLineOrderReply reply = new APICreateBuyEdgeLineOrderReply();
