@@ -1,163 +1,17 @@
-# ZStack RESTful API使用手册
 
-从1.9版本，ZStack开始提供原生RESTful支持，以取代早期的HTTP RPC API。本手册详细描述 Restful
-API的使用规范，并提供所有API的详细定义。
 
-## 版本
-
-当前API版本为`v1`，所有API的URL以`/v1`开头，例如:
-```$xslt
-/v1/vm-instances
-```
-
-## HTTP方法 (HTTP Verbs)
-
-当前API支持如下方法：
-
-|方法名|描述|
-|---|---|
-|GET|获取资源信息。所有的Query API以及读API均使用该方法|
-|POST|创建一个资源|
-|PUT|修改一个资源。所有对资源的修改操作，以及类RPC调用的操作，例如启动虚拟机，均使用该方法|
-|DELETE|删除一个资源|
-
-## 参数
-
-URL、Query String、HTTP body三种方式均可用于传参。每种方式可以单独使用，也可以混合使用，
-具体使用哪种传参方式由具体API决定。
-
-**URL传参**
-
-当对某具体资源进行操作时，资源的UUID通过编码到URL的方式进行传参，例如启动一个UUID为
-*f97143d60f1042c9badd9a1336d3c105*的虚拟机，URL格式为：
-```$xslt
-/v1/vm-instances/f97143d60f1042c9badd9a1336d3c105/actions
-```
-
-这里UUID编码到URL路径当中。
-
-**Query String传参**
-
-所有使用HTTP `GET`方法的API均使用Query String传参，例如查询所有状态为`Running`的虚拟机，
-URL格式为：
-```$xslt
-/v1/vm-instances?condition=state=Running
-```
-
-**HTTP Body传参**
-
-当使用`POST`方法创建一个资源，或`PUT`方法修改一个资源时，除通过URL传参的部分外，剩余参数
-均通过HTTP Body传参。例如在指定物理机上启动一个虚拟机：
-
-```$xslt
-PUT /v1/vm-instances/f97143d60f1042c9badd9a1336d3c105/actions
-
-{
-  "startVmInstance": {
-        "hostUuid": "8aef7e3a53b34eedaa05027a919156d9"
-   }
-}
-```
-
-这里虚拟机的UUID通过URL传参，参数*hostUuid*则通过HTTP Body传递。
-
-## HTTP Headers
-
-当前API使用如下自定义HTTP Headers：
-
-**Authorization**
-
-除了少数API外（例如登录API），使用ZStack API前都需要一个会话(session)，在调用API时
-通过`Authorization` HTTP Header传递会话UUID。该Header的格式为：
-
-```$xslt
-Authorization: OAuth 会话UUID
-```
-
-举例：
-```$xslt
-Authorization: OAuth 34cbfddd470a47d8bdb0727cd2182618
-```
-
->注意：OAuth和会话UUID之间用空格分隔
-
-<a name="X-Job-UUID">**X-Job-UUID**</a>
-
-对于[异步API](#async_api)，可以通过`X-Job-UUID` HTTP Header来指定该API Job的UUID，
-例如：
-```$xslt
-X-Job-UUID: d825b1a26f4e474b8c59306081920ff2
-```
-
-如果未指定该HTTP Header，ZStack会自动为API Job生成一个UUID。
-
->注意：X-Job-UUID必须为一个v4版本的UUID（即随机UUID）字符串去掉连接符`-`。ZStack会验证
-X-Job-UUID格式的合法性，并对非法的字符串返回一个400 Bad Request的错误。
-
-<a name="X-Web-Hook">**X-Web-Hook**</a>
-
-对于[异步API](#async_api)，可以通过`X-Web-Hook` HTTP Header指定一个回调URL用于接收API
-返回。通过使用回调URL的方法，调用者可以避免使用轮询去查询一个异步API的执行结果。举例：
-
-```$xslt
-X-Web-Hook: http://localhost:5000/api-callback
-```
-
-**X-Job-Success**
-
-当使用了`X-Web-Hook`回调的方式获取异步API结果时，ZStack推送给回调URL的HTTP Post请求中会
-包含`X-Job-Success` HTTP Header指明该异步API的执行结果是成功还是失败。例如：
-
-```$xslt
-X-Job-Success: true
-```
-
-当值为*true*时执行成功，为*false*时执行失败。
-
-## HTTP返回码 (HTTP Status Code)
-
-ZStack使用如下返回码：
-
-#### 200
-
-API执行成功。
-
-#### 202
-
-API请求已被ZStack接受，用户需要通过轮询或Web Hook的方式获取API结果。该返回码只在调用异步API时出现。
-
-#### 400
-
-API请求未包含必要的参数或包含了非法的参数。具体信息可以从HTTP Response Body获得。
-
-#### 404
-
-URL不存在，通常是指定了错误的API URL。
-如果访问的URL是异步API返回的轮询地址，表示该轮询地址已经过期。
-
-#### 405
-
-API调用使用了错误的HTTP方法，例如在创建一个资源的时候用了`GET`方法而不是`POST`方法。
-
-#### 500
-
-ZStack RESTful终端遭遇了一个内部错误。
-
-#### 503
-
-API所执行的操作引发了一个错误，例如资源不足无法创建虚拟机。错误的具体信息可以从HTTP Response Body。
 
 
 ## API种类
 
-ZStack的API分为同步API和异步API两种：
+Syscxp的API分为同步API和异步API两种：
 
 #### 同步API
 
-所有使用`GET`方法的API都是同步API，调用方收到的HTTP Response中直接包含了API的结果。例如：
+调用方收到的HTTP Response中直接包含了API的结果。例如：
 
 ```$xslt
-GET /v1/zones/f3fa7671894a40f6a73f5bfc7d90c126
+GET /v1?
 
 {
 	"inventory": {
@@ -420,14 +274,6 @@ body:
 ```
 
 
-#### 登出
-
-当所有API调用完毕，我们需要对已登录的session进行登出操作：
-
-```
-DELETE /v1/accounts/sessions/00d038b699b74e76a01705918d48d939
-```
-
 返回
 
 ```
@@ -680,11 +526,11 @@ vmNics.
 - >>>QueryVmInstance vmNics.
 [Query Conditions:]
 vmNics.eip.                   vmNics.l3Network.             vmNics.loadBalancerListener.  vmNics.portForwarding.        vmNics.securityGroup.
-vmNics.vmInstance.            
+vmNics.vmInstance.
 
 vmNics.__systemTag__=         vmNics.__userTag__=           vmNics.createDate=            vmNics.deviceId=              vmNics.gateway=
 vmNics.ip=                    vmNics.l3NetworkUuid=         vmNics.lastOpDate=            vmNics.mac=                   vmNics.metaData=
-vmNics.netmask=               vmNics.uuid=                  vmNics.vmInstanceUuid=  
+vmNics.netmask=               vmNics.uuid=                  vmNics.vmInstanceUuid=
 ```
 
 这里我们输入了资源`vmNics`并用`.`号表示我们要做一个跨表查询，Tab键为我们补全了`vmNics`资源的原生字段以及可跨表查询的其它资源。例如这里`vmNics.ip`表示网卡的原生字段`ip`，例如：
@@ -712,7 +558,7 @@ zone.cluster.l2Network.l3Network.__systemTag__=    zone.cluster.l2Network.l3Netw
 zone.cluster.l2Network.l3Network.description=      zone.cluster.l2Network.l3Network.dnsDomain=        zone.cluster.l2Network.l3Network.l2NetworkUuid=
 zone.cluster.l2Network.l3Network.lastOpDate=       zone.cluster.l2Network.l3Network.name=             zone.cluster.l2Network.l3Network.state=
 zone.cluster.l2Network.l3Network.system=           zone.cluster.l2Network.l3Network.type=             zone.cluster.l2Network.l3Network.uuid=
-zone.cluster.l2Network.l3Network.zoneUuid= 
+zone.cluster.l2Network.l3Network.zoneUuid=
 ```
 
 分别跟zone, cluster, l2Network, l3Network多个资源进行跨表。
