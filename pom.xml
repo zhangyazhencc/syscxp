@@ -33,7 +33,6 @@
         <module>idc</module>
         <module>sdk</module>
         <module>rest</module>
-        <module>trustee</module>
     </modules>
 
     <dependencyManagement>

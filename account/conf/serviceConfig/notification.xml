@@ -4,7 +4,7 @@
 
     <message>
         <name>com.syscxp.core.notification.APICreateNotificationMsg</name>
-        <interceptor>NoticeManager</interceptor>
+        <!--<interceptor>NoticeManager</interceptor>-->
     </message>
 
     <message>

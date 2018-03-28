@@ -50,4 +50,6 @@
     <import resource="springConfigXml/NotificationManager.xml"/>
     <import resource="springConfigXml/Identity.xml"/>
     <!--<import resource="springConfigXml/rest.xml"/>-->
+    <import resource="springConfigXml/Trustee.xml"/>
+
 </beans>

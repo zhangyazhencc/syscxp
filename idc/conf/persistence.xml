@@ -9,6 +9,8 @@
         <class>com.syscxp.core.config.GlobalConfigVO</class>
         <class>com.syscxp.header.managementnode.ManagementNodeVO</class>
 
+        <class>com.syscxp.idc.header.trustee.TrusteeVO</class>
+        <class>com.syscxp.idc.header.trustee.TrustDetailVO</class>
 
     </persistence-unit>
 </persistence>
