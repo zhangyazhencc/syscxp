@@ -799,7 +799,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal needPayOriginMoney = originalPrice.multiply(notUseMonth);
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
 
-        if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
+        if (subMoney.compareTo(BigDecimal.ZERO) > 0) { //upgrade
 
             notUseMonth = getNotUseMonths(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
             remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
