@@ -45,6 +45,9 @@ public class EdgeLineAO {
     private Integer prices;
 
     @Column
+    private Integer fixedCost;
+
+    @Column
     private String implementType;
 
     @Column
@@ -179,5 +182,13 @@ public class EdgeLineAO {
 
     public void setCostPrices(Integer costPrices) {
         this.costPrices = costPrices;
+    }
+
+    public Integer getFixedCost() {
+        return fixedCost;
+    }
+
+    public void setFixedCost(Integer fixedCost) {
+        this.fixedCost = fixedCost;
     }
 }

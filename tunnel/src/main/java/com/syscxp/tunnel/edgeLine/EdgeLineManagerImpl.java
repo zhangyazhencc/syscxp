@@ -108,6 +108,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
         vo.setState(EdgeLineState.Applying);
         vo.setCostPrices(null);
         vo.setPrices(null);
+        vo.setFixedCost(null);
         vo.setExpireDate(null);
         vo.setImplementType(null);
 
@@ -140,6 +141,10 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
             vo.setPrices(msg.getPrices());
             update = true;
         }
+        if(msg.getFixedCost() != null){
+            vo.setFixedCost(msg.getFixedCost());
+            update = true;
+        }
         if(msg.getType() != null){
             vo.setType(msg.getType());
             update = true;
@@ -169,6 +174,7 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
         //订单信息
         APICreateBuyEdgeLineOrderMsg orderMsg = new APICreateBuyEdgeLineOrderMsg();
         orderMsg.setPrice(vo.getPrices());
+        orderMsg.setFixedCost(vo.getFixedCost());
         orderMsg.setProductName("最后一公里-"+vo.getInterfaceVO().getName());
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForEdgeLine(vo));
