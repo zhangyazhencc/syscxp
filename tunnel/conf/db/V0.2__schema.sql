@@ -69,6 +69,16 @@ CREATE TABLE `L3RouteVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+CREATE TABLE `syscxp_tunnel`.`L3NetworkMonitorVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE,
+  `l3NetworkUuid`  varchar(32) NOT NULL ,
+  `srcL3EndpointUuid`  varchar(32) NOT NULL ,
+  `dstL3EndpointUuid`  varchar(32) NOT NULL ,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='三层监控';
+
 # REST API
 CREATE TABLE  `syscxp_tunnel_rest`.`AsyncRestVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',

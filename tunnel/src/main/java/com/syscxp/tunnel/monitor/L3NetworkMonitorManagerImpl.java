@@ -93,10 +93,10 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
                     l3NetworkMonitor.startMonitor(l3EndpointVO, srcL3NetworkMonitorVOS);
                 } else {
                     if (StringUtils.equals(msg.getMonitorIp(), l3EndpointVO.getMonitorIp())) {
-                        // 更新本端出的监控机监控
+                        // 为更新监控ip，仅更新本端出的监控机监控
                         l3NetworkMonitor.updateMonitorVO(l3EndpointVO, srcL3NetworkMonitorVOS);
                     } else {
-                        // 更新对端监控机监控
+                        // 更新监控ip，更新对端监控机监控
                         l3EndpointVO.setMonitorIp(msg.getMonitorIp());
                         l3NetworkMonitor.updateMonitorIp(l3EndpointVO, srcL3NetworkMonitorVOS);
                     }
@@ -115,7 +115,6 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
         // 更新监控ip
         dbf.getEntityManager().merge(l3EndpointVO);
     }
-
 
     @Override
     public String getId() {

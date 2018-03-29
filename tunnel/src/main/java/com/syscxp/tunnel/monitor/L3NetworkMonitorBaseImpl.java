@@ -7,14 +7,14 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.Component;
 import com.syscxp.header.host.HostVO;
+import com.syscxp.header.host.HostVO_;
+import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.host.HostSwitchMonitorVO;
 import com.syscxp.header.tunnel.host.HostSwitchMonitorVO_;
-import com.syscxp.header.tunnel.monitor.L3NetworkMonitorVO;
-import com.syscxp.header.tunnel.monitor.L3NetworkMonitorVO_;
-import com.syscxp.header.tunnel.monitor.MonitorAgentCommands;
-import com.syscxp.header.tunnel.monitor.MonitorAgentConstant;
+import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.network.L3EndpointState;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
+import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO_;
@@ -22,12 +22,14 @@ import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
 import com.syscxp.tunnel.tunnel.job.MonitorJobType;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -47,6 +49,8 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     private RyuControllerBase ryuController;
     @Autowired
     private JobQueueFacade jobf;
+    @Autowired
+    private RESTFacade restf;
 
     @Override
     @Transactional
@@ -273,7 +277,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     private MonitorAgentCommands.L3RouteCommand getAgentRouteCommand(PhysicalSwitchVO physicalSwitchVO, L3EndpointVO l3EndpointVO) {
         MonitorAgentCommands.L3RouteCommand cmd = new MonitorAgentCommands.L3RouteCommand();
-        cmd.setL3_endpoint_uuid(l3EndpointVO.getUuid());
+        cmd.setL3endpoint_id(l3EndpointVO.getUuid());
         cmd.setLocal_ip(l3EndpointVO.getLocalIP());
         cmd.setMonitor_ip(l3EndpointVO.getMonitorIp());
         cmd.setVlan(l3EndpointVO.getVlan());
@@ -287,7 +291,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     public void startAgentMonitor(L3NetworkMonitorVO vo) {
         L3EndpointVO l3EndpointVO = dbf.findByUuid(vo.getSrcL3EndpointUuid(), L3EndpointVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitchVO(l3EndpointVO.getEndpointEO().getUuid());
-        MonitorAgentCommands.L3MonitorCommand cmd = getAgentMonitorCommand(physicalSwitchVO, l3EndpointVO, vo);
+        MonitorAgentCommands.L3MonitorCommand cmd = getAgentMonitorCommand(l3EndpointVO, vo);
         String hostIp = getHostIp(physicalSwitchVO.getUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
@@ -305,7 +309,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         String hostIp = getHostIp(physicalSwitchVO.getUuid());
 
         MonitorAgentCommands.L3EndpointBase cmd = new MonitorAgentCommands.L3EndpointBase();
-        cmd.setL3_endpoint_uuid(l3EndpointVO.getUuid());
+        cmd.setL3endpoint_id(l3EndpointVO.getUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
                 hostIp, MonitorAgentConstant.L3_STOP_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
@@ -319,7 +323,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     public void updateAgentMonitor(L3NetworkMonitorVO vo) {
         L3EndpointVO l3EndpointVO = dbf.findByUuid(vo.getSrcL3EndpointUuid(), L3EndpointVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitchVO(l3EndpointVO.getEndpointEO().getUuid());
-        MonitorAgentCommands.L3MonitorCommand cmd = getAgentMonitorCommand(physicalSwitchVO, l3EndpointVO, vo);
+        MonitorAgentCommands.L3MonitorCommand cmd = getAgentMonitorCommand(l3EndpointVO, vo);
         String hostIp = getHostIp(physicalSwitchVO.getUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
@@ -330,18 +334,11 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                     , hostIp, cmd, MonitorAgentConstant.L3_UPDATE_MONITOR, resp.getMsg()));
     }
 
-    private MonitorAgentCommands.L3MonitorCommand getAgentMonitorCommand(PhysicalSwitchVO physicalSwitchVO, L3EndpointVO l3EndpointVO, L3NetworkMonitorVO l3NetworkMonitorVO) {
+    private MonitorAgentCommands.L3MonitorCommand getAgentMonitorCommand(L3EndpointVO l3EndpointVO, L3NetworkMonitorVO l3NetworkMonitorVO) {
         MonitorAgentCommands.L3MonitorCommand cmd = new MonitorAgentCommands.L3MonitorCommand();
-        cmd.setL3_endpoint_uuid(l3EndpointVO.getUuid());
-        cmd.setLocalIp(l3EndpointVO.getLocalIP());
-        cmd.setSrc_monitor_ip(l3EndpointVO.getMonitorIp());
-        cmd.setVlan(l3EndpointVO.getVlan());
-
-        L3EndpointVO dstL3Endpoint = dbf.findByUuid(l3NetworkMonitorVO.getDstL3EndpointUuid(), L3EndpointVO.class);
-        cmd.setDst_monitor_ip(dstL3Endpoint.getMonitorIp());
-
-        HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
-        cmd.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
+        cmd.setSrc_l3endpoint_id(l3NetworkMonitorVO.getSrcL3EndpointUuid());
+        cmd.setDst_l3endpoint_id(l3NetworkMonitorVO.getDstL3EndpointUuid());
+        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp());
 
         return cmd;
     }
@@ -453,9 +450,87 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         return hostVO.getHostIp();
     }
 
+    private HostSwitchMonitorVO getHostSwitchMonitorByHostIp(String hostIp) {
+        List<HostSwitchMonitorVO> hostSwitchMonitorVOS;
+
+        List<HostVO> hostVOS = Q.New(HostVO.class).eq(HostVO_.hostIp, hostIp).list();
+        if (!hostVOS.isEmpty()) {
+            hostSwitchMonitorVOS = Q.New(HostSwitchMonitorVO.class)
+                    .eq(HostSwitchMonitorVO_.hostUuid, hostVOS.get(0).getUuid())
+                    .list();
+        } else
+            throw new IllegalArgumentException(String.format("failed to get HostVO by hostIp %s", hostIp));
+
+        if (hostSwitchMonitorVOS.isEmpty())
+            throw new IllegalArgumentException(String.format("failed to get HostSwitchMonitorVO by hostIp %s", hostIp));
+
+        return hostSwitchMonitorVOS.get(0);
+    }
+
+    private L3EndpointVO getL3EndpointByPhysicalSwitchUuid(String physicalSwitchUuid) {
+        List<L3EndpointVO> l3EndpointVOS = new ArrayList<>();
+
+        List<SwitchVO> switchVOS = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.physicalSwitchUuid, physicalSwitchUuid)
+                .list();
+
+        if (!switchVOS.isEmpty()) {
+            l3EndpointVOS = Q.New(L3EndpointVO.class)
+                    .eq(L3EndpointVO_.endpointUuid, switchVOS.get(0).getEndpointUuid())
+                    .list();
+        } else
+            logger.info(String.format("failed to get SwitchVO by physicalSwitchUuid %s", physicalSwitchUuid));
+
+        if (l3EndpointVOS.isEmpty())
+            return null;
+        else
+            return l3EndpointVOS.get(0);
+    }
+
     @Override
     public boolean start() {
-        return false;
+        restf.registerSyncHttpCallHandler("MONITOR/L3INFO", HashMap.class,
+                paramMap -> {
+                    MonitorAgentCommands.L3SyncResponse response = new MonitorAgentCommands.L3SyncResponse();
+
+                    String hostIp = paramMap.get("monitorHostIp").toString();
+                    String msg = "";
+                    try {
+                        HostSwitchMonitorVO hostSwitchMonitor;
+                        L3EndpointVO l3EndpointVO;
+                        try {
+                            hostSwitchMonitor = getHostSwitchMonitorByHostIp(hostIp);
+                            l3EndpointVO = getL3EndpointByPhysicalSwitchUuid(hostSwitchMonitor.getPhysicalSwitchUuid());
+                        } catch (Exception e) {
+                            throw new IllegalArgumentException(String.format("no data exist! %s", e.getMessage()));
+                        }
+
+                        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(hostSwitchMonitor.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+
+                        MonitorAgentCommands.L3RouteCommand cmd = getAgentRouteCommand(physicalSwitchVO, l3EndpointVO);
+                        response.setL3_route(cmd);
+
+                        List<MonitorAgentCommands.L3MonitorCommand> l3MonitorCmds = new ArrayList<>();
+                        List<L3NetworkMonitorVO> l3MonitorVOS = Q.New(L3NetworkMonitorVO.class)
+                                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, l3EndpointVO.getEndpointUuid())
+                                .list();
+                        for (L3NetworkMonitorVO l3MonitorVO : l3MonitorVOS)
+                            l3MonitorCmds.add(getAgentMonitorCommand(l3EndpointVO, l3MonitorVO));
+                        response.setL3_endpints(l3MonitorCmds);
+
+                        response.setSuccess(true);
+                        response.setMsg("success");
+                    } catch (Exception e) {
+                        response.setSuccess(false);
+                        response.setMsg(String.format("[MONITOR/L3INFO] L3 monitor sync failed! " +
+                                "Agent Host IP:  %s, Error: %s", hostIp, e.getMessage()));
+                        logger.error(response.getMsg());
+                    }
+
+                    return JSONObjectUtil.toJsonString(response);
+                });
+
+        return true;
     }
 
     @Override

@@ -1,4 +1,63 @@
 
+
+##0326###################################################################################################################################
+配置监控
+    连接点中止
+        仅允许修改监控ip
+
+    连接点未中止
+        监控ip不为空，后端不存在监控ip
+            开启控制器监控
+            添加agent路由配置
+            循环开启agent监控
+                新增L3NetworkMonitorVO数据
+            修改监控ip
+
+        监控ip不为空，且后端存在监控ip
+            监控ip = 后端监控ip
+                循环修改agent监控
+                    updateSrcMonitor
+                    新增或删除L3NetworkMonitorVO数据
+
+            监控ip <> 后端监控ip
+                删除旧agent路由配置
+                添加新agent路由配置
+                循环修改agent监控
+                    updateSrcMonitor
+                    updateDstMonitor
+                    新增或删除L3NetworkMonitorVO数据
+                修改监控ip
+
+        监控ip为空，且后端存在监控ip
+            停止控制器监控
+            删除agent路由配置
+            循环停止agent监控
+                stopSrcMonitor
+                stopDstMonitor
+                删除L3NetworkMonitorVO数据
+            清空监控ip
+
+
+三：连接点操作流程
+    中止连接点：
+        监控ip不为空
+            停止控制器监控
+            删除agent路由配置
+            stopSrcMonitor
+            stopDstMonitor
+            * 不删除L3NetworkMonitorVO数据
+            * 不清空监控ip
+
+    中止后删除连接点：
+        监控ip不为空
+            清空监控ip
+            删除L3NetworkMonitorVO数据
+
+    中止后恢复连接点
+        监控ip不为空
+            开启控制器监控
+            添加agent路由配置
+            循环L3NetworkMonitorVO开启agent监控（包含本端与对端）
 一：设置监控
     监控ip不为空
         如果已存在监控ip

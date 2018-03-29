@@ -1,0 +1,94 @@
+
+1. 内存数据
+    l3_route_running : 运行中的路由
+    l3_endpints_running{} : 运行中的监控数据
+    l3_pingthread_running{} : 运行中的线程
+
+2. 定时获取数据任务
+    数据结构：current_l3_monitor
+        {
+            "success":true,
+            "msg":"success",
+            "l3_route":{
+    　　　　      "l3endpoint_id":"f56e79ca94454cf0b1a209c4e3e8cfcf",   -- L3EndPointVO.uuid
+    　　　　      "local_ip":"192.168.112.2",                           -- 互联ip，L3EndPointVO.localIp
+    　　　　      "vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
+    　　　　      "interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
+    　　　　      "monitor_ip":"192.168.112.4"                          -- 监控ip，L3EndPointVO.monitorIp
+            },
+            "l3_endpints":[
+                {
+                    "dst_l3endpoint_id":"f36e79ca94454cf0b1a209c4e3e8oiu3",
+                    "monitor_ip":"192.168.112.4"
+                },
+                {
+                    "dst_l3endpoint_id":"gg6e79ca94454cf0b1a209c4e3e8o38u",
+                    "monitor_ip":"192.168.112.5"
+                }
+            ]
+        }
+
+    2.1 对比 l3_route 与 l3_route_running
+        l3_route 存在，l3_route_running 不存在
+            add_route();
+        l3_route 不存在，l3_route_running 存在
+            delete_route();
+        l3_route 存在，l3_route_running 存在，且监控ip不一致
+            update_route();
+
+    2.2 遍历 dst_endpints
+        在 l3_endpints_running 不存在
+            开启ping线程
+        在 l3_endpints_running 存在，且 monitor_ip 不一致
+            更新ping线程
+    2.3 遍历 l3_endpints_running
+        在 dst_endpints 不存在
+            停止ping线程
+
+3. 路由HTTP接口
+    2.1 新增路由路由
+        接口：/l3net/add_route
+        在 l3_route 不存在
+            add_route();
+
+    2.3 修改路由接口（修改监控ip）
+        接口：/l3net/update_route
+        在 l3_route 存在
+            update_route();
+
+    2.4 删除路由接口
+        接口：/l3net/delete_route
+        在 l3_route 存在
+            delete_route();
+
+3. Ping线程HTTP接口
+    3.1 开启监控
+        接口：/l3net/start_monitor
+        在 l3_pingthread_running 不存在
+            start_thread();
+
+    3.2 关闭监控
+        接口：/l3net/stop_monitor
+        在 l3_pingthread_running 存在
+            stop_thread();
+
+    3.3 更新监控
+        接口：/l3net/update_monitor
+        在 l3_pingthread_running 存在，且 monitor_ip 与 不一致
+            update_thread();
+
+4. ping 线程
+    采集数据
+
+5. 方法
+    add_route();
+    delete_route();
+    update_route();
+
+    start_thread();
+    stop_thread();
+    update_thread();
+
+    get_running_route();
+    get_running_thread();
+

@@ -508,14 +508,14 @@ public class MonitorAgentCommands {
     }
 
     public static class L3EndpointBase{
-        private String l3_endpoint_uuid;
+        private String l3endpoint_id;
 
-        public String getL3_endpoint_uuid() {
-            return l3_endpoint_uuid;
+        public String getL3endpoint_id() {
+            return l3endpoint_id;
         }
 
-        public void setL3_endpoint_uuid(String l3_endpoint_uuid) {
-            this.l3_endpoint_uuid = l3_endpoint_uuid;
+        public void setL3endpoint_id(String l3endpoint_id) {
+            this.l3endpoint_id = l3endpoint_id;
         }
     }
 
@@ -558,51 +558,72 @@ public class MonitorAgentCommands {
         }
     }
 
-    public static class L3MonitorCommand extends L3EndpointBase{
-        private String localIp;
-        private String src_monitor_ip;
-        private String dst_monitor_ip;
-        private Integer vlan;
-        private String interface_name;
+    public static class L3MonitorCommand {
+        private String src_l3endpoint_id;
+        private String dst_l3endpoint_id;
+        private String monitor_ip;
 
-        public String getLocalIp() {
-            return localIp;
+        public String getSrc_l3endpoint_id() {
+            return src_l3endpoint_id;
         }
 
-        public void setLocalIp(String localIp) {
-            this.localIp = localIp;
+        public void setSrc_l3endpoint_id(String src_l3endpoint_id) {
+            this.src_l3endpoint_id = src_l3endpoint_id;
         }
 
-        public String getSrc_monitor_ip() {
-            return src_monitor_ip;
+        public String getDst_l3endpoint_id() {
+            return dst_l3endpoint_id;
         }
 
-        public void setSrc_monitor_ip(String src_monitor_ip) {
-            this.src_monitor_ip = src_monitor_ip;
+        public void setDst_l3endpoint_id(String dst_l3endpoint_id) {
+            this.dst_l3endpoint_id = dst_l3endpoint_id;
         }
 
-        public String getDst_monitor_ip() {
-            return dst_monitor_ip;
+        public String getMonitor_ip() {
+            return monitor_ip;
         }
 
-        public void setDst_monitor_ip(String dst_monitor_ip) {
-            this.dst_monitor_ip = dst_monitor_ip;
+        public void setMonitor_ip(String monitor_ip) {
+            this.monitor_ip = monitor_ip;
+        }
+    }
+
+    public static class L3SyncResponse {
+        private boolean success;
+        private String msg;
+        private L3RouteCommand l3_route;
+        private List<L3MonitorCommand> l3_endpints;
+
+        public boolean isSuccess() {
+            return success;
         }
 
-        public Integer getVlan() {
-            return vlan;
+        public void setSuccess(boolean success) {
+            this.success = success;
         }
 
-        public void setVlan(Integer vlan) {
-            this.vlan = vlan;
+        public String getMsg() {
+            return msg;
         }
 
-        public String getInterface_name() {
-            return interface_name;
+        public void setMsg(String msg) {
+            this.msg = msg;
         }
 
-        public void setInterface_name(String interface_name) {
-            this.interface_name = interface_name;
+        public L3RouteCommand getL3_route() {
+            return l3_route;
+        }
+
+        public void setL3_route(L3RouteCommand l3_route) {
+            this.l3_route = l3_route;
+        }
+
+        public List<L3MonitorCommand> getL3_endpints() {
+            return l3_endpints;
+        }
+
+        public void setL3_endpints(List<L3MonitorCommand> l3_endpints) {
+            this.l3_endpints = l3_endpints;
         }
     }
 }
