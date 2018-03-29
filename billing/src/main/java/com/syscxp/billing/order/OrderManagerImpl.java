@@ -144,7 +144,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             dbf.getEntityManager().persist(orderVo);
             dbf.getEntityManager().merge(abvo);
             dbf.getEntityManager().flush();
-            APICreateBuyEdgeLineOrderReply reply = new APICreateBuyEdgeLineOrderReply();
+            APICreateBuyIDCOrderReply reply = new APICreateBuyIDCOrderReply();
             reply.setInventory(OrderInventory.valueOf(orderVo));
             bus.reply(msg, reply);
         } finally {
