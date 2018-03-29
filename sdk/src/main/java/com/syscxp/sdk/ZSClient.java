@@ -258,6 +258,8 @@ public class ZSClient {
                 urlBuilder.addPathSegments(config.contextPath);
             }
 
+            urlBuilder.addPathSegments(info.path);
+
             urlBuilder.addPathSegment("v1");
 
             return urlBuilder;
