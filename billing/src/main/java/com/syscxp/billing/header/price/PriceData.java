@@ -9,27 +9,27 @@ public class PriceData {
     private String lineCode;
     private String lineName;
     private String configMixPrice;
-    private BigDecimal config2MPrice;
-    private BigDecimal config5MPrice;
-    private BigDecimal config10MPrice;
-    private BigDecimal config20MPrice;
-    private BigDecimal config50MPrice;
-    private BigDecimal config100MPrice;
-    private BigDecimal config200MPrice;
-    private BigDecimal config300MPrice;
-    private BigDecimal config400MPrice;
-    private BigDecimal config500MPrice;
-    private BigDecimal config1GPrice;
-    private BigDecimal config2GPrice;
-    private BigDecimal config3GPrice;
-    private BigDecimal config4GPrice;
-    private BigDecimal config5GPrice;
-    private BigDecimal config6GPrice;
-    private BigDecimal config10GPrice;
-    private BigDecimal configLT500MPrice;
-    private BigDecimal configGT500MLT2GPrice;
-    private BigDecimal configGT2GPrice;
-    private BigDecimal config20GPrice;
+    private BigDecimal config2MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config5MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config10MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config20MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config50MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config100MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config200MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config300MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config400MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config500MPrice =  BigDecimal.ZERO;;
+    private BigDecimal config1GPrice =  BigDecimal.ZERO;;
+    private BigDecimal config2GPrice =  BigDecimal.ZERO;;
+    private BigDecimal config3GPrice =  BigDecimal.ZERO;
+    private BigDecimal config4GPrice =  BigDecimal.ZERO;;
+    private BigDecimal config5GPrice =  BigDecimal.ZERO;;
+    private BigDecimal config6GPrice =  BigDecimal.ZERO;;
+    private BigDecimal config10GPrice =  BigDecimal.ZERO;;
+    private BigDecimal configLT500MPrice =  BigDecimal.ZERO;;
+    private BigDecimal configGT500MLT2GPrice =  BigDecimal.ZERO;;
+    private BigDecimal configGT2GPrice =  BigDecimal.ZERO;;
+    private BigDecimal config20GPrice =  BigDecimal.ZERO;;
 
     public PriceData(){ }
     public PriceData(Object[] objs) {
