@@ -6,7 +6,7 @@ public enum ProductType {
     FIXEDCOST,
     TUNNEL,
     VPN,
-
+    IDCTrustee,
     L3NETWORK,
 
     HOST,

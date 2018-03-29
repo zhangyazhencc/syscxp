@@ -1,16 +1,31 @@
 package com.syscxp.idc.trustee;
 
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
+import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
+import com.syscxp.header.agent.OrderCallbackCmd;
+import com.syscxp.header.billing.APICreateUnsubcribeOrderMsg;
+import com.syscxp.header.billing.OrderInventory;
+import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.billingCallBack.*;
+import com.syscxp.header.tunnel.tunnel.ResourceOrderEffectiveVO_;
 import com.syscxp.idc.header.trustee.*;
+import com.syscxp.utils.Utils;
+import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +38,17 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
     @Autowired
     private DatabaseFacade dbf;
 
+    @Autowired
+    private ErrorFacade errf;
+
+    @Autowired
+    private RESTFacade restf;
+
+    private static final CLogger logger = Utils.getLogger(TrusteeManagerImpl.class);
+
     private final VOAddAllOfMsg vOAddAllOfMsg = new VOAddAllOfMsg();
 
-    private final TrusteeBaseUtil trusteeBaseUtil = new TrusteeBaseUtil();
+    private final TrusteeBase trusteeBase = new TrusteeBase();
 
     @Override
     public void handleMessage(Message msg) {
@@ -76,7 +99,7 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
         * */
         TrusteeVO vo = dbf.findByUuid(msg.getUuid(), TrusteeVO.class);
         vOAddAllOfMsg.addAll(msg, vo);
-        vo.setExpireDate(trusteeBaseUtil.getExpireDate(vo.getExpireDate(),msg.getProductChargeModel(),msg.getDuration()));
+        vo.setExpireDate(trusteeBase.getExpireDate(vo.getExpireDate(),msg.getProductChargeModel(),msg.getDuration()));
         vo.setTotalCost(vo.getTotalCost().add(msg.getCost()));
         event.setInventory(TrusteeInventory.valueOf(dbf.updateAndRefresh(vo)));
         bus.publish(event);
@@ -90,17 +113,9 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
         vOAddAllOfMsg.addAll(msg, vo);
 
         if(msg.getTotalCost() != null ){
-            if(msg.getTotalCost().compareTo(vo.getTotalCost()) > 0 ){
-                /*
-                * 扣费
-                *
-                * */
-            }else if(msg.getTotalCost().compareTo(vo.getTotalCost()) < 0){
-                /*
-                * 退费
-                *
-                * */
-            }
+            /**
+             * 调用billing修改价格
+             */
         }
         event.setInventory(TrusteeInventory.valueOf(dbf.persistAndRefresh(vo)));
         bus.publish(event);
@@ -111,12 +126,34 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
 
         APIDeleteTrusteeEvent event = new APIDeleteTrusteeEvent(msg.getId());
 
-        /*
-        * 校验
-        *
-        * */
-        UpdateQuery.New(TrustDetailVO.class).condAnd(TrustDetailVO_.trusteeUuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
-        UpdateQuery.New(TrusteeVO.class).condAnd(TrusteeVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+        TrusteeVO vo = dbf.findByUuid(msg.getUuid(),TrusteeVO.class);
+
+        if (vo.getExpireDate() != null &&
+                !vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))) {
+            return;
+        }else{
+            //退订
+            APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+            orderMsg.setProductName("IDC托管-"+vo.getName());
+            orderMsg.setProductUuid(vo.getUuid());
+            orderMsg.setProductType(ProductType.IDCTrustee);
+            orderMsg.setDescriptionData(vo.getDescription());
+            orderMsg.setAccountUuid(vo.getAccountUuid());
+            orderMsg.setCallBackData(msg.getClass().getSimpleName());
+            orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+            orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+            orderMsg.setStartTime(dbf.getCurrentSqlTime());
+            orderMsg.setExpiredTime(vo.getExpireDate());
+
+            OrderInventory orderInventory = trusteeBase.createOrder(orderMsg);
+            if (orderInventory != null) {
+                trusteeBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                UpdateQuery.New(TrustDetailVO.class).condAnd(TrustDetailVO_.trusteeUuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+                UpdateQuery.New(TrusteeVO.class).condAnd(TrusteeVO_.uuid, SimpleQuery.Op.EQ,msg.getUuid()).delete();
+            } else {
+                event.setError(errf.stringToOperationError("退订失败"));
+            }
+        }
 
         bus.publish(event);
     }
@@ -133,7 +170,7 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
         TrusteeVO vo = new TrusteeVO();
         vOAddAllOfMsg.addAll(msg,vo);
         vo.setUuid(Platform.getUuid());
-        vo.setExpireDate(trusteeBaseUtil.getExpireDate(dbf.getCurrentSqlTime(),msg.getProductChargeModel(),msg.getDuration()));
+        vo.setExpireDate(trusteeBase.getExpireDate(dbf.getCurrentSqlTime(),msg.getProductChargeModel(),msg.getDuration()));
         dbf.getEntityManager().persist(vo);
 
         if(msg.getTrusteeDetails() != null && msg.getTrusteeDetails().size()>0){
@@ -153,9 +190,15 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
         }
 
         dbf.getEntityManager().flush();
+        bus.publish(event);
 
     }
 
+    private boolean orderIsExist(String orderUuid) {
+        return Q.New(com.syscxp.header.tunnel.tunnel.ResourceOrderEffectiveVO.class)
+                .eq(ResourceOrderEffectiveVO_.orderUuid, orderUuid)
+                .isExists();
+    }
 
     @Override
     public String getId() {
@@ -164,6 +207,32 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
 
     @Override
     public boolean start() {
+        /*
+         * 清理过期产品
+        */
+
+        restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
+                cmd -> {
+                    if (cmd.getCallBackData().equals("APIDeleteTrusteeMsg")) {
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            trusteeBase.saveResourceOrderEffective(cmd.getOrderUuid(),
+                                    cmd.getPorductUuid(), cmd.getProductType().toString());
+                            UpdateQuery.New(TrustDetailVO.class).condAnd(TrustDetailVO_.trusteeUuid,
+                                    SimpleQuery.Op.EQ,cmd.getPorductUuid()).delete();
+                            UpdateQuery.New(TrusteeVO.class).condAnd(TrusteeVO_.uuid,
+                                    SimpleQuery.Op.EQ,cmd.getPorductUuid()).delete();
+                        }
+
+                    }
+
+
+                    else {
+                        logger.debug("未知回调！！！！！！！！");
+                    }
+                    return null;
+                });
+
         return true;
     }
 

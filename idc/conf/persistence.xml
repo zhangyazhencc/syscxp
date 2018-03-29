@@ -11,6 +11,7 @@
 
         <class>com.syscxp.idc.header.trustee.TrusteeVO</class>
         <class>com.syscxp.idc.header.trustee.TrustDetailVO</class>
+        <class>com.syscxp.idc.header.trustee.ResourceOrderEffectiveVO</class>
 
     </persistence-unit>
 </persistence>
