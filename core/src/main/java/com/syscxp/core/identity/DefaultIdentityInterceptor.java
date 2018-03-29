@@ -70,6 +70,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     public String getSecretKey(String secretId, String ip) throws Exception {
         APIGetSecretKeyMsg aMsg = new APIGetSecretKeyMsg();
         aMsg.setSecretId(secretId);
+        aMsg.setIP(ip);
         InnerMessageHelper.setMD5(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
 
