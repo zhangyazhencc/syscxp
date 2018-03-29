@@ -11,14 +11,14 @@
             "msg":"success",
             "data":[
                 {
-                    "l3_route":{
+                    "l3route":{
             　　　　      "l3endpoint_id":"f56e79ca94454cf0b1a209c4e3e8cfcf",   -- L3EndPointVO.uuid
             　　　　      "local_ip":"192.168.112.2",                           -- 互联ip，L3EndPointVO.localIp
             　　　　      "vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
             　　　　      "interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
             　　　　      "monitor_ip":"192.168.112.4"                          -- 监控ip，L3EndPointVO.monitorIp
                     },
-                    "dst_endpints":[
+                    "monitors":[
                         {
                             "dst_l3endpoint_id":"f36e79ca94454cf0b1a209c4e3e8oiu3",
                             "monitor_ip":"192.168.112.4"
@@ -30,14 +30,14 @@
                     ]
                 },
                 {
-                    "l3_route":{
+                    "l3route":{
             　　　　      "l3endpoint_id":"f56e79ca94454cf0b1a209c4e3e8cfcf",   -- L3EndPointVO.uuid
             　　　　      "local_ip":"192.168.112.2",                           -- 互联ip，L3EndPointVO.localIp
             　　　　      "vlan":2055,                                          -- vlan，远端监控ip，L3EndPointVO.vlan
             　　　　      "interface_name":"enp2s0"                             -- 交换机对应的监控接口，HostSwitchMonitorEO.interfaceName
             　　　　      "monitor_ip":"192.168.112.4"                          -- 监控ip，L3EndPointVO.monitorIp
                     },
-                    "dst_endpints":[
+                    "monitors":[
                         {
                             "dst_l3endpoint_id":"f36e79ca94454cf0b1a209c4e3e8oiu3",
                             "monitor_ip":"192.168.112.4"
@@ -52,7 +52,7 @@
         }
 
     -- 遍历data数组
-    2.1 对比 l3_route 与 l3_route_running
+    2.1 对比 l3route 与 l3_route_running
         在 l3_route_running 存在
             add_route();
             add l3_route_running;
@@ -65,7 +65,7 @@
             遍历 dst_endpints
                 停止ping线程
 
-        l3_route 存在，l3_route_running 存在，且监控ip不一致
+        l3route 存在，l3_route_running 存在，且监控ip不一致
             update_route();
 
     2.2 遍历 dst_endpints
@@ -81,17 +81,17 @@
 3. 路由HTTP接口
     2.1 新增路由路由
         接口：/l3net/add_route
-        在 l3_route 不存在
+        在 l3route 不存在
             add_route();
 
     2.3 修改路由接口（修改监控ip）
         接口：/l3net/update_route
-        在 l3_route 存在
+        在 l3route 存在
             update_route();
 
     2.4 删除路由接口
         接口：/l3net/delete_route
-        在 l3_route 存在
+        在 l3route 存在
             delete_route();
 
 3. Ping线程HTTP接口

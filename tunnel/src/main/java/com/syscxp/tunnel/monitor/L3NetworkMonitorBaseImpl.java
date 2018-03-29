@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: sunxuelong.
@@ -273,7 +274,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     private MonitorAgentCommands.L3RouteCommand getAgentRouteCommand(L3EndpointVO l3EndpointVO) {
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
 
         MonitorAgentCommands.L3RouteCommand cmd = new MonitorAgentCommands.L3RouteCommand();
         cmd.setL3endpoint_id(l3EndpointVO.getUuid());
@@ -364,7 +365,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     private ControllerCommands.L3MonitorCommand getL3ControllerCommand(L3EndpointVO l3EndpointVO) {
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
 
         ControllerCommands.L3MonitorMpls l3Mpls = new ControllerCommands.L3MonitorMpls();
         l3Mpls.setUuid(physicalSwitchVO.getUuid());
@@ -447,20 +448,19 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     private HostSwitchMonitorVO getHostSwitchMonitorByHostIp(String hostIp) {
-        List<HostSwitchMonitorVO> hostSwitchMonitorVOS;
+        List<HostSwitchMonitorVO> hostSwitchMonitorVOS = new ArrayList<>();
 
         List<HostVO> hostVOS = Q.New(HostVO.class).eq(HostVO_.hostIp, hostIp).list();
         if (!hostVOS.isEmpty()) {
             hostSwitchMonitorVOS = Q.New(HostSwitchMonitorVO.class)
                     .eq(HostSwitchMonitorVO_.hostUuid, hostVOS.get(0).getUuid())
                     .list();
-        } else
-            throw new IllegalArgumentException(String.format("No HostVO with hostIp %s", hostIp));
+        }
 
         if (hostSwitchMonitorVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("No HostSwitchMonitorVO with hostIp %s", hostIp));
-
-        return hostSwitchMonitorVOS.get(0);
+            return null;
+        else
+            return hostSwitchMonitorVOS.get(0);
     }
 
     private L3EndpointVO getL3EndpointByPhysicalSwitchUuid(String physicalSwitchUuid) {
@@ -489,41 +489,50 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     public boolean start() {
         restf.registerSyncHttpCallHandler("MONITOR/L3INFO", HashMap.class,
                 paramMap -> {
-                    MonitorAgentCommands.L3SyncResponse response = new MonitorAgentCommands.L3SyncResponse();
+                    Map<String, Object> map = new HashMap<>();
+                    List<MonitorAgentCommands.L3SyncCommand> cmds = new ArrayList<>();
 
                     String hostIp = paramMap.get("monitorHostIp").toString();
-                    String msg = "";
                     try {
-                        HostSwitchMonitorVO hostSwitchMonitor;
-                        L3EndpointVO l3EndpointVO;
-                        try {
-                            hostSwitchMonitor = getHostSwitchMonitorByHostIp(hostIp);
-                            l3EndpointVO = getL3EndpointByPhysicalSwitchUuid(hostSwitchMonitor.getPhysicalSwitchUuid());
-                        } catch (Exception e) {
-                            throw new IllegalArgumentException(String.format("no data exist! %s", e.getMessage()));
+                        HostSwitchMonitorVO hostSwitch = getHostSwitchMonitorByHostIp(hostIp);
+
+                        if (hostSwitch != null) {
+                            List<L3EndpointVO> l3EndpointVOS = Q.New(L3EndpointVO.class)
+                                    .eq(L3EndpointVO_.physicalSwitchUuid, hostSwitch.getPhysicalSwitchUuid())
+                                    .notNull(L3EndpointVO_.monitorIp)
+                                    .notEq(L3EndpointVO_.monitorIp, StringUtils.EMPTY)
+                                    .list();
+                            for (L3EndpointVO endpointVO : l3EndpointVOS) {
+                                List<MonitorAgentCommands.L3MonitorCommand> l3MonitorCmds = new ArrayList<>();
+                                List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
+                                        .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getEndpointUuid())
+                                        .list();
+                                for (L3NetworkMonitorVO monitorVO : monitorVOS) {
+                                    l3MonitorCmds.add(getAgentMonitorCommand(endpointVO, monitorVO));
+                                }
+
+                                MonitorAgentCommands.L3SyncCommand cmd = new MonitorAgentCommands.L3SyncCommand();
+                                cmd.setL3route(getAgentRouteCommand(endpointVO));
+                                cmd.setMonitors(l3MonitorCmds);
+
+                                cmds.add(cmd);
+                            }
                         }
 
-                        MonitorAgentCommands.L3RouteCommand cmd = getAgentRouteCommand(l3EndpointVO);
-                        response.setL3_route(cmd);
-
-                        List<MonitorAgentCommands.L3MonitorCommand> l3MonitorCmds = new ArrayList<>();
-                        List<L3NetworkMonitorVO> l3MonitorVOS = Q.New(L3NetworkMonitorVO.class)
-                                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, l3EndpointVO.getEndpointUuid())
-                                .list();
-                        for (L3NetworkMonitorVO l3MonitorVO : l3MonitorVOS)
-                            l3MonitorCmds.add(getAgentMonitorCommand(l3EndpointVO, l3MonitorVO));
-                        response.setL3_endpints(l3MonitorCmds);
-
-                        response.setSuccess(true);
-                        response.setMsg("success");
+                        map.put("data", cmds);
+                        map.put("success", true);
+                        map.put("msg", "success");
                     } catch (Exception e) {
-                        response.setSuccess(false);
-                        response.setMsg(String.format("[MONITOR/L3INFO] L3 monitor sync failed! " +
-                                "Agent Host IP:  %s, Error: %s", hostIp, e.getMessage()));
-                        logger.error(response.getMsg());
+                        String errMsg = String.format("[MONITOR/L3INFO] L3 monitor sync failed! " +
+                                "Agent Host IP:  %s, Error: %s", hostIp, e.getMessage());
+
+                        map.put("success", false);
+                        map.put("msg", errMsg);
+
+                        logger.error(errMsg);
                     }
 
-                    return JSONObjectUtil.toJsonString(response);
+                    return JSONObjectUtil.toJsonString(map);
                 });
 
         return true;

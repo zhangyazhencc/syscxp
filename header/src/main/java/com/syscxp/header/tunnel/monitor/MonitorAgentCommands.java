@@ -588,42 +588,24 @@ public class MonitorAgentCommands {
         }
     }
 
-    public static class L3SyncResponse {
-        private boolean success;
-        private String msg;
-        private L3RouteCommand l3_route;
-        private List<L3MonitorCommand> l3_endpints;
+    public static class L3SyncCommand {
+        private L3RouteCommand l3route;
+        private List<L3MonitorCommand> monitors;
 
-        public boolean isSuccess() {
-            return success;
+        public L3RouteCommand getL3route() {
+            return l3route;
         }
 
-        public void setSuccess(boolean success) {
-            this.success = success;
+        public void setL3route(L3RouteCommand l3route) {
+            this.l3route = l3route;
         }
 
-        public String getMsg() {
-            return msg;
+        public List<L3MonitorCommand> getMonitors() {
+            return monitors;
         }
 
-        public void setMsg(String msg) {
-            this.msg = msg;
-        }
-
-        public L3RouteCommand getL3_route() {
-            return l3_route;
-        }
-
-        public void setL3_route(L3RouteCommand l3_route) {
-            this.l3_route = l3_route;
-        }
-
-        public List<L3MonitorCommand> getL3_endpints() {
-            return l3_endpints;
-        }
-
-        public void setL3_endpints(List<L3MonitorCommand> l3_endpints) {
-            this.l3_endpints = l3_endpints;
+        public void setMonitors(List<L3MonitorCommand> monitors) {
+            this.monitors = monitors;
         }
     }
 }
