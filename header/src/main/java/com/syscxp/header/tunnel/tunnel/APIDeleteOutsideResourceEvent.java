@@ -6,7 +6,6 @@ import com.syscxp.header.rest.RestResponse;
 /**
  * Create by DCY on 2018/3/28
  */
-@RestResponse(allTo = "inventory")
 public class APIDeleteOutsideResourceEvent extends APIEvent {
     private OutsideResourceInventory inventory;
 
