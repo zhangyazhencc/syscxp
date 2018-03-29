@@ -248,7 +248,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setType(OrderType.BUY);
             if (msg.getFixedCost() > 0) {
                 OrderVO fixedOrder = new OrderVO();
-                setOrderValue(fixedOrder, msg.getAccountUuid(), msg.getProductName(), ProductType.FIXEDCOST, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
+                setOrderValue(fixedOrder, msg.getAccountUuid(), msg.getProductName(), ProductType.EDGELINE, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
                 fixedOrder.setOriginalPrice(BigDecimal.valueOf(msg.getFixedCost()));
                 fixedOrder.setPrice(BigDecimal.valueOf(msg.getFixedCost()));
                 fixedOrder.setType(OrderType.BUY);
