@@ -14,8 +14,6 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.tunnel.billingCallBack.*;
-import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 import com.syscxp.header.tunnel.tunnel.ResourceOrderEffectiveVO_;
 import com.syscxp.idc.header.trustee.*;
 import com.syscxp.utils.Utils;
@@ -143,7 +141,6 @@ public class TrusteeManagerImpl extends AbstractService implements TrusteeManage
     private void handle(APIDeleteTrusteeMsg msg) {
 
         APIDeleteTrusteeEvent event = new APIDeleteTrusteeEvent(msg.getId());
-
         TrusteeVO vo = dbf.findByUuid(msg.getUuid(),TrusteeVO.class);
 
         if (vo.getExpireDate() != null &&
