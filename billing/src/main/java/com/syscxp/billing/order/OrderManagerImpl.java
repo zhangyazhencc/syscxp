@@ -634,6 +634,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
             renewVO.setPriceOneMonth(discountPrice);
             renewVO.setPriceDiscount(discountPrice);
+            renewVO.setDescriptionData(orderVo.getDescriptionData());
 
             updatePriceRefRenews(msg.getAccountUuid(), renewVO.getUuid(), productPriceUnitUuids);
             saveNotifyOrderVO(msg, orderVo.getUuid());
