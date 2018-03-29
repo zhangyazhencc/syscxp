@@ -53,4 +53,6 @@ public class APIUpdatePresentMsg extends APIMessage{
     public void setComment(String comment) {
         this.comment = comment;
     }
+
+
 }
