@@ -50,8 +50,21 @@ public class TrusteeBase {
     public OrderInventory createOrder(APICreateOrderMsg orderMsg) {
         try {
             APICreateOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            if (!reply.isOrderSuccess()) {
+            }else{
+                return reply.getInventory();
+            }
+        } catch (Exception e) {
+            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
+        }
+        return null;
+    }
 
-            if (reply.isOrderSuccess()) {
+    public OrderInventory createOrderForIDCTrustee(APICreateBuyIDCOrderMsg orderMsg) {
+        try {
+            APICreateBuyIDCOrderReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+
+            if (reply.isSuccess()) {
                 return reply.getInventory();
             }
         } catch (Exception e) {
