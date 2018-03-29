@@ -14,6 +14,7 @@ import org.springframework.http.HttpMethod;
  */
 
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIDeleteInterfaceEvent.class
