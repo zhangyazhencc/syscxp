@@ -121,23 +121,17 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
                     "Incorrect secretId or secretKey or illegal ip"));
         }
 
-        AccountVO account = dbf.findByUuid(vo.getAccountUuid(), AccountVO.class);
+        SessionInventory apiSession = apiSessions.get(secretId);
 
-        SimpleQuery<SessionVO> query = dbf.createQuery(SessionVO.class);
-        query.add(SessionVO_.accountUuid, SimpleQuery.Op.EQ, account.getUuid());
-        query.add(SessionVO_.userUuid, SimpleQuery.Op.EQ, account.getUuid());
-        String sessionUuid = Q.New(SessionVO.class)
-                .eq(SessionVO_.accountUuid, account.getUuid())
-                .eq(SessionVO_.userUuid, account.getUuid())
-                .gte(SessionVO_.expiredDate, dbf.getCurrentSqlTime())
-                .select(SessionVO_.uuid)
-                .findValue();
+        if (apiSession == null) {
+            AccountVO account = dbf.findByUuid(vo.getAccountUuid(), AccountVO.class);
+            apiSession = initSession(account, null);
 
-        if (sessionUuid == null) {
-            sessionUuid = initSession(account, null).getUuid();
+            apiSession.setExpiredDate(Timestamp.valueOf(apiSession.getExpiredDate().toLocalDateTime().minusMinutes(10)));
+            apiSessions.put(secretId, apiSession);
         }
 
-        return sessionUuid;
+        return apiSession.getUuid();
     }
 
 

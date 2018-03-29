@@ -2,29 +2,28 @@
 
 本手册详细描述 Restful API的使用规范，并提供所有API的详细定义。
 
-## 版本
+### 服务器地址
 
-当前API版本为`v1`，所有API的URL以`/v1`开头，例如:
 ```$xslt
 http://api.syscxp.com/tunnel/v1
 ```
 
-## 术语表
+### 术语表
 
 本文档涉及的一些常用术语如下：
 
 |术语|中文|说明|
-|---|----|---|
+|---|---|---|
 |Tunnel|云专线||
 |Interface|物理接口||
 |Endpoint|连接点||
 
 
-## HTTP方法
+### HTTP方法
 
 当前API只支持GET：
 
-## 参数
+### 参数
 
 仅Query String 传参方式。
 
@@ -34,7 +33,7 @@ http://api.syscxp.com/tunnel/v1
 http://api.syscxp.com/tunnel/v1?condition=state=Running
 ```
 
-## HTTP Headers
+### HTTP Headers
 
 当前API使用如下自定义HTTP Headers：
 
@@ -71,7 +70,7 @@ X-Job-Success: true
 
 当值为*true*时执行成功，为*false*时执行失败。
 
-## HTTP返回码 (HTTP Status Code)
+### HTTP返回码 (HTTP Status Code)
 
 #### 200
 
@@ -83,7 +82,7 @@ API请求已被Syscxp接受，用户需要通过轮询或Web Hook的方式获取
 
 #### 400
 
-API请求未包含必要的参数或包含了非法的参数。具体信息可以从HTTP Response Body获得。
+API请求未包含必要的参数或包含了非法的参数。
 
 #### 404
 
@@ -96,11 +95,11 @@ API调用使用了错误的HTTP方法。
 
 #### 500
 
-Syscxp RESTful终端遭遇了一个内部错误。
+API服务遭遇了一个内部错误。
 
 #### 503
 
-API所执行的操作引发了一个错误，例如资源不足无法创建虚拟机。错误的具体信息可以从HTTP Response Body。
+API所执行的操作引发了一个错误。错误的具体信息可以从HTTP Response Body。
 
 
 
