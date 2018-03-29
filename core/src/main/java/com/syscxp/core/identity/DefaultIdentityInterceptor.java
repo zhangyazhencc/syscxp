@@ -5,6 +5,7 @@ import com.syscxp.header.account.APIGetSecretKeyMsg;
 import com.syscxp.header.account.APIGetSecretKeyReply;
 import com.syscxp.header.account.APILogInBySecretIdMsg;
 import com.syscxp.header.account.APILogInBySecretIdReply;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -99,8 +100,9 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
             session = ((APILogInBySecretIdReply) replay).getSession();
             apiSessions.put(secretId, session);
             return session;
+        } else {
+            throw new OperationFailureException(replay.getError());
         }
-        return null;
     }
 
 }

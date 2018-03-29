@@ -45,18 +45,6 @@ public class TestTunnelPriceAction extends TestSDK {
     private String tunnelUuid = "e687b1f11fbd481a929aa968139e4c82";
 
     @Test
-    public void testGetModifyBandwidthNumAction() {
-
-        GetModifyBandwidthNumAction action = new GetModifyBandwidthNumAction();
-        action.uuid = tunnelUuid;
-
-        GetModifyBandwidthNumResult result = action.call().throwExceptionIfError().value;
-
-        System.out.println(prettyGson.toJson(result));
-    }
-
-
-    @Test
     public void testGetModifyTunnelPriceDiffAction() {
 
         GetModifyTunnelPriceDiffAction action = new GetModifyTunnelPriceDiffAction();
