@@ -105,27 +105,25 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public String getSecretKey(String secretId) {
+    public String getSecretKey(String secretId, String ip) {
         return null;
     }
 
     @Override
-    public SessionInventory getSessionUuid(String secretId, String secretKey, String ip) {
-
-        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
-        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, secretId);
-        q.add(AccountApiSecurityVO_.secretKey, SimpleQuery.Op.EQ, secretKey);
-        AccountApiSecurityVO vo = q.find();
-
-        if (vo == null || (StringUtils.isNotBlank(vo.getAllowIp()) && !vo.getAllowIp().contains(ip))) {
-            throw new OperationFailureException(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "Incorrect secretId or secretKey or illegal ip"));
-        }
+    public SessionInventory getSessionUuid(String secretId, String secretKey) {
 
         SessionInventory apiSession = apiSessions.get(secretId);
 
+
         if (apiSession == null) {
-            AccountVO account = dbf.findByUuid(vo.getAccountUuid(), AccountVO.class);
+
+            String accountUuid = Q.New(AccountApiSecurityVO.class)
+                    .eq(AccountApiSecurityVO_.secretId, secretId)
+                    .eq(AccountApiSecurityVO_.secretKey, secretKey)
+                    .select(AccountApiSecurityVO_.accountUuid)
+                    .findValue();
+
+            AccountVO account = dbf.findByUuid(accountUuid, AccountVO.class);
             apiSession = initSession(account, null);
 
             apiSession.setExpiredDate(Timestamp.valueOf(apiSession.getExpiredDate().toLocalDateTime().minusMinutes(10)));

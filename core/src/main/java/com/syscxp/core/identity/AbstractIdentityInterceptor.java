@@ -500,7 +500,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         return sessions.get(sessionUuid);
     }
 
-    public abstract String getSecretKey(String secretId);
+    public abstract String getSecretKey(String secretId, String ip) throws Exception;
 
-    public abstract SessionInventory getSessionUuid(String secretId, String secretKey, String ip) throws Exception;
+    public abstract SessionInventory getSessionUuid(String secretId, String secretKey) throws Exception;
 }

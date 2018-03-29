@@ -40,7 +40,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
             return;
         }
         String secretId = req.getParameter(RestConstants.SECRET_ID);
-        String secretKey = getSecretKey(secretId);
+        String secretKey = getSecretKey(secretId, getIpAdrress(req));
         String signatureString = getSignatureString(req, secretKey);
 
         Long timestamp = Long.valueOf(req.getParameter(RestConstants.TIMESTAMP));
@@ -50,7 +50,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         }
         LOGGER.debug("Signature校验成功，获取sessionUuid");
 
-        req.setAttribute(RestConstants.SESSION_UUID, getSessionUuid(secretId, secretKey, getIpAdrress(req)));
+        req.setAttribute(RestConstants.SESSION_UUID, getSessionUuid(secretId, secretKey));
     }
 
     private String getSignatureString(HttpServletRequest req, String secretKey) {
@@ -71,18 +71,20 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         return HMAC.encryptBase64(hmac);
     }
 
-    private String getSecretKey(String secretId) throws RestServletRequestInterceptorException {
-        String secretKey = identityInterceptor.getSecretKey(secretId);
-        if (secretKey == null) {
-            throw new RestServletRequestInterceptorException(401, String.format("secretId:%s 不存在", secretId));
+    private String getSecretKey(String secretId, String ip) throws RestServletRequestInterceptorException {
+        String secretKey;
+        try {
+            secretKey = identityInterceptor.getSecretKey(secretId, ip);
+        } catch (Exception e) {
+            throw new RestServletRequestInterceptorException(403, e.getMessage());
         }
         return secretKey;
     }
 
-    private String getSessionUuid(String secretId, String secretKey, String ip) throws RestServletRequestInterceptorException {
+    private String getSessionUuid(String secretId, String secretKey) throws RestServletRequestInterceptorException {
         SessionInventory session;
         try {
-            session = identityInterceptor.getSessionUuid(secretId, secretKey, ip);
+            session = identityInterceptor.getSessionUuid(secretId, secretKey);
         } catch (Exception e) {
             throw new RestServletRequestInterceptorException(403, e.getMessage());
         }
