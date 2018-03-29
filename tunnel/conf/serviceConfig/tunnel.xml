@@ -191,11 +191,24 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryOutsideResourceMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIRunDataForTunnelTypeMsg</name>
     </message>
 
     <message>
         <name>com.syscxp.header.tunnel.tunnel.APIRunDataForTunnelZKMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APICreateOutsideResourceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIDeleteOutsideResourceMsg</name>
     </message>
 
 
