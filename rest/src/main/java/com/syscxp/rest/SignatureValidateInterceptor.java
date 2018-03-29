@@ -1,6 +1,7 @@
 package com.syscxp.rest;
 
 import com.syscxp.core.identity.AbstractIdentityInterceptor;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.HMAC;
@@ -79,10 +80,13 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
     }
 
     private String getSessionUuid(String secretId, String secretKey, String ip) throws RestServletRequestInterceptorException {
-        SessionInventory session = identityInterceptor.getSessionUuid(secretId, secretKey, ip);
-        if (session == null) {
-            throw new RestServletRequestInterceptorException(403, String.format("secretId:%s 身份认证失败", secretId));
+        SessionInventory session;
+        try {
+            session = identityInterceptor.getSessionUuid(secretId, secretKey, ip);
+        } catch (Exception e) {
+            throw new RestServletRequestInterceptorException(403, e.getMessage());
         }
+
         return session.getUuid();
     }
 

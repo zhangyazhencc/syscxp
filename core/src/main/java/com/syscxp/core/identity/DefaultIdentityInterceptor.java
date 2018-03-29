@@ -83,7 +83,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public SessionInventory getSessionUuid(String secretId, String secretKey, String ip) {
+    public SessionInventory getSessionUuid(String secretId, String secretKey, String ip) throws Exception {
         SessionInventory session = apiSessions.get(secretId);
         if (session != null) {
             return session;
@@ -101,7 +101,8 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
             apiSessions.put(secretId, session);
             return session;
         } else {
-            throw new OperationFailureException(replay.getError());
+            logger.debug(replay.getError().toString());
+            throw new Exception(replay.getError().getDetails());
         }
     }
 

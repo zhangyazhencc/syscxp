@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * Created by zxhread on 17/8/3.
  */
 public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInterceptor, ResourceHavingAccountReference {
-    private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
+    protected static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     @Autowired
     protected DatabaseFacade dbf;
@@ -502,5 +502,5 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
 
     public abstract String getSecretKey(String secretId);
 
-    public abstract SessionInventory getSessionUuid(String secretId, String secretKey, String ip);
+    public abstract SessionInventory getSessionUuid(String secretId, String secretKey, String ip) throws Exception;
 }
