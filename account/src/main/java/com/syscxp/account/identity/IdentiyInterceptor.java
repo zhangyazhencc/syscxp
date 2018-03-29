@@ -12,6 +12,7 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.identity.AbstractIdentityInterceptor;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.identity.IdentityErrors;
 import com.syscxp.header.identity.PolicyStatement;
 import com.syscxp.header.identity.SessionInventory;
@@ -117,7 +118,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         AccountApiSecurityVO vo = q.find();
 
         if (vo == null || (StringUtils.isNotBlank(vo.getAllowIp()) && !vo.getAllowIp().contains(ip))) {
-            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "Incorrect secretId or secretKey or illegal ip"));
         }
 
