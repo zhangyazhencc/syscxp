@@ -90,7 +90,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
 	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
 	`vpnCertUuid` VARCHAR(32) COMMENT '',
-	`expireDate` timestamp COMMENT '截止时间',
+	`expireDate` timestamp NULL COMMENT '截止时间',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)

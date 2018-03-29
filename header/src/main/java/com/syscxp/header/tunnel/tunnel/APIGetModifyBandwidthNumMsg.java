@@ -11,11 +11,6 @@ import org.springframework.http.HttpMethod;
  * Create by DCY on 2017/12/11
  */
 
-@RestRequest(
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIGetModifyBandwidthNumReply.class
-)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetModifyBandwidthNumMsg extends APISyncCallMessage {
 

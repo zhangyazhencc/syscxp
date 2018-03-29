@@ -7,7 +7,6 @@ import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.retry.Retry;
 import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.header.Component;
-import com.syscxp.header.Constants;
 import com.syscxp.header.MapField;
 import com.syscxp.header.apimediator.ApiMediatorConstant;
 import com.syscxp.header.exception.CloudRuntimeException;
@@ -19,7 +18,6 @@ import com.syscxp.header.query.APIQueryReply;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.*;
-import com.syscxp.rest.sdk.DocumentGenerator;
 import com.syscxp.rest.sdk.SdkFile;
 import com.syscxp.rest.sdk.SdkTemplate;
 import com.syscxp.utils.*;
@@ -53,7 +51,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -121,7 +118,9 @@ public class RestServer implements Component, CloudBusEventListener {
         }
 
         try {
+
             Class clz = GroovyUtils.getClass("scripts/SdkApiTemplate.groovy", RestServer.class.getClassLoader());
+
             Set<Class<?>> apiClasses = Platform.getReflections().getTypesAnnotatedWith(RestRequest.class)
                     .stream().filter(it -> it.isAnnotationPresent(RestRequest.class)).collect(Collectors.toSet());
 

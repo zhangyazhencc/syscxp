@@ -79,3 +79,13 @@ CREATE TABLE  `syscxp_tunnel_rest`.`AsyncRestVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+##外采资源表
+CREATE TABLE `OutsideResourceVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `resourceType` VARCHAR(32) NOT NULL COMMENT '资源类型',
+  `resourceUuid` varchar(32) NOT NULL COMMENT '资源UUID',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

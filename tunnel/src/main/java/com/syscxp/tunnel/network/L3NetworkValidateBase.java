@@ -9,6 +9,8 @@ import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
+import com.syscxp.header.tunnel.tunnel.OutsideResourceVO;
+import com.syscxp.header.tunnel.tunnel.OutsideResourceVO_;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -116,6 +118,13 @@ public class L3NetworkValidateBase {
     public void validate(APIUpdateL3EndpointIPMsg msg){
         L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
         if(!NetworkUtils.isIpv4Address(msg.getLocalIP())){
             throw new ApiMessageInterceptionException(argerr("该犀思云端IP不是合法的IPV4地址！"));
         }
@@ -191,6 +200,14 @@ public class L3NetworkValidateBase {
     public void validate(APIUpdateL3EndpointBandwidthMsg msg){
 
         L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
+
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
         //调整次数当月是否达到上限
         LocalDateTime dateTime =
                 LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
@@ -215,6 +232,13 @@ public class L3NetworkValidateBase {
 
         L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
         if(vo.getState() == L3EndpointState.Enabled){
             throw new ApiMessageInterceptionException(argerr("删除L3连接点，请先断开连接！"));
         }
@@ -226,6 +250,13 @@ public class L3NetworkValidateBase {
 
     public void validate(APICreateL3RouteMsg msg){
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
+
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getL3EndpointUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
 
         if(!NetworkUtils.isCidr(msg.getCidr())){
             throw new ApiMessageInterceptionException(argerr("该目标网段不合法！"));
@@ -276,12 +307,27 @@ public class L3NetworkValidateBase {
         L3RouteVO l3RouteVO = dbf.findByUuid(msg.getUuid(), L3RouteVO.class);
         L3EndpointVO l3EndpointVO = dbf.findByUuid(l3RouteVO.getL3EndpointUuid(), L3EndpointVO.class);
 
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, l3EndpointVO.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
         if(l3EndpointVO.getState() == L3EndpointState.Deploying){
             throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
         }
     }
 
     public void validate(APIEnableL3EndpointMsg msg){
+
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
         if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
             throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
         }
@@ -298,6 +344,14 @@ public class L3NetworkValidateBase {
     }
 
     public void validate(APIDisableL3EndpointMsg msg){
+
+        //判断是否为外采资源
+        if(msg.getSession().getType() != AccountType.SystemAdmin){
+            if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, msg.getUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("外采资源用户不可操作"));
+            }
+        }
+
         if(msg.getSession().getType() != AccountType.SystemAdmin && msg.isSaveOnly()){
             throw new ApiMessageInterceptionException(argerr("只有系统管理员才能执行仅保存操作！"));
         }
