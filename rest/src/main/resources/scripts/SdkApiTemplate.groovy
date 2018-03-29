@@ -320,15 +320,14 @@ ${output.join("\n")}
             return ret
         } else {
             String path = requestAnnotation.path()
-            if (requestAnnotation.path() == "" && requestAnnotation.optionalPaths().length == 0) {
-                throw new CloudRuntimeException("'path' is set to 'null' but no @SDK found on the class[${apiMessageClass.name}]")
-            }
+
 
             if (contentPath != "null") {
                 path = contentPath
             }
-            if (requestAnnotation.path() == "") {
-                throw new CloudRuntimeException("both 'path' and 'contentPath' is set to ''")
+            if (path == "") {
+                    throw new CloudRuntimeException("'path' is set to '' on the class[${apiMessageClass.name}] but " +
+                            "'contentPath' is also set to ''")
             }
             if (requestAnnotation.optionalPaths().length == 0 && !requestAnnotation.optionalPaths().contains(path)) {
                 throw new CloudRuntimeException("Cannot find ${path} in the 'optionalPaths' of the @RestPath of " +
