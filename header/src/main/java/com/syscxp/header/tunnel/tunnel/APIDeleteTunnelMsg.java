@@ -1,6 +1,5 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -15,6 +14,7 @@ import org.springframework.http.HttpMethod;
  */
 
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIDeleteTunnelEvent.class

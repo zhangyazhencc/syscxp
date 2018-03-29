@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
  */
 @SuppressCredentialCheck
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIQueryNettoolMonitorHostReply.class

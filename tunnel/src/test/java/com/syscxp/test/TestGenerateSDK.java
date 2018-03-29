@@ -7,6 +7,6 @@ public class TestGenerateSDK {
 
     @Test
     public void test() {
-        RestServer.generateJavaSdk();
+        RestServer.generateJavaSdk("tunnel");
     }
 }
