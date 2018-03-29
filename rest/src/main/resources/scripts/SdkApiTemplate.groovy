@@ -321,15 +321,14 @@ ${output.join("\n")}
         } else {
             String path = requestAnnotation.path()
 
-
             if (contentPath != "null") {
                 path = contentPath
             }
             if (path == "") {
-                    throw new CloudRuntimeException("'path' is set to '' on the class[${apiMessageClass.name}] but " +
-                            "'contentPath' is also set to ''")
+                throw new CloudRuntimeException("'path' is set to '' on the class[${apiMessageClass.name}] but " +
+                        "'contentPath' is also set to ''")
             }
-            if (requestAnnotation.optionalPaths().length == 0 && !requestAnnotation.optionalPaths().contains(path)) {
+            if (requestAnnotation.path() != path && !requestAnnotation.optionalPaths().contains(path)) {
                 throw new CloudRuntimeException("Cannot find ${path} in the 'optionalPaths' of the @RestPath of " +
                         "the class[${apiMessageClass.name}]")
             }
