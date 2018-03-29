@@ -21,7 +21,10 @@ public class PriceData {
     private BigDecimal config500MPrice;
     private BigDecimal config1GPrice;
     private BigDecimal config2GPrice;
+    private BigDecimal config3GPrice;
+    private BigDecimal config4GPrice;
     private BigDecimal config5GPrice;
+    private BigDecimal config6GPrice;
     private BigDecimal config10GPrice;
     private BigDecimal configLT500MPrice;
     private BigDecimal configGT500MLT2GPrice;
@@ -219,5 +222,29 @@ public class PriceData {
 
     public void setConfig20GPrice(BigDecimal config20GPrice) {
         this.config20GPrice = config20GPrice;
+    }
+
+    public BigDecimal getConfig3GPrice() {
+        return config3GPrice;
+    }
+
+    public void setConfig3GPrice(BigDecimal config3GPrice) {
+        this.config3GPrice = config3GPrice;
+    }
+
+    public BigDecimal getConfig4GPrice() {
+        return config4GPrice;
+    }
+
+    public void setConfig4GPrice(BigDecimal config4GPrice) {
+        this.config4GPrice = config4GPrice;
+    }
+
+    public BigDecimal getConfig6GPrice() {
+        return config6GPrice;
+    }
+
+    public void setConfig6GPrice(BigDecimal config6GPrice) {
+        this.config6GPrice = config6GPrice;
     }
 }
