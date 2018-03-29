@@ -89,3 +89,24 @@ CREATE TABLE `OutsideResourceVO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE `syscxp_tunnel`.`SwitchVlanVO` ADD COLUMN `type` varchar(32) NOT NULL COMMENT 'vlan类型：L2，L3';
+
+UPDATE `syscxp_tunnel`.`SwitchVlanVO` set type = 'L2';
+
+##
+
+ALTER TABLE `syscxp_tunnel`.`EdgeLineEO` ADD COLUMN `implementType` varchar(128) DEFAULT NULL COMMENT '最后一公里施工类型';
+ALTER TABLE `syscxp_tunnel`.`EdgeLineEO` ADD COLUMN `costPrices` int(11) DEFAULT 0 COMMENT '成本价：元/月';
+ALTER TABLE `syscxp_tunnel`.`EdgeLineEO` ADD COLUMN `fixedCost` int(11) DEFAULT 0 COMMENT '一次性费用';
+
+DROP VIEW IF EXISTS `syscxp_tunnel`.`EdgeLineVO`;
+CREATE VIEW `syscxp_tunnel`.`EdgeLineVO` AS SELECT uuid, `number`, accountUuid, interfaceUuid, endpointUuid, type, destinationInfo, description, state, implementType, costPrices, prices, fixedCost, expireDate, lastOpDate, createDate
+                                            FROM `EdgeLineEO` WHERE deleted IS NULL;
+
+
+INSERT INTO `syscxp_tunnel`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
+VALUES ('3G','3G','',3221225472,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('4G','4G','',4294967296,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('6G','6G','',6442450944,'2017-11-01 13:51:31','2017-11-01 13:51:31');

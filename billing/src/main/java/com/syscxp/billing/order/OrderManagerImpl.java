@@ -248,7 +248,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setType(OrderType.BUY);
             if (msg.getFixedCost() > 0) {
                 OrderVO fixedOrder = new OrderVO();
-                setOrderValue(fixedOrder, msg.getAccountUuid(), msg.getProductName(), ProductType.FIXEDCOST, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
+                String description = msg.getDescriptionData();
+                if (!StringUtils.isEmpty(description)) {
+                    int index = description.lastIndexOf("]");
+                    if (index > 0) {
+                        description =description.substring(0,index).concat(",{\"name\":\"最后一公里固定本金\"}").concat("]}");
+                    }
+
+                }
+                setOrderValue(fixedOrder, msg.getAccountUuid(), msg.getProductName(), ProductType.EDGELINE, msg.getProductChargeModel(), currentTimestamp, description, msg.getProductUuid(), 0, msg.getCallBackData());
                 fixedOrder.setOriginalPrice(BigDecimal.valueOf(msg.getFixedCost()));
                 fixedOrder.setPrice(BigDecimal.valueOf(msg.getFixedCost()));
                 fixedOrder.setType(OrderType.BUY);
@@ -634,6 +642,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
             renewVO.setPriceOneMonth(discountPrice);
             renewVO.setPriceDiscount(discountPrice);
+            renewVO.setDescriptionData(orderVo.getDescriptionData());
 
             updatePriceRefRenews(msg.getAccountUuid(), renewVO.getUuid(), productPriceUnitUuids);
             saveNotifyOrderVO(msg, orderVo.getUuid());

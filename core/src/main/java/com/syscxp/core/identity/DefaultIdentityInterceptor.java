@@ -23,6 +23,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
 
     @Autowired
     private RESTFacade restf;
+
     @Override
     public void removeExpiredSession(List<String> sessionUuids) {
 
@@ -53,9 +54,11 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
         return session;
     }
 
-    protected void afterGetSessionInventory(SessionInventory session){
+    protected void afterGetSessionInventory(SessionInventory session) {
 
-    };
+    }
+
+    ;
 
     @Override
     protected SessionInventory logOutSessionRemove(String sessionUuid) {
@@ -72,14 +75,18 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
             APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
             if (replay.isSuccess()) {
-                return  ((APIGetSecretKeyReply)replay).getSecretKey();
+                return ((APIGetSecretKeyReply) replay).getSecretKey();
             }
         }
         return null;
     }
 
     @Override
-    public String getSessionUuid(String secretId, String secretKey, String ip) {
+    public SessionInventory getSessionUuid(String secretId, String secretKey, String ip) {
+        SessionInventory session = apiSessions.get(secretId);
+        if (session != null) {
+            return session;
+        }
         APILogInBySecretIdMsg aMsg = new APILogInBySecretIdMsg();
         aMsg.setSecretId(secretId);
         aMsg.setSecretKey(secretKey);
@@ -87,11 +94,11 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
         InnerMessageHelper.setMD5(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
 
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-            if (replay.isSuccess()) {
-                return  ((APILogInBySecretIdReply)replay).getSessionUuid();
-            }
+        APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        if (replay.isSuccess()) {
+            session = ((APILogInBySecretIdReply) replay).getSession();
+            apiSessions.put(secretId, session);
+            return session;
         }
         return null;
     }

@@ -36,7 +36,7 @@ class SdkDataStructureGenerator implements SdkTemplate {
     }
 
     @Override
-    List<SdkFile> generate() {
+    List<SdkFile> generate(String contentPath) {
         responseClasses.each { c ->
             try {
                 generateResponseClass(c)

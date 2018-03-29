@@ -13,6 +13,7 @@ import com.syscxp.header.vpn.vpn.VpnVO;
 import org.springframework.http.HttpMethod;
 
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIRenewInterfaceReply.class

@@ -7,7 +7,7 @@ package com.syscxp.rest;
  * Author: wj
  */
 public interface RestConstants {
-    String API_VERSION = "v1";
+    String API_VERSION = "/v1";
     String ASYNC_JOB_ACTION = "ApiResult";
 
     String HEADER_JSON_SCHEMA = "X-JSON-Schema";

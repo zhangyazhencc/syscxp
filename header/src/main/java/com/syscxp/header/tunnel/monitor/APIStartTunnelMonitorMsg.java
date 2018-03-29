@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
  * @Description: 创建监控通道.
  */
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIStartTunnelMonitorEvent.class
