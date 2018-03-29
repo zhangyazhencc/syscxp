@@ -109,7 +109,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public String getSessionUuid(String secretId, String secretKey, String ip) {
+    public SessionInventory getSessionUuid(String secretId, String secretKey, String ip) {
 
         SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
         q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, secretId);
@@ -131,7 +131,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
             apiSessions.put(secretId, apiSession);
         }
 
-        return apiSession.getUuid();
+        return apiSession;
     }
 
 
