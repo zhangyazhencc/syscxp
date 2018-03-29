@@ -62,5 +62,5 @@
     <import resource="springConfigXml/EdgeLineManager.xml"/>
     <import resource="springConfigXml/L3NetworkManager.xml"/>
     <import resource="springConfigXml/NotificationManager.xml"/>
-    <import resource="springConfigXml/rest.xml"/>
+    <!--import resource="springConfigXml/rest.xml"/-->
 </beans>
