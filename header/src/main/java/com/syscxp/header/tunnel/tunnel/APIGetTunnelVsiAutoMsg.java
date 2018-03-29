@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
  * Create by DCY on 2018/3/20
  */
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIGetTunnelVsiAutoReply.class

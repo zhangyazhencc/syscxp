@@ -15,6 +15,7 @@ import org.springframework.http.HttpMethod;
  * Create by DCY on 2017/11/1
  */
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIGetTunnelPriceReply.class
