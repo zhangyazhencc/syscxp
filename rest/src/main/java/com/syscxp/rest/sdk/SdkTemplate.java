@@ -9,5 +9,5 @@ import java.util.List;
  * Author: wj
  */
 public interface SdkTemplate {
-    List<SdkFile> generate();
+    List<SdkFile> generate(String contentPath);
 }
