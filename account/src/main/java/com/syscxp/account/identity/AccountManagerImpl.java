@@ -186,9 +186,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APILogInBySecretIdMsg msg) {
         APILogInBySecretIdReply reply = new APILogInBySecretIdReply();
 
-        String sessionUuid = identiyInterceptor.getSessionUuid(msg.getSecretId(), msg.getSecretKey(), msg.getIP());
+        SessionInventory session = identiyInterceptor.getSessionUuid(msg.getSecretId(), msg.getSecretKey(), msg.getIP());
 
-        reply.setSessionUuid(sessionUuid);
+        reply.setSession(session);
 
         bus.reply(msg, reply);
     }
