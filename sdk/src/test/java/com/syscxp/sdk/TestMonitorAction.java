@@ -4,20 +4,6 @@ import org.testng.annotations.Test;
 
 public class TestMonitorAction extends TestSDK {
 
-    @Test
-    public void testCreate() {
-        CreateHostSwitchMonitorAction action = new CreateHostSwitchMonitorAction();
-
-        action.hostUuid = "apt-monitor";
-        action.physicalSwitchUuid = "";
-        action.physicalSwitchPortName = "";
-        action.interfaceName = "";
-
-        CreateHostSwitchMonitorResult result = action.call().throwExceptionIfError().value;
-
-        System.out.println(prettyGson.toJson(result));
-
-    }
 
     @Test
     public void testQueryNettoolMonitorHost() {

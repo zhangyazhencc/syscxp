@@ -96,3 +96,12 @@ CREATE TABLE syscxp_idc.TrustDetailVO (
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `resourceUuid` varchar(32) NOT NULL COMMENT '产品UUID',
+  `resourceType` varchar(255) NOT NULL COMMENT '产品表名',
+  `orderUuid` varchar(32) NOT NULL COMMENT '订单UUID',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

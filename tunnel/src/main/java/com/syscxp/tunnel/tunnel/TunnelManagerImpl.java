@@ -196,6 +196,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIRunDataForTunnelTypeMsg) msg);
         } else if (msg instanceof APIRunDataForTunnelZKMsg) {
             handle((APIRunDataForTunnelZKMsg) msg);
+        } else if (msg instanceof APICreateOutsideResourceMsg) {
+            handle((APICreateOutsideResourceMsg) msg);
+        } else if (msg instanceof APIDeleteOutsideResourceMsg) {
+            handle((APIDeleteOutsideResourceMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -2168,6 +2172,33 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).start();
     }
 
+    /**
+     * 外采资源配置
+     * */
+    private void handle(APICreateOutsideResourceMsg msg){
+        APICreateOutsideResourceEvent evt = new APICreateOutsideResourceEvent(msg.getId());
+
+        OutsideResourceVO vo = new OutsideResourceVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setResourceType(msg.getResourceType());
+        vo.setResourceUuid(msg.getResourceUuid());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        evt.setInventory(OutsideResourceInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteOutsideResourceMsg msg){
+        APIDeleteOutsideResourceEvent evt = new APIDeleteOutsideResourceEvent(msg.getId());
+
+        OutsideResourceVO vo = dbf.findByUuid(msg.getUuid(), OutsideResourceVO.class);
+        dbf.remove(vo);
+
+        evt.setInventory(OutsideResourceInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
     /*****************************  Get/Query/List Message For Interface and Tunnel **************************/
 
     /**
@@ -2738,6 +2769,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelValidateBase.validate((APIUpdateInterfacePortMsg) msg);
         } else if (msg instanceof APIGetVlanAutoMsg) {
             tunnelValidateBase.validate((APIGetVlanAutoMsg) msg);
+        } else if (msg instanceof APICreateOutsideResourceMsg) {
+            tunnelValidateBase.validate((APICreateOutsideResourceMsg) msg);
         }
         return msg;
     }

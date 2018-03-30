@@ -54,6 +54,7 @@
     <import resource="springConfigXml/TunnelManager.xml"/>
     <import resource="springConfigXml/NodeManager.xml"/>
     <import resource="springConfigXml/SwitchManager.xml"/>
+    <import resource="springConfigXml/MonitorManager.xml"/>
     <import resource="springConfigXml/MongodbFacade.xml"/>
     <import resource="springConfigXml/AliEdgeRouterManager.xml"/>
     <import resource="springConfigXml/SolutionManager.xml"/>
@@ -61,10 +62,5 @@
     <import resource="springConfigXml/EdgeLineManager.xml"/>
     <import resource="springConfigXml/L3NetworkManager.xml"/>
     <import resource="springConfigXml/NotificationManager.xml"/>
-    <import resource="springConfigXml/rest.xml"/>
-    <import resource="springConfigXml/TunnelMonitorManager.xml"/>
-    <import resource="springConfigXml/L3NetworkMonitorManager.xml"/>
-    <import resource="springConfigXml/MonitorAgent.xml"/>
-    <import resource="springConfigXml/OpenTSDB.xml"/>
-    <import resource="springConfigXml/RyuController.xml"/>
+    <!--import resource="springConfigXml/rest.xml"/-->
 </beans>

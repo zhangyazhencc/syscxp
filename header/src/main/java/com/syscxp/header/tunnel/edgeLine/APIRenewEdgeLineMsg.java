@@ -17,6 +17,7 @@ import org.springframework.http.HttpMethod;
  * Create by DCY on 2018/1/12
  */
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIRenewEdgeLineReply.class

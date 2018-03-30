@@ -34,6 +34,7 @@ import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -156,18 +157,18 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         APIGetAccountExpiredCleanReply reply = new APIGetAccountExpiredCleanReply();
 
-        Optional<AccountVO> accountOptional =  Optional.ofNullable(
-                dbf.findByUuid(msg.getUuid(),AccountVO.class)
+        Optional<AccountVO> accountOptional = Optional.ofNullable(
+                dbf.findByUuid(msg.getUuid(), AccountVO.class)
         );
 
-        if(accountOptional.isPresent()){
+        if (accountOptional.isPresent()) {
             reply.setExpiredClean(accountOptional.get().isExpiredClean());
             reply.setUuid(msg.getUuid());
-        }else{
-            reply.setError(Platform.argerr("no this account[%s]",msg.getUuid()));
+        } else {
+            reply.setError(Platform.argerr("no this account[%s]", msg.getUuid()));
         }
 
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
     }
 
@@ -177,18 +178,24 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
         q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
-        AccountApiSecurityVO api = q.find();
-        reply.setSecretKey(api.getSecretKey());
-        bus.reply(msg, reply);
+        AccountApiSecurityVO vo = q.find();
 
+        if (vo == null || (StringUtils.isNotBlank(vo.getAllowIp()) && !vo.getAllowIp().contains(msg.getIP()))) {
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "Incorrect secretId or secretKey or illegal ip"));
+        } else {
+            reply.setSecretKey(vo.getSecretKey());
+        }
+
+        bus.reply(msg, reply);
     }
 
     private void handle(APILogInBySecretIdMsg msg) {
         APILogInBySecretIdReply reply = new APILogInBySecretIdReply();
 
-        String sessionUuid = identiyInterceptor.getSessionUuid(msg.getSecretId(), msg.getSecretKey(), msg.getIP());
+        SessionInventory session = identiyInterceptor.getSessionUuid(msg.getSecretId(), msg.getSecretKey());
 
-        reply.setSessionUuid(sessionUuid);
+        reply.setSession(session);
 
         bus.reply(msg, reply);
     }

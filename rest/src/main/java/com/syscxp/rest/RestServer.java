@@ -7,7 +7,6 @@ import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.retry.Retry;
 import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.header.Component;
-import com.syscxp.header.Constants;
 import com.syscxp.header.MapField;
 import com.syscxp.header.apimediator.ApiMediatorConstant;
 import com.syscxp.header.exception.CloudRuntimeException;
@@ -19,7 +18,6 @@ import com.syscxp.header.query.APIQueryReply;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.*;
-import com.syscxp.rest.sdk.DocumentGenerator;
 import com.syscxp.rest.sdk.SdkFile;
 import com.syscxp.rest.sdk.SdkTemplate;
 import com.syscxp.utils.*;
@@ -53,9 +51,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.syscxp.header.rest.RESTConstant.EMPTY_STRING;
 import static java.util.Arrays.asList;
 
 /**
@@ -75,9 +73,9 @@ public class RestServer implements Component, CloudBusEventListener {
     @Autowired
     private CloudBus bus;
     @Autowired
-    private AsyncRestApiStore asyncStore;
-    @Autowired
     private RESTFacade restf;
+    @Autowired
+    private AsyncRestApiStore asyncStore;
     @Autowired
     private PluginRegistry pluginRgty;
 
@@ -113,7 +111,7 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
 
-    public static void generateJavaSdk() {
+    public static void generateJavaSdk(String contentPath) {
         String path = PathUtil.join(System.getProperty("user.home"), "syscxp-sdk/java");
         File folder = new File(path);
         if (!folder.exists()) {
@@ -121,7 +119,9 @@ public class RestServer implements Component, CloudBusEventListener {
         }
 
         try {
+
             Class clz = GroovyUtils.getClass("scripts/SdkApiTemplate.groovy", RestServer.class.getClassLoader());
+
             Set<Class<?>> apiClasses = Platform.getReflections().getTypesAnnotatedWith(RestRequest.class)
                     .stream().filter(it -> it.isAnnotationPresent(RestRequest.class)).collect(Collectors.toSet());
 
@@ -132,11 +132,11 @@ public class RestServer implements Component, CloudBusEventListener {
                 }
 
                 SdkTemplate tmp = (SdkTemplate) clz.getConstructor(Class.class).newInstance(apiClz);
-                allFiles.addAll(tmp.generate());
+                allFiles.addAll(tmp.generate(contentPath));
             }
 
             SdkTemplate tmp = GroovyUtils.newInstance("scripts/SdkDataStructureGenerator.groovy", RestServer.class.getClassLoader());
-            allFiles.addAll(tmp.generate());
+            allFiles.addAll(tmp.generate(contentPath));
 
             for (SdkFile f : allFiles) {
                 //logger.debug(String.format("\n%s", f.getContent()));
@@ -253,6 +253,7 @@ public class RestServer implements Component, CloudBusEventListener {
         Map<String, String> requestMappingFields;
         String path;
         String action;
+        List<String> optionalPaths;
         List<String> optionalActions;
 
         Map<String, Field> allApiClassFields = new HashMap<>();
@@ -266,7 +267,15 @@ public class RestServer implements Component, CloudBusEventListener {
             apiClass = clz;
             requestAnnotation = at;
             apiResponseClass = at.responseClass();
-            path = String.format("%s/%s/%s", RestGlobalConfig.SYSCXP_API_SERVER_URL.value(), restf.getPath(), RestConstants.API_VERSION);
+
+            path = at.path().equals(EMPTY_STRING) ? restf.getPath(): at.path();
+            if (at.optionalPaths().length > 0) {
+                if (Arrays.stream(at.optionalPaths()).noneMatch(s -> s.equals(path))) {
+                    throw new CloudRuntimeException(String.format("Invalid @RestRequest of %s, either path must be set " +
+                            "in optionalPaths or optionalPaths is set to a empty list", apiClass.getName()));
+                }
+            }
+            path += RestConstants.API_VERSION;
 
             if (at.mappingFields().length > 0) {
                 requestMappingFields = new HashMap<>();
@@ -285,6 +294,7 @@ public class RestServer implements Component, CloudBusEventListener {
             DebugUtils.Assert(responseAnnotation != null, String.format("%s must be annotated with @RestResponse", apiResponseClass));
 
             Collections.addAll(optionalActions, at.optionalActions());
+            Collections.addAll(optionalPaths, at.optionalPaths());
 
             if (!at.isAction() && requestAnnotation.action().isEmpty()) {
                 throw new CloudRuntimeException(String.format("Invalid @RestRequest of %s, either isAction must be set to true or" +
@@ -929,7 +939,7 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     private void collectRestRequestErrConfigApi(List<String> errorApiList, Class apiClass, RestRequest apiRestRequest) {
-        if (apiRestRequest.isAction() && !RESTConstant.EMPTY_STRING.equals(apiRestRequest.action())) {
+        if (apiRestRequest.isAction() && !EMPTY_STRING.equals(apiRestRequest.action())) {
             errorApiList.add(String.format("[%s] RestRequest config error, Setting action is not allowed " +
                     "when isAction set true", apiClass.getName()));
         }

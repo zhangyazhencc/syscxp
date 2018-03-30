@@ -73,5 +73,7 @@
         <class>com.syscxp.header.tunnel.network.L3NetworkVO</class>
         <class>com.syscxp.header.tunnel.monitor.L3NetworkMonitorVO</class>
 
+        <class>com.syscxp.header.tunnel.tunnel.OutsideResourceVO</class>
+
     </persistence-unit>
 </persistence>

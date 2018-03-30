@@ -67,7 +67,7 @@ class SdkApiTemplate implements SdkTemplate {
 
         def fields = FieldUtils.getAllFields(apiMessageClass)
 
-        APIMessage msg = (APIMessage)apiMessageClass.newInstance()
+        APIMessage msg = (APIMessage) apiMessageClass.newInstance()
 
         def output = []
 
@@ -113,7 +113,7 @@ class SdkApiTemplate implements SdkTemplate {
                 if (apiParam.numberRange().length > 0) {
                     def nr = apiParam.numberRange() as List<Long>
                     def ns = []
-                    nr.forEach({ n -> return ns.add("${n}L")})
+                    nr.forEach({ n -> return ns.add("${n}L") })
 
                     annotationFields.add(String.format("numberRange = {%s}", ns.join(",")))
 
@@ -127,7 +127,7 @@ class SdkApiTemplate implements SdkTemplate {
             def fieldTypeName = f.getType().getName()
 
             if (Enum.class.isAssignableFrom(f.getType())) {
-                fieldTypeName = String.format("com.syscxp.sdk.%s",f.getType().getSimpleName())
+                fieldTypeName = String.format("com.syscxp.sdk.%s", f.getType().getSimpleName())
                 if (!enumClasses.contains(f.getType())) {
                     enumClasses.add(f.getType())
                 }
@@ -135,20 +135,22 @@ class SdkApiTemplate implements SdkTemplate {
 
             def fs = """\
     @Param(${annotationFields.join(", ")})
-    public ${fieldTypeName.toString()} ${f.getName()}${{ ->
-                f.accessible = true
-                
-                Object val = f.get(msg)
-                if (val == null) {
-                    return ";"
-                }
-                
-                if (val instanceof String) {
-                    return " = \"${StringEscapeUtils.escapeJava(val.toString())}\";"
-                } else {
-                    return " = ${val.toString()};"
-                }
-            }()}
+    public ${fieldTypeName.toString()} ${f.getName()}${
+                { ->
+                    f.accessible = true
+
+                    Object val = f.get(msg)
+                    if (val == null) {
+                        return ";"
+                    }
+
+                    if (val instanceof String) {
+                        return " = \"${StringEscapeUtils.escapeJava(val.toString())}\";"
+                    } else {
+                        return " = ${val.toString()};"
+                    }
+                }()
+            }
 """
             output.add(fs.toString())
         }
@@ -218,7 +220,9 @@ class SdkApiTemplate implements SdkTemplate {
         info.path = "${path}";
         info.needSession = ${!apiMessageClass.isAnnotationPresent(SuppressCredentialCheck.class)};
         info.needPoll = ${!APISyncCallMessage.class.isAssignableFrom(apiMessageClass)};
-        info.parameterName = "${requestAnnotation.isAction() ? StringUtils.uncapitalize(normalizeApiName()) : requestAnnotation.parameterName()}";
+        info.parameterName = "${
+            requestAnnotation.isAction() ? StringUtils.uncapitalize(normalizeApiName()) : requestAnnotation.parameterName()
+        }";
         return info;
     }
 """)
@@ -267,7 +271,7 @@ ${generateMethods(path)}
     def resolveEnumClass() {
         def ret = []
         if (!enumClasses.isEmpty()) {
-            for (Class clz:enumClasses) {
+            for (Class clz : enumClasses) {
                 def output = []
 
                 for (Enum e : clz.getEnumConstants()) {
@@ -288,7 +292,7 @@ ${output.join("\n")}
         return ret
     }
 
-    def generateAction() {
+    def generateAction(String contentPath) {
         SDK sdk = apiMessageClass.getAnnotation(SDK.class)
         if (sdk != null && sdk.actionsMapping().length != 0) {
             def ret = []
@@ -315,19 +319,29 @@ ${output.join("\n")}
 
             return ret
         } else {
-            if (requestAnnotation.path() == "null") {
-                throw new CloudRuntimeException("'path' is set to 'null' but no @SDK found on the class[${apiMessageClass.name}]")
+            String path = requestAnnotation.path()
+
+            if (contentPath != "null") {
+                path = contentPath
+            }
+            if (path == "") {
+                throw new CloudRuntimeException("'path' is set to '' on the class[${apiMessageClass.name}] but " +
+                        "'contentPath' is also set to ''")
+            }
+            if (requestAnnotation.path() != path && !requestAnnotation.optionalPaths().contains(path)) {
+                throw new CloudRuntimeException("Cannot find ${path} in the 'optionalPaths' of the @RestPath of " +
+                        "the class[${apiMessageClass.name}]")
             }
 
-            return [generateAction(generateClassName(), requestAnnotation.path())]
+            return [generateAction(generateClassName(), path)]
         }
     }
 
     @Override
-    List<SdkFile> generate() {
+    List<SdkFile> generate(String contentPath) {
         def ret = []
         try {
-            ret.addAll(generateAction())
+            ret.addAll(generateAction(contentPath))
             ret.addAll(resolveEnumClass())
             return ret
         } catch (Exception e) {

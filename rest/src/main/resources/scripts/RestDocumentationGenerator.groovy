@@ -171,9 +171,9 @@ class RestDocumentationGenerator implements DocumentGenerator {
             }
         }
 
-        URL url = Resources.getResource("doc/RestIntroduction_zh_cn.md")
+        URL url = Resources.getResource("doc/API使用手册.md")
         String context = Resources.toString(url, Charsets.UTF_8)
-        new File(PathUtil.join(dir.absolutePath, "RestIntroduction_zh_cn.md")).write(context)
+        new File(PathUtil.join(dir.absolutePath, "API使用手册.md")).write(context)
     }
 
     class RequestParamColumn {

@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * Created by zxhread on 17/8/3.
  */
 public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInterceptor, ResourceHavingAccountReference {
-    private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
+    protected static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     @Autowired
     protected DatabaseFacade dbf;
@@ -49,6 +49,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     private List<Class> resourceTypes;
 
     protected Map<String, SessionInventory> sessions = new ConcurrentHashMap<>();
+    protected Map<String, SessionInventory> apiSessions = new ConcurrentHashMap<>();
 
 
     class AccountCheckField {
@@ -127,12 +128,27 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 return uuids;
             }
 
+            private void deleteExpiredApiSessions() {
+                logger.debug("clear expired api session");
+                Timestamp curr = getCurrentSqlDate();
+
+                Iterator<Map.Entry<String, SessionInventory>> it = apiSessions.entrySet().iterator();
+                while(it.hasNext()){
+                    Map.Entry<String, SessionInventory> entry=it.next();
+                    SessionInventory sp = entry.getValue();
+                    if (curr.after(sp.getExpiredDate())) {
+                        it.remove();
+                    }
+                }
+            }
+
             @Override
             public void run() {
                 List<String> uuids = deleteExpiredSessions();
                 for (String uuid : uuids) {
                     sessions.remove(uuid);
                 }
+                deleteExpiredApiSessions();
             }
 
             @Override
@@ -484,7 +500,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         return sessions.get(sessionUuid);
     }
 
-    public abstract String getSecretKey(String secretId);
+    public abstract String getSecretKey(String secretId, String ip) throws Exception;
 
-    public abstract String getSessionUuid(String secretId, String secretKey, String ip);
+    public abstract SessionInventory getSessionUuid(String secretId, String secretKey) throws Exception;
 }
