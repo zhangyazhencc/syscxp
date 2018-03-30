@@ -42,6 +42,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -685,13 +686,23 @@ public class ManagementNodeManagerImpl extends AbstractService implements Manage
 
                 // When a node is dying, we may not receive the the dead notification because the message bus may be also dead
                 // at that moment. By checking if the node UUID is still in our hash ring, we know what nodes should be kicked out
-                for (String ourNode : destinationMaker.getManagementNodesInHashRing()) {
+                /*for (String ourNode : destinationMaker.getManagementNodesInHashRing()) {
                     if (!nodesInDb.contains(ourNode)) {
                         logger.warn(String.format("found that a management node[uuid:%s] had no heartbeat in database but still in our hash ring," +
                                 "notify that it's dead", ourNode));
                         nodeLifeCycle.nodeLeft(ourNode);
                     }
+                }*/
+                Iterator<String> it = destinationMaker.getManagementNodesInHashRing().iterator();
+                while (it.hasNext()) {
+                    String ourNode = it.next();
+                    if (!nodesInDb.contains(ourNode)) {
+                        logger.warn(String.format("found that a management node[uuid:%s] had no heartbeat in database but still in our hash ring," +
+                                "notify that it's dead", ourNode));
+                        it.remove();
+                    }
                 }
+
             }
 
             @Override
