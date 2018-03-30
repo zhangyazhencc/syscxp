@@ -10,6 +10,17 @@ public class APIGetSecretKeyMsg extends APISyncCallMessage {
     @APIParam(maxLength = 32)
     private String secretId;
 
+    @APIParam
+    private String IP;
+
+    public String getIP() {
+        return IP;
+    }
+
+    public void setIP(String IP) {
+        this.IP = IP;
+    }
+
     public String getSecretId() {
         return secretId;
     }

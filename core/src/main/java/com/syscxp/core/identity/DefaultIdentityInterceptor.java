@@ -5,6 +5,7 @@ import com.syscxp.header.account.APIGetSecretKeyMsg;
 import com.syscxp.header.account.APIGetSecretKeyReply;
 import com.syscxp.header.account.APILogInBySecretIdMsg;
 import com.syscxp.header.account.APILogInBySecretIdReply;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -66,23 +67,24 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public String getSecretKey(String secretId) {
+    public String getSecretKey(String secretId, String ip) throws Exception {
         APIGetSecretKeyMsg aMsg = new APIGetSecretKeyMsg();
         aMsg.setSecretId(secretId);
+        aMsg.setIP(ip);
         InnerMessageHelper.setMD5(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
 
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-            if (replay.isSuccess()) {
-                return ((APIGetSecretKeyReply) replay).getSecretKey();
-            }
+        APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        if (replay.isSuccess()) {
+            return ((APIGetSecretKeyReply) replay).getSecretKey();
+        } else {
+            logger.debug(replay.getError().toString());
+            throw new Exception(replay.getError().getDetails());
         }
-        return null;
     }
 
     @Override
-    public SessionInventory getSessionUuid(String secretId, String secretKey, String ip) {
+    public SessionInventory getSessionUuid(String secretId, String secretKey) throws Exception {
         SessionInventory session = apiSessions.get(secretId);
         if (session != null) {
             return session;
@@ -90,7 +92,6 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
         APILogInBySecretIdMsg aMsg = new APILogInBySecretIdMsg();
         aMsg.setSecretId(secretId);
         aMsg.setSecretKey(secretKey);
-        aMsg.setIP(ip);
         InnerMessageHelper.setMD5(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, RESTApiDecoder.dump(aMsg), RestAPIResponse.class);
 
@@ -99,8 +100,10 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
             session = ((APILogInBySecretIdReply) replay).getSession();
             apiSessions.put(secretId, session);
             return session;
+        } else {
+            logger.debug(replay.getError().toString());
+            throw new Exception(replay.getError().getDetails());
         }
-        return null;
     }
 
 }

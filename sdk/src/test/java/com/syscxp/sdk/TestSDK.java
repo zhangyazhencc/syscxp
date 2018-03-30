@@ -10,7 +10,6 @@ public class TestSDK {
 
     private String hostname = "192.168.211.99";
     private int port = 80;
-    private String path = "tunnel";
 
     private ZSConfig zsConfig;
 
@@ -27,7 +26,6 @@ public class TestSDK {
         zsConfig = new ZSConfig.Builder()
                 .setHostname(hostname)
                 .setPort(port)
-                .setContextPath(path)
                 .setDefaultPollingTimeout(10, TimeUnit.HOURS)
                 .setSecret(SecretId, SecretKey)
                 .build();

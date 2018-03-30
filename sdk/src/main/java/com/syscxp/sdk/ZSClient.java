@@ -292,9 +292,9 @@ public class ZSClient {
                     .collect(Collectors.toList());
             StringBuilder requestString = new StringBuilder(info.httpMethod);
             if (config.port == 80) {
-                requestString.append(String.format("%s://%s/%s/%s", config.scheme, config.hostname, config.contextPath, "v1"));
+                requestString.append(String.format("%s://%s/%s/%s", config.scheme, config.hostname, info.path, "v1"));
             } else {
-                requestString.append(String.format("%s://%s:%s/%s/%s", config.scheme, config.hostname, config.port, config.contextPath, "v1"));
+                requestString.append(String.format("%s://%s:%s/%s/%s", config.scheme, config.hostname, config.port, info.path, "v1"));
             }
 
 

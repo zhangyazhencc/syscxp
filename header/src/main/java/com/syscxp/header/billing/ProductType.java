@@ -5,7 +5,7 @@ public enum ProductType {
     EDGELINE,
     TUNNEL,
     VPN,
-
+    IDCTrustee,
     L3NETWORK,
 
     HOST,
