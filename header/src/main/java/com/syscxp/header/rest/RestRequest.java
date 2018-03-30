@@ -15,7 +15,7 @@ import static com.syscxp.header.rest.RESTConstant.EMPTY_STRING;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestRequest {
-    String path() default EMPTY_STRING;
+    String path();
 
     String[] optionalPaths() default {};
 
