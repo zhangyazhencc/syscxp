@@ -11,14 +11,13 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
 import org.springframework.http.HttpMethod;
 
-import java.util.List;
-
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2018-03-22.
  * @Description: 开启三层网络监控.
  */
 @RestRequest(
+        path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
         responseClass = APIConfigL3NetworkMonitorEvent.class
