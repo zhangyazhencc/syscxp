@@ -505,7 +505,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                             for (L3EndpointVO endpointVO : l3EndpointVOS) {
                                 List<MonitorAgentCommands.L3MonitorCommand> l3MonitorCmds = new ArrayList<>();
                                 List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
-                                        .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getEndpointUuid())
+                                        .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getUuid())
                                         .list();
                                 for (L3NetworkMonitorVO monitorVO : monitorVOS) {
                                     l3MonitorCmds.add(getAgentMonitorCommand(endpointVO, monitorVO));
