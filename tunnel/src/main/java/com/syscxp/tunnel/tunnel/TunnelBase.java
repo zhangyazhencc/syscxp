@@ -411,6 +411,10 @@ public class TunnelBase {
                 dbf.remove(qv);
             }
         }
+        //删除外采资源表
+        if(Q.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, vo.getUuid()).isExists()){
+            UpdateQuery.New(OutsideResourceVO.class).eq(OutsideResourceVO_.resourceUuid, vo.getUuid()).delete();
+        }
         //删除Monitor和速度测试
         UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, vo.getUuid()).delete();
         UpdateQuery.New(SpeedTestTunnelVO.class).eq(SpeedTestTunnelVO_.tunnelUuid, vo.getUuid()).delete();

@@ -6,9 +6,7 @@ import com.syscxp.core.db.*;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.switchs.*;
-import com.syscxp.header.tunnel.tunnel.TaskResourceVO;
-import com.syscxp.header.tunnel.tunnel.TaskStatus;
-import com.syscxp.header.tunnel.tunnel.TaskType;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelStrategy;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -171,7 +169,9 @@ public class L3NetworkBase {
         UpdateQuery.New(L3RouteVO.class)
                 .eq(L3RouteVO_.l3EndpointUuid, l3EndpointUuid)
                 .delete();
-
+        UpdateQuery.New(OutsideResourceVO.class)
+                .eq(OutsideResourceVO_.resourceUuid, l3EndpointUuid)
+                .delete();
     }
 
     /**
