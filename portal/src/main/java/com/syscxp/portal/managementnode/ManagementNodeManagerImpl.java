@@ -41,9 +41,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -658,7 +656,8 @@ public class ManagementNodeManagerImpl extends AbstractService implements Manage
                 List<ManagementNodeVO> all = heartBeatDBSource.jdbc.query(sql, new BeanPropertyRowMapper(ManagementNodeVO.class));
                 suspects.clear();
 
-                List<String> nodesInDb = new ArrayList<String>();
+                Set<String> nodesInDb = new HashSet<>();
+                nodesInDb.add(node.getUuid());
                 for (ManagementNodeVO vo : all) {
                     if (!StringDSL.issyscxpUuid(vo.getUuid())) {
                         logger.warn(String.format("found a weird management node, it's UUID not a syscxp uuid, delete it. %s",
