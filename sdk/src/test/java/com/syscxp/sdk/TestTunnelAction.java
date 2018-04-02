@@ -8,7 +8,7 @@ import java.util.List;
 
 public class TestTunnelAction extends TestSDK {
 
-    private String tunnelUuid = "6a96c9022f284fc383cdfe9fa75fa321";
+    private String tunnelUuid = "14f0aeb31dcb4526add6bea4ba724ac2";
     // 昆山
     private String endpointAUuid = "bdaa7f043dcd48bf94f0e8ebbc185438";
     // 法国
@@ -45,8 +45,11 @@ public class TestTunnelAction extends TestSDK {
     public void testQuery() {
         QueryTunnelAction action = new QueryTunnelAction();
         List<String> conditions = new ArrayList<>();
-        conditions.add("uuid=" + tunnelUuid);
         action.conditions = conditions;
+        action.uuid = "14f0aeb31dcb4526add6bea4ba724ac2";
+        action.start = 0;
+        action.limit = 2;
+        action.replyWithCount = true;
 
         QueryTunnelResult result = action.call().throwExceptionIfError().value;
 

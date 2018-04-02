@@ -19,15 +19,24 @@ import static java.util.Arrays.asList;
  * Author: wj
  */
 public class ApiResult {
-    ErrorCode error;
+    public String code;
+    public String message;
     private String resultString;
 
-    public ErrorCode getError() {
-        return error;
+    public String getCode() {
+        return code;
     }
 
-    void setError(ErrorCode error) {
-        this.error = error;
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     void setResultString(String resultString) {

@@ -1,7 +1,5 @@
 package com.syscxp.rest;
 
-import com.syscxp.header.errorcode.ErrorCode;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,9 +11,14 @@ import java.util.Map;
  */
 public class ApiResponse extends HashMap {
     private String result;
-    private ErrorCode error;
+    private String code = "OK";
+    private String message = "success";
     private Map<String, String> schema;
 
+    ApiResponse() {
+        put("code", code);
+        put("message", message);
+    }
     public String getResult() {
         return result;
     }
@@ -34,12 +37,21 @@ public class ApiResponse extends HashMap {
         put("result", result);
     }
 
-    public ErrorCode getError() {
-        return error;
+    public String getCode() {
+        return code;
     }
 
-    public void setError(ErrorCode error) {
-        this.error = error;
-        put("error", error);
+    public void setCode(String code) {
+        this.code = code;
+        put("code", code);
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+        put("message", message);
     }
 }

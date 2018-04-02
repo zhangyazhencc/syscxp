@@ -104,13 +104,104 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             handle((APICreateBuyEdgeLineOrderMsg) msg);
         }  else if (msg instanceof APICreateBuyIDCOrderMsg) {
             handle((APICreateBuyIDCOrderMsg) msg);
+        }  else if (msg instanceof APICreateIDCModifyOrderMsg) {
+            handle((APICreateIDCModifyOrderMsg) msg);
         } else if (msg instanceof APIRefundOrderMsg) {
             handle((APIRefundOrderMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
+    @Transactional
+    private void handle(APICreateIDCModifyOrderMsg msg) {
+        GLock lock = new GLock(String.format("id-%s", msg.getAccountUuid()), 3);
+        lock.lock();
+        try {
+            Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
+            AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+            BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+
+            OrderVO orderVo = new OrderVO();
+            setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), null, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
+            RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
+            if (renewVO == null) {
+                throw new IllegalArgumentException("could not find the product purchased history ");
+            }
+
+            BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(), msg.getExpiredTime().toLocalDateTime());
+            BigDecimal addAvgPrice = BigDecimal.valueOf(msg.getFixedCost()).divide(notUseMonth,4,RoundingMode.HALF_UP);
+
+            BigDecimal subMoney = BigDecimal.valueOf(msg.getFixedCost());
+            orderVo.setProductEffectTimeStart(currentTimestamp);
+            orderVo.setProductEffectTimeEnd(msg.getExpiredTime());
+            orderVo.setLastPriceOneMonth(renewVO.getPriceOneMonth());
+
+            if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
+                if (notUseMonth.intValue() == 0) {
+                    orderVo.setType(OrderType.DOWNGRADE);
+                }else{
+                    orderVo.setType(OrderType.UPGRADE);
+                }
+
+                notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
+                addAvgPrice = BigDecimal.valueOf(msg.getFixedCost()).divide(notUseMonth,4,RoundingMode.HALF_UP);
+                if (subMoney.compareTo(mayPayTotal) > 0) {
+                    throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+                }
+
+                orderVo.setPrice(subMoney);
+                payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, subMoney, currentTimestamp);
+
+            } else { //downgrade
+                BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
+                orderVo.setType(OrderType.DOWNGRADE);
+                subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.valueOf(msg.getFixedCost()), true));
+                if (subMoney.compareTo(valuePayCash.negate()) < 0) {
+                    subMoney = valuePayCash.negate();
+                }
+                orderVo.setPayCash(subMoney);
+                orderVo.setPayPresent(BigDecimal.ZERO);
+                orderVo.setOriginalPrice(subMoney);
+                orderVo.setPrice(subMoney);
+
+                BigDecimal remainCash = abvo.getCashBalance().add(subMoney.negate());
+                abvo.setCashBalance(remainCash);
+                int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+                String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+                new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, subMoney.negate(), BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null, orderVo.getUuid(), null);
+
+            }
+            renewVO.setPriceOneMonth(renewVO.getPriceOneMonth().add(addAvgPrice));
+            renewVO.setPriceDiscount(renewVO.getPriceOneMonth().add(addAvgPrice));
+            renewVO.setDescriptionData(orderVo.getDescriptionData());
+
+            saveIDCNotifyOrderVO(msg, orderVo.getUuid());
+
+            dbf.getEntityManager().merge(renewVO);
+            dbf.getEntityManager().merge(abvo);
+            dbf.getEntityManager().persist(orderVo);
+            dbf.getEntityManager().flush();
+
+            OrderInventory inventory = OrderInventory.valueOf(orderVo);
+            APICreateOrderReply reply = new APICreateOrderReply();
+            reply.setInventory(inventory);
+            bus.reply(msg, reply);
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    private OrderVO getBuyOrder(String productUuid,ProductType productType) {
+        SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
+        query.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, productUuid);
+        query.add(OrderVO_.type, SimpleQuery.Op.EQ, OrderType.BUY);
+        query.add(OrderVO_.productType, SimpleQuery.Op.EQ, productType);
+        return query.find();
+    }
+
+    @Transactional
     private void handle(APICreateBuyIDCOrderMsg msg) {
         GLock lock = new GLock(String.format("id-%s", msg.getAccountUuid()), 3);
         lock.lock();
@@ -119,10 +210,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
             BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
             BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
-            BigDecimal amount = duration.multiply(BigDecimal.valueOf(msg.getPrice()));
+            BigDecimal amount = BigDecimal.valueOf(msg.getPrice());
             if (amount.compareTo(mayPayTotal) > 0) {
                 throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
             }
+            /*根据总价计算单月价格*/
+            BigDecimal avgIDCPrice = avgIDCPrice(duration, msg.getProductChargeModel(), BigDecimal.valueOf(msg.getPrice()));
 
             OrderVO orderVo = new OrderVO();
             setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), ProductType.EDGELINE, msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), msg.getDuration(), msg.getCallBackData());
@@ -135,7 +228,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
 
-            saveRenewVO(orderVo.getProductChargeModel(), orderVo.getProductUuid(), orderVo.getAccountUuid(), orderVo.getProductName(), orderVo.getProductType(), orderVo.getDescriptionData(), Timestamp.valueOf(expiredTime), BigDecimal.valueOf(msg.getPrice()));
+            saveRenewVO(orderVo.getProductChargeModel(), orderVo.getProductUuid(), orderVo.getAccountUuid(), orderVo.getProductName(), orderVo.getProductType(), orderVo.getDescriptionData(), Timestamp.valueOf(expiredTime),avgIDCPrice);
 
             if (!StringUtils.isEmpty(msg.getNotifyUrl())) {
                 saveNotify(msg.getNotifyUrl(), msg.getAccountUuid(), msg.getProductUuid(), orderVo.getUuid());
@@ -150,6 +243,23 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } finally {
             lock.unlock();
         }
+    }
+
+    private BigDecimal avgIDCPrice(BigDecimal duration,ProductChargeModel model,BigDecimal totalPrice){
+        BigDecimal priceMonth = BigDecimal.ZERO;
+        switch (model) {
+            case BY_MONTH:
+                priceMonth = totalPrice.divide(duration,4, RoundingMode.HALF_UP);
+                break;
+            case BY_YEAR:
+                priceMonth = totalPrice.divide(duration.multiply(BigDecimal.valueOf(12)),4,BigDecimal.ROUND_HALF_UP);
+                break;
+            case BY_WEEK:
+                priceMonth = totalPrice.divide(duration.multiply(BigDecimal.valueOf(7)).divide(BigDecimal.valueOf(30), 4, BigDecimal.ROUND_HALF_UP), 4, BigDecimal.ROUND_HALF_UP);
+                break;
+        }
+
+        return priceMonth;
     }
 
     @Transactional
@@ -726,6 +836,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional
+    private void saveIDCNotifyOrderVO(APICreateIDCModifyOrderMsg msg, String orderUuid) {
+        saveNotify(msg.getNotifyUrl(), msg.getAccountUuid(), msg.getProductUuid(), orderUuid);
+    }
+
+    @Transactional
     private void saveNotifyBuyOrderVO(ProductInfoForOrder msg, String orderUuid) {
         saveNotify(msg.getNotifyUrl(), msg.getAccountUuid(), msg.getProductUuid(), orderUuid);
     }
@@ -746,7 +861,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private BigDecimal getNotUseMonths(LocalDateTime stateTime, LocalDateTime expiredTime) {
         long months = Math.abs(ChronoUnit.MONTHS.between(stateTime, expiredTime));
-        long days = 0;
+        long days = 0l;
         if (months > 0) {
             days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
         } else {

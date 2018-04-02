@@ -155,9 +155,8 @@ public class ZSClient {
                     completion.complete(res);
                 } catch (Throwable t) {
                     res = new ApiResult();
-                    res.error = new ErrorCode();
-                    res.error.code = Constants.INTERNAL_ERROR;
-                    res.error.details = t.getMessage();
+                    res.code = Constants.INTERNAL_ERROR;
+                    res.message = t.getMessage();
                     completion.complete(res);
                 }
             }
@@ -227,11 +226,8 @@ public class ZSClient {
 
                 if (resultFromWebHook == null) {
                     resultFromWebHook = new ApiResult();
-                    resultFromWebHook.error = errorCode(
-                            Constants.POLLING_TIMEOUT_ERROR,
-                            "timeout of polling async API result",
-                            String.format("polling result of api[%s] timeout after %s ms", action.getClass().getSimpleName(), timeout)
-                    );
+                    resultFromWebHook.code = Constants.POLLING_TIMEOUT_ERROR;
+                    resultFromWebHook.message = String.format("polling result of api[%s] timeout after %s ms", action.getClass().getSimpleName(), timeout);
                 }
 
                 waittingApis.remove(jobUuid);
@@ -311,6 +307,9 @@ public class ZSClient {
             Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
             vars.putAll(getCommonParamMap());
 
+            if (qaction.uuid != null) {
+                vars.put("uuid", s(String.format("%s", qaction.uuid)));
+            }
             if (!qaction.conditions.isEmpty()) {
                 String[] q = qaction.conditions.toArray(new String[qaction.conditions.size()]);
                 Arrays.sort(q);
@@ -481,11 +480,13 @@ public class ZSClient {
                             count += interval;
                             if (count >= expiredTime) {
                                 ApiResult res = new ApiResult();
-                                res.error = errorCode(
+                                /*res.error = errorCode(
                                         Constants.POLLING_TIMEOUT_ERROR,
                                         "timeout of polling async API result",
                                         String.format("polling result of api[%s] timeout after %s ms", action.getClass().getSimpleName(), timeout)
-                                );
+                                );*/
+                                res.code = Constants.POLLING_TIMEOUT_ERROR;
+                                res.message = String.format("polling result of api[%s] timeout after %s ms", action.getClass().getSimpleName(), timeout);
 
                                 done(res);
                             }
@@ -494,11 +495,13 @@ public class ZSClient {
                         //TODO: logging
 
                         ApiResult res = new ApiResult();
-                        res.error = errorCode(
+                        /*res.error = errorCode(
                                 Constants.INTERNAL_ERROR,
                                 "an internal error happened",
                                 e.getMessage()
-                        );
+                        );*/
+                        res.code = Constants.INTERNAL_ERROR;
+                        res.message = e.getMessage();
 
                         done(res);
                     }
@@ -568,11 +571,8 @@ public class ZSClient {
             }
 
             ApiResult res = new ApiResult();
-            res.error = errorCode(
-                    Constants.POLLING_TIMEOUT_ERROR,
-                    "timeout of polling async API result",
-                    String.format("polling result of api[%s] timeout after %s ms", action.getClass().getSimpleName(), timeout)
-            );
+            res.code = Constants.POLLING_TIMEOUT_ERROR;
+            res.message = String.format("polling result of api[%s] timeout after %s ms", action.getClass().getSimpleName(), timeout);
 
             return res;
         }
@@ -592,11 +592,14 @@ public class ZSClient {
 
         private ApiResult httpError(int code, String details) {
             ApiResult res = new ApiResult();
-            res.error = errorCode(
+            /*res.error = errorCode(
                     Constants.HTTP_ERROR,
                     String.format("the http status code[%s] indicates a failure happened", code),
                     details
-            );
+            );*/
+            res.code = Constants.HTTP_ERROR;
+            res.message = details;
+
             return res;
         }
 
@@ -604,12 +607,12 @@ public class ZSClient {
             return doCall();
         }
 
-        private long getTimeout(){
-            Long timeout = (Long)action.getNonAPIParameterValue("timeout", false);
+        private long getTimeout() {
+            Long timeout = (Long) action.getNonAPIParameterValue("timeout", false);
             return timeout == ACTION_DEFAULT_TIMEOUT ? config.defaultPollingTimeout : timeout;
         }
 
-        private long getInterval(){
+        private long getInterval() {
             Long interval = (Long) action.getNonAPIParameterValue("pollingInterval", false);
             return interval == ACTION_DEFAULT_POLLINGINTERVAL ? config.defaultPollingInterval : interval;
         }

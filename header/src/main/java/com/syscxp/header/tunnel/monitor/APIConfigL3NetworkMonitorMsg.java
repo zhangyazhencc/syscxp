@@ -11,6 +11,8 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
 import org.springframework.http.HttpMethod;
 
+import java.util.List;
+
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2018-03-22.
@@ -31,7 +33,7 @@ public class APIConfigL3NetworkMonitorMsg extends APIMessage {
     @APIParam(required = false, maxLength = 64)
     private String monitorIp;
 
-    private String[] dstL3EndPointUuids;
+    private List<String> dstL3EndPointUuids;
 
     public String getL3EndPointUuid() {
         return l3EndPointUuid;
@@ -49,11 +51,11 @@ public class APIConfigL3NetworkMonitorMsg extends APIMessage {
         this.monitorIp = monitorIp;
     }
 
-    public String[] getDstL3EndPointUuids() {
+    public List<String> getDstL3EndPointUuids() {
         return dstL3EndPointUuids;
     }
 
-    public void setDstL3EndPointUuids(String[] dstL3EndPointUuids) {
+    public void setDstL3EndPointUuids(List<String> dstL3EndPointUuids) {
         this.dstL3EndPointUuids = dstL3EndPointUuids;
     }
 

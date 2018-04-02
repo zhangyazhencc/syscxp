@@ -5,6 +5,8 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
+import java.util.List;
+
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-11-13.
@@ -20,7 +22,7 @@ public class APIQueryMonitorResultMsg extends APISyncCallMessage {
     private Long end;
 
     @APIParam(emptyString = false)
-    private String[] metrics;
+    private List<String> metrics;
 
     @APIParam(emptyString = false, resourceType = TunnelVO.class)
     private String tunnelUuid;
@@ -49,11 +51,11 @@ public class APIQueryMonitorResultMsg extends APISyncCallMessage {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public String[] getMetrics() {
+    public List<String> getMetrics() {
         return metrics;
     }
 
-    public void setMetrics(String[] metrics) {
+    public void setMetrics(List<String> metrics) {
         this.metrics = metrics;
     }
 }

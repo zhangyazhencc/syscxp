@@ -9,22 +9,34 @@ import java.util.ArrayList;
  * Author: wj
  */
 public abstract class QueryAction extends AbstractAction {
+    @Param(required = true, nonempty = false, nullElements = false, emptyString = true, noTrim = false)
     public java.util.List<String> conditions = new ArrayList<>();
 
-    public Integer limit;
+    @Param(required = false)
+    public java.lang.String uuid;
 
-    public Integer start;
+    @Param(required = false)
+    public java.lang.Integer limit;
 
+    @Param(required = false)
+    public java.lang.Integer start;
+
+    @Param(required = false)
     public Boolean count;
 
-    public String groupBy;
+    @Param(required = false)
+    public java.lang.String groupBy;
 
+    @Param(required = false)
     public Boolean replyWithCount;
 
-    public String sortBy;
+    @Param(required = false)
+    public java.lang.String sortBy;
 
-    public String sortDirection;
+    @Param(required = false, validValues = {"asc","desc"}, nonempty = false, nullElements = false, emptyString = true, noTrim = false)
+    public java.lang.String sortDirection;
 
+    @Param(required = false)
     public java.util.List fields;
 
 }

@@ -9,9 +9,9 @@
         <class>com.syscxp.core.config.GlobalConfigVO</class>
         <class>com.syscxp.header.managementnode.ManagementNodeVO</class>
 
-        <class>com.syscxp.idc.header.trustee.TrusteeVO</class>
-        <class>com.syscxp.idc.header.trustee.TrustDetailVO</class>
-        <class>com.syscxp.idc.header.trustee.ResourceOrderEffectiveVO</class>
+        <class>com.syscxp.idc.header.IdcVO</class>
+        <class>com.syscxp.idc.header.IdcDetailVO</class>
+        <class>com.syscxp.idc.header.ResourceOrderEffectiveVO</class>
 
     </persistence-unit>
 </persistence>
