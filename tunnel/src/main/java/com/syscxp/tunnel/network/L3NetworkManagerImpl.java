@@ -12,6 +12,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.configuration.MotifyType;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
@@ -26,6 +27,10 @@ import com.syscxp.utils.network.NetworkUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
@@ -89,6 +94,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             handle((APIEnableL3EndpointMsg) msg);
         }else if(msg instanceof APIDisableL3EndpointMsg){
             handle((APIDisableL3EndpointMsg) msg);
+        }else if(msg instanceof APIGetModifyBandwidthNumMsg){
+            handle((APIGetModifyBandwidthNumMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -523,6 +530,25 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
             });
         }
 
+    }
+
+    /**
+     * 调整带宽的次数查询
+     */
+    private void handle(APIGetModifyBandwidthNumMsg msg) {
+        LocalDateTime dateTime =
+                LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
+        Long times = Q.New(ResourceMotifyRecordVO.class).eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
+                .gte(ResourceMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
+        Integer maxModifies =
+                Q.New(L3NetworkVO.class).eq(L3NetworkVO_.uuid, msg.getUuid()).select(L3NetworkVO_.maxModifies)
+                        .findValue();
+        APIGetModifyBandwidthNumReply reply = new APIGetModifyBandwidthNumReply();
+        reply.setMaxModifies(maxModifies);
+        reply.setHasModifies(Math.toIntExact(times));
+        reply.setLeftModifies((int) (maxModifies - times));
+
+        bus.reply(msg, reply);
     }
 
 

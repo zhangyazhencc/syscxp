@@ -616,98 +616,13 @@ CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ########################################################
-#解决方案#
-DROP TABLE IF EXISTS `SolutionVO`;
-CREATE TABLE `SolutionVO` (
-  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
-  `accountUuid` varchar(32) NOT  NULL COMMENT '账户uuid',
-  `name` varchar(128) NOT NULL COMMENT '名称',
-  `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `totalCost` decimal(12,4) DEFAULT 0 COMMENT '预估费用',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-#物理接口#
-DROP TABLE IF EXISTS `SolutionInterfaceVO`;
-CREATE TABLE `SolutionInterfaceVO` (
-  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
-  `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
-  `name` varchar(128) COMMENT '名称',
-  `cost` decimal(12,4) DEFAULT 0 COMMENT '费用',
-  `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
-  `duration` int(11) NOT NULL COMMENT '购买时长',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
-  `portOfferingUuid` varchar(32) NOT NULL COMMENT '端口规格(类型)',
-  PRIMARY KEY  (`uuid`),
-  CONSTRAINT `fkSolutionInterfaceVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-#云专线#
-DROP TABLE IF EXISTS `SolutionTunnelVO`;
-CREATE TABLE `SolutionTunnelVO` (
-  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
-  `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
-  `name` varchar(128) COMMENT '名称',
-  `cost` decimal(12,4) DEFAULT 0 COMMENT '费用',
-  `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
-  `duration` int(11) NOT NULL COMMENT '购买时长',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  `isShareA` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT 'A端是否共享端口',
-  `isShareZ` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT 'Z端是否共享端口',
-  `endpointUuidA` varchar(32) NOT NULL COMMENT '连接点A',
-  `endpointUuidZ` varchar(32) NOT NULL COMMENT '连接点Z',
-  `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',
-  `innerConnectedEndpointUuid` varchar(32) DEFAULT NULL COMMENT '中间点UUID',
-  PRIMARY KEY  (`uuid`),
-  CONSTRAINT `fkSolutionTunnelVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-#VPN网关#
-DROP TABLE IF EXISTS `SolutionVpnVO`;
-CREATE TABLE SolutionVpnVO (
-  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
-  `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
-  `name` varchar(128) COMMENT '名称',
-  `cost` decimal(12,4) DEFAULT 0 COMMENT '费用',
-  `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
-  `duration` int(11) NOT NULL COMMENT '购买时长',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  `solutionTunnelUuid` varchar(32) NOT NULL COMMENT '专线',
-  `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
-  `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',
-  PRIMARY KEY  (`uuid`),
-  CONSTRAINT `fkSolutionVpnVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-ALTER TABLE SolutionVpnVO ADD CONSTRAINT fkSolutionVpnVOSolutionTunnelVO FOREIGN KEY (solutionTunnelUuid) REFERENCES SolutionTunnelVO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
-
-########################################################
 
 CREATE INDEX idxTaskResourceVOcreateDate ON TaskResourceVO (lastOpDate);
 
 
 #######################################################
 
-DROP TABLE IF EXISTS `ShareSolutionVO`;
-#分享方案#
-CREATE TABLE  `ShareSolutionVO` (
-    `uuid` varchar(32) NOT NULL COMMENT 'UUID',
-    `accountUuid` varchar(32) NOT NULL,
-    `ownerAccountUuid` varchar(32) NOT NULL,
-    `solutionUuid` varchar(32) NOT NULL,
-    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
-    `createDate` timestamp,
-    PRIMARY KEY  (`uuid`),
-    UNIQUE KEY `ukShareSolutionVO` (`accountUuid`,`ownerAccountUuid`,`solutionUuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE `SolutionVO` ADD COLUMN `isShare` tinyint(1) unsigned DEFAULT 0 COMMENT '是否共享';
 
 ALTER TABLE `syscxp_tunnel`.`TunnelEO` ADD COLUMN `number` bigint unsigned AUTO_INCREMENT Unique, AUTO_INCREMENT=5000;
 DROP VIEW IF EXISTS `syscxp_tunnel`.`TunnelVO`;

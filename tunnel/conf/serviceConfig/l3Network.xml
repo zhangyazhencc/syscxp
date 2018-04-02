@@ -64,6 +64,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.network.APIGetModifyBandwidthNumMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.network.APIQueryL3NetworkMsg</name>
         <serviceId>query</serviceId>
     </message>
