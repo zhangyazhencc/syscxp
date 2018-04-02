@@ -1,4 +1,4 @@
-package com.syscxp.idc.header.trustee;
+package com.syscxp.idc.header;
 
 import com.syscxp.header.billing.NotifyCallBackData;
 

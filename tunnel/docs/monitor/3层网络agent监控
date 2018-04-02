@@ -125,3 +125,127 @@
     get_running_route();
     get_running_thread();
 
+
+##############################################################################################
+# encoding: utf-8
+
+from flask import Flask
+from utils import log
+from utils import http
+from utils import jsonobject
+import json
+
+app = Flask(__name__)
+logger = log.get_logger(__name__)
+
+l3route_runnings = {}
+l3monitor_runnings = {}
+
+
+def l3_current_handler(l3route):
+    logger.info(l3route['l3endpoint_id'])
+    route_id = l3route['l3endpoint_id']
+    vlan = str(l3route['vlan'])
+
+    # l3route['monitor_ip'] = l3route['monitor_ip'].split('/')[0]
+    l3route['if_name'] = l3route['interface_name'] + "." + vlan
+    l3route['netns_name'] = l3route['interface_name'] + "_" + vlan
+
+    if route_id not in l3route_runnings.keys():
+        l3route_runnings[route_id] = l3route
+        add_route(l3route)
+        start_monitor(l3route)
+    elif route_id in l3route_runnings.keys():
+        l3route_running = l3route_runnings[route_id]
+        if l3route['monitor_ip'] != l3route_running['monitor_ip']:
+            l3route_running['monitor_ip'] = l3route['monitor_ip']
+            update_monitor_ip(l3route)
+        update_monitor(l3route)
+
+def l3_runnings_handler(l3routes):
+    for l3route_running in l3route_runnings:
+        pass
+
+
+    # for l3route in l3routes:
+    #     if l3route["l3endpoint_id"] not in l3route_runnings.keys():
+    #         del_route(l3route)
+    #         stop_monitor(l3route)
+
+def add_route(l3route):
+    logger.info(u'添加路由 %s' % l3route['l3endpoint_id'])
+
+
+def del_route(l3route):
+    logger.info(u'删除路由 %s' % l3route['l3endpoint_id'])
+
+
+def update_monitor_ip(l3route):
+    logger.info(u'更新监控ip %s' % l3route['l3endpoint_id'])
+
+
+def start_monitor(l3route):
+    for monitor in l3route['monitors']:
+        logger.info(u'启动监控线程 %s' % monitor['dst_l3endpoint_id'])
+
+
+def stop_monitor(l3route):
+    for monitor in l3route['monitors']:
+        logger.info(u'停止监控线程 %s' % monitor['dst_l3endpoint_id'])
+
+
+def update_monitor(l3route):
+    for monitor in l3route['monitors']:
+        if monitor['dst_l3endpoint_id'] not in l3monitor_runnings.keys():
+            logger.info(u'更新监控线程 %s' % monitor['dst_l3endpoint_id'])
+
+    for monitor in l3monitor_runnings:
+        pass
+
+
+def start_ping_thread():
+    pass
+
+
+def stop_ping_thread():
+    pass
+
+
+def monitors_handler(monitors):
+    for monitor in monitors:
+        logger.info(monitor['dst_l3endpoint_id'])
+
+
+@app.route('/')
+def test():
+    cmd = {"monitorHostIp": "192.168.211.23"}
+    url = 'http://192.168.211.96:8083/tunnel/asyncrest/sendcommand'
+    logger.info("-- [get l3 info start...] commandPath:MONITOR/L3INFO--URL:%s -- DATA:%s --" % (
+        url, cmd))
+
+    ret = http.json_dump_post(url, cmd, {'commandPath': 'MONITOR/L3INFO'})
+    #resp = jsonobject.loads(ret)
+    resp = json.loads(ret)
+
+    if resp['success']:
+        # logger.info("------ resp info ---- %s" % ret)
+
+        logger.info(resp['data'])
+
+        # l3route = json.loads(resp.data.l3route)
+
+        l3routes = resp['data']
+        for l3info in l3_routes:
+            l3route = l3info['l3route']
+            l3route['monitors'] = l3info['monitors']
+
+            l3_current_handler(l3route)
+
+        l3_runnings_handler(l3routes)
+    else:
+        logger.warning('failed to get l3 info ! Error: %s' % resp.msg)
+    return ret
+
+
+if __name__ == '__main__':
+    app.run()

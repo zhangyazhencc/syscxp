@@ -1,14 +1,14 @@
-package com.syscxp.idc.header.trustee;
+package com.syscxp.idc.header;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APICreateTrusteeEvent extends APIEvent {
+public class APITrusteeRenewalEvent extends APIEvent{
 
     private TrusteeInventory inventory;
 
-    public APICreateTrusteeEvent(){}
+    public APITrusteeRenewalEvent(){}
 
-    public APICreateTrusteeEvent(String apiId){super(apiId);}
+    public APITrusteeRenewalEvent(String apiId){super(apiId);}
 
     public TrusteeInventory getInventory() {
         return inventory;
@@ -17,5 +17,4 @@ public class APICreateTrusteeEvent extends APIEvent {
     public void setInventory(TrusteeInventory inventory) {
         this.inventory = inventory;
     }
-
 }
