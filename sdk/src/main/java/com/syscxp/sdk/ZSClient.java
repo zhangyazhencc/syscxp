@@ -307,6 +307,9 @@ public class ZSClient {
             Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
             vars.putAll(getCommonParamMap());
 
+            if (qaction.uuid != null) {
+                vars.put("uuid", s(String.format("%s", qaction.uuid)));
+            }
             if (!qaction.conditions.isEmpty()) {
                 String[] q = qaction.conditions.toArray(new String[qaction.conditions.size()]);
                 Arrays.sort(q);

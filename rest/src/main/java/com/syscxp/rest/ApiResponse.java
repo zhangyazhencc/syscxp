@@ -15,6 +15,10 @@ public class ApiResponse extends HashMap {
     private String message = "success";
     private Map<String, String> schema;
 
+    ApiResponse() {
+        put("code", code);
+        put("message", message);
+    }
     public String getResult() {
         return result;
     }
