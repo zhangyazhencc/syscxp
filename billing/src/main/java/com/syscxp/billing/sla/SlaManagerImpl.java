@@ -164,6 +164,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 slaCmd.setAccountUuid(slaCompensateVO.getAccountUuid());
                 slaCmd.setDuration(slaCompensateVO.getDuration());
                 slaCmd.setProductType(slaCompensateVO.getProductType());
+                slaCmd.setSlaUuid(slaCompensateVO.getUuid());
                 slaCmd.setUuid(slaCompensateVO.getProductUuid());
                 String body = JSONObjectUtil.toJsonString(slaCmd);
 
