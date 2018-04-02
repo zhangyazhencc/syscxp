@@ -60,7 +60,7 @@ ALTER TABLE JobQueueEntryVO ADD CONSTRAINT fkJobQueueEntryVOManagementNodeVO FOR
 ALTER TABLE JobQueueVO ADD CONSTRAINT fkJobQueueVOManagementNodeVO FOREIGN KEY (workerManagementNodeId) REFERENCES ManagementNodeVO (uuid) ON DELETE SET NULL;
 
 
-CREATE TABLE syscxp_idc.TrusteeEO (
+CREATE TABLE syscxp_idc.IdcEO (
 		`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `name` varchar(128) NOT NULL COMMENT '名称',
 		`description` varchar(255),
@@ -80,16 +80,16 @@ CREATE TABLE syscxp_idc.TrusteeEO (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `TrusteeVO` AS SELECT
+CREATE VIEW `IdcVO` AS SELECT
     `uuid`, `name`, `description`, `accountName`,`accountUuid`,`company`,
 		`contractNum`,`nodeUuid`,`nodeName`,`productChargeModel`,`totalCost`,
 		`expireDate`, `lastOpDate`, `createDate`
 FROM `TrusteeEO` WHERE deleted IS NULL;
 
-CREATE TABLE syscxp_idc.TrustDetailVO (
+CREATE TABLE syscxp_idc.IdcDetailVO (
 		`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 		`name` varchar(32) NOT NULL COMMENT '名称',
-    `trusteeUuid` varchar(32) NOT NULL COMMENT '托管uuid',
+    `idcUuid` varchar(32) NOT NULL COMMENT '托管uuid',
 		`cost` decimal(12,4) DEFAULT 0 COMMENT '费用',
 		`description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
