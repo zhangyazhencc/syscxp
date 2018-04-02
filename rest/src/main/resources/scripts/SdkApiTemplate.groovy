@@ -175,7 +175,7 @@ class SdkApiTemplate implements SdkTemplate {
         Result ret = new Result();
         if (res.code != null) {
             ret.code = res.code;
-            ret.massage = res.massage;
+            ret.message = res.message;
             return ret;
         }
         
