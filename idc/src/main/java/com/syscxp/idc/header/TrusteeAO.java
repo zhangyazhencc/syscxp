@@ -1,53 +1,73 @@
-package com.syscxp.idc.header.trustee;
+package com.syscxp.idc.header;
+
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.identity.Action;
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.APIParam;
-import com.syscxp.idc.trustee.TrusteeConstant;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.Map;
+import java.sql.Timestamp;
 
-@Action(services = {TrusteeConstant.SERVICE_ID}, category = TrusteeConstant.ACTION_CATEGORY, names = {"create"})
-public class APICreateTrusteeMsg extends APIMessage {
+@MappedSuperclass
+public class TrusteeAO {
+    @Id
+    @Column
+    private String uuid;
 
-    @APIParam(emptyString = false)
+    @Column
     private String name;
 
-    @APIParam(required = false)
+    @Column
     private String description;
 
-    @APIParam(emptyString = false)
+    @Column
     private String accountName;
 
-    @APIParam(emptyString = false)
+    @Column
     private String accountUuid;
 
-    @APIParam(emptyString = false)
+    @Column
     private String company;
 
-    @APIParam(emptyString = false)
+    @Column
     private String contractNum;
 
-    @APIParam(emptyString = false)
+    @Column
     private String nodeUuid;
 
-    @APIParam(emptyString = false)
+    @Column
     private String nodeName;
 
-    @APIParam(emptyString = false)
+    @Column
+    @Enumerated(EnumType.STRING)
     private ProductChargeModel productChargeModel;
 
-    @APIParam(emptyString = false)
+    @Column
     private int duration;
 
-    @APIParam(emptyString = false)
+    @Column
     private BigDecimal totalCost;
 
-    @APIParam
-    private Map<String,BigDecimal> trusteeDetails;
+    @Column
+    private Timestamp expireDate;
 
+    @Column
+    private Timestamp lastOpDate;
+
+    @Column
+    private Timestamp createDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public String getName() {
         return name;
@@ -137,12 +157,27 @@ public class APICreateTrusteeMsg extends APIMessage {
         this.totalCost = totalCost;
     }
 
-    public Map<String, BigDecimal> getTrusteeDetails() {
-        return trusteeDetails;
+    public Timestamp getExpireDate() {
+        return expireDate;
     }
 
-    public void setTrusteeDetails(Map<String, BigDecimal> trusteeDetails) {
-        this.trusteeDetails = trusteeDetails;
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
 }
