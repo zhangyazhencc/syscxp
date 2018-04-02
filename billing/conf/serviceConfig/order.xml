@@ -59,6 +59,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.billing.APICreateIDCModifyOrderMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.order.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>
     </message>
