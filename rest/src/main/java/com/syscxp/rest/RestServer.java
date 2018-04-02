@@ -7,6 +7,7 @@ import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.retry.Retry;
 import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.header.Component;
+import com.syscxp.header.Constants;
 import com.syscxp.header.MapField;
 import com.syscxp.header.apimediator.ApiMediatorConstant;
 import com.syscxp.header.exception.CloudRuntimeException;
@@ -18,6 +19,7 @@ import com.syscxp.header.query.APIQueryReply;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.*;
+import com.syscxp.rest.sdk.DocumentGenerator;
 import com.syscxp.rest.sdk.SdkFile;
 import com.syscxp.rest.sdk.SdkTemplate;
 import com.syscxp.utils.*;
@@ -110,6 +112,11 @@ public class RestServer implements Component, CloudBusEventListener {
         }
     }
 
+    public static void generateMarkdownDoc(String path) {
+        System.setProperty(Constants.UUID_FOR_EXAMPLE, "true");
+        DocumentGenerator rg =  GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
+        rg.generateMarkDown(path, PathUtil.join(System.getProperty("user.home"), "zstack-markdown"));
+    }
 
     public static void generateJavaSdk(String contentPath) {
         String path = PathUtil.join(System.getProperty("user.home"), "syscxp-sdk/java");
