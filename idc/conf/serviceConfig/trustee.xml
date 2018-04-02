@@ -4,31 +4,31 @@
     <interceptor>TrusteeApiInterceptor</interceptor>
 
     <message>
-        <name>com.syscxp.idc.header.trustee.APICreateTrusteeMsg</name>
+        <name>com.syscxp.idc.header.APICreateTrusteeMsg</name>
     </message>
     <message>
-        <name>com.syscxp.idc.header.trustee.APIDeleteTrusteeMsg</name>
+        <name>com.syscxp.idc.header.APIDeleteTrusteeMsg</name>
     </message>
     <message>
-        <name>com.syscxp.idc.header.trustee.APIUpdateTrusteeMsg</name>
+        <name>com.syscxp.idc.header.APIUpdateTrusteeMsg</name>
     </message>
     <message>
-        <name>com.syscxp.idc.header.trustee.APITrusteeRenewalMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.idc.header.trustee.APICreateTrusteeDetailMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.idc.header.trustee.APIDeleteTrusteeDetailMsg</name>
+        <name>com.syscxp.idc.header.APITrusteeRenewalMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.idc.header.trustee.APIQueryTrusteeMsg</name>
+        <name>com.syscxp.idc.header.APICreateTrusteeDetailMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.idc.header.APIDeleteTrusteeDetailMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.idc.header.APIQueryTrusteeMsg</name>
         <serviceid>query</serviceid>
     </message>
     <message>
-        <name>com.syscxp.idc.header.trustee.APIQueryTrusteeDetailMsg</name>
+        <name>com.syscxp.idc.header.APIQueryTrusteeDetailMsg</name>
         <serviceid>query</serviceid>
     </message>
 

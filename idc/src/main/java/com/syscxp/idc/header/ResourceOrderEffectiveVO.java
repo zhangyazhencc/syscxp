@@ -1,4 +1,4 @@
-package com.syscxp.idc.header.trustee;
+package com.syscxp.idc.header;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
