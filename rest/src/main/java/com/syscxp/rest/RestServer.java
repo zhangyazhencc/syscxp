@@ -203,7 +203,8 @@ public class RestServer implements Component, CloudBusEventListener {
 
             writeResponse(response, w, ret.getResult());
         } else {
-            response.setError(evt.getError());
+            response.setCode(evt.getError().getCode());
+            response.setMessage(evt.getError().getDetails());
         }
 
         String body = JSONObjectUtil.toJsonString(response);
@@ -609,7 +610,8 @@ public class RestServer implements Component, CloudBusEventListener {
             writeResponse(response, w, ret.getResult());
             sendResponse(HttpStatus.OK.value(), response, rsp);
         } else {
-            response.setError(evt.getError());
+            response.setCode(evt.getError().getCode());
+            response.setMessage(evt.getError().getDetails());
             sendResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), response, rsp);
         }
     }
@@ -619,7 +621,6 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     private String getSession(HttpServletRequest req) {
-//        return (String) req.getAttribute(RestConstants.SESSION_UUID);
         return (String) req.getAttribute(RestConstants.SESSION_UUID);
     }
 
@@ -885,7 +886,8 @@ public class RestServer implements Component, CloudBusEventListener {
         ApiResponse response = new ApiResponse();
 
         if (!reply.isSuccess()) {
-            response.setError(reply.getError());
+            response.setCode(reply.getError().getCode());
+            response.setMessage(reply.getError().getDetails());
             sendResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), JSONObjectUtil.toJsonString(response), rsp);
             return;
         }
