@@ -173,8 +173,9 @@ class SdkApiTemplate implements SdkTemplate {
         ms.add("""\
     private Result makeResult(ApiResult res) {
         Result ret = new Result();
-        if (res.error != null) {
-            ret.error = res.error;
+        if (res.code != null) {
+            ret.code = res.code;
+            ret.massage = res.massage;
             return ret;
         }
         
@@ -245,13 +246,14 @@ public class ${clzName} extends ${isQueryApi ? "QueryAction" : "AbstractAction"}
     private static final HashMap<String, Parameter> nonAPIParameterMap = new HashMap<>();
 
     public static class Result {
-        public ErrorCode error;
+        public String code;
+        public String message;
         public ${resultClassName} value;
 
         public Result throwExceptionIfError() {
-            if (error != null) {
+            if (code != null) {
                 throw new ApiException(
-                    String.format("error[code: %s, description: %s, details: %s]", error.code, error.description, error.details)
+                    String.format("error[code: %s, message: %s]", code, message)
                 );
             }
             

@@ -24,9 +24,11 @@ import com.syscxp.tunnel.tunnel.job.MonitorJobType;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.network.NetworkUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -335,7 +337,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         MonitorAgentCommands.L3MonitorCommand cmd = new MonitorAgentCommands.L3MonitorCommand();
         cmd.setSrc_l3endpoint_id(l3NetworkMonitorVO.getSrcL3EndpointUuid());
         cmd.setDst_l3endpoint_id(l3NetworkMonitorVO.getDstL3EndpointUuid());
-        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp());
+        //掩码
+        String mask = "/" + StringUtils.substringAfterLast(l3EndpointVO.getIpCidr(), "/");
+        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp() + mask);
+
 
         return cmd;
     }
