@@ -114,7 +114,7 @@ public class RestServer implements Component, CloudBusEventListener {
 
     public static void generateMarkdownDoc(String path) {
         System.setProperty(Constants.UUID_FOR_EXAMPLE, "true");
-        DocumentGenerator rg =  GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
+        DocumentGenerator rg = GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
         rg.generateMarkDown(path, PathUtil.join(System.getProperty("user.home"), "zstack-markdown"));
     }
 
@@ -146,7 +146,6 @@ public class RestServer implements Component, CloudBusEventListener {
             allFiles.addAll(tmp.generate(contentPath));
 
             for (SdkFile f : allFiles) {
-                //logger.debug(String.format("\n%s", f.getContent()));
                 String fpath = PathUtil.join(path, f.getFileName());
                 FileUtils.writeStringToFile(new File(fpath), f.getContent());
             }
@@ -276,7 +275,7 @@ public class RestServer implements Component, CloudBusEventListener {
             requestAnnotation = at;
             apiResponseClass = at.responseClass();
 
-            path = at.path().equals(EMPTY_STRING) ? restf.getPath(): at.path();
+            path = at.path().equals(EMPTY_STRING) ? restf.getPath() : at.path();
             if (at.optionalPaths().length > 0) {
                 if (Arrays.stream(at.optionalPaths()).noneMatch(s -> s.equals(path))) {
                     throw new CloudRuntimeException(String.format("Invalid @RestRequest of %s, either path must be set " +
@@ -369,7 +368,7 @@ public class RestServer implements Component, CloudBusEventListener {
             }
 
             if (m.containsKey(key)) {
-                throw new RestException(HttpStatus.BAD_REQUEST.value(),
+                throw new RestException(RestConstants.BAD_REQUEST,
                         String.format("duplicate map query parameter[%s], there has been a parameter with the same map key", name));
             }
 
@@ -377,7 +376,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 m.put(key, asList(vals));
             } else {
                 if (vals.length > 1) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(),
+                    throw new RestException(RestConstants.BAD_REQUEST,
                             String.format("Invalid query parameter[%s], only one value is allowed for the parameter but" +
                                     " multiple values found", name));
                 }
@@ -402,7 +401,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 return lst;
             } else {
                 if (vals.length > 1) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(),
+                    throw new RestException(RestConstants.BAD_REQUEST,
                             String.format("Invalid query parameter[%s], only one value is allowed for the parameter but" +
                                     " multiple values found", name));
                 }
@@ -413,11 +412,11 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     class RestException extends Exception {
-        private int statusCode;
+        private String code;
         private String error;
 
-        public RestException(int statusCode, String error) {
-            this.statusCode = statusCode;
+        public RestException(String code, String error) {
+            this.code = code;
             this.error = error;
         }
     }
@@ -513,19 +512,19 @@ public class RestServer implements Component, CloudBusEventListener {
         }
     }
 
-    private void sendResponse(int statusCode, String body, HttpServletResponse rsp) throws IOException {
+    private void sendResponse(String body, HttpServletResponse rsp) throws IOException {
         if (requestLogger.isTraceEnabled()) {
             RequestInfo info = requestInfo.get();
 
             StringBuilder sb = new StringBuilder(String.format("[ID: %s] Response to %s (%s),", info.session.getId(),
                     info.remoteHost, info.requestUrl));
-            sb.append(String.format(" Status Code: %s,", statusCode));
+            sb.append(String.format(" Status Code: %s,", HttpStatus.OK.value()));
             sb.append(String.format(" Body: %s", body == null || body.isEmpty() ? null : body));
 
             requestLogger.trace(sb.toString());
         }
 
-        rsp.setStatus(statusCode);
+        rsp.setStatus(HttpStatus.OK.value());
         rsp.getWriter().write(body == null ? "" : body);
     }
 
@@ -548,13 +547,15 @@ public class RestServer implements Component, CloudBusEventListener {
 
             requestLogger.trace(sb.toString());
         }
-
+        ApiResponse response = new ApiResponse();
         try {
             for (RestServletRequestInterceptor ic : interceptors) {
                 ic.intercept(req);
             }
         } catch (RestServletRequestInterceptor.RestServletRequestInterceptorException e) {
-            sendResponse(e.statusCode, e.error, rsp);
+            response.setCode(e.code);
+            response.setMessage(e.message);
+            sendResponse(response, rsp);
             return;
         }
 
@@ -566,29 +567,41 @@ public class RestServer implements Component, CloudBusEventListener {
         Api api = apis.get(action);
 
         if (api == null) {
-            sendResponse(HttpStatus.NOT_FOUND.value(), String.format("no api mapping to Action[name: %s]", action), rsp);
+            response.setCode(RestConstants.NOT_FOUND);
+            response.setMessage(String.format("no api mapping to Action[name: %s]", action));
+            sendResponse(response, rsp);
             return;
         }
 
         if (HttpMethod.valueOf(req.getMethod()) != api.requestAnnotation.method()) {
-            sendResponse(HttpStatus.METHOD_NOT_ALLOWED.value(), String.format("The method[%s] is not allowed for" +
-                    " the path[%s]", req.getMethod(), req.getRequestURI()), rsp);
+            response.setCode(RestConstants.HTTP_METHOD_NOT_ALLOWED);
+            response.setMessage(String.format("The method[%s] is not allowed for" +
+                    " the path[%s]", req.getMethod(), req.getRequestURI()));
+            sendResponse(response, rsp);
             return;
         }
 
         try {
             handleApi(api, req, rsp);
         } catch (RestException e) {
-            sendResponse(e.statusCode, e.error, rsp);
+            response.setCode(RestConstants.BAD_REQUEST);
+            response.setMessage(e.error);
+            sendResponse(response, rsp);
         } catch (Throwable e) {
             logger.warn(String.format("failed to handle API to Action[name: %s]", action), e);
-            sendResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), rsp);
+            response.setCode(RestConstants.INTERNAL_ERROR);
+            response.setMessage(e.getMessage());
+            sendResponse(e.getMessage(), rsp);
         }
     }
 
     private void handleJobQuery(HttpServletRequest req, HttpServletResponse rsp) throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        ApiResponse response = new ApiResponse();
+
         if (!req.getMethod().equals(HttpMethod.GET.name())) {
-            sendResponse(HttpStatus.METHOD_NOT_ALLOWED.value(), "only GET method is allowed for querying job status", rsp);
+            response.setCode(RestConstants.HTTP_METHOD_NOT_ALLOWED);
+            response.setMessage("only GET method is allowed for querying job status");
+            sendResponse(response, rsp);
             return;
         }
 
@@ -596,14 +609,16 @@ public class RestServer implements Component, CloudBusEventListener {
         AsyncRestQueryResult ret = asyncStore.query(uuid);
 
         if (ret.getState() == AsyncRestState.expired) {
-            sendResponse(HttpStatus.NOT_FOUND.value(), "the job has been expired", rsp);
+            response.setCode(RestConstants.NOT_FOUND);
+            response.setMessage("the job has been expired");
+            sendResponse(response, rsp);
             return;
         }
 
-        ApiResponse response = new ApiResponse();
-
         if (ret.getState() == AsyncRestState.processing) {
-            sendResponse(HttpStatus.ACCEPTED.value(), response, rsp);
+            response.setCode(RestConstants.PROCESSING);
+            response.setMessage("the job has been processing");
+            sendResponse(response, rsp);
             return;
         }
 
@@ -615,16 +630,16 @@ public class RestServer implements Component, CloudBusEventListener {
                 throw new CloudRuntimeException(String.format("cannot find RestResponseWrapper for the class[%s]", evt.getClass()));
             }
             writeResponse(response, w, ret.getResult());
-            sendResponse(HttpStatus.OK.value(), response, rsp);
+            sendResponse(response, rsp);
         } else {
-            response.setCode(evt.getError().getCode());
+            response.setCode(RestConstants.INTERNAL_ERROR);
             response.setMessage(evt.getError().getDetails());
-            sendResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), response, rsp);
+            sendResponse(response, rsp);
         }
     }
 
-    private void sendResponse(int statusCode, ApiResponse response, HttpServletResponse rsp) throws IOException {
-        sendResponse(statusCode, response.isEmpty() ? "" : JSONObjectUtil.toJsonString(response), rsp);
+    private void sendResponse(ApiResponse response, HttpServletResponse rsp) throws IOException {
+        sendResponse(response.isEmpty() ? "" : JSONObjectUtil.toJsonString(response), rsp);
     }
 
     private String getSession(HttpServletRequest req) {
@@ -681,7 +696,7 @@ public class RestServer implements Component, CloudBusEventListener {
                     String booleanValue = booleanObject.toString();
                     if (!(booleanValue.equalsIgnoreCase("true") ||
                             booleanValue.equalsIgnoreCase("false"))) {
-                        throw new RestException(HttpStatus.BAD_REQUEST.value(),
+                        throw new RestException(RestConstants.BAD_REQUEST,
                                 String.format("Invalid value for boolean field [%s]," +
                                                 " [%s] is not a valid boolean string[true, false].",
                                         f.getName(), booleanValue));
@@ -695,7 +710,7 @@ public class RestServer implements Component, CloudBusEventListener {
         if (requestInfo.get().headers.containsKey(RestConstants.HEADER_JOB_UUID)) {
             String jobUuid = requestInfo.get().headers.get(RestConstants.HEADER_JOB_UUID).get(0);
             if (jobUuid.length() != 32) {
-                throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid header[%s], it" +
+                throw new RestException(RestConstants.BAD_REQUEST, String.format("Invalid header[%s], it" +
                         " must be a UUID with '-' stripped", RestConstants.HEADER_JOB_UUID));
             }
 
@@ -775,13 +790,13 @@ public class RestServer implements Component, CloudBusEventListener {
                 try {
                     msg.setLimit(Integer.valueOf(varvalue));
                 } catch (NumberFormatException ex) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(), "Invalid query parameter. 'limit' must be an integer");
+                    throw new RestException(RestConstants.BAD_REQUEST, "Invalid query parameter. 'limit' must be an integer");
                 }
             } else if ("start".equals(varname)) {
                 try {
                     msg.setStart(Integer.valueOf(varvalue));
                 } catch (NumberFormatException ex) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(), "Invalid query parameter. 'start' must be an integer");
+                    throw new RestException(RestConstants.BAD_REQUEST, "Invalid query parameter. 'start' must be an integer");
                 }
             } else if ("count".equals(varname)) {
                 msg.setCount(Boolean.valueOf(varvalue));
@@ -816,7 +831,7 @@ public class RestServer implements Component, CloudBusEventListener {
                     }
 
                     if (OP == null) {
-                        throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
+                        throw new RestException(RestConstants.BAD_REQUEST, String.format("Invalid query parameter." +
                                 " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
                                 " %s", cond, asList(QUERY_OP_MAPPING.keySet())));
                     }
@@ -829,7 +844,7 @@ public class RestServer implements Component, CloudBusEventListener {
                         qc.setOp(OP);
                     } else {
                         if (ks.length != 2) {
-                            throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
+                            throw new RestException(RestConstants.BAD_REQUEST, String.format("Invalid query parameter." +
                                     " The '%s' in parameter[q] is not a key-value pair split by %s", cond, OP));
                         }
 
@@ -849,7 +864,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 }
 
                 if (fs.isEmpty()) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(), "Invalid query parameter. 'fields'" +
+                    throw new RestException(RestConstants.BAD_REQUEST, "Invalid query parameter. 'fields'" +
                             " contains zero field");
                 }
                 msg.setFields(fs);
@@ -895,14 +910,14 @@ public class RestServer implements Component, CloudBusEventListener {
         if (!reply.isSuccess()) {
             response.setCode(reply.getError().getCode());
             response.setMessage(reply.getError().getDetails());
-            sendResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), JSONObjectUtil.toJsonString(response), rsp);
+            sendResponse(response, rsp);
             return;
         }
 
         // the api succeeded
 
         writeResponse(response, responseAnnotationByClass.get(api.apiResponseClass), reply);
-        sendResponse(HttpStatus.OK.value(), response, rsp);
+        sendResponse(response, rsp);
     }
 
     private void sendMessage(APIMessage msg, Api api, HttpServletResponse rsp) throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -925,7 +940,7 @@ public class RestServer implements Component, CloudBusEventListener {
 
             bus.send(msg);
 
-            sendResponse(HttpStatus.ACCEPTED.value(), response, rsp);
+            sendResponse(response, rsp);
         }
     }
 
