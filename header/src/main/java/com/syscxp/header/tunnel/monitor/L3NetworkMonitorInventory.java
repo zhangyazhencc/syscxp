@@ -19,8 +19,9 @@ public class L3NetworkMonitorInventory {
 
     private String l3NetworkUuid;
 
-    private String l3EndPointUuid;
+    private String srcEndpointUuid;
 
+    private String dstEndpointUuid;
 
     private Timestamp lastOpDate;
 
@@ -30,6 +31,8 @@ public class L3NetworkMonitorInventory {
         L3NetworkMonitorInventory inventory = new L3NetworkMonitorInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
+        inventory.setSrcEndpointUuid(vo.getSrcL3EndpointUuid());
+        inventory.setDstEndpointUuid(vo.getDstL3EndpointUuid());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
         return inventory;
@@ -60,14 +63,21 @@ public class L3NetworkMonitorInventory {
         this.l3NetworkUuid = l3NetworkUuid;
     }
 
-    public String getL3EndPointUuid() {
-        return l3EndPointUuid;
+    public String getSrcEndpointUuid() {
+        return srcEndpointUuid;
     }
 
-    public void setL3EndPointUuid(String l3EndPointUuid) {
-        this.l3EndPointUuid = l3EndPointUuid;
+    public void setSrcEndpointUuid(String srcEndpointUuid) {
+        this.srcEndpointUuid = srcEndpointUuid;
     }
 
+    public String getDstEndpointUuid() {
+        return dstEndpointUuid;
+    }
+
+    public void setDstEndpointUuid(String dstEndpointUuid) {
+        this.dstEndpointUuid = dstEndpointUuid;
+    }
 
     public Timestamp getLastOpDate() {
         return lastOpDate;

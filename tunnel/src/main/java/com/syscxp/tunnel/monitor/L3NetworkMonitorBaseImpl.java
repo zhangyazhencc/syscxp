@@ -15,8 +15,6 @@ import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
 import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
-import com.syscxp.header.tunnel.switchs.SwitchVO;
-import com.syscxp.header.tunnel.switchs.SwitchVO_;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
 import com.syscxp.tunnel.tunnel.job.MonitorJobType;
@@ -231,12 +229,12 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     /**
      * 修改互联IP，当前修改互联IP需要中止连接点，不需要单独调用此方法
      *
-     * @param vo
+     * @param endpointVO
      */
     @Deprecated
-    public void updateAgentRoute(L3EndpointVO vo) {
-        MonitorAgentCommands.L3RouteCommand cmd = getAgentRouteCommand(vo);
-        String hostIp = getHostIp(vo.getPhysicalSwitchUuid());
+    public void updateAgentRoute(L3EndpointVO endpointVO) {
+        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO,null);
+        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
                 hostIp, MonitorAgentConstant.L3_UPDATE_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
@@ -246,26 +244,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                     , hostIp, cmd, MonitorAgentConstant.L3_UPDATE_ROUTE, resp.getMsg()));
     }
 
-    private MonitorAgentCommands.L3RouteCommand getAgentRouteCommand(L3EndpointVO l3EndpointVO) {
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-
-        MonitorAgentCommands.L3RouteCommand cmd = new MonitorAgentCommands.L3RouteCommand();
-        cmd.setVlan(l3EndpointVO.getVlan());
-        cmd.setL3endpoint_id(l3EndpointVO.getUuid());
-
-        String mask = "/" + StringUtils.substringAfterLast(l3EndpointVO.getIpCidr(), "/");
-        cmd.setLocal_ip(l3EndpointVO.getLocalIP() + mask);
-        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp() + mask);
-
-        HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
-        cmd.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
-
-        return cmd;
-    }
-
     @Override
     public void startAgentMonitor(L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO) {
-        MonitorAgentCommands.L3MonitorCommand cmd = getAgentMonitorCommand(endpointVO, monitorVO);
+
+        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
         String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
@@ -278,9 +260,9 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     @Override
     public void stopAgentMonitor(L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO) {
-        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
         MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
+        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
                 hostIp, MonitorAgentConstant.L3_STOP_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
@@ -303,19 +285,57 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                     , hostIp, cmd, MonitorAgentConstant.L3_UPDATE_MONITOR, resp.getMsg()));
     }
 
-    private MonitorAgentCommands.L3MonitorCommand getAgentMonitorCommand(L3EndpointVO l3EndpointVO, L3NetworkMonitorVO l3NetworkMonitorVO) {
-        MonitorAgentCommands.L3MonitorCommand cmd = new MonitorAgentCommands.L3MonitorCommand();
-        cmd.setSrc_l3endpoint_id(l3NetworkMonitorVO.getSrcL3EndpointUuid());
-        cmd.setDst_l3endpoint_id(l3NetworkMonitorVO.getDstL3EndpointUuid());
-        L3EndpointVO dstL3EndpointVO = dbf.findByUuid(l3NetworkMonitorVO.getDstL3EndpointUuid(), L3EndpointVO.class);
-        cmd.setMonitor_ip(dstL3EndpointVO.getMonitorIp());
+    /**
+     * 发送agent参数获取方法
+     * @param endpointVO
+     * @param monitorVO：如果为空，则查找连接点下所有的L3NetworkMonitorVO数据
+     * @return
+     */
+    private MonitorAgentCommands.L3AgentCommand getL3AgentCommand(L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO) {
+        MonitorAgentCommands.L3AgentCommand cmd = new MonitorAgentCommands.L3AgentCommand();
+
+        // route
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(endpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        cmd.setVlan(endpointVO.getVlan());
+        cmd.setL3endpoint_id(endpointVO.getUuid());
+
+        String mask = "/" + StringUtils.substringAfterLast(endpointVO.getIpCidr(), "/");
+        cmd.setLocal_ip(endpointVO.getLocalIP() + mask);
+        cmd.setMonitor_ip(endpointVO.getMonitorIp() + mask);
+
+        HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
+        cmd.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
+
+        // monitor
+        List<MonitorAgentCommands.L3MonitorCommand> monitorCommands = new ArrayList<>();
+        if (monitorVO != null) {
+            monitorCommands.add(getMonitorCommand(monitorVO));
+        } else {
+            List<L3NetworkMonitorVO> srcMonitorVOS = Q.New(L3NetworkMonitorVO.class)
+                    .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getUuid())
+                    .list();
+            for (L3NetworkMonitorVO srcMonitorVO : srcMonitorVOS) {
+                monitorCommands.add(getMonitorCommand(srcMonitorVO));
+            }
+        }
+        cmd.setMonitors(monitorCommands);
 
         return cmd;
     }
 
+    private MonitorAgentCommands.L3MonitorCommand getMonitorCommand(L3NetworkMonitorVO l3NetworkMonitorVO) {
+        MonitorAgentCommands.L3MonitorCommand monitorCmd = new MonitorAgentCommands.L3MonitorCommand();
+        monitorCmd.setSrc_l3endpoint_id(l3NetworkMonitorVO.getSrcL3EndpointUuid());
+        monitorCmd.setDst_l3endpoint_id(l3NetworkMonitorVO.getDstL3EndpointUuid());
+        L3EndpointVO dstL3EndpointVO = dbf.findByUuid(l3NetworkMonitorVO.getDstL3EndpointUuid(), L3EndpointVO.class);
+        monitorCmd.setMonitor_ip(dstL3EndpointVO.getMonitorIp());
+
+        return monitorCmd;
+    }
+
     @Override
     public void startControllerMonitor(L3EndpointVO vo) {
-        ControllerCommands.L3MonitorCommand cmd = getL3ControllerCommand(vo);
+        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(vo);
 
         RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
                 ControllerRestConstant.START_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
@@ -327,7 +347,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     @Override
     public void stopControllerMonitor(L3EndpointVO vo) {
-        ControllerCommands.L3MonitorCommand cmd = getL3ControllerCommand(vo);
+        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(vo);
 
         RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
                 ControllerRestConstant.STOP_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
@@ -337,7 +357,12 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                     , cmd, ControllerRestConstant.STOP_L3_MONITOR, resp.getMsg()));
     }
 
-    private ControllerCommands.L3MonitorCommand getL3ControllerCommand(L3EndpointVO l3EndpointVO) {
+    /**
+     * 控制器下发参数
+     * @param l3EndpointVO
+     * @return
+     */
+    private ControllerCommands.L3MonitorCommand getControllerCommand(L3EndpointVO l3EndpointVO) {
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
 
         ControllerCommands.L3MonitorMpls l3Mpls = new ControllerCommands.L3MonitorMpls();
@@ -362,30 +387,6 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         cmd.setMpls_switches(l3MonitorMplsList);
 
         return cmd;
-    }
-
-    /***
-     * 按连接点查询物理交换机
-     * @param endpointUuid
-     * @return
-     */
-    private PhysicalSwitchVO getPhysicalSwitchVO(String endpointUuid) {
-        PhysicalSwitchVO physicalSwitchVO;
-
-        List<SwitchVO> switchVOS = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.endpointUuid, endpointUuid)
-                .list();
-        if (!switchVOS.isEmpty()) {
-            physicalSwitchVO = dbf.findByUuid(switchVOS.get(0).getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        } else
-            throw new RuntimeException(String.format("[getPhysicalSwitchUuid] failed to get SwitchVO by endpointUuid %s",
-                    endpointUuid));
-
-        if (physicalSwitchVO == null)
-            throw new RuntimeException(String.format("[getPhysicalSwitchUuid] failed to get PhysicalSwitchVO by uuid %s",
-                    switchVOS.get(0).getPhysicalSwitchUuid()));
-
-        return physicalSwitchVO;
     }
 
     /***
@@ -420,6 +421,11 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         return hostVO.getHostIp();
     }
 
+    /**
+     * 按监控机IP获取监控机接口数据
+     * @param hostIp
+     * @return
+     */
     private HostSwitchMonitorVO getHostSwitchMonitorByHostIp(String hostIp) {
         List<HostSwitchMonitorVO> hostSwitchMonitorVOS = new ArrayList<>();
 
@@ -436,30 +442,9 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
             return hostSwitchMonitorVOS.get(0);
     }
 
-    private L3EndpointVO getL3EndpointByPhysicalSwitchUuid(String physicalSwitchUuid) {
-        List<L3EndpointVO> l3EndpointVOS = new ArrayList<>();
-
-        List<SwitchVO> switchVOS = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.physicalSwitchUuid, physicalSwitchUuid)
-                .list();
-
-        if (!switchVOS.isEmpty()) {
-            l3EndpointVOS = Q.New(L3EndpointVO.class)
-                    .eq(L3EndpointVO_.endpointUuid, switchVOS.get(0).getEndpointUuid())
-                    .notNull(L3EndpointVO_.monitorIp)
-                    .notEq(L3EndpointVO_.monitorIp, StringUtils.EMPTY)
-                    .list();
-        } else
-            logger.info(String.format("failed to get SwitchVO by physicalSwitchUuid %s", physicalSwitchUuid));
-
-        if (l3EndpointVOS.isEmpty())
-            return null;
-        else
-            return l3EndpointVOS.get(0);
-    }
-
     @Override
     public boolean start() {
+        // 监控机定时获取所有云网络监控数据
         restf.registerSyncHttpCallHandler("MONITOR/L3INFO", HashMap.class,
                 paramMap -> {
                     Map<String, Object> map = new HashMap<>();
@@ -497,69 +482,6 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                 });
 
         return true;
-    }
-
-//    private MonitorAgentCommands.L3AgentCommand getL3AgentCommand(L3EndpointVO l3EndpointVO) {
-//
-//        MonitorAgentCommands.L3AgentCommand cmd = new MonitorAgentCommands.L3AgentCommand();
-//
-//        // route
-//        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-//        cmd.setVlan(l3EndpointVO.getVlan());
-//        cmd.setL3endpoint_id(l3EndpointVO.getUuid());
-//
-//        String mask = "/" + StringUtils.substringAfterLast(l3EndpointVO.getIpCidr(), "/");
-//        cmd.setLocal_ip(l3EndpointVO.getLocalIP() + mask);
-//        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp() + mask);
-//
-//        HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
-//        cmd.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
-//
-//        // monitors
-//        List<MonitorAgentCommands.L3MonitorCommand> l3MonitorCmds = new ArrayList<>();
-//        List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
-//                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, l3EndpointVO.getUuid())
-//                .list();
-//        for (L3NetworkMonitorVO monitorVO : monitorVOS) {
-//            l3MonitorCmds.add(getAgentMonitorCommand(l3EndpointVO, monitorVO));
-//        }
-//        cmd.setMonitors(l3MonitorCmds);
-//
-//        return cmd;
-//    }
-
-    private MonitorAgentCommands.L3AgentCommand getL3AgentCommand(L3EndpointVO l3EndpointVO, L3NetworkMonitorVO monitorVO) {
-        MonitorAgentCommands.L3AgentCommand cmd = new MonitorAgentCommands.L3AgentCommand();
-
-        // route
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        cmd.setVlan(l3EndpointVO.getVlan());
-        cmd.setL3endpoint_id(l3EndpointVO.getUuid());
-
-        String mask = "/" + StringUtils.substringAfterLast(l3EndpointVO.getIpCidr(), "/");
-        cmd.setLocal_ip(l3EndpointVO.getLocalIP() + mask);
-        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp() + mask);
-
-        HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
-        cmd.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
-
-        // monitor
-        if (monitorVO != null) {
-            List<MonitorAgentCommands.L3MonitorCommand> l3MonitorCmds = new ArrayList<>();
-            l3MonitorCmds.add(getAgentMonitorCommand(l3EndpointVO, monitorVO));
-            cmd.setMonitors(l3MonitorCmds);
-        } else {
-            List<MonitorAgentCommands.L3MonitorCommand> l3MonitorCmds = new ArrayList<>();
-            List<L3NetworkMonitorVO> srcMonitorVOS = Q.New(L3NetworkMonitorVO.class)
-                    .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, l3EndpointVO.getUuid())
-                    .list();
-            for (L3NetworkMonitorVO srcMonitorVO : srcMonitorVOS) {
-                l3MonitorCmds.add(getAgentMonitorCommand(l3EndpointVO, srcMonitorVO));
-            }
-            cmd.setMonitors(l3MonitorCmds);
-        }
-
-        return cmd;
     }
 
     @Override

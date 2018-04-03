@@ -4,6 +4,7 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -40,7 +41,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private L3NetworkMonitorBase l3NetworkMonitor;
+    private L3NetworkMonitorBase monitor;
 
     @Override
     @MessageSafe
@@ -66,48 +67,55 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
 
     @Transactional
     private void handle(APIConfigL3NetworkMonitorMsg msg) {
-        L3EndpointVO l3EndpointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndpointVO.class);
+        APIConfigL3NetworkMonitorEvent event = new APIConfigL3NetworkMonitorEvent();
+        L3EndpointVO endpointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndpointVO.class);
 
-        if (l3EndpointVO.getState() == L3EndpointState.Enabled) {
-            List<L3NetworkMonitorVO> srcL3NetworkMonitorVOS = new ArrayList<L3NetworkMonitorVO>();
+        if (endpointVO.getState() == L3EndpointState.Enabled) {
+            List<L3NetworkMonitorVO> monitorVOS = new ArrayList<L3NetworkMonitorVO>();
             for (String dstL3EndpointUuid : msg.getDstL3EndPointUuids()) {
                 L3NetworkMonitorVO vo = new L3NetworkMonitorVO();
                 vo.setUuid(Platform.getUuid());
-                vo.setL3NetworkUuid(l3EndpointVO.getL3NetworkUuid());
+                vo.setL3NetworkUuid(endpointVO.getL3NetworkUuid());
                 vo.setSrcL3EndpointUuid(msg.getL3EndPointUuid());
                 vo.setDstL3EndpointUuid(dstL3EndpointUuid);
 
-                srcL3NetworkMonitorVOS.add(vo);
+                monitorVOS.add(vo);
             }
 
             if (StringUtils.isNotEmpty(msg.getMonitorIp())) {
-                if (StringUtils.isEmpty(l3EndpointVO.getMonitorIp())) {
+                if (StringUtils.isEmpty(endpointVO.getMonitorIp())) {
                     // 新增监控ip，开启监控
-                    l3EndpointVO.setMonitorIp(msg.getMonitorIp());
-                    l3NetworkMonitor.startMonitor(l3EndpointVO, srcL3NetworkMonitorVOS);
+                    endpointVO.setMonitorIp(msg.getMonitorIp());
+                    monitor.startMonitor(endpointVO, monitorVOS);
                 } else {
-                    if (StringUtils.equals(msg.getMonitorIp(), l3EndpointVO.getMonitorIp())) {
+                    if (StringUtils.equals(msg.getMonitorIp(), endpointVO.getMonitorIp())) {
                         // 更新监控ip，仅更新本端出的监控机监控
-                        l3NetworkMonitor.updateSrcMonitor(l3EndpointVO, srcL3NetworkMonitorVOS);
+                        monitor.updateSrcMonitor(endpointVO, monitorVOS);
                     } else {
                         // 更新监控ip，更新对端监控机监控
-                        l3EndpointVO.setMonitorIp(msg.getMonitorIp());
-                        l3NetworkMonitor.updateMonitorIp(l3EndpointVO, srcL3NetworkMonitorVOS);
+                        endpointVO.setMonitorIp(msg.getMonitorIp());
+                        monitor.updateMonitorIp(endpointVO, monitorVOS);
                     }
                 }
             } else {
-                if (StringUtils.isNotEmpty(l3EndpointVO.getMonitorIp())) {
+                if (StringUtils.isNotEmpty(endpointVO.getMonitorIp())) {
                     // 删除监控ip，停止监控
-                    l3EndpointVO.setMonitorIp(msg.getMonitorIp());
-                    l3NetworkMonitor.stopMonitor(l3EndpointVO);
+                    endpointVO.setMonitorIp(msg.getMonitorIp());
+                    monitor.stopMonitor(endpointVO);
                 }
             }
         } else {
-            l3EndpointVO.setMonitorIp(msg.getMonitorIp());
+            endpointVO.setMonitorIp(msg.getMonitorIp());
         }
 
         // 更新监控ip
-        dbf.getEntityManager().merge(l3EndpointVO);
+        endpointVO = dbf.updateAndRefresh(endpointVO);
+
+        List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
+                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getUuid())
+                .list();
+        event.setInventory(L3EndpointMonitorInventory.valueOf(endpointVO, monitorVOS));
+        bus.publish(event);
     }
 
     @Override
