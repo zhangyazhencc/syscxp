@@ -10,15 +10,14 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface RestServletRequestInterceptor {
     class RestServletRequestInterceptorException extends Exception {
-        public int statusCode;
-        public String error;
+        public String code;
+        public String message;
 
-        public RestServletRequestInterceptorException(int statusCode, String error) {
-            this.statusCode = statusCode;
-            this.error = error;
+        public RestServletRequestInterceptorException(String code, String message) {
+            this.code = code;
+            this.message = message;
         }
     }
-
 
 
     void intercept(HttpServletRequest req) throws RestServletRequestInterceptorException;

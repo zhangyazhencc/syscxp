@@ -12,8 +12,4 @@ public class TestGenerateSDK {
         RestServer.generateJavaSdk("tunnel");
     }
 
-    @Test
-    public void testMarkdown() {
-        RestServer.generateMarkdownDoc(Paths.get("../").toAbsolutePath().normalize().toString());
-    }
 }

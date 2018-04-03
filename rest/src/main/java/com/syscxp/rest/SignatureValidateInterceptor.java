@@ -11,6 +11,7 @@ import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -46,7 +47,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         Long timestamp = Long.valueOf(req.getParameter(RestConstants.TIMESTAMP));
 
         if (!req.getParameter(RestConstants.SIGNATURE).equals(signatureString) || System.currentTimeMillis() - EXPIRE_TIME > timestamp) {
-            throw new RestServletRequestInterceptorException(401, "Signature校验失败");
+            throw new RestServletRequestInterceptorException(RestConstants.INVALID_PARAMETER, "Signature校验失败");
         }
         LOGGER.debug("Signature校验成功，获取sessionUuid");
 
@@ -76,7 +77,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         try {
             secretKey = identityInterceptor.getSecretKey(secretId, ip);
         } catch (Exception e) {
-            throw new RestServletRequestInterceptorException(403, e.getMessage());
+            throw new RestServletRequestInterceptorException(RestConstants.VALIDATION_ERROR, e.getMessage());
         }
         return secretKey;
     }
@@ -86,7 +87,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         try {
             session = identityInterceptor.getSessionUuid(secretId, secretKey);
         } catch (Exception e) {
-            throw new RestServletRequestInterceptorException(403, e.getMessage());
+            throw new RestServletRequestInterceptorException(RestConstants.VALIDATION_ERROR, e.getMessage());
         }
 
         return session.getUuid();

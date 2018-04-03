@@ -63,10 +63,43 @@ public class IdcManagerImpl extends AbstractService implements IdcManager {
             handle((APICreateIdcDetailMsg)msg);
         } else if(msg instanceof APIDeleteIdcDetailMsg){
             handle((APIDeleteIdcDetailMsg)msg);
+        } else if(msg instanceof APIModifyIdcTotalCostMsg){
+            handle((APIModifyIdcTotalCostMsg)msg);
         } else{
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
+
+    @Transactional
+    private void handle(APIModifyIdcTotalCostMsg msg) {
+
+        APIModifyIdcTotalCostEvent event = new APIModifyIdcTotalCostEvent(msg.getId());
+
+        IdcVO vo = dbf.findByUuid(msg.getUuid(), IdcVO.class);
+
+        APICreateIDCModifyOrderMsg orderMsg = new APICreateIDCModifyOrderMsg();
+        orderMsg.setFixedCost(vo.getTotalCost().subtract(msg.getFixedCost()).intValue());
+        orderMsg.setProductName("IDC托管-"+vo.getName());
+        orderMsg.setProductUuid(vo.getUuid());
+        orderMsg.setProductType(ProductType.IDCTrustee);
+        orderMsg.setDescriptionData(msg.getFixedCost().toString());
+        orderMsg.setAccountUuid(vo.getAccountUuid());
+        orderMsg.setCallBackData(msg.getClass().getSimpleName());
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setExpiredTime(vo.getExpireDate());
+
+        OrderInventory orderInventory = idcBase.createModifyOrder(orderMsg);
+        if (orderInventory == null) {
+            event.setError(errf.stringToOperationError("修改价格失败"));
+        }else {
+            idcBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            vo.setTotalCost(msg.getFixedCost());
+            event.setInventory(IdcInventory.valueOf(dbf.updateAndRefresh(vo)));
+        }
+
+        bus.publish(event);
     }
 
     private void handle(APIDeleteIdcDetailMsg msg) {
@@ -127,13 +160,7 @@ public class IdcManagerImpl extends AbstractService implements IdcManager {
         APIUpdateIdcEvent event = new APIUpdateIdcEvent(msg.getId());
         IdcVO vo = dbf.findByUuid(msg.getUuid(), IdcVO.class);
         vOAddAllOfMsg.addAll(msg, vo);
-
-        if(msg.getTotalCost() != null ){
-            /**
-             * 调用billing修改价格
-             */
-        }
-        event.setInventory(IdcInventory.valueOf(dbf.persistAndRefresh(vo)));
+        event.setInventory(IdcInventory.valueOf(dbf.updateAndRefresh(vo)));
         bus.publish(event);
 
     }
@@ -246,9 +273,6 @@ public class IdcManagerImpl extends AbstractService implements IdcManager {
 
     @Override
     public boolean start() {
-        /*
-         * 清理过期产品
-        */
 
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
@@ -271,10 +295,21 @@ public class IdcManagerImpl extends AbstractService implements IdcManager {
                             dbf.updateAndRefresh(vo);
 
                         }
+                    }else if(cmd.getCallBackData().equals("APIModifyIdcTotalCostMsg")){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            idcBase.saveResourceOrderEffective(cmd.getOrderUuid(), cmd.getPorductUuid(), cmd.getProductType().toString());
+                            IdcVO vo = dbf.findByUuid(cmd.getPorductUuid(),IdcVO.class);
+                            vo.setTotalCost(new BigDecimal(cmd.getDescriptionData()));
+                            dbf.updateAndRefresh(vo);
+                        }
+
+
                     }else {
 
                         Message message = RESTApiDecoder.loads(cmd.getCallBackData());
                         if(message instanceof CreateIdcCallback){
+                            logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                             CreateIdcCallback callback = (CreateIdcCallback)message;
                             IdcVO vo = callback.getTrusteeVO();
                             List<IdcDetailVO> detailList = callback.getTrustDetailList();
