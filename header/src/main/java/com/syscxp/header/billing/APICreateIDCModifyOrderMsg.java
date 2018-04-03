@@ -12,7 +12,7 @@ import java.util.List;
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateIDCModifyOrderMsg extends APISyncCallMessage {
 
-    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    @APIParam
     private int fixedCost;
 
     @APIParam
