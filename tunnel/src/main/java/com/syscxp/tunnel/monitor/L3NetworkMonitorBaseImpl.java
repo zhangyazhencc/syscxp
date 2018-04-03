@@ -55,6 +55,11 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     @Autowired
     private RESTFacade restf;
 
+    /***
+     * 前段开启监控
+     * @param l3EndpointVO
+     * @param srcL3NetworkMonitorVOS：页面选择的监控数据
+     */
     @Override
     @Transactional
     public void startMonitor(L3EndpointVO l3EndpointVO, List<L3NetworkMonitorVO> srcL3NetworkMonitorVOS) {
@@ -71,10 +76,17 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         }
     }
 
+    /***
+     * job开启监控
+     * @param l3EndpointVO
+     */
     @Override
     public void startMonitor(L3EndpointVO l3EndpointVO) {
         if (l3EndpointVO.getState() == L3EndpointState.Enabled &&
                 StringUtils.isNotEmpty(l3EndpointVO.getMonitorIp())) {
+
+            if (!NetworkUtils.isIpv4Address(l3EndpointVO.getMonitorIp()))
+                throw new RuntimeException(String.format("invalid monitor ip %s", l3EndpointVO.getMonitorIp()));
 
             // 配置监控机路由job(同步)
             addAgentRoute(l3EndpointVO);
@@ -279,10 +291,13 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
 
         MonitorAgentCommands.L3RouteCommand cmd = new MonitorAgentCommands.L3RouteCommand();
-        cmd.setL3endpoint_id(l3EndpointVO.getUuid());
-        cmd.setLocal_ip(l3EndpointVO.getLocalIP());
-        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp());
         cmd.setVlan(l3EndpointVO.getVlan());
+        cmd.setL3endpoint_id(l3EndpointVO.getUuid());
+
+        String mask = "/" + StringUtils.substringAfterLast(l3EndpointVO.getIpCidr(), "/");
+        cmd.setLocal_ip(l3EndpointVO.getLocalIP() + mask);
+        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp() + mask);
+
         HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
         cmd.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
 
@@ -337,10 +352,8 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         MonitorAgentCommands.L3MonitorCommand cmd = new MonitorAgentCommands.L3MonitorCommand();
         cmd.setSrc_l3endpoint_id(l3NetworkMonitorVO.getSrcL3EndpointUuid());
         cmd.setDst_l3endpoint_id(l3NetworkMonitorVO.getDstL3EndpointUuid());
-        //掩码
-        String mask = "/" + StringUtils.substringAfterLast(l3EndpointVO.getIpCidr(), "/");
-        cmd.setMonitor_ip(l3EndpointVO.getMonitorIp() + mask);
-
+        L3EndpointVO dstL3EndpointVO = dbf.findByUuid(l3NetworkMonitorVO.getDstL3EndpointUuid(), L3EndpointVO.class);
+        cmd.setMonitor_ip(dstL3EndpointVO.getMonitorIp());
 
         return cmd;
     }

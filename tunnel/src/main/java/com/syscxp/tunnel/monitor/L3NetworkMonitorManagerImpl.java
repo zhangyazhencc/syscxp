@@ -23,6 +23,7 @@ import com.syscxp.header.tunnel.network.L3EndpointVO;
 import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.network.NetworkUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ import java.util.List;
  * @Cretion Date: 2018-03-22.
  * @Description: .
  */
-public class L3NetworkMonitorManagerImpl extends AbstractService implements L3NetworkMonitorManager, Component, ApiMessageInterceptor,HostDeleteExtensionPoint {
+public class L3NetworkMonitorManagerImpl extends AbstractService implements L3NetworkMonitorManager, Component, ApiMessageInterceptor, HostDeleteExtensionPoint {
     private static final CLogger logger = Utils.getLogger(TunnelMonitorManagerImpl.class);
 
     @Autowired
@@ -74,7 +75,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
     private void handle(APIConfigL3NetworkMonitorMsg msg) {
         L3EndpointVO l3EndpointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndpointVO.class);
 
-        if(l3EndpointVO.getState() == L3EndpointState.Enabled){
+        if (l3EndpointVO.getState() == L3EndpointState.Enabled) {
             List<L3NetworkMonitorVO> srcL3NetworkMonitorVOS = new ArrayList<L3NetworkMonitorVO>();
             for (String dstL3EndpointUuid : msg.getDstL3EndPointUuids()) {
                 L3NetworkMonitorVO vo = new L3NetworkMonitorVO();
@@ -108,7 +109,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
                     l3NetworkMonitor.stopMonitor(l3EndpointVO);
                 }
             }
-        }else {
+        } else {
             l3EndpointVO.setMonitorIp(msg.getMonitorIp());
         }
 
@@ -158,10 +159,11 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
      * @param monitorIp
      * @return
      */
-    private boolean validateMonitorIp(String l3EndPointUuid, String monitorIp) {
-        boolean isValid = false;
+    private void validateMonitorIp(String l3EndPointUuid, String monitorIp) {
 
-        return isValid;
+        if (StringUtils.isNotEmpty(monitorIp) && !NetworkUtils.isIpv4Address(monitorIp))
+            throw new RuntimeException(String.format("invalid monitor ip %s", monitorIp));
+
     }
 
     @Override
