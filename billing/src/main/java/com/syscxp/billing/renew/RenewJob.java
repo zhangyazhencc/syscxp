@@ -43,12 +43,12 @@ import java.util.Map;
 @Component
 @EnableScheduling
 @Lazy(false)
-public class RenewJob implements Job{
+public class RenewJob implements Job {
 
     @Autowired
     private DatabaseFacade dbf;
-
-    private static TimeoutRestTemplate template = RESTFacade.createRestTemplate(3000, 3000);;
+    @Autowired
+    private RESTFacade restf;
 
     private static final CLogger logger = Utils.getLogger(RenewJob.class);
 
@@ -95,7 +95,7 @@ public class RenewJob implements Job{
                         aMsg.setProductChargeModel(renewVO.getProductChargeModel());
                         InnerMessageHelper.setMD5(aMsg);
                         String gstr = RESTApiDecoder.dump(aMsg);
-                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
+                        RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, null, RestAPIResponse.class);
 
                         //                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
                         //                        throw new RuntimeException("unknown mistake");
@@ -107,7 +107,7 @@ public class RenewJob implements Job{
                         msg.setProductChargeModel(renewVO.getProductChargeModel());
                         InnerMessageHelper.setMD5(msg);
                         String gstr = RESTApiDecoder.dump(msg);
-                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
+                        RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, null, RestAPIResponse.class);
 
                     } else if (renewVO.getProductType().equals(ProductType.VPN)) {
                         APIRenewAutoVpnMsg msg = new APIRenewAutoVpnMsg();
@@ -116,7 +116,7 @@ public class RenewJob implements Job{
                         msg.setProductChargeModel(renewVO.getProductChargeModel());
                         InnerMessageHelper.setMD5(msg);
                         String gstr = RESTApiDecoder.dump(msg);
-                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
+                        RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, null, RestAPIResponse.class);
 
                     } else if (renewVO.getProductType().equals(ProductType.PORT)) {
                         APIRenewAutoInterfaceMsg aMsg = new APIRenewAutoInterfaceMsg();
@@ -126,7 +126,8 @@ public class RenewJob implements Job{
                         aMsg.setProductChargeModel(renewVO.getProductChargeModel());
                         InnerMessageHelper.setMD5(aMsg);
                         String gstr = RESTApiDecoder.dump(aMsg);
-                        RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class, null);
+                        restf.syncJsonPost(caller.getProductUrl(), gstr, null, RestAPIResponse.class);
+                        RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, null, RestAPIResponse.class);
 
                         //                    if (!rsp.getState().equals(RestAPIState.Done.toString())) {
                         //                        throw new RuntimeException("unknown mistake");
@@ -140,7 +141,7 @@ public class RenewJob implements Job{
                         renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                         renewCmd.setUuid(renewVO.getProductUuid());
                         String body = JSONObjectUtil.toJsonString(renewCmd);
-                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                        restf.syncJsonPost(caller.getProductUrl(), body, header, RestAPIResponse.class);
                     } else if (renewVO.getProductType().equals(ProductType.HOST)) {
                         Map<String, String> header = new HashMap<>();
                         header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpHost");
@@ -150,7 +151,7 @@ public class RenewJob implements Job{
                         renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                         renewCmd.setUuid(renewVO.getProductUuid());
                         String body = JSONObjectUtil.toJsonString(renewCmd);
-                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                        restf.syncJsonPost(caller.getProductUrl(), body, header, RestAPIResponse.class);
                     } else if (renewVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
                         Map<String, String> header = new HashMap<>();
                         header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpResourcePool");
@@ -160,8 +161,8 @@ public class RenewJob implements Job{
                         renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                         renewCmd.setUuid(renewVO.getProductUuid());
                         String body = JSONObjectUtil.toJsonString(renewCmd);
-                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
-                    }else if (renewVO.getProductType().equals(ProductType.IP)) {
+                        restf.syncJsonPost(caller.getProductUrl(), body, header, RestAPIResponse.class);
+                    } else if (renewVO.getProductType().equals(ProductType.IP)) {
                         Map<String, String> header = new HashMap<>();
                         header.put(RESTConstant.COMMAND_PATH, "autoRenewElasticIp");
                         RenewCmd renewCmd = new RenewCmd();
@@ -170,7 +171,7 @@ public class RenewJob implements Job{
                         renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
                         renewCmd.setUuid(renewVO.getProductUuid());
                         String body = JSONObjectUtil.toJsonString(renewCmd);
-                        syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class, header);
+                        restf.syncJsonPost(caller.getProductUrl(), body, header, RestAPIResponse.class);
                     }
 
                 } finally {
@@ -184,39 +185,6 @@ public class RenewJob implements Job{
             lock.unlock();
         }
 
-    }
-
-
-    public <T> T syncJsonPost(String url, String body, Class<T> returnClass, Map<String, String> headers) {
-        body = body == null ? "" : body;
-
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(body.length());
-        if (headers != null) {
-            requestHeaders.setAll(headers);
-        }
-
-        HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
-
-        ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
-            @Override
-            @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
-            protected ResponseEntity<String> call() {
-                return template.exchange(url, HttpMethod.POST, req, String.class);
-            }
-        }.setRetryTimes(0).run();
-
-        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
-            throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
-        }
-
-        if (rsp.getBody() != null && returnClass != Void.class) {
-
-            return JSONObjectUtil.toObject(rsp.getBody(), returnClass);
-        } else {
-            return null;
-        }
     }
 
 }
