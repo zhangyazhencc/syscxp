@@ -53,7 +53,7 @@ public class RenewJob {
         template = RESTFacade.createRestTemplate(3000, 3000);
     }
 
-    @Scheduled(cron = "0 0 0/2 * * ? ")
+    @Scheduled(cron = "0 0/2 0 * * ? ")
     @Transactional
     protected void autoRenew() {
 
