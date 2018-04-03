@@ -40,20 +40,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-@Component
-@EnableScheduling
-@Lazy(false)
 public class RenewJob implements Job{
 
     @Autowired
     private DatabaseFacade dbf;
-
-    private TimeoutRestTemplate template;
-
     private static final CLogger logger = Utils.getLogger(RenewJob.class);
 
     public RenewJob() {
-        template = RESTFacade.createRestTemplate(3000, 3000);
     }
 
     @Transactional
@@ -61,6 +54,7 @@ public class RenewJob implements Job{
 
         GLock lock = new GLock(String.format("id-%s", "createRenew"), 600);
         lock.lock();
+
         try {
 
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
@@ -181,6 +175,7 @@ public class RenewJob implements Job{
 
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } finally {
             lock.unlock();
         }
@@ -189,6 +184,7 @@ public class RenewJob implements Job{
 
 
     public <T> T syncJsonPost(String url, String body, Class<T> returnClass, Map<String, String> headers) {
+        TimeoutRestTemplate template = RESTFacade.createRestTemplate(3000, 3000);
         body = body == null ? "" : body;
 
         HttpHeaders requestHeaders = new HttpHeaders();
