@@ -22,6 +22,9 @@
     <message>
         <name>com.syscxp.idc.header.APIDeleteIdcDetailMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.idc.header.APIModifyIdcTotalCostMsg</name>
+    </message>
 
     <message>
         <name>com.syscxp.idc.header.APIQueryIdcMsg</name>

@@ -711,7 +711,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setLastPriceOneMonth(renewVO.getPriceOneMonth());
 
             if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
-                if (notUseMonth.intValue() == 0) {
+                if (notUseMonth.equals(BigDecimal.ZERO)) {
                     orderVo.setType(OrderType.DOWNGRADE);
                 }else{
                     orderVo.setType(OrderType.UPGRADE);
