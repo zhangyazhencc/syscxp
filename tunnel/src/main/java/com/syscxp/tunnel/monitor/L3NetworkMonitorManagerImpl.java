@@ -4,9 +4,6 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.Q;
-import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -20,18 +17,14 @@ import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.network.L3EndpointState;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
-import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -94,8 +87,8 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
                     l3NetworkMonitor.startMonitor(l3EndpointVO, srcL3NetworkMonitorVOS);
                 } else {
                     if (StringUtils.equals(msg.getMonitorIp(), l3EndpointVO.getMonitorIp())) {
-                        // 为更新监控ip，仅更新本端出的监控机监控
-                        l3NetworkMonitor.updateMonitorVO(l3EndpointVO, srcL3NetworkMonitorVOS);
+                        // 更新监控ip，仅更新本端出的监控机监控
+                        l3NetworkMonitor.updateSrcMonitor(l3EndpointVO, srcL3NetworkMonitorVOS);
                     } else {
                         // 更新监控ip，更新对端监控机监控
                         l3EndpointVO.setMonitorIp(msg.getMonitorIp());
