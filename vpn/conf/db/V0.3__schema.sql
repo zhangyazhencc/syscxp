@@ -12,6 +12,10 @@ CREATE TABLE  `syscxp_vpn`.`L3VpnVO` (
   `type` varchar(32) NOT NULL DEFAULT 'routetype' COMMENT '客户端模式',
 	`port` INT(10) NOT NULL COMMENT 'VPN端口',
 	`vlan` INT(10) NOT NULL COMMENT 'vlan',
+	`startIp` varchar(128) DEFAULT NULL COMMENT '起始ip',
+  `stopIp` varchar(128) DEFAULT NULL COMMENT '终止ip',
+  `netmask` varchar(128) DEFAULT NULL COMMENT '子网掩码',
+  `gateway` varchar(128) DEFAULT NULL COMMENT '网关',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
 	`duration` int(11) NOT NULL COMMENT '购买时长',
@@ -26,5 +30,4 @@ CREATE TABLE  `syscxp_vpn`.`L3VpnVO` (
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT  CHARSET=utf8;
-
 
