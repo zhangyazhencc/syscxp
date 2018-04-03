@@ -14,7 +14,7 @@ import java.util.List;
  * @Cretion Date: 2018-03-22.
  * @Description: .
  */
-@Inventory(mappingVOClass = L3NetworkMonitorVO.class)
+//@Inventory(mappingVOClass = L3NetworkMonitorVO.class)
 public class L3EndpointMonitorInventory {
     L3EndpointInventory endpoint;
     List<L3NetworkMonitorInventory> monitors;
