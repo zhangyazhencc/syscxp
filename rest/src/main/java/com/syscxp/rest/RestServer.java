@@ -696,7 +696,7 @@ public class RestServer implements Component, CloudBusEventListener {
                     String booleanValue = booleanObject.toString();
                     if (!(booleanValue.equalsIgnoreCase("true") ||
                             booleanValue.equalsIgnoreCase("false"))) {
-                        throw new RestException(HttpStatus.BAD_REQUEST.value(),
+                        throw new RestException(RestConstants.BAD_REQUEST,
                                 String.format("Invalid value for boolean field [%s]," +
                                                 " [%s] is not a valid boolean string[true, false].",
                                         f.getName(), booleanValue));
@@ -710,7 +710,7 @@ public class RestServer implements Component, CloudBusEventListener {
         if (requestInfo.get().headers.containsKey(RestConstants.HEADER_JOB_UUID)) {
             String jobUuid = requestInfo.get().headers.get(RestConstants.HEADER_JOB_UUID).get(0);
             if (jobUuid.length() != 32) {
-                throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid header[%s], it" +
+                throw new RestException(RestConstants.BAD_REQUEST, String.format("Invalid header[%s], it" +
                         " must be a UUID with '-' stripped", RestConstants.HEADER_JOB_UUID));
             }
 
