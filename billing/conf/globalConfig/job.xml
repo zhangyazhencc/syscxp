@@ -7,4 +7,12 @@
         <defaultValue>0 0 3 1 * ?</defaultValue>
         <type>java.lang.String</type>
     </config>
+
+    <config>
+        <category>job</category>
+        <name>renewJob.cron</name>
+        <description>autoRenew job </description>
+        <defaultValue>0 0/2 * * * ?</defaultValue>
+        <type>java.lang.String</type>
+    </config>
 </globalConfig>
