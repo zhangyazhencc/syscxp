@@ -15,6 +15,9 @@ import com.syscxp.header.tunnel.edgeLine.APIRenewAutoEdgeLineMsg;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.header.vpn.vpn.APIRenewAutoVpnMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
@@ -40,7 +43,7 @@ import java.util.Map;
 @Component
 @EnableScheduling
 @Lazy(false)
-public class RenewJob {
+public class RenewJob implements Job{
 
     @Autowired
     private DatabaseFacade dbf;
@@ -53,9 +56,8 @@ public class RenewJob {
         template = RESTFacade.createRestTemplate(3000, 3000);
     }
 
-    @Scheduled(cron = "0 0/2 * * * ?")
     @Transactional
-    protected void autoRenew() {
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
         GLock lock = new GLock(String.format("id-%s", "createRenew"), 600);
         lock.lock();
@@ -217,6 +219,5 @@ public class RenewJob {
             return null;
         }
     }
-
 
 }
