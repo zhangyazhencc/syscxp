@@ -1,12 +1,8 @@
 package com.syscxp.header.tunnel.monitor;
 
-import com.syscxp.header.search.Inventory;
 import com.syscxp.header.tunnel.network.L3EndpointInventory;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -14,7 +10,6 @@ import java.util.List;
  * @Cretion Date: 2018-03-22.
  * @Description: .
  */
-//@Inventory(mappingVOClass = L3NetworkMonitorVO.class)
 public class L3EndpointMonitorInventory {
     L3EndpointInventory endpoint;
     List<L3NetworkMonitorInventory> monitors;
