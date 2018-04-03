@@ -48,12 +48,11 @@ public class RenewJob implements Job{
     @Autowired
     private DatabaseFacade dbf;
 
-    private TimeoutRestTemplate template;
+    private static TimeoutRestTemplate template = RESTFacade.createRestTemplate(3000, 3000);;
 
     private static final CLogger logger = Utils.getLogger(RenewJob.class);
 
     public RenewJob() {
-        template = RESTFacade.createRestTemplate(3000, 3000);
     }
 
     @Transactional
