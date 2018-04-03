@@ -24,4 +24,13 @@ public interface RestConstants {
     String SIGNATURE_METHOD = "SignatureMethod";
 
     String SESSION_UUID = "sessionUuid";
+
+    String INTERNAL_ERROR = "1002";
+    String HTTP_METHOD_NOT_ALLOWED = "1003";
+    String NOT_FOUND = "1004";
+    String PROCESSING = "1005";
+    String BAD_REQUEST = "1006";
+    String INVALID_PARAMETER = "1007";
+    String VALIDATION_ERROR = "1008";
+
 }
