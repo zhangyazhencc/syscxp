@@ -635,11 +635,16 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
             BigDecimal refundPresent = BigDecimal.ZERO;
             OrderVO buyOrder = updateMoneyIfCreateFailure(msg.getAccountUuid(), msg.getProductUuid());
-
+            int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+            String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
             if (msg.isCreateFailure()) {
                 remainMoney = buyOrder.getPayCash();
                 refundPresent = buyOrder.getPayPresent();
+                abvo.setPresentBalance(abvo.getPresentBalance().add(refundPresent));
+                new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, refundPresent, outTradeNO+"0", orderVo.getUuid(), msg.getOpAccountUuid(), null, orderVo.getUuid(), null);
             }
+
+
             orderVo.setOriginalPrice(remainMoney);
             orderVo.setPrice(remainMoney);
             orderVo.setProductEffectTimeStart(msg.getStartTime());
@@ -649,9 +654,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             abvo.setCashBalance(remainCash);
             orderVo.setPayPresent(refundPresent);
             orderVo.setPayCash(remainMoney.negate());
-            int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
-            String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null, orderVo.getUuid(), null);
+
+
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO+"1", orderVo.getUuid(), msg.getOpAccountUuid(), null, orderVo.getUuid(), null);
             deletePriceRefRenews(renewVO.getUuid());
             dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
 
