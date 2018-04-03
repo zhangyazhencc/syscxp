@@ -641,7 +641,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 remainMoney = buyOrder.getPayCash();
                 refundPresent = buyOrder.getPayPresent();
                 abvo.setPresentBalance(abvo.getPresentBalance().add(refundPresent));
-                new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, refundPresent, outTradeNO+"0", orderVo.getUuid(), msg.getOpAccountUuid(), null, orderVo.getUuid(), null);
+                new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, refundPresent, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, abvo.getPresentBalance(), outTradeNO+"0", orderVo.getUuid(), msg.getOpAccountUuid(), null, orderVo.getUuid(), null);
             }
 
 
