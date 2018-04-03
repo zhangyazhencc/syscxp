@@ -201,9 +201,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     @Override
-    public void addAgentRoute(L3EndpointVO vo) {
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(vo, null);
-        String hostIp = getHostIp(vo.getPhysicalSwitchUuid());
+    public void addAgentRoute(String l3EndpointUuid) {
+        L3EndpointVO end = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(end, null);
+        String hostIp = getHostIp(end.getPhysicalSwitchUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
                 hostIp, MonitorAgentConstant.L3_ADD_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
@@ -214,9 +215,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     @Override
-    public void deleteAgentRoute(L3EndpointVO vo) {
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(vo, null);
-        String hostIp = getHostIp(vo.getPhysicalSwitchUuid());
+    public void deleteAgentRoute(String l3EndpointUuid) {
+        L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, null);
+        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
                 hostIp, MonitorAgentConstant.L3_DELETE_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
@@ -226,14 +228,11 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                     , hostIp, cmd, MonitorAgentConstant.L3_DELETE_ROUTE, resp.getMsg()));
     }
 
-    /**
-     * 修改互联IP，当前修改互联IP需要中止连接点，不需要单独调用此方法
-     *
-     * @param endpointVO
-     */
+    // 修改互联IP，当前修改互联IP需要中止连接点，不需要单独调用此方法
     @Deprecated
-    public void updateAgentRoute(L3EndpointVO endpointVO) {
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO,null);
+    public void updateAgentRoute(String l3EndpointUuid) {
+        L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, null);
         String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
         MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
@@ -245,7 +244,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     @Override
-    public void startAgentMonitor(L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO) {
+    public void startAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid) {
+
+        L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
 
         MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
         String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
@@ -259,7 +261,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     @Override
-    public void stopAgentMonitor(L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO) {
+    public void stopAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid) {
+
+        L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
 
         MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
         String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
@@ -273,7 +278,11 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     @Override
-    public void updateAgentMonitor(L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO) {
+    public void updateAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid) {
+
+        L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
+
         MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
         String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
@@ -287,6 +296,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     /**
      * 发送agent参数获取方法
+     *
      * @param endpointVO
      * @param monitorVO：如果为空，则查找连接点下所有的L3NetworkMonitorVO数据
      * @return
@@ -334,8 +344,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     @Override
-    public void startControllerMonitor(L3EndpointVO vo) {
-        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(vo);
+    public void startControllerMonitor(String l3EndpointUuid) {
+
+        L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(endpointVO);
 
         RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
                 ControllerRestConstant.START_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
@@ -346,8 +358,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     }
 
     @Override
-    public void stopControllerMonitor(L3EndpointVO vo) {
-        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(vo);
+    public void stopControllerMonitor(String l3EndpointUuid) {
+
+        L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(endpointVO);
 
         RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
                 ControllerRestConstant.STOP_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
@@ -359,6 +373,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     /**
      * 控制器下发参数
+     *
      * @param l3EndpointVO
      * @return
      */
@@ -423,6 +438,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     /**
      * 按监控机IP获取监控机接口数据
+     *
      * @param hostIp
      * @return
      */

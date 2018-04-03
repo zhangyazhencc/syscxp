@@ -23,6 +23,7 @@ public interface L3NetworkMonitorBase {
     /**
      * 停止监控，前端调用
      * 前端监控IP为空，后端监控IP不为空
+     *
      * @param l3EndpointVO
      */
     void stopMonitor(L3EndpointVO l3EndpointVO);
@@ -30,6 +31,7 @@ public interface L3NetworkMonitorBase {
     /**
      * 仅处理前端传入的对端监控数据
      * 前端监控IP不为空，后端监控IP不为空，且前端监控IP = 后端监控IP
+     *
      * @param l3EndpointVO
      * @param srcL3NetworkMonitorVOS
      */
@@ -38,6 +40,7 @@ public interface L3NetworkMonitorBase {
     /**
      * 修改监控IP
      * 前端监控IP不为空，后端监控IP不为空，且前端监控IP ！= 后端监控IP
+     *
      * @param l3EndpointVO
      * @param srcL3NetworkMonitorVOS
      */
@@ -54,6 +57,7 @@ public interface L3NetworkMonitorBase {
      * 连接点中止后调用
      * 监控ip不为空
      * 不删除L3NetworkMonitorVO监控数据
+     *
      * @param l3EndpointVO
      */
     void stopMonitorByDisableL3Endpoint(L3EndpointVO l3EndpointVO);
@@ -61,6 +65,7 @@ public interface L3NetworkMonitorBase {
     /**
      * 连接点中止后，删除连接点调用
      * 监控ip不为空
+     *
      * @param l3EndpointVO
      */
     void deleteMonitorData(L3EndpointVO l3EndpointVO);
@@ -68,54 +73,61 @@ public interface L3NetworkMonitorBase {
     /**
      * 添加Agent监控路由，且开启该连接点下的监控
      * L3NetworkMonitorJob调用
-     * @param vo
+     *
+     * @param l3EndpointUuid
      */
-    void addAgentRoute(L3EndpointVO vo);
+    void addAgentRoute(String l3EndpointUuid);
 
     /**
      * 删除Agent监控路由，且停止该连接点下的监控
      * L3NetworkMonitorJob调用
-     * @param vo
+     *
+     * @param l3EndpointUuid
      */
-    void deleteAgentRoute(L3EndpointVO vo);
+    void deleteAgentRoute(String l3EndpointUuid);
 
     /**
      * 开启Agent ping监控线程（单个监控开启）
      * L3NetworkMonitorJob调用
-     * @param endpointVO
-     * @param monitorVO
+     *
+     * @param l3EndpointUuid
+     * @param L3NetworkMonitorUuid
      */
-    void startAgentMonitor(L3EndpointVO endpointVO,L3NetworkMonitorVO monitorVO);
+    void startAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid);
 
     /**
      * 停止Agent ping监控线程（单个监控停止）
      * L3NetworkMonitorJob调用
-     * @param endpointVO
-     * @param monitorVO
+     *
+     * @param l3EndpointUuid
+     * @param L3NetworkMonitorUuid
      */
-    void stopAgentMonitor(L3EndpointVO endpointVO,L3NetworkMonitorVO monitorVO);
+    void stopAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid);
 
     /**
      * 更新Agent ping监控线程（批量更新）
      * 处理前端传入的对端监控数据
      * 前端监控IP不为空，后端监控IP不为空，且前端监控IP = 后端监控IP
      * L3NetworkMonitorJob调用
-     * @param endpointVO
-     * @param monitorVO
+     *
+     * @param l3EndpointUuid
+     * @param L3NetworkMonitorUuid
      */
-    void updateAgentMonitor(L3EndpointVO endpointVO,L3NetworkMonitorVO monitorVO);
+    void updateAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid);
 
     /**
      * 开启控制器监控
      * 前端监控IP不为空，后端监控IP为空
-     * @param vo
+     *
+     * @param l3EndpointUuid
      */
-    void startControllerMonitor(L3EndpointVO vo);
+    void startControllerMonitor(String l3EndpointUuid);
 
     /**
      * 停止控制器监控
      * 前端监控IP为空，后端监控IP不为空
-     * @param vo
+     *
+     * @param l3EndpointUuid
      */
-    void stopControllerMonitor(L3EndpointVO vo);
+    void stopControllerMonitor(String l3EndpointUuid);
 }

@@ -67,7 +67,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
 
     @Transactional
     private void handle(APIConfigL3NetworkMonitorMsg msg) {
-        APIConfigL3NetworkMonitorEvent event = new APIConfigL3NetworkMonitorEvent();
+        APIConfigL3NetworkMonitorEvent event = new APIConfigL3NetworkMonitorEvent(msg.getId());
         L3EndpointVO endpointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndpointVO.class);
 
         if (endpointVO.getState() == L3EndpointState.Enabled) {

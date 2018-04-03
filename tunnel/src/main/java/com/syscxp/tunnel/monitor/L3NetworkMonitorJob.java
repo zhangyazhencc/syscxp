@@ -45,37 +45,37 @@ public class L3NetworkMonitorJob implements Job {
         try {
             if (jobType == MonitorJobType.CONTROLLER_START) {
                 logger.info("开始执行JOB【L3开启控制器监控】");
-                l3NetworkMonitor.startControllerMonitor(endpointVO);
+                l3NetworkMonitor.startControllerMonitor(endpointVO.getUuid());
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.CONTROLLER_STOP) {
                 logger.info("开始执行JOB【L3关闭控制器监控】");
-                l3NetworkMonitor.stopControllerMonitor(endpointVO);
+                l3NetworkMonitor.stopControllerMonitor(endpointVO.getUuid());
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_ADD_ROUTE) {
                 logger.info("开始执行JOB【L3监控机添加路由】");
-                l3NetworkMonitor.addAgentRoute(endpointVO);
+                l3NetworkMonitor.addAgentRoute(endpointVO.getUuid());
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_DELETE_ROUTE) {
                 logger.info("开始执行JOB【L3监控机删除路由】");
-                l3NetworkMonitor.deleteAgentRoute(endpointVO);
+                l3NetworkMonitor.deleteAgentRoute(endpointVO.getUuid());
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_START) {
                 logger.info("开始执行JOB【L3监控机开启监控】");
-                l3NetworkMonitor.startAgentMonitor(endpointVO,monitorVO);
+                l3NetworkMonitor.startAgentMonitor(endpointVO.getUuid(), monitorVO.getUuid());
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_STOP) {
                 logger.info("开始执行JOB【L3监控机关闭监控】");
-                l3NetworkMonitor.stopAgentMonitor(endpointVO,monitorVO);
+                l3NetworkMonitor.stopAgentMonitor(endpointVO.getUuid(), monitorVO.getUuid());
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_MODIFY) {
                 logger.info("开始执行JOB【L3监控机修改监控线程】");
-                l3NetworkMonitor.updateAgentMonitor(endpointVO, monitorVO);
+                l3NetworkMonitor.updateAgentMonitor(endpointVO.getUuid(), monitorVO.getUuid());
 
                 completion.success(null);
             }
