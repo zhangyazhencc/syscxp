@@ -38,8 +38,8 @@ import static com.syscxp.core.Platform.operr;
  * @author wangjie
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
-public class VpnBase extends AbstractL3Vpn {
-    private static final CLogger LOGGER = Utils.getLogger(VpnBase.class);
+public class L3VpnBase extends AbstractL3Vpn {
+    private static final CLogger LOGGER = Utils.getLogger(L3VpnBase.class);
 
     @Autowired
     private CloudBus bus;
@@ -70,7 +70,7 @@ public class VpnBase extends AbstractL3Vpn {
 
     private static final String RATE_LIMITING = "set";
 
-    protected VpnBase(VpnVO self) {
+    protected L3VpnBase(VpnVO self) {
         super(self);
 
         vpnConfPath = VpnConstant.VPN_CONF_PATH;

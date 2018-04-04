@@ -1,4 +1,4 @@
-package com.syscxp.vpn.vpn;
+package com.syscxp.vpn.l3vpn;
 
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.core.ReturnValueCompletion;
@@ -8,8 +8,9 @@ import com.syscxp.header.vpn.vpn.VpnVO;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
-import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
+import com.syscxp.vpn.l3vpn.L3VpnCommands.AgentCommand;
+import com.syscxp.vpn.l3vpn.L3VpnCommands.AgentResponse;
+import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -18,8 +19,8 @@ import org.springframework.beans.factory.annotation.Configurable;
  * @author wangjie
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE, dependencyCheck = true)
-public abstract class AbstractVpn {
-    private static final CLogger LOGGER = Utils.getLogger(AbstractVpn.class);
+public abstract class AbstractL3Vpn {
+    private static final CLogger LOGGER = Utils.getLogger(AbstractL3Vpn.class);
 
     @Autowired
     protected RESTFacade restf;
@@ -33,7 +34,7 @@ public abstract class AbstractVpn {
     private int port = VpnGlobalProperty.AGENT_PORT;
     private String rootPath = VpnGlobalProperty.AGENT_URL_ROOT_PATH;
 
-    protected AbstractVpn(VpnVO self) {
+    protected AbstractL3Vpn(VpnVO self) {
         this.self = self;
         id = "Vpn-" + self.getUuid();
 

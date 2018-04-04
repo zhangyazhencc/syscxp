@@ -7,11 +7,11 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.vpn.*;
-
+import com.syscxp.header.vpn.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnCertVO;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"})
-public class APICreateVpnMsg extends APIVpnMessage {
+public class APICreateL3VpnMsg extends APIL3VpnMessage {
     @APIParam(emptyString = false, minLength = 6, maxLength = 50)
     private String name;
     @APIParam(required = false, maxLength = 255)
@@ -111,11 +111,11 @@ public class APICreateVpnMsg extends APIVpnMessage {
             public void after(APIEvent evt) {
                 String uuid = null;
                 if (evt.isSuccess()) {
-                    uuid = ((APICreateVpnEvent) evt).getInventory().getUuid();
+                    uuid = ((APICreateL3VpnEvent) evt).getInventory().getUuid();
                 }
 
-                ntfy("Create VpnVO")
-                        .resource(uuid, VpnVO.class)
+                ntfy("Create L3VpnVO")
+                        .resource(uuid, L3VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

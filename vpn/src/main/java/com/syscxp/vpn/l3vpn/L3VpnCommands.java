@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * @author wangjie
  */
-public class VpnCommands {
+public class L3VpnCommands {
     public static class AgentCommand {
         public String vpnuuid;
     }

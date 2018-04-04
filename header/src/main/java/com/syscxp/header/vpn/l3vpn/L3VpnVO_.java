@@ -9,7 +9,7 @@ import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;
 
-@StaticMetamodel(VpnVO.class)
+@StaticMetamodel(L3VpnVO.class)
 public class L3VpnVO_ {
     public static volatile SingularAttribute<VpnVO, String> uuid;
     public static volatile SingularAttribute<VpnVO, String> accountUuid;

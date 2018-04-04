@@ -1,15 +1,14 @@
 package com.syscxp.header.vpn.l3vpn;
 
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.vpn.vpn.VpnVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = VpnVO.class)
-public class VpnInventory {
+@Inventory(mappingVOClass = L3VpnVO.class)
+public class L3VpnInventory {
     private String uuid;
     private String accountUuid;
     private String name;
@@ -33,8 +32,8 @@ public class VpnInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static VpnInventory valueOf(VpnVO vo) {
-        VpnInventory inv = new VpnInventory();
+    public static L3VpnInventory valueOf(L3VpnVO vo) {
+        L3VpnInventory inv = new L3VpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
@@ -62,10 +61,10 @@ public class VpnInventory {
         return inv;
     }
 
-    public static List<VpnInventory> valueOf(Collection<VpnVO> vos) {
-        List<VpnInventory> invs = new ArrayList<>();
-        for (VpnVO vo : vos) {
-            invs.add(VpnInventory.valueOf(vo));
+    public static List<L3VpnInventory> valueOf(Collection<L3VpnVO> vos) {
+        List<L3VpnInventory> invs = new ArrayList<>();
+        for (L3VpnVO vo : vos) {
+            invs.add(L3VpnInventory.valueOf(vo));
         }
 
         return invs;
