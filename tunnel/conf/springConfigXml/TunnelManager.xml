@@ -24,7 +24,6 @@
                 <value>com.syscxp.header.tunnel.tunnel.TunnelVO</value>
                 <value>com.syscxp.header.tunnel.edgeLine.EdgeLineVO</value>
                 <value>com.syscxp.header.tunnel.network.L3NetworkVO</value>
-                <value>com.syscxp.header.tunnel.solution.SolutionVO</value>
                 <value>com.syscxp.header.tunnel.monitor.SpeedRecordsVO</value>
             </list>
         </property>

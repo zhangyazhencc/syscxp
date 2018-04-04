@@ -50,6 +50,7 @@
     <import resource="springConfigXml/NotificationManager.xml"/>
     <import resource="springConfigXml/Identity.xml"/>
     <!--<import resource="springConfigXml/rest.xml"/>-->
-    <import resource="springConfigXml/Idc.xml"/>
+    <import resource="springConfigXml/IdcManager.xml"/>
+    <import resource="springConfigXml/SolutionManager.xml"/>
 
 </beans>
