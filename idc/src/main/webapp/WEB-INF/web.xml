@@ -38,7 +38,7 @@
         <param-name>parentContextKey</param-name>
         <param-value>parentContext</param-value>
     </context-param>
-    
+
     <servlet-mapping>
         <servlet-name>Syscxp Dispatcher Servlet</servlet-name>
         <url-pattern>/</url-pattern>
@@ -86,7 +86,7 @@
 
     <listener>
         <listener-class>
-            org.springframework.web.context.ContextLoaderListener 
+            org.springframework.web.context.ContextLoaderListener
         </listener-class>
     </listener>
 
