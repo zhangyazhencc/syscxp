@@ -30,4 +30,3 @@ CREATE TABLE  `syscxp_vpn`.`L3VpnVO` (
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT  CHARSET=utf8;
-
