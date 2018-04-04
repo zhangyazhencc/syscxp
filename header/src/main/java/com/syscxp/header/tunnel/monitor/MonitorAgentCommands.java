@@ -612,6 +612,7 @@ public class MonitorAgentCommands {
         private String l3endpoint_id;
         private String interface_name;
         private Integer vlan;
+        private String switch_ip;
         private String local_ip;
         private String monitor_ip;
         private List<L3MonitorCommand> monitors;
@@ -662,6 +663,14 @@ public class MonitorAgentCommands {
 
         public void setMonitors(List<L3MonitorCommand> monitors) {
             this.monitors = monitors;
+        }
+
+        public String getSwitch_ip() {
+            return switch_ip;
+        }
+
+        public void setSwitch_ip(String switch_ip) {
+            this.switch_ip = switch_ip;
         }
     }
 

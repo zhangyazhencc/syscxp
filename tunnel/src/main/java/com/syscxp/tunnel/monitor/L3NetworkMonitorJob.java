@@ -11,6 +11,7 @@ import com.syscxp.header.tunnel.network.L3EndpointVO;
 import com.syscxp.tunnel.tunnel.job.MonitorJobType;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -25,10 +26,10 @@ public class L3NetworkMonitorJob implements Job {
     private static final CLogger logger = Utils.getLogger(L3NetworkMonitorJob.class);
 
     @JobContext
-    private L3EndpointVO endpointVO;
+    private String l3EndpointUuid;
 
     @JobContext
-    private L3NetworkMonitorVO monitorVO;
+    private String l3NetworkMonitorUuid;
 
     @JobContext
     private MonitorJobType jobType;
@@ -45,37 +46,37 @@ public class L3NetworkMonitorJob implements Job {
         try {
             if (jobType == MonitorJobType.CONTROLLER_START) {
                 logger.info("开始执行JOB【L3开启控制器监控】");
-                l3NetworkMonitor.startControllerMonitor(endpointVO.getUuid());
+                l3NetworkMonitor.startControllerMonitor(l3EndpointUuid);
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.CONTROLLER_STOP) {
                 logger.info("开始执行JOB【L3关闭控制器监控】");
-                l3NetworkMonitor.stopControllerMonitor(endpointVO.getUuid());
+                l3NetworkMonitor.stopControllerMonitor(l3EndpointUuid);
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_ADD_ROUTE) {
                 logger.info("开始执行JOB【L3监控机添加路由】");
-                l3NetworkMonitor.addAgentRoute(endpointVO.getUuid());
+                l3NetworkMonitor.addAgentRoute(l3EndpointUuid);
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_DELETE_ROUTE) {
                 logger.info("开始执行JOB【L3监控机删除路由】");
-                l3NetworkMonitor.deleteAgentRoute(endpointVO.getUuid());
+                l3NetworkMonitor.deleteAgentRoute(l3EndpointUuid);
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_START) {
                 logger.info("开始执行JOB【L3监控机开启监控】");
-                l3NetworkMonitor.startAgentMonitor(endpointVO.getUuid(), monitorVO.getUuid());
+                l3NetworkMonitor.startAgentMonitor(l3EndpointUuid, l3NetworkMonitorUuid);
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_STOP) {
                 logger.info("开始执行JOB【L3监控机关闭监控】");
-                l3NetworkMonitor.stopAgentMonitor(endpointVO.getUuid(), monitorVO.getUuid());
+                l3NetworkMonitor.stopAgentMonitor(l3EndpointUuid, l3NetworkMonitorUuid);
 
                 completion.success(null);
             } else if (jobType == MonitorJobType.AGENT_MODIFY) {
                 logger.info("开始执行JOB【L3监控机修改监控线程】");
-                l3NetworkMonitor.updateAgentMonitor(endpointVO.getUuid(), monitorVO.getUuid());
+                l3NetworkMonitor.updateAgentMonitor(l3EndpointUuid, l3NetworkMonitorUuid);
 
                 completion.success(null);
             }
@@ -88,20 +89,20 @@ public class L3NetworkMonitorJob implements Job {
 
     }
 
-    public L3EndpointVO getEndpointVO() {
-        return endpointVO;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setEndpointVO(L3EndpointVO endpointVO) {
-        this.endpointVO = endpointVO;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
-    public L3NetworkMonitorVO getMonitorVO() {
-        return monitorVO;
+    public String getL3NetworkMonitorUuid() {
+        return l3NetworkMonitorUuid;
     }
 
-    public void setMonitorVO(L3NetworkMonitorVO monitorVO) {
-        this.monitorVO = monitorVO;
+    public void setL3NetworkMonitorUuid(String l3NetworkMonitorUuid) {
+        this.l3NetworkMonitorUuid = l3NetworkMonitorUuid;
     }
 
     public MonitorJobType getJobType() {
@@ -114,6 +115,9 @@ public class L3NetworkMonitorJob implements Job {
 
     @Override
     public String getResourceUuid() {
-        return endpointVO.getUuid();
+        if (StringUtils.isNotEmpty(l3NetworkMonitorUuid))
+            return l3NetworkMonitorUuid;
+        else
+            return l3EndpointUuid;
     }
 }

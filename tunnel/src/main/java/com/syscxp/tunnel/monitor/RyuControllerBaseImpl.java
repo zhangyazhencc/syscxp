@@ -1,8 +1,11 @@
 package com.syscxp.tunnel.monitor;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.Platform;
 import com.syscxp.header.Component;
+import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.TimeoutRestTemplate;
 import com.syscxp.header.tunnel.monitor.MonitorAgentConstant;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -10,6 +13,7 @@ import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.IllegalClassException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @Author: sunxuelong.
@@ -91,14 +95,14 @@ public class RyuControllerBaseImpl implements RyuControllerBase, Component {
     public <T> T httpCall(String method, String command, Class<T> returnClass) {
         String url = getUrl(method);
         Class baseResp = RyuBaseResponse.class;
-        if (!baseResp.isAssignableFrom(returnClass.getClass()))
+        if ((returnClass != baseResp) && !returnClass.getClass().isAssignableFrom(baseResp.getClass()))
             throw new IllegalClassException("return class should extend RyuControllerBaseImpl.RyuBaseResponse");
 
-        //logger.info(String.format("======= [Controller Request] url: %s command: %s", url, command));
+        logger.info(String.format("======= [Controller Request] url: %s command: %s", url, command));
 
-        String resp = restf.syncJsonPost(url, command, String.class);
+        String resp = restf.syncJsonPost(url, command);
 
-        //logger.info(String.format("======= [Controller Response] %s", resp));
+        logger.info(String.format("======= [Controller Response] %s", resp));
 
         if (StringUtils.isNotEmpty(resp) && returnClass != Void.class) {
             return JSONObjectUtil.toObject(resp, returnClass);

@@ -186,8 +186,8 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     private void createMonitorJob(MonitorJobType jobType, L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO, String queueName) {
         L3NetworkMonitorJob monitorJob = new L3NetworkMonitorJob();
 
-        monitorJob.setEndpointVO(endpointVO);
-        monitorJob.setMonitorVO(monitorVO);
+        monitorJob.setL3EndpointUuid(endpointVO.getUuid());
+        monitorJob.setL3NetworkMonitorUuid(monitorVO.getUuid());
         monitorJob.setJobType(jobType);
         jobf.execute(queueName, Platform.getManagementServerId(), monitorJob);
     }
@@ -195,7 +195,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     private void createRouteJob(MonitorJobType jobType, L3EndpointVO endpointVO, String queueName) {
         L3NetworkMonitorJob monitorJob = new L3NetworkMonitorJob();
 
-        monitorJob.setEndpointVO(endpointVO);
+        monitorJob.setL3EndpointUuid(endpointVO.getUuid());
         monitorJob.setJobType(jobType);
         jobf.execute(queueName, Platform.getManagementServerId(), monitorJob);
     }
@@ -305,13 +305,15 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         MonitorAgentCommands.L3AgentCommand cmd = new MonitorAgentCommands.L3AgentCommand();
 
         // route
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(endpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        cmd.setVlan(endpointVO.getVlan());
         cmd.setL3endpoint_id(endpointVO.getUuid());
+        cmd.setVlan(endpointVO.getVlan());
 
         String mask = "/" + StringUtils.substringAfterLast(endpointVO.getIpCidr(), "/");
         cmd.setLocal_ip(endpointVO.getLocalIP() + mask);
         cmd.setMonitor_ip(endpointVO.getMonitorIp() + mask);
+
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(endpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        cmd.setSwitch_ip(physicalSwitchVO.getmIP());
 
         HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
         cmd.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
@@ -461,7 +463,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     @Override
     public boolean start() {
         // 监控机定时获取所有云网络监控数据
-        restf.registerSyncHttpCallHandler("MONITOR/L3INFO", HashMap.class,
+        restf.registerSyncHttpCallHandler("MONITOR/L3ENDPOINTS", HashMap.class,
                 paramMap -> {
                     Map<String, Object> map = new HashMap<>();
                     List<MonitorAgentCommands.L3AgentCommand> cmds = new ArrayList<>();

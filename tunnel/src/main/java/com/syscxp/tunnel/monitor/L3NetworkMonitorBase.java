@@ -108,6 +108,7 @@ public interface L3NetworkMonitorBase {
      * 更新Agent ping监控线程（批量更新）
      * 处理前端传入的对端监控数据
      * 前端监控IP不为空，后端监控IP不为空，且前端监控IP = 后端监控IP
+     * 如果前后端IP不一致，agent会更新路由的监控IP
      * L3NetworkMonitorJob调用
      *
      * @param l3EndpointUuid
