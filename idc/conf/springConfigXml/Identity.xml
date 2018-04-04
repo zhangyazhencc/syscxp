@@ -20,11 +20,12 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
+                <value>com.syscxp.header.idc.solution.SolutionVO</value>
             </list>
         </property>
     </bean>
 
-    <bean id="VpnSubQueryExtension" class="com.syscxp.idc.identity.IdcSubQueryExtension">
+    <bean id="IdcSubQueryExtension" class="com.syscxp.idc.identity.IdcSubQueryExtension">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.query.MysqlQuerySubQueryExtension"/>
         </syscxp:plugin>

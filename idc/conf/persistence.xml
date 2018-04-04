@@ -13,5 +13,10 @@
         <class>com.syscxp.idc.header.IdcDetailVO</class>
         <class>com.syscxp.idc.header.ResourceOrderEffectiveVO</class>
 
+        <class>com.syscxp.header.idc.solution.SolutionVO</class>
+        <class>com.syscxp.header.idc.solution.SolutionInterfaceVO</class>
+        <class>com.syscxp.header.idc.solution.SolutionTunnelVO</class>
+        <class>com.syscxp.header.idc.solution.SolutionVpnVO</class>
+
     </persistence-unit>
 </persistence>

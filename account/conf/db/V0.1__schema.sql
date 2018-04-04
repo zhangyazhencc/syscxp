@@ -304,7 +304,8 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('BillingPriceFullAccess','管理价格表的权限','billing','SystemAdmin','2','{"actions":["billing:price:.*"],"effect":"Allow"}'),
 ('BillingRecharge','现金充值权限','billing','Normal','10','{"actions":["billing:recharge:.*"],"effect":"Allow"}'),
 ('BillingPresent','赠送金额充值权限','billing','SystemAdmin','11','{"actions":["billing:present:.*"],"effect":"Allow"}'),
-('BillingCredit','设置信用额度权限','billing','SystemAdmin','12','{"actions":["billing:credit:.*"],"effect":"Allow"}'),
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission)
+VALUES ('BillingCredit','设置信用额度权限','billing','SystemAdmin','12','{"actions":["billing:credit:.*"],"effect":"Allow"}'),
 ('BillingDiscount','设置折扣权限','billing','SystemAdmin','15','{"actions":["billing:discount:.*"],"effect":"Allow"}'),
 
 ('BillingRenew','续费权限','billing','SystemAdmin','20','{"actions":["billing:renew:.*"],"effect":"Allow"}'),
@@ -323,7 +324,7 @@ VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Nor
 ('ECPFullQuotaAccess','修改配额的权限','ecp','Normal','0','{"actions":["ecp:identity:APIUpdateQuotaMsg"],"effect":"Allow"}'),
 ('ECPFullHostAccess','管理云主机的权限','ecp','Normal','0','{"actions":["ecp:identity:APIUpdateQuotaMsg"],"effect":"Allow"}'),
 
-UPDATE `PolicyVO` p set p.lastOpDate = current_timestamp(), p.createDate = current_timestamp();
+UPDATE `PolicyVO` p set p.lastOpDate = current_timestamp(), p.createDate = current_timestamp() where p.createDate is null;
 
 
 CREATE TABLE `TicketVO` (

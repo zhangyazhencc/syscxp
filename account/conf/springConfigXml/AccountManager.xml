@@ -23,6 +23,7 @@
                 <value>com.syscxp.account.header.identity.RoleVO</value>
                 <value>com.syscxp.account.header.user.UserVO</value>
                 <value>com.syscxp.account.header.account.AccountApiSecurityVO</value>
+                <value>com.syscxp.account.header.account.AccountVO</value>
                 <value>com.syscxp.account.header.account.ProxyAccountRefVO</value>
                 <value>com.syscxp.account.header.ticket.TicketVO</value>
             </list>
