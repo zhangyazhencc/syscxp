@@ -46,6 +46,15 @@
         <servlet-name>default</servlet-name>
         <url-pattern>/static/*</url-pattern>
     </servlet-mapping>
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/classes/syscxp-servlet-context.xml</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>parentContextKey</param-name>
+        <param-value>parentContext</param-value>
+    </context-param>
 
     <filter>
         <filter-name>UrlRewriteFilter</filter-name>
@@ -62,6 +71,12 @@
     <listener>
         <listener-class>
             com.syscxp.portal.managementnode.BootstrapWebListener
+        </listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener
         </listener-class>
     </listener>
 
