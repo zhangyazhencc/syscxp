@@ -362,7 +362,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 if (!StringUtils.isEmpty(description)) {
                     int index = description.lastIndexOf("]");
                     if (index > 0) {
-                        description =description.substring(0,index).concat(",{\"name\":\"最后一公里固定本金\"}").concat("]}");
+                        description =description.substring(0,index).concat(",{\"name\":\"一次性费用\",\"value\":\"开通成本费用\"}").concat("]}");
                     }
 
                 }
