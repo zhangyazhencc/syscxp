@@ -57,7 +57,6 @@
     <import resource="springConfigXml/SwitchManager.xml"/>
     <import resource="springConfigXml/MongodbFacade.xml"/>
     <import resource="springConfigXml/AliEdgeRouterManager.xml"/>
-    <import resource="springConfigXml/SolutionManager.xml"/>
     <import resource="springConfigXml/BillingCallBackManager.xml"/>
     <import resource="springConfigXml/EdgeLineManager.xml"/>
     <import resource="springConfigXml/L3NetworkManager.xml"/>
