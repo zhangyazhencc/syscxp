@@ -3,6 +3,7 @@ package com.syscxp.header.vpn.vpn;
 public interface VpnConstant {
 
     String SERVICE_ID = "vpn";
+    String L3_SERVICE_ID = "l3vpn";
     String HOST_TYPE = "VPN";
     String URL_GENERATE_KEY = "asdjhsajfhasowjl234jhfv";
     String ACTION_CATEGORY_VPN = "vpn";

@@ -202,7 +202,6 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
             try {
                 trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
             } catch (SchedulerException e) {
-                e.printStackTrace();
             }
             if (trigger == null) {
                 return;
@@ -217,7 +216,6 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
                 try {
                     scheduler.rescheduleJob(triggerKey, trigger);
                 } catch (SchedulerException e) {
-                    e.printStackTrace();
                 }
             }
         }

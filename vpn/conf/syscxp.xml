@@ -50,5 +50,6 @@
     <import resource="springConfigXml/ThreadFacade.xml"/>
     <import resource="springConfigXml/validation.xml"/>
     <import resource="springConfigXml/NotificationManager.xml"/>
+    <import resource="springConfigXml/L3VpnManager.xml"/>
     <!--<import resource="springConfigXml/rest.xml"/>-->
 </beans>

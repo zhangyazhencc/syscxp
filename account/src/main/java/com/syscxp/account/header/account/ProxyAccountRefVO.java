@@ -23,7 +23,7 @@ public class ProxyAccountRefVO {
     @ForeignKey(parentEntityClass = AccountVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String customerAccountUuid;
 
-    @ManyToOne(cascade = CascadeType.REFRESH,fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.REFRESH,fetch = FetchType.LAZY)
     @JoinColumn(name = "customerAccountUuid",insertable = false,updatable = false)
     private  AccountVO proxyAccountVO;
 
