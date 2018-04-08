@@ -648,6 +648,8 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
                 mpls.setVlan_id(tunnelSwitchPortVO.getVlan());
                 mpls.setBandwidth(SizeUnit.BYTE.toKiloByte(tunnelVO.getBandwidth()));
                 mpls.setVni(tunnelVO.getVsi());
+                mpls.setProtocol(physicalSwitchVO.getProtocol());
+                mpls.setPort(physicalSwitchVO.getPort());
 
                 HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorByHostUuid(tunnelMonitorVO.getHostUuid(), physicalSwitchVO.getUuid());
                 mpls.setPort_name(hostSwitchMonitorVO.getPhysicalSwitchPortName());

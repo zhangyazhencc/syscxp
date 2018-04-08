@@ -24,11 +24,9 @@ import com.syscxp.tunnel.tunnel.job.MonitorJobType;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.utils.network.NetworkUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -380,7 +378,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         l3Mpls.setM_ip(physicalSwitchVO.getmIP());
         l3Mpls.setUsername(physicalSwitchVO.getUsername());
         l3Mpls.setPassword(physicalSwitchVO.getPassword());
-        l3Mpls.setProtocal(physicalSwitchVO.getProtocol());
+        l3Mpls.setProtocol(physicalSwitchVO.getProtocol());
         l3Mpls.setPort(physicalSwitchVO.getPort());
 
         HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
