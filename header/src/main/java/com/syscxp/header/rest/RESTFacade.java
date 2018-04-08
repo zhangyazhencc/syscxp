@@ -34,6 +34,8 @@ public interface RESTFacade {
 
     <T> T syncJsonPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes);
 
+    String syncJsonPost(String url, String body);
+
     HttpEntity<String> httpServletRequestToHttpEntity(HttpServletRequest req);
 
     RestTemplate getRESTTemplate();

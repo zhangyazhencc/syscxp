@@ -5,8 +5,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -20,17 +18,14 @@ import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.network.L3EndpointState;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
-import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.apache.commons.lang.ArrayUtils;
+import com.syscxp.utils.network.NetworkUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,7 +33,7 @@ import java.util.List;
  * @Cretion Date: 2018-03-22.
  * @Description: .
  */
-public class L3NetworkMonitorManagerImpl extends AbstractService implements L3NetworkMonitorManager, Component, ApiMessageInterceptor,HostDeleteExtensionPoint {
+public class L3NetworkMonitorManagerImpl extends AbstractService implements L3NetworkMonitorManager, Component, ApiMessageInterceptor, HostDeleteExtensionPoint {
     private static final CLogger logger = Utils.getLogger(TunnelMonitorManagerImpl.class);
 
     @Autowired
@@ -46,7 +41,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private L3NetworkMonitorBase l3NetworkMonitor;
+    private L3NetworkMonitorBase monitor;
 
     @Override
     @MessageSafe
@@ -72,48 +67,55 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
 
     @Transactional
     private void handle(APIConfigL3NetworkMonitorMsg msg) {
-        L3EndpointVO l3EndpointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndpointVO.class);
+        APIConfigL3NetworkMonitorEvent event = new APIConfigL3NetworkMonitorEvent(msg.getId());
+        L3EndpointVO endpointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndpointVO.class);
 
-        if(l3EndpointVO.getState() == L3EndpointState.Enabled){
-            List<L3NetworkMonitorVO> srcL3NetworkMonitorVOS = new ArrayList<L3NetworkMonitorVO>();
+        if (endpointVO.getState() == L3EndpointState.Enabled) {
+            List<L3NetworkMonitorVO> monitorVOS = new ArrayList<L3NetworkMonitorVO>();
             for (String dstL3EndpointUuid : msg.getDstL3EndPointUuids()) {
                 L3NetworkMonitorVO vo = new L3NetworkMonitorVO();
                 vo.setUuid(Platform.getUuid());
-                vo.setL3NetworkUuid(l3EndpointVO.getL3NetworkUuid());
+                vo.setL3NetworkUuid(endpointVO.getL3NetworkUuid());
                 vo.setSrcL3EndpointUuid(msg.getL3EndPointUuid());
                 vo.setDstL3EndpointUuid(dstL3EndpointUuid);
 
-                srcL3NetworkMonitorVOS.add(vo);
+                monitorVOS.add(vo);
             }
 
             if (StringUtils.isNotEmpty(msg.getMonitorIp())) {
-                if (StringUtils.isEmpty(l3EndpointVO.getMonitorIp())) {
+                if (StringUtils.isEmpty(endpointVO.getMonitorIp())) {
                     // 新增监控ip，开启监控
-                    l3EndpointVO.setMonitorIp(msg.getMonitorIp());
-                    l3NetworkMonitor.startMonitor(l3EndpointVO, srcL3NetworkMonitorVOS);
+                    endpointVO.setMonitorIp(msg.getMonitorIp());
+                    monitor.startMonitor(endpointVO, monitorVOS);
                 } else {
-                    if (StringUtils.equals(msg.getMonitorIp(), l3EndpointVO.getMonitorIp())) {
-                        // 为更新监控ip，仅更新本端出的监控机监控
-                        l3NetworkMonitor.updateMonitorVO(l3EndpointVO, srcL3NetworkMonitorVOS);
+                    if (StringUtils.equals(msg.getMonitorIp(), endpointVO.getMonitorIp())) {
+                        // 更新监控ip，仅更新本端出的监控机监控
+                        monitor.updateSrcMonitor(endpointVO, monitorVOS);
                     } else {
                         // 更新监控ip，更新对端监控机监控
-                        l3EndpointVO.setMonitorIp(msg.getMonitorIp());
-                        l3NetworkMonitor.updateMonitorIp(l3EndpointVO, srcL3NetworkMonitorVOS);
+                        endpointVO.setMonitorIp(msg.getMonitorIp());
+                        monitor.updateMonitorIp(endpointVO, monitorVOS);
                     }
                 }
             } else {
-                if (StringUtils.isNotEmpty(l3EndpointVO.getMonitorIp())) {
+                if (StringUtils.isNotEmpty(endpointVO.getMonitorIp())) {
                     // 删除监控ip，停止监控
-                    l3EndpointVO.setMonitorIp(msg.getMonitorIp());
-                    l3NetworkMonitor.stopMonitor(l3EndpointVO);
+                    endpointVO.setMonitorIp(msg.getMonitorIp());
+                    monitor.stopMonitor(endpointVO);
                 }
             }
-        }else {
-            l3EndpointVO.setMonitorIp(msg.getMonitorIp());
+        } else {
+            endpointVO.setMonitorIp(msg.getMonitorIp());
         }
 
         // 更新监控ip
-        dbf.getEntityManager().merge(l3EndpointVO);
+        endpointVO = dbf.updateAndRefresh(endpointVO);
+
+        List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
+                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getUuid())
+                .list();
+        event.setInventory(L3EndpointMonitorInventory.valueOf(endpointVO, monitorVOS));
+        bus.publish(event);
     }
 
     @Override
@@ -158,10 +160,11 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
      * @param monitorIp
      * @return
      */
-    private boolean validateMonitorIp(String l3EndPointUuid, String monitorIp) {
-        boolean isValid = false;
+    private void validateMonitorIp(String l3EndPointUuid, String monitorIp) {
 
-        return isValid;
+        if (StringUtils.isNotEmpty(monitorIp) && !NetworkUtils.isIpv4Address(monitorIp))
+            throw new RuntimeException(String.format("invalid monitor ip %s", monitorIp));
+
     }
 
     @Override

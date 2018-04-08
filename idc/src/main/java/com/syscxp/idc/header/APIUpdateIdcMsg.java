@@ -3,7 +3,7 @@ package com.syscxp.idc.header;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.idc.idc.IdcConstant;
+import com.syscxp.header.idc.IdcConstant;
 
 import java.math.BigDecimal;
 

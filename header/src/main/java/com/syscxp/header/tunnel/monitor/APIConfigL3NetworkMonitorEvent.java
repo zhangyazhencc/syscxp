@@ -5,13 +5,21 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APIConfigL3NetworkMonitorEvent extends APIEvent {
-    private L3NetworkMonitorInventory inventory;
+    public APIConfigL3NetworkMonitorEvent() {
 
-    public L3NetworkMonitorInventory getInventory() {
+    }
+
+    public APIConfigL3NetworkMonitorEvent(String apiId) {
+        super(apiId);
+    }
+
+    private L3EndpointMonitorInventory inventory;
+
+    public L3EndpointMonitorInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(L3NetworkMonitorInventory inventory) {
+    public void setInventory(L3EndpointMonitorInventory inventory) {
         this.inventory = inventory;
     }
 }

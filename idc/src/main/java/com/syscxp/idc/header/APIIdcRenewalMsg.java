@@ -4,7 +4,7 @@ import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.idc.idc.IdcConstant;
+import com.syscxp.header.idc.IdcConstant;
 import java.math.BigDecimal;
 
 @Action(services = {IdcConstant.SERVICE_ID}, category = IdcConstant.ACTION_CATEGORY, names = {"renewal"})

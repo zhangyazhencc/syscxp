@@ -167,7 +167,7 @@ public class RESTFacadeImpl implements RESTFacade {
                 rsp.setContentType("application/json; charset=utf-8");
                 out = rsp.getWriter();
                 out.append(ret);
-                logger.debug(String.format("Command response: %s",ret));
+                logger.debug(String.format("Command response: %s", ret));
             }
         } catch (IOException e) {
             logger.warn(e.getMessage(), e);
@@ -178,7 +178,7 @@ public class RESTFacadeImpl implements RESTFacade {
             } catch (IOException e) {
                 logger.warn(e.getMessage(), e);
             }
-        }finally {
+        } finally {
             if (out != null) {
                 out.close();
             }
@@ -476,6 +476,29 @@ public class RESTFacadeImpl implements RESTFacade {
             return null;
         }
     }
+
+    @Override
+    public String syncJsonPost(String url, String body) {
+        body = body == null ? "" : body;
+
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentLength(body.length());
+        HttpEntity<String> req = new HttpEntity<>(body, requestHeaders);
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("json post[%s], %s", url, req.toString()));
+        }
+
+        ResponseEntity<String> rsp = template.exchange(url, HttpMethod.POST, req, String.class);
+
+        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
+            throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
+        }
+
+        return rsp.getBody();
+    }
+
+
     @Override
     public void echo(String url, Completion callback) {
         echo(url, callback, TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(30));

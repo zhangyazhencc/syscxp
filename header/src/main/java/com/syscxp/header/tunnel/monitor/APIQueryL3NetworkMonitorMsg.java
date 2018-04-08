@@ -21,6 +21,6 @@ import org.springframework.http.HttpMethod;
         responseClass = APIQueryL3NetworkMonitorReply.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"read"})
-@AutoQuery(replyClass = APIQuerySpeedRecordsReply.class, inventoryClass = L3NetworkMonitorInventory.class)
+@AutoQuery(replyClass = APIQuerySpeedRecordsReply.class, inventoryClass = L3EndpointMonitorInventory.class)
 public class APIQueryL3NetworkMonitorMsg extends APIQueryMessage {
 }
