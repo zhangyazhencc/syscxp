@@ -64,6 +64,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APIUpdateSolutionVpnMsg) msg);
         } else if (msg instanceof APIDeleteSolutionVpnMsg){
             handle((APIDeleteSolutionVpnMsg) msg);
+        } else if (msg instanceof APIGetSolutionPriceMsg){
+            handle((APIGetSolutionPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -129,8 +131,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     /**
      * 获取方案总价和折扣总价
      * */
+    private void handle(APIGetSolutionPriceMsg msg){
+        SolutionBase solutionBase = new SolutionBase();
 
+        bus.reply(msg, solutionBase.totalSolutionCost(msg.getUuid()));
 
+    }
 
     /**
      * 添加方案--物理接口
