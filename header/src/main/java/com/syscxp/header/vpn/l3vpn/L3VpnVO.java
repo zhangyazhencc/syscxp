@@ -37,9 +37,19 @@ public class L3VpnVO {
     @Column
     private String bandwidthOfferingUuid;
     @Column
-    private String endpointUuid;
+    private String l3EndpointUuid;
     @Column
-    private String tunnelUuid;
+    private String l3NetworkUuid;
+    @Column
+    private String workMode;
+    @Column
+    private String startIp;
+    @Column
+    private String stopIp;
+    @Column
+    private String netmask;
+    @Column
+    private String gateway;
     @Column
     private Integer port;
     @Column
@@ -55,9 +65,9 @@ public class L3VpnVO {
     @Column
     private String clientConf;
     @Column
-    private String certKey;
+    private String secretKey;
     @Column
-    private String sid;
+    private String secretId;
     @Column
     @Enumerated(EnumType.STRING)
     private Payment payment;
@@ -75,20 +85,20 @@ public class L3VpnVO {
         lastOpDate = null;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getL3NetworkUuid() {
+        return l3NetworkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setL3NetworkUuid(String l3NetworkUuid) {
+        this.l3NetworkUuid = l3NetworkUuid;
     }
 
-    public String getSid() {
-        return sid;
+    public String getSecretId() {
+        return secretId;
     }
 
-    public void setSid(String sid) {
-        this.sid = sid;
+    public void setSecretId(String secretId) {
+        this.secretId = secretId;
     }
 
     public String getClientConf() {
@@ -135,12 +145,12 @@ public class L3VpnVO {
         this.maxModifies = maxModifies;
     }
 
-    public String getCertKey() {
-        return certKey;
+    public String getSecretKey() {
+        return secretKey;
     }
 
-    public void setCertKey(String certKey) {
-        this.certKey = certKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public Payment getPayment() {
@@ -215,12 +225,52 @@ public class L3VpnVO {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
+    }
+
+    public String getStartIp() {
+        return startIp;
+    }
+
+    public void setStartIp(String startIp) {
+        this.startIp = startIp;
+    }
+
+    public String getStopIp() {
+        return stopIp;
+    }
+
+    public void setStopIp(String stopIp) {
+        this.stopIp = stopIp;
+    }
+
+    public String getNetmask() {
+        return netmask;
+    }
+
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
+    }
+
+    public String getGateway() {
+        return gateway;
+    }
+
+    public void setGateway(String gateway) {
+        this.gateway = gateway;
     }
 
     public VpnStatus getStatus() {
