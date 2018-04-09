@@ -23,7 +23,6 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -391,7 +390,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         l3Mpls.setM_ip(physicalSwitchVO.getmIP());
         l3Mpls.setUsername(physicalSwitchVO.getUsername());
         l3Mpls.setPassword(physicalSwitchVO.getPassword());
-        l3Mpls.setProtocal(physicalSwitchVO.getProtocol());
+        l3Mpls.setProtocol(physicalSwitchVO.getProtocol());
         l3Mpls.setPort(physicalSwitchVO.getPort());
 
         HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
