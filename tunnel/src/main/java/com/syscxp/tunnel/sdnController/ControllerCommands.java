@@ -103,7 +103,7 @@ public class ControllerCommands {
         private String m_ip;
         private String username;
         private String password;
-        private RemoteProtocol protocal;
+        private RemoteProtocol protocol;
         private Integer port;
 
         public String getUuid() {
@@ -170,12 +170,12 @@ public class ControllerCommands {
             this.password = password;
         }
 
-        public RemoteProtocol getProtocal() {
-            return protocal;
+        public RemoteProtocol getProtocol() {
+            return protocol;
         }
 
-        public void setProtocal(RemoteProtocol protocal) {
-            this.protocal = protocal;
+        public void setProtocol(RemoteProtocol protocol) {
+            this.protocol = protocol;
         }
 
         public Integer getPort() {
