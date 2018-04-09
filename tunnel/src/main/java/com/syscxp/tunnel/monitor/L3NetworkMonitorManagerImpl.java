@@ -18,6 +18,7 @@ import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.network.L3EndpointState;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
+import com.syscxp.header.tunnel.network.L3EndpointVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
@@ -60,6 +61,8 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIConfigL3NetworkMonitorMsg) {
             handle((APIConfigL3NetworkMonitorMsg) msg);
+        } else if (msg instanceof APIQueryL3NetworkMonitorMsg) {
+            handle((APIQueryL3NetworkMonitorMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -114,8 +117,38 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
         List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
                 .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getUuid())
                 .list();
-        event.setInventory(L3EndpointMonitorInventory.valueOf(endpointVO, monitorVOS));
+
+        List<L3EndpointVO> dstEndpoints = getDstL3Endpoints(endpointVO);
+
+
+        event.setInventory(L3EndpointMonitorInventory.valueOf(endpointVO, dstEndpoints, monitorVOS));
         bus.publish(event);
+    }
+
+    private void handle(APIQueryL3NetworkMonitorMsg msg) {
+        APIQueryL3NetworkMonitorReply reply = new APIQueryL3NetworkMonitorReply();
+
+        L3EndpointVO l3Endpoint = dbf.findByUuid(msg.getL3EndpointUuid(), L3EndpointVO.class);
+        List<L3EndpointVO> dstEndpoints = getDstL3Endpoints(l3Endpoint);
+
+        List<L3NetworkMonitorVO> monitors = Q.New(L3NetworkMonitorVO.class)
+                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, msg.getL3EndpointUuid())
+                .list();
+
+        reply.setInventory(L3EndpointMonitorInventory.valueOf(l3Endpoint, dstEndpoints, monitors));
+        bus.reply(msg, reply);
+    }
+
+    private List<L3EndpointVO> getDstL3Endpoints(L3EndpointVO l3Endpoint) {
+        List<L3EndpointVO> dstEndpoints = Q.New(L3EndpointVO.class)
+                .eq(L3EndpointVO_.l3NetworkUuid, l3Endpoint.getL3NetworkUuid())
+                .eq(L3EndpointVO_.state, L3EndpointState.Enabled)
+                .notEq(L3EndpointVO_.uuid, l3Endpoint.getUuid())
+                .notNull(L3EndpointVO_.monitorIp)
+                .notEq(L3EndpointVO_.monitorIp, StringUtils.EMPTY)
+                .list();
+
+        return dstEndpoints;
     }
 
     @Override

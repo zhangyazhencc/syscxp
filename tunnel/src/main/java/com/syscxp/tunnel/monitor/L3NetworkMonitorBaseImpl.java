@@ -162,7 +162,8 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
         dbf.persistCollection(srcL3NetworkMonitorVOS);
 
-        createMonitorJob(MonitorJobType.AGENT_MODIFY, l3EndpointVO, null, "L3-修改监控数据");
+        for (L3NetworkMonitorVO monitorVO : srcL3NetworkMonitorVOS)
+            createMonitorJob(MonitorJobType.AGENT_MODIFY, l3EndpointVO, monitorVO, "L3-修改监控数据");
     }
 
     @Override
