@@ -618,7 +618,7 @@ public class RestServer implements Component, CloudBusEventListener {
         if (ret.getState() == AsyncRestState.processing) {
             response.setCode(RestConstants.PROCESSING);
             response.setMessage("the job has been processing");
-            sendResponse(response, rsp);
+            sendResponse(HttpStatus.ACCEPTED.value(), JSONObjectUtil.toJsonString(response), rsp);
             return;
         }
 
