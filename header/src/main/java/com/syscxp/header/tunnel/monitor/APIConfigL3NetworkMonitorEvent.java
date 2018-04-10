@@ -1,9 +1,7 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
 public class APIConfigL3NetworkMonitorEvent extends APIEvent {
     public APIConfigL3NetworkMonitorEvent() {
 

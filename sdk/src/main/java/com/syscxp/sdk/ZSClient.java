@@ -93,7 +93,7 @@ public class ZSClient {
             if (!success) {
                 res = gson.fromJson(jb.toString(), ApiResult.class);
             } else {
-                res.setResultString(jb.toString());
+                res.setResult(jb.toString());
             }
 
             Api api = waittingApis.get(jobUuid);
@@ -581,8 +581,8 @@ public class ZSClient {
             ApiResult res = new ApiResult();
 
             if (response.code() == 200) {
-                res.setResultString(response.body().string());
-            } else if (response.code() == 503) {
+//                res.setResultString(response.body().string());
+//            } else if (response.code() == 503) {
                 res = gson.fromJson(response.body().string(), ApiResult.class);
             } else {
                 throw new ApiException(String.format("unknown status code: %s", response.code()));
