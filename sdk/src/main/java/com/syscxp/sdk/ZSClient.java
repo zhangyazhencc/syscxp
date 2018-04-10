@@ -93,7 +93,7 @@ public class ZSClient {
             if (!success) {
                 res = gson.fromJson(jb.toString(), ApiResult.class);
             } else {
-                res.setResultString(jb.toString());
+                res.setResult(jb.toString());
             }
 
             Api api = waittingApis.get(jobUuid);
