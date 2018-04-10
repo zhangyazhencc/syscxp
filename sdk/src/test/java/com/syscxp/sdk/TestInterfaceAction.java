@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TestInterfaceAction extends TestSDK {
 
-    private String interfaceUuid = "01de0b10efe44099827076c20f011762";
+    private String interfaceUuid = "20bc091c73994bdca1a1c9ebd6e39256";
 
     @Test
     public void testQuery() {
@@ -15,7 +15,7 @@ public class TestInterfaceAction extends TestSDK {
         QueryInterfaceAction action = new QueryInterfaceAction();
         List<String> conditions = new ArrayList<>();
 //        conditions.add("uuid=cb0f4a9a8ed841b1bc3f5a3651b24b09");
-//        conditions.add("name=api-test");
+        conditions.add("name=api-test");
         action.conditions = conditions;
         action.replyWithCount =true;
         QueryInterfaceResult result = action.call().throwExceptionIfError().value;
@@ -26,7 +26,7 @@ public class TestInterfaceAction extends TestSDK {
     public void testQueryPortOffering() {
 
         QueryPortOfferingAction action = new QueryPortOfferingAction();
-
+        action.replyWithCount =true;
         QueryPortOfferingResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
