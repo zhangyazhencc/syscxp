@@ -562,7 +562,6 @@ public class MonitorAgentCommands {
         private String src_l3endpoint_id;
         private String dst_l3endpoint_id;
         private String monitor_ip;
-
         public String getSrc_l3endpoint_id() {
             return src_l3endpoint_id;
         }
@@ -608,4 +607,71 @@ public class MonitorAgentCommands {
             this.monitors = monitors;
         }
     }
+
+    public static class L3AgentCommand{
+        private String l3endpoint_id;
+        private String interface_name;
+        private Integer vlan;
+        private String switch_ip;
+        private String local_ip;
+        private String monitor_ip;
+        private List<L3MonitorCommand> monitors;
+
+        public String getL3endpoint_id() {
+            return l3endpoint_id;
+        }
+
+        public void setL3endpoint_id(String l3endpoint_id) {
+            this.l3endpoint_id = l3endpoint_id;
+        }
+
+        public String getInterface_name() {
+            return interface_name;
+        }
+
+        public void setInterface_name(String interface_name) {
+            this.interface_name = interface_name;
+        }
+
+        public Integer getVlan() {
+            return vlan;
+        }
+
+        public void setVlan(Integer vlan) {
+            this.vlan = vlan;
+        }
+
+        public String getLocal_ip() {
+            return local_ip;
+        }
+
+        public void setLocal_ip(String local_ip) {
+            this.local_ip = local_ip;
+        }
+
+        public String getMonitor_ip() {
+            return monitor_ip;
+        }
+
+        public void setMonitor_ip(String monitor_ip) {
+            this.monitor_ip = monitor_ip;
+        }
+
+        public List<L3MonitorCommand> getMonitors() {
+            return monitors;
+        }
+
+        public void setMonitors(List<L3MonitorCommand> monitors) {
+            this.monitors = monitors;
+        }
+
+        public String getSwitch_ip() {
+            return switch_ip;
+        }
+
+        public void setSwitch_ip(String switch_ip) {
+            this.switch_ip = switch_ip;
+        }
+    }
+
 }

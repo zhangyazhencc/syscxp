@@ -20,7 +20,7 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>com.syscxp.header.idc.solution.SolutionVO</value>
+                <!--<value>com.syscxp.header.idc.solution.SolutionVO</value>-->
             </list>
         </property>
     </bean>

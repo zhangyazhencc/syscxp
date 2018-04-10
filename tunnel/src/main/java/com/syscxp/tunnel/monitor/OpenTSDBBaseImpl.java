@@ -7,9 +7,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.monitor.OpenTSDBCommands;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +34,11 @@ public class OpenTSDBBaseImpl implements OpenTSDBBase, Component{
         return url;
     }
 
-    public List<OpenTSDBCommands.QueryResult> httpCall(OpenTSDBCommands.QueryCondition condition) {
+    public List<OpenTSDBCommands.QueryResult> httpCall(String condition) {
         String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
         String resp = "";
         try {
-            resp = restf.getRESTTemplate().postForObject(url, JSONObjectUtil.toJsonString(condition), String.class);
+            resp = restf.getRESTTemplate().postForObject(url, condition, String.class);
         } catch (Exception e) {
             resp = "";
         }

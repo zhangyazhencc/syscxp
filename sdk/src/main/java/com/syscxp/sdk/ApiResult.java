@@ -21,7 +21,7 @@ import static java.util.Arrays.asList;
 public class ApiResult {
     public String code;
     public String message;
-    private String resultString;
+    private String result;
 
     public String getCode() {
         return code;
@@ -39,8 +39,8 @@ public class ApiResult {
         this.message = message;
     }
 
-    void setResultString(String resultString) {
-        this.resultString = resultString;
+    void setResult(String result) {
+        this.result = result;
     }
 
     private static Object getProperty(Object bean, Iterator<String> it) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -100,12 +100,12 @@ public class ApiResult {
     }
 
     <T> T getResult(Class<T> clz) {
-        if (resultString == null || resultString.isEmpty()) {
+        if (result == null || result.isEmpty()) {
             return null;
         }
 
-        Map m = ZSClient.gson.fromJson(resultString, LinkedHashMap.class);
-        T ret = ZSClient.gson.fromJson(resultString, clz);
+        Map m = ZSClient.gson.fromJson(result, LinkedHashMap.class);
+        T ret = ZSClient.gson.fromJson(result, clz);
         if (!m.containsKey("schema")) {
             return ret;
         }

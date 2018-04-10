@@ -165,20 +165,20 @@ public class TunnelStatusChecker implements Component {
         }
 
         private String getOpenTSDBQueryCondition(String tunnelUuid, String metric, Long startTime, Long endTime) {
-            List<Query> queries = new ArrayList<>();
+            List<TunnelQuery> queries = new ArrayList<>();
 
             TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).find();
             for (TunnelSwitchPortVO tunnelPort : tunnel.getTunnelSwitchPortVOS()) {
                 if (!tunnelPort.getSortTag().equals("A") && !tunnelPort.getSortTag().equals("Z"))
                     continue;
                 PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(tunnelPort.getSwitchPortUuid());
-                Tags tags = new Tags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan(), tunnelUuid);
-                Query query = new Query("avg", metric, tags);
+                TunnelTags tags = new TunnelTags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan(), tunnelUuid);
+                TunnelQuery query = new TunnelQuery("avg", metric, tags);
                 queries.add(query);
                 break;
             }
 
-            QueryCondition condition = new QueryCondition(startTime, endTime, queries);
+            TunnelQueryCondition condition = new TunnelQueryCondition(startTime, endTime, queries);
             return JSONObjectUtil.toJsonString(condition);
         }
 

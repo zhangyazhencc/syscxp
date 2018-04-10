@@ -3,6 +3,8 @@ package com.syscxp.tunnel.network;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.job.JobQueueEntryVO;
+import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
@@ -170,21 +172,7 @@ public class L3NetworkValidateBase {
         }
 
         if(msg.getMonitorIp() != null){
-            if(!NetworkUtils.isIpv4Address(msg.getMonitorIp())){
-                throw new ApiMessageInterceptionException(argerr("该监控IP不是合法的IPV4地址！"));
-            }
-
-            if(msg.getMonitorIp().equals(msg.getRemoteIp()) || msg.getMonitorIp().equals(msg.getLocalIP())){
-                throw new ApiMessageInterceptionException(argerr("监控IP和互联IP不能相同！"));
-            }
-
-            if(!NetworkUtils.isIpv4sInNetmask(msg.getMonitorIp(),msg.getRemoteIp(),msg.getNetmask())){
-                throw new ApiMessageInterceptionException(argerr("监控IP和互联IP必须属于同一网段！"));
-            }
-
-            if(msg.getMonitorIp().equals(ipFirstAndEnd[0]) || msg.getMonitorIp().equals(ipFirstAndEnd[1])){
-                throw new ApiMessageInterceptionException(argerr("该监控IP不能是网段的起始IP或结束IP！"));
-            }
+            validateMonitorIP(msg.getLocalIP(), msg.getRemoteIp(), msg.getMonitorIp(), msg.getNetmask());
         }
 
 
@@ -194,6 +182,30 @@ public class L3NetworkValidateBase {
 
         if(vo.getState() == L3EndpointState.Deploying){
             throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
+        }
+    }
+
+    public void validateMonitorIP(String localIP, String remoteIp, String monitorIp, String netmask){
+        String ipPart1 = localIP;
+        String ipPart2 = NetworkUtils.intFromNetmask(netmask);
+        String ipPart = ipPart1 + "/" + ipPart2;
+
+        String[] ipFirstAndEnd = NetworkUtils.ipSplit(ipPart);
+
+        if(!NetworkUtils.isIpv4Address(monitorIp)){
+            throw new ApiMessageInterceptionException(argerr("该监控IP不是合法的IPV4地址！"));
+        }
+
+        if(monitorIp.equals(remoteIp) || monitorIp.equals(localIP)){
+            throw new ApiMessageInterceptionException(argerr("监控IP和互联IP不能相同！"));
+        }
+
+        if(!NetworkUtils.isIpv4sInNetmask(monitorIp,remoteIp,netmask)){
+            throw new ApiMessageInterceptionException(argerr("监控IP和互联IP必须属于同一网段！"));
+        }
+
+        if(monitorIp.equals(ipFirstAndEnd[0]) || monitorIp.equals(ipFirstAndEnd[1])){
+            throw new ApiMessageInterceptionException(argerr("该监控IP不能是网段的起始IP或结束IP！"));
         }
     }
 
@@ -245,6 +257,10 @@ public class L3NetworkValidateBase {
 
         if(vo.getState() == L3EndpointState.Deploying){
             throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
+        }
+
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, msg.getUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，请稍后再操作！"));
         }
     }
 

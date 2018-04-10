@@ -70,7 +70,7 @@ public class ControllerCommands {
 
     public static class L3MonitorCommand{
         private String net_id;
-        private List<L3MonitorMpls> mpls_switches;
+        private List<MplsSwitchBase> mpls_switches;
 
         public String getNet_id() {
             return net_id;
@@ -80,11 +80,11 @@ public class ControllerCommands {
             this.net_id = net_id;
         }
 
-        public List<L3MonitorMpls> getMpls_switches() {
+        public List<MplsSwitchBase> getMpls_switches() {
             return mpls_switches;
         }
 
-        public void setMpls_switches(List<L3MonitorMpls> mpls_switches) {
+        public void setMpls_switches(List<MplsSwitchBase> mpls_switches) {
             this.mpls_switches = mpls_switches;
         }
     }
@@ -103,6 +103,8 @@ public class ControllerCommands {
         private String m_ip;
         private String username;
         private String password;
+        private RemoteProtocol protocol;
+        private Integer port;
 
         public String getUuid() {
             return uuid;
@@ -167,6 +169,22 @@ public class ControllerCommands {
         public void setPassword(String password) {
             this.password = password;
         }
+
+        public RemoteProtocol getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(RemoteProtocol protocol) {
+            this.protocol = protocol;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
     }
 
     public static class TunnelMonitorMpls extends MplsSwitchBase{
@@ -188,27 +206,6 @@ public class ControllerCommands {
 
         public void setVni(Integer vni) {
             this.vni = vni;
-        }
-    }
-
-    public static class L3MonitorMpls extends MplsSwitchBase{
-        private RemoteProtocol protocal;
-        private Integer port;
-
-        public RemoteProtocol getProtocal() {
-            return protocal;
-        }
-
-        public void setProtocal(RemoteProtocol protocal) {
-            this.protocal = protocal;
-        }
-
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
         }
     }
 

@@ -9,6 +9,9 @@
 
     <message>
         <name>com.syscxp.header.tunnel.monitor.APIQueryL3NetworkMonitorMsg</name>
-        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APIQueryL3OpentsdbConditionMsg</name>
     </message>
 </service>

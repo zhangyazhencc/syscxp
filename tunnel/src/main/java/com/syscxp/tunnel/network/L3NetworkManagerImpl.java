@@ -20,6 +20,7 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.L3NetWorkConstant;
 import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
+import com.syscxp.tunnel.monitor.L3NetworkMonitorBase;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -44,6 +45,8 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
+    @Autowired
+    private L3NetworkMonitorBase l3NetworkMonitorBase;
 
     private VOAddAllOfMsg vOAddAllOfMsg = new VOAddAllOfMsg();
 
@@ -390,6 +393,10 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
+        if(vo.getMonitorIp() != null){
+            l3NetworkMonitorBase.deleteMonitorData(vo);
+        }
+
         L3NetworkBase l3NetworkBase = new L3NetworkBase();
 
         l3NetworkBase.deleteL3EndpointDB(msg.getUuid());
@@ -469,6 +476,10 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
 
         L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
 
+        if(vo.getMonitorIp() != null){
+            l3NetworkMonitorBase.startMonitor(vo);
+        }
+
         if(msg.isSaveOnly()){
 
             vo.setState(L3EndpointState.Enabled);
@@ -502,6 +513,10 @@ public class L3NetworkManagerImpl extends AbstractService implements L3NetworkMa
         L3NetworkTaskBase l3NetworkTaskBase = new L3NetworkTaskBase();
 
         L3EndpointVO vo = dbf.findByUuid(msg.getUuid(), L3EndpointVO.class);
+
+        if(vo.getMonitorIp() != null){
+            l3NetworkMonitorBase.stopMonitorByDisableL3Endpoint(vo);
+        }
 
         if(msg.isSaveOnly()){
 

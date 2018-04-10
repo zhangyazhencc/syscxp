@@ -72,14 +72,15 @@ public class MonitorAgentBaseImpl implements MonitorAgentBase, Component {
     public <T> T httpCall(String hostIp, String method, String command, Class<T> returnClass) {
         String url = getUrl(hostIp, method);
         Class baseResp = AgentResponse.class;
-        if (!baseResp.isAssignableFrom(returnClass.getClass()))
+
+        if ((returnClass != baseResp) && !returnClass.getClass().isAssignableFrom(baseResp.getClass()))
             throw new IllegalClassException("return class should extend MonitorAgentBaseImpl.AgentResponse");
 
-        //logger.info(String.format("======= [Agent Request] url: %s command: %s", url, command));
+        logger.info(String.format("======= [Agent Request] url: %s command: %s", url, command));
 
-        String resp = restf.syncJsonPost(url, command, String.class);
+        String resp = restf.syncJsonPost(url, command);
 
-        //logger.info(String.format("======= [Agent Response] %s", resp));
+        logger.info(String.format("======= [Agent Response] %s", resp));
 
         if (StringUtils.isNotEmpty(resp) && returnClass != Void.class) {
             return JSONObjectUtil.toObject(resp, returnClass);
