@@ -5,11 +5,9 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
-import org.springframework.http.HttpMethod;
 
 import java.util.List;
 
@@ -18,12 +16,6 @@ import java.util.List;
  * @Cretion Date: 2018-03-22.
  * @Description: 开启三层网络监控.
  */
-@RestRequest(
-        path = "tunnel",
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIConfigL3NetworkMonitorEvent.class
-)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"update"})
 public class APIConfigL3NetworkMonitorMsg extends APIMessage {
 
