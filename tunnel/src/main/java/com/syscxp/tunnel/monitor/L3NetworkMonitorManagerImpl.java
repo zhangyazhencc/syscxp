@@ -79,17 +79,18 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
         APIConfigL3NetworkMonitorEvent event = new APIConfigL3NetworkMonitorEvent(msg.getId());
         L3EndpointVO endpointVO = dbf.findByUuid(msg.getL3EndpointUuid(), L3EndpointVO.class);
 
-        if (endpointVO.getState() == L3EndpointState.Enabled) {
-            List<L3NetworkMonitorVO> monitorVOS = new ArrayList<L3NetworkMonitorVO>();
-            for (String dstL3EndpointUuid : msg.getDstL3EndPointUuids()) {
-                L3NetworkMonitorVO vo = new L3NetworkMonitorVO();
-                vo.setUuid(Platform.getUuid());
-                vo.setL3NetworkUuid(endpointVO.getL3NetworkUuid());
-                vo.setSrcL3EndpointUuid(msg.getL3EndpointUuid());
-                vo.setDstL3EndpointUuid(dstL3EndpointUuid);
+        List<L3NetworkMonitorVO> monitorVOS = new ArrayList<L3NetworkMonitorVO>();
+        for (String dstL3EndpointUuid : msg.getDstL3EndPointUuids()) {
+            L3NetworkMonitorVO vo = new L3NetworkMonitorVO();
+            vo.setUuid(Platform.getUuid());
+            vo.setL3NetworkUuid(endpointVO.getL3NetworkUuid());
+            vo.setSrcL3EndpointUuid(msg.getL3EndpointUuid());
+            vo.setDstL3EndpointUuid(dstL3EndpointUuid);
 
-                monitorVOS.add(vo);
-            }
+            monitorVOS.add(vo);
+        }
+
+        if (endpointVO.getState() == L3EndpointState.Enabled) {
 
             if (StringUtils.isNotEmpty(msg.getMonitorIp())) {
                 if (StringUtils.isEmpty(endpointVO.getMonitorIp())) {
@@ -115,17 +116,18 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
             }
         } else {
             endpointVO.setMonitorIp(msg.getMonitorIp());
+
+            List<L3NetworkMonitorVO> l3NetworkMonitorVOS = Q.New(L3NetworkMonitorVO.class)
+                    .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, msg.getL3EndpointUuid())
+                    .list();
+            dbf.removeCollection(l3NetworkMonitorVOS, L3NetworkMonitorVO.class);
+
+            dbf.persistCollection(monitorVOS);
         }
 
         // 更新监控ip
         endpointVO = dbf.updateAndRefresh(endpointVO);
-
-        List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
-                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getUuid())
-                .list();
-
         List<L3EndpointVO> dstEndpoints = getDstL3Endpoints(endpointVO);
-
 
         event.setInventory(L3EndpointMonitorInventory.valueOf(endpointVO, dstEndpoints, monitorVOS));
         bus.publish(event);
