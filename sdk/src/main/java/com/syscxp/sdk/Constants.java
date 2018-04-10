@@ -13,6 +13,7 @@ interface Constants {
     String HEADER_AUTHORIZATION = "Authorization";
     String OAUTH = "OAuth";
     String RESULT = "result";
+    String RESULT_CODE = "OK";
     String ASYNC_JOB_ACTION = "ApiResult";
 
     MediaType JSON = MediaType.parse("application/json; charset=utf-8");

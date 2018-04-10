@@ -15,7 +15,7 @@ public class TestInterfaceAction extends TestSDK {
         QueryInterfaceAction action = new QueryInterfaceAction();
         List<String> conditions = new ArrayList<>();
 //        conditions.add("uuid=cb0f4a9a8ed841b1bc3f5a3651b24b09");
-        conditions.add("name=api-test");
+//        conditions.add("name=api-test");
         action.conditions = conditions;
 
         QueryInterfaceResult result = action.call().throwExceptionIfError().value;
