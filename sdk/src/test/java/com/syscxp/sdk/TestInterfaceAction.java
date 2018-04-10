@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TestInterfaceAction extends TestSDK {
 
-    private String interfaceUuid = "01de0b10efe44099827076c20f011762";
+    private String interfaceUuid = "b39f42dd84c54865818606200b46294f";
 
     @Test
     public void testQuery() {
@@ -15,9 +15,9 @@ public class TestInterfaceAction extends TestSDK {
         QueryInterfaceAction action = new QueryInterfaceAction();
         List<String> conditions = new ArrayList<>();
 //        conditions.add("uuid=cb0f4a9a8ed841b1bc3f5a3651b24b09");
-//        conditions.add("name=api-test");
+        conditions.add("name=api-test-2");
         action.conditions = conditions;
-
+        action.replyWithCount =true;
         QueryInterfaceResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
@@ -26,7 +26,7 @@ public class TestInterfaceAction extends TestSDK {
     public void testQueryPortOffering() {
 
         QueryPortOfferingAction action = new QueryPortOfferingAction();
-
+        action.replyWithCount =true;
         QueryPortOfferingResult result = action.call().throwExceptionIfError().value;
 
         System.out.println(prettyGson.toJson(result));
@@ -48,8 +48,8 @@ public class TestInterfaceAction extends TestSDK {
     public void testCreate() {
         CreateInterfaceAction action = new CreateInterfaceAction();
         action.endpointUuid = "e3bf7d8d049e47cdb28203217a3ee16f";
-        action.name = "api-test";
-        action.description = "api-test";
+        action.name = "api-test-2";
+        action.description = "api-test-2";
         action.duration = 1;
         action.portOfferingUuid = "RJ45_1G";
         action.productChargeModel = ProductChargeModel.BY_MONTH;
@@ -65,7 +65,7 @@ public class TestInterfaceAction extends TestSDK {
 
         UpdateInterfaceAction action = new UpdateInterfaceAction();
         action.uuid = interfaceUuid;
-        action.name = "api-test-update";
+        action.name = "api-test-update2";
 
         UpdateInterfaceResult result = action.call().throwExceptionIfError().value;
 
