@@ -23,7 +23,6 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -162,7 +161,8 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
         dbf.persistCollection(srcL3NetworkMonitorVOS);
 
-        createMonitorJob(MonitorJobType.AGENT_MODIFY, l3EndpointVO, null, "L3-修改监控数据");
+        for (L3NetworkMonitorVO monitorVO : srcL3NetworkMonitorVOS)
+            createMonitorJob(MonitorJobType.AGENT_MODIFY, l3EndpointVO, monitorVO, "L3-修改监控数据");
     }
 
     @Override
@@ -382,7 +382,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     private ControllerCommands.L3MonitorCommand getControllerCommand(L3EndpointVO l3EndpointVO) {
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
 
-        ControllerCommands.L3MonitorMpls l3Mpls = new ControllerCommands.L3MonitorMpls();
+        ControllerCommands.MplsSwitchBase l3Mpls = new ControllerCommands.MplsSwitchBase();
         l3Mpls.setUuid(physicalSwitchVO.getUuid());
         l3Mpls.setSwitch_type(physicalSwitchVO.getSwitchModel().getModel());
         l3Mpls.setSub_type(physicalSwitchVO.getSwitchModel().getSubModel());
@@ -390,13 +390,13 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         l3Mpls.setM_ip(physicalSwitchVO.getmIP());
         l3Mpls.setUsername(physicalSwitchVO.getUsername());
         l3Mpls.setPassword(physicalSwitchVO.getPassword());
-        l3Mpls.setProtocal(physicalSwitchVO.getProtocol());
+        l3Mpls.setProtocol(physicalSwitchVO.getProtocol());
         l3Mpls.setPort(physicalSwitchVO.getPort());
 
         HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorVO(physicalSwitchVO.getUuid());
         l3Mpls.setPort_name(hostSwitchMonitorVO.getPhysicalSwitchPortName());
 
-        List<ControllerCommands.L3MonitorMpls> l3MonitorMplsList = new ArrayList<>();
+        List<ControllerCommands.MplsSwitchBase> l3MonitorMplsList = new ArrayList<>();
         l3MonitorMplsList.add(l3Mpls);
 
         ControllerCommands.L3MonitorCommand cmd = new ControllerCommands.L3MonitorCommand();

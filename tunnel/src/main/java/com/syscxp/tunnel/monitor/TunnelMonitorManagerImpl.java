@@ -77,7 +77,7 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
     @Autowired
     private MonitorAgentBase monitorAgent;
 
-    public static class TunnelAgentResp extends MonitorAgentBaseImpl.AgentResponse{
+    public static class TunnelAgentResp extends MonitorAgentBaseImpl.AgentResponse {
 
     }
 
@@ -197,7 +197,7 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
 
         try {
             stopControllerMonitor(tunnelVO.getUuid());
-        }catch (Exception e){
+        } catch (Exception e) {
             TunnelMonitorJob monitorJob = new TunnelMonitorJob();
             monitorJob.setTunnelUuid(msg.getTunnelUuid());
             monitorJob.setJobType(MonitorJobType.CONTROLLER_STOP);
@@ -246,7 +246,7 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
 
         try {
             modifyControllerMonitor(tunnelVO.getUuid());
-        }catch (Exception e){
+        } catch (Exception e) {
             TunnelMonitorJob monitorJob = new TunnelMonitorJob();
             monitorJob.setTunnelUuid(msg.getTunnelUuid());
             monitorJob.setJobType(MonitorJobType.CONTROLLER_MODIFY);
@@ -648,6 +648,8 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
                 mpls.setVlan_id(tunnelSwitchPortVO.getVlan());
                 mpls.setBandwidth(SizeUnit.BYTE.toKiloByte(tunnelVO.getBandwidth()));
                 mpls.setVni(tunnelVO.getVsi());
+                mpls.setProtocol(physicalSwitchVO.getProtocol());
+                mpls.setPort(physicalSwitchVO.getPort());
 
                 HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorByHostUuid(tunnelMonitorVO.getHostUuid(), physicalSwitchVO.getUuid());
                 mpls.setPort_name(hostSwitchMonitorVO.getPhysicalSwitchPortName());
@@ -1865,12 +1867,14 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
                     return JSON.toJSONString(restResponse, SerializerFeature.WriteMapNullValue);
                 });
 
-        restf.registerSyncHttpCallHandler("MONITOR/VLANENDPOINT", Object.class,
-                object -> {
+        restf.registerSyncHttpCallHandler("MONITOR/VLANENDPOINT", HashMap.class,
+                map -> {
                     Map resultMap = new HashMap();
 
                     try {
-                        List list = getVlanEndpoints();
+                        String type = map.get("type").toString();
+
+                        List list = getVlanEndpoints(type);
 
                         if (list.isEmpty()) {
                             resultMap.put("success", false);
@@ -2098,13 +2102,22 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
      * OpenTSDB 聚合程序查询vlan、交换机ip映射列表
      * @return
      */
-    private List getVlanEndpoints() {
+    private List getVlanEndpoints(String type) {
         List list = new ArrayList();
 
-        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.state, TunnelState.Enabled)
-                .eq(TunnelVO_.monitorState, TunnelMonitorState.Enabled)
-                .list();
+        List<TunnelVO> tunnelVOS = new ArrayList<>();
+        if ("SWITCHIF".equals(type)) {
+            tunnelVOS = Q.New(TunnelVO.class)
+                    .eq(TunnelVO_.state, TunnelState.Enabled)
+                    .list();
+        } else if ("ICMP".equals(type)) {
+            tunnelVOS = Q.New(TunnelVO.class)
+                    .eq(TunnelVO_.state, TunnelState.Enabled)
+                    .eq(TunnelVO_.monitorState, TunnelMonitorState.Enabled)
+                    .list();
+        } else
+            throw new IllegalArgumentException(String.format("invalid type [%s]", type));
+
 
         for (TunnelVO tunnelVO : tunnelVOS) {
             for (TunnelSwitchPortVO tunnelSwitchPortVO : tunnelVO.getTunnelSwitchPortVOS()) {

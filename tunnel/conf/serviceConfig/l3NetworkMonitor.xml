@@ -9,6 +9,5 @@
 
     <message>
         <name>com.syscxp.header.tunnel.monitor.APIQueryL3NetworkMonitorMsg</name>
-        <serviceId>query</serviceId>
     </message>
 </service>

@@ -3,38 +3,57 @@ package com.syscxp.header.tunnel.monitor;
 import com.syscxp.header.tunnel.network.L3EndpointInventory;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author: sunxuelong.
- * @Cretion Date: 2018-03-22.
+ * @Cretion Date: 2018-4-8.
  * @Description: .
  */
 public class L3EndpointMonitorInventory {
-    L3EndpointInventory endpoint;
-    List<L3NetworkMonitorInventory> monitors;
 
-    public static L3EndpointMonitorInventory valueOf(L3EndpointVO endpointVO, List<L3NetworkMonitorVO> monitorVOS){
+    private L3EndpointInventory l3Endpoint;
+    private Map<String, String> dstL3Endpoints;
+    private Set<String> monitors;
+
+    public static L3EndpointMonitorInventory valueOf(L3EndpointVO l3Endpoint, List<L3EndpointVO> dstL3Endpoints, List<L3NetworkMonitorVO> monitors) {
         L3EndpointMonitorInventory inventory = new L3EndpointMonitorInventory();
-        inventory.setEndpoint(L3EndpointInventory.valueOf(endpointVO));
-        inventory.setMonitors(L3NetworkMonitorInventory.valueOf(monitorVOS));
+
+        inventory.setL3Endpoint(L3EndpointInventory.valueOf(l3Endpoint));
+        Map<String, String> map = new HashMap<>();
+        for (L3EndpointVO dstL3Endpoint : dstL3Endpoints)
+            map.put(dstL3Endpoint.getUuid(), dstL3Endpoint.getEndpointEO().getName());
+        inventory.setDstL3Endpoints(map);
+
+        Set<String> set = new HashSet<>();
+        for (L3NetworkMonitorVO monitor : monitors)
+            set.add(monitor.getDstL3EndpointUuid());
+        inventory.setMonitors(set);
+
         return inventory;
     }
 
-    public L3EndpointInventory getEndpoint() {
-        return endpoint;
+    public L3EndpointInventory getL3Endpoint() {
+        return l3Endpoint;
     }
 
-    public void setEndpoint(L3EndpointInventory endpoint) {
-        this.endpoint = endpoint;
+    public void setL3Endpoint(L3EndpointInventory l3Endpoint) {
+        this.l3Endpoint = l3Endpoint;
     }
 
-    public List<L3NetworkMonitorInventory> getMonitors() {
+    public Map<String, String> getDstL3Endpoints() {
+        return dstL3Endpoints;
+    }
+
+    public void setDstL3Endpoints(Map<String, String> dstL3Endpoints) {
+        this.dstL3Endpoints = dstL3Endpoints;
+    }
+
+    public Set<String> getMonitors() {
         return monitors;
     }
 
-    public void setMonitors(List<L3NetworkMonitorInventory> monitors) {
+    public void setMonitors(Set<String> monitors) {
         this.monitors = monitors;
     }
 }
-

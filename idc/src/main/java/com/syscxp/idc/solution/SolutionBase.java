@@ -4,6 +4,7 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SQL;
 import com.syscxp.header.idc.solution.APICreateSolutionTunnelMsg;
+import com.syscxp.header.idc.solution.APIGetSolutionPriceReply;
 import com.syscxp.header.idc.solution.SolutionInterfaceVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -40,23 +41,56 @@ public class SolutionBase {
         return interfaceVO;
     }
 
-    //计算方案总价
-    private BigDecimal totalCost(String solutionUuid){
-        BigDecimal totalCost = new BigDecimal(0);
+    /**
+     * 计算方案总价
+     */
+    public APIGetSolutionPriceReply totalSolutionCost(String solutionUuid){
+        BigDecimal cost = new BigDecimal(0);
+        BigDecimal discount = new BigDecimal(0);
+        BigDecimal shareDiscount = new BigDecimal(0);
 
-        totalCost = totalCost.add( SQL.New("select ifnull(sum(cost), 0) from SolutionInterfaceVO where solutionUuid = :solutionUuid", BigDecimal.class)
+        cost = cost.add( SQL.New("select ifnull(sum(cost), 0) from SolutionInterfaceVO where solutionUuid = :solutionUuid", BigDecimal.class)
                 .param("solutionUuid", solutionUuid)
                 .find());
 
-        totalCost = totalCost.add( SQL.New("select ifnull(sum(cost), 0) from SolutionTunnelVO where solutionUuid = :solutionUuid", BigDecimal.class)
+        cost = cost.add( SQL.New("select ifnull(sum(cost), 0) from SolutionTunnelVO where solutionUuid = :solutionUuid", BigDecimal.class)
                 .param("solutionUuid", solutionUuid)
                 .find());
 
-        totalCost = totalCost.add( SQL.New("select ifnull(sum(cost), 0) from SolutionVpnVO where solutionUuid = :solutionUuid", BigDecimal.class)
+        cost = cost.add( SQL.New("select ifnull(sum(cost), 0) from SolutionVpnVO where solutionUuid = :solutionUuid", BigDecimal.class)
                 .param("solutionUuid", solutionUuid)
                 .find());
 
-        return totalCost;
+        discount = discount.add( SQL.New("select ifnull(sum(discount), 0) from SolutionInterfaceVO where solutionUuid = :solutionUuid", BigDecimal.class)
+                .param("solutionUuid", solutionUuid)
+                .find());
+
+        discount = discount.add( SQL.New("select ifnull(sum(discount), 0) from SolutionTunnelVO where solutionUuid = :solutionUuid", BigDecimal.class)
+                .param("solutionUuid", solutionUuid)
+                .find());
+
+        discount = discount.add( SQL.New("select ifnull(sum(discount), 0) from SolutionVpnVO where solutionUuid = :solutionUuid", BigDecimal.class)
+                .param("solutionUuid", solutionUuid)
+                .find());
+
+        shareDiscount = shareDiscount.add( SQL.New("select ifnull(sum(shareDiscount), 0) from SolutionInterfaceVO where solutionUuid = :solutionUuid", BigDecimal.class)
+                .param("solutionUuid", solutionUuid)
+                .find());
+
+        shareDiscount = shareDiscount.add( SQL.New("select ifnull(sum(shareDiscount), 0) from SolutionTunnelVO where solutionUuid = :solutionUuid", BigDecimal.class)
+                .param("solutionUuid", solutionUuid)
+                .find());
+
+        shareDiscount = shareDiscount.add( SQL.New("select ifnull(sum(shareDiscount), 0) from SolutionVpnVO where solutionUuid = :solutionUuid", BigDecimal.class)
+                .param("solutionUuid", solutionUuid)
+                .find());
+
+        APIGetSolutionPriceReply reply = new APIGetSolutionPriceReply();
+        reply.setCost(cost);
+        reply.setDiscount(discount);
+        reply.setShareDiscount(shareDiscount);
+
+        return reply;
     }
 
 

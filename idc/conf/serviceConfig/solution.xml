@@ -48,6 +48,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.idc.solution.APIGetSolutionPriceMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.idc.solution.APIQuerySolutionMsg</name>
         <serviceId>query</serviceId>
     </message>
