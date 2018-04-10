@@ -13,9 +13,9 @@ import java.util.Map;
 public class TunnelConditionInventory {
     private String nodeUuid;
     private String endpointUuid;
-    private Map<String,OpenTSDBCommands.Tags> tags;
+    private Map<String,OpenTSDBCommands.TunnelTags> tags;
 
-    public static TunnelConditionInventory valueOf(OpenTSDBCommands.CustomCondition vo){
+    public static TunnelConditionInventory valueOf(OpenTSDBCommands.TunnelCustomCondition vo){
         TunnelConditionInventory inventory = new TunnelConditionInventory();
         inventory.setNodeUuid(vo.getNodeUuid());
         inventory.setEndpointUuid(vo.getEndpointUuid());
@@ -24,9 +24,9 @@ public class TunnelConditionInventory {
         return  inventory;
     }
 
-    public static List<TunnelConditionInventory> valueOf(Collection<OpenTSDBCommands.CustomCondition> vos) {
+    public static List<TunnelConditionInventory> valueOf(Collection<OpenTSDBCommands.TunnelCustomCondition> vos) {
         List<TunnelConditionInventory> lst = new ArrayList<TunnelConditionInventory>(vos.size());
-        for (OpenTSDBCommands.CustomCondition vo : vos) {
+        for (OpenTSDBCommands.TunnelCustomCondition vo : vos) {
             lst.add(TunnelConditionInventory.valueOf(vo));
         }
         return lst;
@@ -40,11 +40,11 @@ public class TunnelConditionInventory {
         this.endpointUuid = endpointUuid;
     }
 
-    public Map<String, OpenTSDBCommands.Tags> getTags() {
+    public Map<String, OpenTSDBCommands.TunnelTags> getTags() {
         return tags;
     }
 
-    public void setTags(Map<String, OpenTSDBCommands.Tags> tags) {
+    public void setTags(Map<String, OpenTSDBCommands.TunnelTags> tags) {
         this.tags = tags;
     }
 

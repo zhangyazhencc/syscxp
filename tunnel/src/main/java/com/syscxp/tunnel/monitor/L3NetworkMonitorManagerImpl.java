@@ -19,15 +19,19 @@ import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.network.L3EndpointState;
 import com.syscxp.header.tunnel.network.L3EndpointVO;
 import com.syscxp.header.tunnel.network.L3EndpointVO_;
+import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
+import com.syscxp.tunnel.network.L3NetworkValidateBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.utils.network.NetworkUtils;
 import org.apache.commons.lang.StringUtils;
+import com.syscxp.header.tunnel.monitor.OpenTSDBCommands.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: sunxuelong.
@@ -63,6 +67,8 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
             handle((APIConfigL3NetworkMonitorMsg) msg);
         } else if (msg instanceof APIQueryL3NetworkMonitorMsg) {
             handle((APIQueryL3NetworkMonitorMsg) msg);
+        } else if (msg instanceof APIQueryL3OpentsdbConditionMsg) {
+            handle((APIQueryL3OpentsdbConditionMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -71,7 +77,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
     @Transactional
     private void handle(APIConfigL3NetworkMonitorMsg msg) {
         APIConfigL3NetworkMonitorEvent event = new APIConfigL3NetworkMonitorEvent(msg.getId());
-        L3EndpointVO endpointVO = dbf.findByUuid(msg.getL3EndPointUuid(), L3EndpointVO.class);
+        L3EndpointVO endpointVO = dbf.findByUuid(msg.getL3EndpointUuid(), L3EndpointVO.class);
 
         if (endpointVO.getState() == L3EndpointState.Enabled) {
             List<L3NetworkMonitorVO> monitorVOS = new ArrayList<L3NetworkMonitorVO>();
@@ -79,7 +85,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
                 L3NetworkMonitorVO vo = new L3NetworkMonitorVO();
                 vo.setUuid(Platform.getUuid());
                 vo.setL3NetworkUuid(endpointVO.getL3NetworkUuid());
-                vo.setSrcL3EndpointUuid(msg.getL3EndPointUuid());
+                vo.setSrcL3EndpointUuid(msg.getL3EndpointUuid());
                 vo.setDstL3EndpointUuid(dstL3EndpointUuid);
 
                 monitorVOS.add(vo);
@@ -139,6 +145,31 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
         bus.reply(msg, reply);
     }
 
+    private void handle(APIQueryL3OpentsdbConditionMsg msg) {
+        APIQueryL3OpentsdbConditionReply reply = new APIQueryL3OpentsdbConditionReply();
+
+        L3EndpointVO endpointVO = dbf.findByUuid(msg.getL3EndpointUuid(), L3EndpointVO.class);
+        PhysicalSwitchVO switchVO = dbf.findByUuid(endpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+
+        Map<String, L3Tags> icmpTags = new HashMap<>();
+        List<L3NetworkMonitorVO> monitorVOS = Q.New(L3NetworkMonitorVO.class)
+                .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, msg.getL3EndpointUuid())
+                .list();
+        for (L3NetworkMonitorVO monitorVO : monitorVOS) {
+            L3Tags icmpTag = new L3Tags(switchVO.getmIP(), "Vlanif" + endpointVO.getVlan(), monitorVO.getDstL3EndpointUuid());
+            icmpTags.put(monitorVO.getDstL3EndpointUuid(),icmpTag);
+        }
+
+        L3Tags trafficTag = new L3Tags(switchVO.getmIP(), "Vlanif" + endpointVO.getVlan());
+        L3CustomCondition condition = new L3CustomCondition();
+        condition.setL3EndpointUuid(msg.getL3EndpointUuid());
+        condition.setTrafficTags(trafficTag);
+        condition.setIcmpTags(icmpTags);
+
+        reply.setInventory(L3ConditionInventory.valueOf(condition));
+        bus.reply(msg, reply);
+    }
+
     private List<L3EndpointVO> getDstL3Endpoints(L3EndpointVO l3Endpoint) {
         List<L3EndpointVO> dstEndpoints = Q.New(L3EndpointVO.class)
                 .eq(L3EndpointVO_.l3NetworkUuid, l3Endpoint.getL3NetworkUuid())
@@ -176,7 +207,10 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
     }
 
     private void validate(APIConfigL3NetworkMonitorMsg msg) {
-        validateMonitorIp(msg.getL3EndPointUuid(), msg.getMonitorIp());
+        L3EndpointVO l3EndpointVO = dbf.findByUuid(msg.getL3EndpointUuid(), L3EndpointVO.class);
+
+        L3NetworkValidateBase l3Validate = new L3NetworkValidateBase();
+        l3Validate.validateMonitorIP(l3EndpointVO.getLocalIP(), l3EndpointVO.getRemoteIp(), l3EndpointVO.getMonitorIp(), l3EndpointVO.getNetmask());
 
         for (String dstL3EndPointUuid : msg.getDstL3EndPointUuids()) {
             L3EndpointVO vo = dbf.findByUuid(dstL3EndPointUuid, L3EndpointVO.class);
@@ -185,19 +219,6 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
             else if (vo.getState() != L3EndpointState.Enabled)
                 throw new IllegalArgumentException(String.format("[%s]状况为 %s，不能开通监控！", vo.getEndpointEO().getName(), vo.getState()));
         }
-    }
-
-    /***
-     * TODO: 验证监控ip是否合法
-     * @param l3EndPointUuid
-     * @param monitorIp
-     * @return
-     */
-    private void validateMonitorIp(String l3EndPointUuid, String monitorIp) {
-
-        if (StringUtils.isNotEmpty(monitorIp) && !NetworkUtils.isIpv4Address(monitorIp))
-            throw new RuntimeException(String.format("invalid monitor ip %s", monitorIp));
-
     }
 
     @Override

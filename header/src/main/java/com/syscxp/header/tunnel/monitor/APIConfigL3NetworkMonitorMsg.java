@@ -20,19 +20,19 @@ import java.util.List;
 public class APIConfigL3NetworkMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false, resourceType = L3EndpointVO.class, maxLength = 32)
-    private String l3EndPointUuid;
+    private String l3EndpointUuid;
 
     @APIParam(required = false, maxLength = 64)
     private String monitorIp;
 
     private List<String> dstL3EndPointUuids;
 
-    public String getL3EndPointUuid() {
-        return l3EndPointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setL3EndPointUuid(String l3EndPointUuid) {
-        this.l3EndPointUuid = l3EndPointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
     public String getMonitorIp() {
@@ -58,7 +58,7 @@ public class APIConfigL3NetworkMonitorMsg extends APIMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Start L3Network Monitor")
-                        .resource(l3EndPointUuid, L3EndpointVO.class)
+                        .resource(l3EndpointUuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

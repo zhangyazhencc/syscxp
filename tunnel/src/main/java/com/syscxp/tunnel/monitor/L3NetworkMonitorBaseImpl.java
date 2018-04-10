@@ -23,6 +23,7 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -202,96 +203,108 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     @Override
     public void addAgentRoute(String l3EndpointUuid) {
-        L3EndpointVO end = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(end, null);
-        String hostIp = getHostIp(end.getPhysicalSwitchUuid());
+        L3EndpointVO endpoint = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
+        if (endpoint != null) {
+            MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpoint, null);
+            String hostIp = getHostIp(endpoint.getPhysicalSwitchUuid());
 
-        MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
-                hostIp, MonitorAgentConstant.L3_ADD_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
+            MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
+                    hostIp, MonitorAgentConstant.L3_ADD_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[ADD AGENT ROUTE FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
-                    , hostIp, cmd, MonitorAgentConstant.L3_ADD_ROUTE, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[ADD AGENT ROUTE FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
+                        , hostIp, cmd, MonitorAgentConstant.L3_ADD_ROUTE, resp.getMsg()));
+        }
     }
 
     @Override
     public void deleteAgentRoute(String l3EndpointUuid) {
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, null);
-        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
+        if (endpointVO != null) {
+            MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, null);
+            String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
-        MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
-                hostIp, MonitorAgentConstant.L3_DELETE_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
+            MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
+                    hostIp, MonitorAgentConstant.L3_DELETE_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[DELETE AGENT ROUTE FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
-                    , hostIp, cmd, MonitorAgentConstant.L3_DELETE_ROUTE, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[DELETE AGENT ROUTE FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
+                        , hostIp, cmd, MonitorAgentConstant.L3_DELETE_ROUTE, resp.getMsg()));
+        }
     }
 
     // 修改互联IP，当前修改互联IP需要中止连接点，不需要单独调用此方法
     @Deprecated
     public void updateAgentRoute(String l3EndpointUuid) {
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, null);
-        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
+        if (endpointVO != null) {
+            MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, null);
+            String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
-        MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
-                hostIp, MonitorAgentConstant.L3_UPDATE_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
+            MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
+                    hostIp, MonitorAgentConstant.L3_UPDATE_ROUTE, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[MODIFY AGENT ROUTE FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
-                    , hostIp, cmd, MonitorAgentConstant.L3_UPDATE_ROUTE, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[MODIFY AGENT ROUTE FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
+                        , hostIp, cmd, MonitorAgentConstant.L3_UPDATE_ROUTE, resp.getMsg()));
+        }
     }
 
     @Override
     public void startAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid) {
 
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
+        if (endpointVO != null) {
+            L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
 
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
-        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
+            MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
+            String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
-        MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
-                hostIp, MonitorAgentConstant.L3_START_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
+            MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
+                    hostIp, MonitorAgentConstant.L3_START_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[START AGENT MONITOR FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
-                    , hostIp, cmd, MonitorAgentConstant.L3_START_MONITOR, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[START AGENT MONITOR FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
+                        , hostIp, cmd, MonitorAgentConstant.L3_START_MONITOR, resp.getMsg()));
+        }
     }
 
     @Override
     public void stopAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid) {
 
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
+        if (endpointVO != null) {
+            L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
 
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
-        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
+            MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
+            String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
-        MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
-                hostIp, MonitorAgentConstant.L3_STOP_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
+            MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
+                    hostIp, MonitorAgentConstant.L3_STOP_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[STOP AGENT MONITOR FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
-                    , hostIp, cmd, MonitorAgentConstant.L3_STOP_MONITOR, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[STOP AGENT MONITOR FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
+                        , hostIp, cmd, MonitorAgentConstant.L3_STOP_MONITOR, resp.getMsg()));
+        }
     }
 
     @Override
     public void updateAgentMonitor(String l3EndpointUuid, String L3NetworkMonitorUuid) {
 
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
+        if (endpointVO != null) {
+            L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
 
-        MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
-        String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
+            MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
+            String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
-        MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
-                hostIp, MonitorAgentConstant.L3_UPDATE_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
+            MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
+                    hostIp, MonitorAgentConstant.L3_UPDATE_MONITOR, JSONObject.toJSONString(cmd), MonitorAgentBaseImpl.AgentResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[UPDATE AGENT MONITOR FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
-                    , hostIp, cmd, MonitorAgentConstant.L3_UPDATE_MONITOR, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[UPDATE AGENT MONITOR FAILED] HostIp: %s , Params: %s , Method: %s, Error: %s"
+                        , hostIp, cmd, MonitorAgentConstant.L3_UPDATE_MONITOR, resp.getMsg()));
+        }
     }
 
     /**
@@ -349,28 +362,32 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     public void startControllerMonitor(String l3EndpointUuid) {
 
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(endpointVO);
+        if (endpointVO != null) {
+            ControllerCommands.L3MonitorCommand cmd = getControllerCommand(endpointVO);
 
-        RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
-                ControllerRestConstant.START_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
+            RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
+                    ControllerRestConstant.START_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[START CONTROLLER AGENT ERROR] , Params: %s , Method: %s, Error: %s"
-                    , cmd, ControllerRestConstant.START_L3_MONITOR, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[START CONTROLLER AGENT ERROR] , Params: %s , Method: %s, Error: %s"
+                        , cmd, ControllerRestConstant.START_L3_MONITOR, resp.getMsg()));
+        }
     }
 
     @Override
     public void stopControllerMonitor(String l3EndpointUuid) {
 
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
-        ControllerCommands.L3MonitorCommand cmd = getControllerCommand(endpointVO);
+        if (endpointVO != null) {
+            ControllerCommands.L3MonitorCommand cmd = getControllerCommand(endpointVO);
 
-        RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
-                ControllerRestConstant.STOP_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
+            RyuControllerBaseImpl.RyuNetworkResponse resp = ryuController.httpCall(
+                    ControllerRestConstant.STOP_L3_MONITOR, JSONObject.toJSONString(cmd), RyuControllerBaseImpl.RyuNetworkResponse.class);
 
-        if (!resp.isSuccess())
-            throw new RuntimeException(String.format("[STOP CONTROLLER AGENT ERROR] , Params: %s , Method: %s, Error: %s"
-                    , cmd, ControllerRestConstant.STOP_L3_MONITOR, resp.getMsg()));
+            if (!resp.isSuccess())
+                throw new RuntimeException(String.format("[STOP CONTROLLER AGENT ERROR] , Params: %s , Method: %s, Error: %s"
+                        , cmd, ControllerRestConstant.STOP_L3_MONITOR, resp.getMsg()));
+        }
     }
 
     /**

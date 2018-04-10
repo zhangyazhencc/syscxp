@@ -13,7 +13,7 @@ import java.util.Map;
 public class OpenTSDBResultInventory {
     private String nodeUuid;
     private String metric;
-    private OpenTSDBCommands.Tags tags;
+    private OpenTSDBCommands.TunnelTags tags;
     private List aggregateTags;
     private Map dps;
 
@@ -44,11 +44,11 @@ public class OpenTSDBResultInventory {
         this.metric = metric;
     }
 
-    public OpenTSDBCommands.Tags getTags() {
+    public OpenTSDBCommands.TunnelTags getTags() {
         return tags;
     }
 
-    public void setTags(OpenTSDBCommands.Tags tags) {
+    public void setTags(OpenTSDBCommands.TunnelTags tags) {
         this.tags = tags;
     }
 

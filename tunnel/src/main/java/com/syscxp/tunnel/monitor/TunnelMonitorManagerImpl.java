@@ -1264,7 +1264,7 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
      * @return
      */
     private String getOpenTSDBQueryCondition(APIQueryMonitorResultMsg msg) {
-        List<OpenTSDBCommands.Query> queries = new ArrayList<>();
+        List<OpenTSDBCommands.TunnelQuery> queries = new ArrayList<>();
 
         TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getTunnelUuid()).find();
         for (TunnelSwitchPortVO tunnelPort : tunnel.getTunnelSwitchPortVOS()) {
@@ -1275,21 +1275,21 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
                     throw new IllegalArgumentException(String.format("No physical switch exist under switch port %s"
                             , tunnelPort.getSwitchPortUuid()));
 
-                OpenTSDBCommands.Tags tags;
+                OpenTSDBCommands.TunnelTags tags;
                 for (String metric : msg.getMetrics()) {
                     if (!"switch".equals(metric.substring(0, metric.indexOf("."))))
-                        tags = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                        tags = new OpenTSDBCommands.TunnelTags(physicalSwitch.getmIP()
                                 , "Vlanif" + tunnelPort.getVlan(), msg.getTunnelUuid());
                     else
-                        tags = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                        tags = new OpenTSDBCommands.TunnelTags(physicalSwitch.getmIP()
                                 , "Vlanif" + tunnelPort.getVlan());
 
-                    OpenTSDBCommands.Query query = new OpenTSDBCommands.Query("avg", metric, tags);
+                    OpenTSDBCommands.TunnelQuery query = new OpenTSDBCommands.TunnelQuery("avg", metric, tags);
                     queries.add(query);
                 }
             }
         }
-        OpenTSDBCommands.QueryCondition condition = new OpenTSDBCommands.QueryCondition();
+        OpenTSDBCommands.TunnelQueryCondition condition = new OpenTSDBCommands.TunnelQueryCondition();
         condition.setStart(msg.getStart());
         condition.setEnd(msg.getEnd());
         condition.setQueries(queries);
@@ -1300,7 +1300,7 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
     private void handle(APIQueryOpentsdbConditionMsg msg) {
         APIQueryOpentsdbConditionReply reply = new APIQueryOpentsdbConditionReply();
 
-        List<OpenTSDBCommands.CustomCondition> conditions = new ArrayList<>();
+        List<OpenTSDBCommands.TunnelCustomCondition> conditions = new ArrayList<>();
         if (msg.getType() == OpentsdbConditionType.TUNNEL)
             conditions = getTunnelCondition(msg);
         else if (msg.getType() == OpentsdbConditionType.SWITCH_PORT)
@@ -1310,13 +1310,13 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
         bus.reply(msg, reply);
     }
 
-    private List<OpenTSDBCommands.CustomCondition> getTunnelCondition(APIQueryOpentsdbConditionMsg msg) {
-        List<OpenTSDBCommands.CustomCondition> conditions = new ArrayList<>();
+    private List<OpenTSDBCommands.TunnelCustomCondition> getTunnelCondition(APIQueryOpentsdbConditionMsg msg) {
+        List<OpenTSDBCommands.TunnelCustomCondition> conditions = new ArrayList<>();
 
         TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getTunnelUuid()).find();
         for (TunnelSwitchPortVO tunnelPort : tunnel.getTunnelSwitchPortVOS()) {
 
-            OpenTSDBCommands.CustomCondition tunnelCondition = new OpenTSDBCommands.CustomCondition();
+            OpenTSDBCommands.TunnelCustomCondition tunnelCondition = new OpenTSDBCommands.TunnelCustomCondition();
 
             if (tunnelPort.getSortTag().equals(InterfaceType.A.toString()) ||
                     tunnelPort.getSortTag().equals(InterfaceType.Z.toString())) {
@@ -1325,12 +1325,12 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
                     throw new IllegalArgumentException(String.format("No physical switch exist under switch port %s"
                             , tunnelPort.getSwitchPortUuid()));
 
-                OpenTSDBCommands.Tags tunnelTag = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                OpenTSDBCommands.TunnelTags tunnelTag = new OpenTSDBCommands.TunnelTags(physicalSwitch.getmIP()
                         , "Vlanif" + tunnelPort.getVlan(), msg.getTunnelUuid());
-                OpenTSDBCommands.Tags switchTag = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+                OpenTSDBCommands.TunnelTags switchTag = new OpenTSDBCommands.TunnelTags(physicalSwitch.getmIP()
                         , "Vlanif" + tunnelPort.getVlan());
 
-                Map<String, OpenTSDBCommands.Tags> map = new HashMap<>();
+                Map<String, OpenTSDBCommands.TunnelTags> map = new HashMap<>();
                 map.put("tunnelTag", tunnelTag);
                 map.put("switchTag", switchTag);
                 tunnelCondition.setTags(map);
@@ -1345,19 +1345,19 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
         return conditions;
     }
 
-    private List<OpenTSDBCommands.CustomCondition> getSwitchPortCondition(APIQueryOpentsdbConditionMsg msg) {
-        List<OpenTSDBCommands.CustomCondition> conditions = new ArrayList<>();
+    private List<OpenTSDBCommands.TunnelCustomCondition> getSwitchPortCondition(APIQueryOpentsdbConditionMsg msg) {
+        List<OpenTSDBCommands.TunnelCustomCondition> conditions = new ArrayList<>();
 
         PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(msg.getSwitchPortUuid());
         SwitchPortVO switchPortVO = dbf.findByUuid(msg.getSwitchPortUuid(), SwitchPortVO.class);
 
-        OpenTSDBCommands.Tags switchPortTag = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+        OpenTSDBCommands.TunnelTags switchPortTag = new OpenTSDBCommands.TunnelTags(physicalSwitch.getmIP()
                 , switchPortVO.getPortName());
 
-        Map<String, OpenTSDBCommands.Tags> map = new HashMap<>();
+        Map<String, OpenTSDBCommands.TunnelTags> map = new HashMap<>();
         map.put("switchPortTag", switchPortTag);
 
-        OpenTSDBCommands.CustomCondition condition = new OpenTSDBCommands.CustomCondition();
+        OpenTSDBCommands.TunnelCustomCondition condition = new OpenTSDBCommands.TunnelCustomCondition();
         condition.setTags(map);
 
         conditions.add(condition);
@@ -1371,15 +1371,15 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
         PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(msg.getSwitchPortUuid());
         SwitchPortVO switchPortVO = dbf.findByUuid(msg.getSwitchPortUuid(), SwitchPortVO.class);
 
-        List<OpenTSDBCommands.Query> queries = new ArrayList<>();
+        List<OpenTSDBCommands.TunnelQuery> queries = new ArrayList<>();
         for (String metric : msg.getMetrics()) {
-            OpenTSDBCommands.Tags tags = new OpenTSDBCommands.Tags(physicalSwitch.getmIP()
+            OpenTSDBCommands.TunnelTags tags = new OpenTSDBCommands.TunnelTags(physicalSwitch.getmIP()
                     , switchPortVO.getPortName());
 
-            OpenTSDBCommands.Query query = new OpenTSDBCommands.Query("avg", metric, tags);
+            OpenTSDBCommands.TunnelQuery query = new OpenTSDBCommands.TunnelQuery("avg", metric, tags);
             queries.add(query);
         }
-        OpenTSDBCommands.QueryCondition condition = new OpenTSDBCommands.QueryCondition();
+        OpenTSDBCommands.TunnelQueryCondition condition = new OpenTSDBCommands.TunnelQueryCondition();
         condition.setStart(msg.getStart());
         condition.setEnd(msg.getEnd());
         condition.setQueries(queries);
