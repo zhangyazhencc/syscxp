@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TestInterfaceAction extends TestSDK {
 
-    private String interfaceUuid = "20bc091c73994bdca1a1c9ebd6e39256";
+    private String interfaceUuid = "b39f42dd84c54865818606200b46294f";
 
     @Test
     public void testQuery() {
@@ -15,7 +15,7 @@ public class TestInterfaceAction extends TestSDK {
         QueryInterfaceAction action = new QueryInterfaceAction();
         List<String> conditions = new ArrayList<>();
 //        conditions.add("uuid=cb0f4a9a8ed841b1bc3f5a3651b24b09");
-        conditions.add("name=api-test");
+        conditions.add("name=api-test-2");
         action.conditions = conditions;
         action.replyWithCount =true;
         QueryInterfaceResult result = action.call().throwExceptionIfError().value;
@@ -65,7 +65,7 @@ public class TestInterfaceAction extends TestSDK {
 
         UpdateInterfaceAction action = new UpdateInterfaceAction();
         action.uuid = interfaceUuid;
-        action.name = "api-test-update";
+        action.name = "api-test-update2";
 
         UpdateInterfaceResult result = action.call().throwExceptionIfError().value;
 
