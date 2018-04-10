@@ -2127,6 +2127,9 @@ public class TunnelMonitorManagerImpl extends AbstractService implements TunnelM
 
                 subList.add(tunnelSwitchPortVO.getVlan());
                 subList.add(physicalSwitchVO.getmIP());
+                if ("ICMP".equals(type)) {
+                    subList.add(tunnelVO.getUuid());
+                }
 
                 list.add(subList);
             }
