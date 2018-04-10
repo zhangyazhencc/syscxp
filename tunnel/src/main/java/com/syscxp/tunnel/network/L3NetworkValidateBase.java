@@ -3,6 +3,8 @@ package com.syscxp.tunnel.network;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.job.JobQueueEntryVO;
+import com.syscxp.core.job.JobQueueEntryVO_;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
@@ -255,6 +257,10 @@ public class L3NetworkValidateBase {
 
         if(vo.getState() == L3EndpointState.Deploying){
             throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，稍后再试！"));
+        }
+
+        if(Q.New(JobQueueEntryVO.class).eq(JobQueueEntryVO_.resourceUuid, msg.getUuid()).eq(JobQueueEntryVO_.restartable, true).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该连接点有未完成任务，请稍后再操作！"));
         }
     }
 

@@ -512,7 +512,7 @@ public class RestServer implements Component, CloudBusEventListener {
         }
     }
 
-    private void sendResponse(String body, HttpServletResponse rsp) throws IOException {
+    private void sendResponse(int status, String body, HttpServletResponse rsp) throws IOException {
         if (requestLogger.isTraceEnabled()) {
             RequestInfo info = requestInfo.get();
 
@@ -524,7 +524,7 @@ public class RestServer implements Component, CloudBusEventListener {
             requestLogger.trace(sb.toString());
         }
 
-        rsp.setStatus(HttpStatus.OK.value());
+        rsp.setStatus(status);
         rsp.getWriter().write(body == null ? "" : body);
     }
 
@@ -591,7 +591,7 @@ public class RestServer implements Component, CloudBusEventListener {
             logger.warn(String.format("failed to handle API to Action[name: %s]", action), e);
             response.setCode(RestConstants.INTERNAL_ERROR);
             response.setMessage(e.getMessage());
-            sendResponse(e.getMessage(), rsp);
+            sendResponse(response, rsp);
         }
     }
 
@@ -618,7 +618,7 @@ public class RestServer implements Component, CloudBusEventListener {
         if (ret.getState() == AsyncRestState.processing) {
             response.setCode(RestConstants.PROCESSING);
             response.setMessage("the job has been processing");
-            sendResponse(response, rsp);
+            sendResponse(HttpStatus.ACCEPTED.value(), JSONObjectUtil.toJsonString(response), rsp);
             return;
         }
 
@@ -639,7 +639,7 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     private void sendResponse(ApiResponse response, HttpServletResponse rsp) throws IOException {
-        sendResponse(response.isEmpty() ? "" : JSONObjectUtil.toJsonString(response), rsp);
+        sendResponse(HttpStatus.OK.value(), response.isEmpty() ? "" : JSONObjectUtil.toJsonString(response), rsp);
     }
 
     private String getSession(HttpServletRequest req) {
@@ -880,7 +880,6 @@ public class RestServer implements Component, CloudBusEventListener {
 
     private void writeResponse(ApiResponse response, RestResponseWrapper w, Object replyOrEvent) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Map<String, Object> result = new HashMap<>();
-
         if (!w.annotation.allTo().equals("")) {
             result.put(w.annotation.allTo(),
                     PropertyUtils.getProperty(replyOrEvent, w.annotation.allTo()));
@@ -944,7 +943,7 @@ public class RestServer implements Component, CloudBusEventListener {
 
             bus.send(msg);
 
-            sendResponse(response, rsp);
+            sendResponse(HttpStatus.ACCEPTED.value(), JSONObjectUtil.toJsonString(response), rsp);
         }
     }
 
