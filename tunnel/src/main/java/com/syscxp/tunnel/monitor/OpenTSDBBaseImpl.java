@@ -34,11 +34,11 @@ public class OpenTSDBBaseImpl implements OpenTSDBBase, Component{
         return url;
     }
 
-    public List<OpenTSDBCommands.QueryResult> httpCall(OpenTSDBCommands.TunnelQueryCondition condition) {
+    public List<OpenTSDBCommands.QueryResult> httpCall(String condition) {
         String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
         String resp = "";
         try {
-            resp = restf.getRESTTemplate().postForObject(url, JSONObjectUtil.toJsonString(condition), String.class);
+            resp = restf.getRESTTemplate().postForObject(url, condition, String.class);
         } catch (Exception e) {
             resp = "";
         }

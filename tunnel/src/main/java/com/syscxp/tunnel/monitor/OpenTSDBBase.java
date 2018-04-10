@@ -10,5 +10,5 @@ import java.util.List;
  * @Description: .
  */
 public interface OpenTSDBBase {
-    List<OpenTSDBCommands.QueryResult> httpCall(OpenTSDBCommands.TunnelQueryCondition condition);
+    List<OpenTSDBCommands.QueryResult> httpCall(String condition);
 }
