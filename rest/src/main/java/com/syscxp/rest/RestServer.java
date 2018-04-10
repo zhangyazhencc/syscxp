@@ -879,12 +879,13 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     private void writeResponse(ApiResponse response, RestResponseWrapper w, Object replyOrEvent) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        Map<String, Object> result = new HashMap<>();
         if (!w.annotation.allTo().equals("")) {
-            response.put(w.annotation.allTo(),
+            result.put(w.annotation.allTo(),
                     PropertyUtils.getProperty(replyOrEvent, w.annotation.allTo()));
         } else {
             for (Map.Entry<String, String> e : w.responseMappingFields.entrySet()) {
-                response.put(e.getKey(),
+                result.put(e.getKey(),
                         PropertyUtils.getProperty(replyOrEvent, e.getValue()));
             }
         }
@@ -893,17 +894,17 @@ public class RestServer implements Component, CloudBusEventListener {
         if (APIQueryReply.class.isAssignableFrom(w.apiResponseClass)) {
             Object total = PropertyUtils.getProperty(replyOrEvent, "total");
             if (total != null) {
-                response.put("total", total);
+                result.put("total", total);
             }
         }
 
         if (requestInfo.get().headers.containsKey(RestConstants.HEADER_JSON_SCHEMA)
                 // set schema anyway if it's a query API
                 || APIQueryReply.class.isAssignableFrom(w.apiResponseClass)) {
-            response.setSchema(new JsonSchemaBuilder(response).build());
-//            result.put("schema", new JsonSchemaBuilder(response).build());
+//            response.setSchema(new JsonSchemaBuilder(response).build());
+            result.put("schema", new JsonSchemaBuilder(response).build());
         }
-//        response.setResult(JSONObjectUtil.toJsonString(replyOrEvent));
+        response.setResult(JSONObjectUtil.toJsonString(result));
     }
 
     private void sendReplyResponse(MessageReply reply, Api api, HttpServletResponse rsp) throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
