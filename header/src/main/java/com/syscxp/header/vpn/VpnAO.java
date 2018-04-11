@@ -34,10 +34,6 @@ public class VpnAO {
     @Column
     private String bandwidthOfferingUuid;
     @Column
-    private String endpointUuid;
-    @Column
-    private String tunnelUuid;
-    @Column
     private Integer port;
     @Column
     private Integer vlan;
@@ -80,8 +76,6 @@ public class VpnAO {
         this.name = other.name;
         this.description = other.description;
         this.bandwidthOfferingUuid = other.bandwidthOfferingUuid;
-        this.endpointUuid = other.endpointUuid;
-        this.tunnelUuid = other.tunnelUuid;
         this.port = other.port;
         this.vlan = other.vlan;
         this.state = other.state;
@@ -100,14 +94,6 @@ public class VpnAO {
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
-    }
-
-    public String getTunnelUuid() {
-        return tunnelUuid;
-    }
-
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
     }
 
     public String getSecretId() {
@@ -240,14 +226,6 @@ public class VpnAO {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
-    }
-
-    public String getEndpointUuid() {
-        return endpointUuid;
-    }
-
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
     }
 
     public VpnStatus getStatus() {
