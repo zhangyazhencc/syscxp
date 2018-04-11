@@ -457,22 +457,37 @@ public class TunnelValidateBase {
 
                 NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
                 if(nvoA.getCountry().equals("CHINA")){
-                    validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan());
-                    validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan());
+                    if(!msg.isCrossA()){
+                        validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan());
+                    }
+                    if(!msg.isCrossZ()){
+                        validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan());
+                    }
+
                 }else{
-                    validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan());
-                    validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan());
+                    if(!msg.isCrossA()){
+                        validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan());
+                    }
+                    if(!msg.isCrossZ()){
+                        validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan());
+                    }
                 }
 
             }else{
-
-                validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
-                validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+                if(!msg.isCrossA()){
+                    validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+                }
+                if(!msg.isCrossZ()){
+                    validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+                }
             }
         }else{
-
-            validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
-            validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+            if(!msg.isCrossA()){
+                validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+            }
+            if(!msg.isCrossZ()){
+                validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+            }
         }
 
         //如果是ACCESS物理接口，判断该物理接口是否已经开通通道
