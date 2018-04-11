@@ -5,4 +5,34 @@
     <message>
         <name>com.syscxp.header.vpn.l3vpn.APICreateL3VpnMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIUpdateL3VpnMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIUpdateL3VpnBandwidthMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIUpdateL3VpnWorkModeMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIAttachL3VpnCertMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIDetachL3VpnCertMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIGenerateDownloadL3UrlMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIGetL3VpnPriceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIGetRenewL3VpnPriceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIUpdateL3VpnStateMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIDeleteL3VpnMsg</name>
+    </message>
 </service>

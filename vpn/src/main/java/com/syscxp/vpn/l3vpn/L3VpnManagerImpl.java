@@ -14,6 +14,8 @@ import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.configuration.MotifyType;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.OperationFailureException;
@@ -25,15 +27,15 @@ import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.tunnel.tunnel.APIGetRenewInterfacePriceReply;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.billingCallBack.CreateVpnCallBack;
+import com.syscxp.header.vpn.billingCallBack.RenewVpnCallBack;
+import com.syscxp.header.vpn.billingCallBack.UnsubcribeVpnCallBack;
+import com.syscxp.header.vpn.billingCallBack.UpdateVpnBandwidthCallBack;
 import com.syscxp.header.vpn.host.VpnHostVO;
 import com.syscxp.header.vpn.vpn.*;
-import com.syscxp.header.vpn.l3vpn.APICreateL3VpnMsg;
-import com.syscxp.header.vpn.l3vpn.APICreateL3VpnEvent;
-import com.syscxp.header.vpn.l3vpn.L3VpnInventory;
-import com.syscxp.header.vpn.l3vpn.L3VpnVO;
-import com.syscxp.header.vpn.l3vpn.L3VpnVO_;
+import com.syscxp.header.vpn.l3vpn.*;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
@@ -49,10 +51,14 @@ import com.syscxp.header.message.Message;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.job.DeleteRenewVOAfterDeleteResourceJob;
+import com.syscxp.vpn.job.DeleteVpnJob;
+import com.syscxp.vpn.job.RenameBillingProductNameJob;
 import com.syscxp.vpn.vpn.VpnCommands;
+import com.syscxp.vpn.vpn.VpnGlobalConfig;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.codec.Base64;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -96,7 +102,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     private void passThrough(VpnMessage msg) {
-        VpnVO vo = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
+        L3VpnVO vo = dbf.findByUuid(msg.getVpnUuid(), L3VpnVO.class);
         if (vo == null) {
             String err = "Cannot find vpn: " + msg.getVpnUuid() + ", it may have been deleted";
             bus.replyErrorByMessageType(msg, err);
@@ -112,6 +118,49 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         } else if (msg instanceof DeleteVpnMsg) {
             handle((DeleteVpnMsg) msg);
         } else {
+            bus.dealWithUnknownMessage(msg);
+        }
+    }
+
+    private void handleApiMessage(APIMessage msg) {
+        if (msg instanceof APICreateL3VpnMsg) {
+            handle((APICreateL3VpnMsg) msg);
+        }
+        else if (msg instanceof APIUpdateL3VpnMsg){
+            handle((APIUpdateL3VpnMsg) msg);
+        }
+        else if (msg instanceof APIUpdateL3VpnBandwidthMsg)
+            handle((APIUpdateL3VpnBandwidthMsg) msg);
+
+        else if (msg instanceof APIUpdateL3VpnWorkModeMsg){
+            handle((APIUpdateL3VpnWorkModeMsg) msg);
+        }
+        else if (msg instanceof APIAttachL3VpnCertMsg) {
+            handle((APIAttachL3VpnCertMsg) msg);
+        }
+        else if (msg instanceof APIDetachL3VpnCertMsg) {
+            handle((APIDetachL3VpnCertMsg) msg);
+        }
+        else if (msg instanceof APIGenerateDownloadL3UrlMsg) {
+            handle((APIGenerateDownloadL3UrlMsg) msg);
+        }
+        else if (msg instanceof APIGetL3VpnPriceMsg) {
+            handle((APIGetL3VpnPriceMsg) msg);
+        }
+        else if (msg instanceof APIGetRenewL3VpnPriceMsg) {
+            handle((APIGetRenewL3VpnPriceMsg) msg);
+        }
+        else if (msg instanceof APIRenewL3VpnMsg) {
+            handle((APIRenewL3VpnMsg) msg);
+        }
+        else if (msg instanceof APIUpdateL3VpnStateMsg) {
+            handle((APIUpdateL3VpnStateMsg) msg);
+
+        }
+        else if (msg instanceof APIDeleteL3VpnMsg) {
+            handle((APIDeleteL3VpnMsg) msg);
+        }
+        else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -222,7 +271,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
 
     @Transactional
     private void detachVpnCert(String vpnUuid, String vpnCertUuid) {
-        VpnVO vpnVO = dbf.getEntityManager().find(VpnVO.class, vpnUuid);
+        L3VpnVO vpnVO = dbf.getEntityManager().find(L3VpnVO.class, vpnUuid);
         vpnVO.setVpnCertUuid(null);
         dbf.getEntityManager().merge(vpnVO);
 
@@ -231,17 +280,6 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().merge(vpnCert);
     }
 
-    private void handleApiMessage(APIMessage msg) {
-        if (msg instanceof APICreateL3VpnMsg) {
-            handle((APICreateL3VpnMsg) msg);
-        }
-//        else if (msg instanceof APIUpdateVpnMsg){
-//            handle((APIUpdateVpnMsg) msg);
-//        }
-        else {
-            bus.dealWithUnknownMessage(msg);
-        }
-    }
 
     private void handle(APICreateL3VpnMsg msg) {
         final APICreateL3VpnEvent evt = new APICreateL3VpnEvent(msg.getId());
@@ -466,6 +504,369 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
             LOGGER.info(e.getMessage());
             completion.fail(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, e.getMessage()));
         }
+    }
+
+    @Transactional
+    public void handle(APIUpdateL3VpnMsg msg) {
+        L3VpnVO vpn = dbf.getEntityManager().find(L3VpnVO.class, msg.getUuid());
+        boolean update = false;
+        boolean changeName = false;
+        if (!StringUtils.isEmpty(msg.getName()) && !msg.getName().equals(vpn.getName())) {
+            vpn.setName(msg.getName());
+            update = true;
+            changeName = true;
+        }
+        if (!StringUtils.isEmpty(msg.getDescription())) {
+            vpn.setDescription(msg.getDescription());
+            update = true;
+        }
+        if (msg.getMaxModifies() != null) {
+            vpn.setMaxModifies(msg.getMaxModifies());
+            update = true;
+        }
+        if (update) {
+            vpn = dbf.getEntityManager().merge(vpn);
+            if (changeName)
+                RenameBillingProductNameJob.executeJob(jobf, vpn.getUuid(), vpn.getName());
+        }
+
+        APIUpdateL3VpnEvent evt = new APIUpdateL3VpnEvent(msg.getId());
+        evt.setInventory(L3VpnInventory.valueOf(vpn));
+        bus.publish(evt);
+    }
+
+    public void handle(APIUpdateL3VpnBandwidthMsg msg) {
+        APIUpdateL3VpnBandwidthEvent evt = new APIUpdateL3VpnBandwidthEvent(msg.getId());
+        L3VpnVO vpn = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+        if (msg.getBandwidthOfferingUuid().equals(vpn.getBandwidthOfferingUuid())) {
+            evt.setInventory(L3VpnInventory.valueOf(dbf.reload(vpn)));
+            bus.publish(evt);
+            return;
+        }
+        APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg(getOrderMsgForVPN(vpn, msg.getBandwidthOfferingUuid(), new UpdateVpnBandwidthCallBack()));
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setStartTime(vpn.getCreateDate());
+        orderMsg.setExpiredTime(vpn.getExpireDate());
+        APICreateOrderReply reply = createOrder(orderMsg);
+
+        if (!reply.isOrderSuccess()) {
+            evt.setError(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "订单操作失败", reply.getError()));
+            bus.publish(evt);
+            return;
+        }
+
+        motifyRecordVpn(msg, MotifyType.valueOf(reply.getInventory().getType()));
+
+        RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
+        rateLimitingMsg.setVpnUuid(vpn.getUuid());
+        bus.makeLocalServiceId(rateLimitingMsg, VpnConstant.L3_SERVICE_ID);
+        bus.send(rateLimitingMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    evt.setInventory(L3VpnInventory.valueOf(dbf.reload(vpn)));
+                } else {
+                    evt.setError(reply.getError());
+                }
+                bus.publish(evt);
+            }
+        });
+    }
+
+    private APICreateOrderMsg getOrderMsgForVPN(L3VpnVO vo, String bandwidthOfferingUuid, NotifyCallBackData callBack) {
+        APICreateOrderMsg orderMsg = new APICreateOrderMsg();
+        orderMsg.setProductName(vo.getName());
+        orderMsg.setProductUuid(vo.getUuid());
+        orderMsg.setProductType(ProductType.VPN);
+        orderMsg.setDescriptionData(getDescriptionForVPN(bandwidthOfferingUuid));
+        orderMsg.setAccountUuid(vo.getAccountUuid());
+        orderMsg.setUnits(generateUnits(bandwidthOfferingUuid, vo.getL3EndpointUuid()));
+        orderMsg.setCallBackData(RESTApiDecoder.dump(callBack));
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        return orderMsg;
+    }
+    @Transactional
+    private void motifyRecordVpn(APIUpdateL3VpnBandwidthMsg msg, MotifyType type) {
+        L3VpnVO vpn = dbf.getEntityManager().find(L3VpnVO.class, msg.getUuid());
+        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+        dbf.getEntityManager().merge(vpn);
+
+        ResourceMotifyRecordVO record = new ResourceMotifyRecordVO();
+        record.setResourceUuid(msg.getUuid());
+        record.setResourceType(VpnVO.class.getSimpleName());
+        record.setUuid(Platform.getUuid());
+        record.setMotifyType(type);
+        record.setOpAccountUuid(msg.getSession().getAccountUuid());
+        record.setOpUserUuid(msg.getSession().getUserUuid());
+        dbf.getEntityManager().persist(record);
+    }
+
+    @Transactional
+    public void handle(APIUpdateL3VpnWorkModeMsg msg) {
+        L3VpnVO vpn = dbf.getEntityManager().find(L3VpnVO.class, msg.getUuid());
+
+        if (!StringUtils.isEmpty(msg.getWorkMode()) && !msg.getWorkMode().equals(vpn.getWorkMode())) {
+            vpn.setWorkMode(msg.getWorkMode());
+            dbf.getEntityManager().merge(vpn);
+        }
+        APIUpdateL3VpnWorkModeEvent evt = new APIUpdateL3VpnWorkModeEvent(msg.getId());
+        evt.setInventory(L3VpnInventory.valueOf(dbf.reload(vpn)));
+        bus.publish(evt);
+
+    }
+
+    private void handle(APIAttachL3VpnCertMsg msg) {
+        APIAttachL3VpnCertEvent evt = new APIAttachL3VpnCertEvent(msg.getId());
+
+        attachVpnCert(msg.getUuid(), msg.getVpnCertUuid());
+
+        PushCertMsg pushCertMsg = new PushCertMsg();
+        pushCertMsg.setVpnUuid(msg.getUuid());
+
+        bus.makeLocalServiceId(pushCertMsg, VpnConstant.L3_SERVICE_ID);
+        bus.send(pushCertMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    L3VpnVO vpn = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+                    changeVpnState(vpn, VpnState.Enabled);
+                    evt.setInventory(L3VpnInventory.valueOf(dbf.reload(vpn)));
+                    bus.publish(evt);
+                } else {
+                    LOGGER.info("上传证书失败!");
+                    evt.setError(reply.getError());
+                    bus.publish(evt);
+                }
+            }
+        });
+    }
+
+    private void changeVpnState(final L3VpnVO vpn, VpnState next) {
+        VpnState currentState = vpn.getState();
+        L3VpnVO vo = dbf.reload(vpn);
+        vo.setState(next);
+        dbf.updateAndRefresh(vo);
+        LOGGER.debug(String.format("Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vo.getState()));
+    }
+
+    private void handle(APIDetachL3VpnCertMsg msg) {
+        APIDetachL3VpnCertEvent evt = new APIDetachL3VpnCertEvent(msg.getId());
+
+        L3VpnVO vo = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+        changeVpnStateByAPI(vo, VpnState.Disabled, new Completion(evt) {
+            @Override
+            public void success() {
+
+                detachVpnCert(msg.getUuid(), vo.getVpnCertUuid());
+
+                evt.setInventory(L3VpnInventory.valueOf(dbf.findByUuid(vo.getUuid(), L3VpnVO.class)));
+                bus.publish(evt);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errorCode);
+                bus.publish(evt);
+            }
+        });
+
+    }
+
+    private void changeVpnStateByAPI(final L3VpnVO vpn, VpnState next, final Completion complete) {
+        if (vpn.getState() == next) {
+            complete.success();
+            return;
+        }
+        if (VpnState.Enabled == next && vpn.getExpireDate().before(dbf.getCurrentSqlTime())) {
+            complete.fail(operr("vpn[%s]已过期，请续费后，再开启。", vpn.getUuid()));
+            return;
+        }
+        VpnMessage vpnMessage = VpnState.Enabled == next ? new StartVpnMsg() : new StopVpnMsg();
+        vpnMessage.setVpnUuid(vpn.getUuid());
+        bus.makeLocalServiceId(vpnMessage, VpnConstant.L3_SERVICE_ID);
+        bus.send(vpnMessage, new CloudBusCallBack(complete) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    changeVpnState(vpn, next);
+                    complete.success();
+                } else {
+                    complete.fail(reply.getError());
+                }
+            }
+        });
+    }
+
+    private void handle(APIGenerateDownloadL3UrlMsg msg) {
+
+        final APIGenerateDownloadL3UrlReply reply = new APIGenerateDownloadL3UrlReply();
+        String type = "cert".equals(msg.getType()) ? VpnCertVO.class.getSimpleName() : L3VpnVO.class.getSimpleName();
+        String accountUuid = SQL.New(String.format("select r.accountUuid from %s r where r.uuid = :uuid ", type))
+                .param("uuid", msg.getUuid()).find();
+        if (accountUuid != null) {
+            StringBuilder sb = new StringBuilder();
+            long time = System.currentTimeMillis();
+            sb.append(msg.getUuid()).append(":").append(time);
+            sb.append(":").append(DigestUtils.md5Hex(accountUuid + time + VpnConstant.URL_GENERATE_KEY));
+
+            String path = new String(Base64.encode(sb.toString().getBytes()));
+
+            reply.setDownloadUrl(URLBuilder.buildUrlFromBase(VpnGlobalConfig.CONF_DOWNLOAD_URL.value(),
+                    "/", restf.getPath(), RESTConstant.REST_API_CALL, "/", msg.getType(), "/", path));
+        }
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIGetL3VpnPriceMsg msg) {
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), msg.getL3EndpointUuid()));
+
+        APIGetProductPriceReply reply = createOrder(priceMsg);
+        bus.reply(msg, new APIGetVpnPriceReply(reply));
+    }
+
+    private void handle(APIGetRenewL3VpnPriceMsg msg) {
+        L3VpnVO vo = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+
+        APIGetRenewProductPriceMsg rpmsg = new APIGetRenewProductPriceMsg();
+
+        rpmsg.setAccountUuid(vo.getAccountUuid());
+        rpmsg.setProductUuid(msg.getUuid());
+        rpmsg.setDuration(msg.getDuration());
+        rpmsg.setProductChargeModel(msg.getProductChargeModel());
+
+        APIGetRenewProductPriceReply reply = createOrder(rpmsg);
+
+        bus.reply(msg, new APIGetRenewInterfacePriceReply(reply));
+    }
+
+    private void handle(APIRenewL3VpnMsg msg) {
+        L3VpnVO vo = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForVPN(vo, vo.getBandwidthOfferingUuid(), new RenewVpnCallBack()));
+        orderMsg.setDuration(msg.getDuration());
+        orderMsg.setProductChargeModel(msg.getProductChargeModel() == null ? ProductChargeModel.BY_MONTH : msg.getProductChargeModel());
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setStartTime(dbf.getCurrentSqlTime());
+        orderMsg.setExpiredTime(vo.getExpireDate());
+
+        APICreateOrderReply reply = createOrder(orderMsg);
+
+        afterRenewVpn(reply, vo, msg);
+    }
+
+    private void afterRenewVpn(APICreateOrderReply orderReply, L3VpnVO vo, APIMessage msg) {
+        APIRenewL3VpnReply reply = new APIRenewL3VpnReply();
+
+        if (!orderReply.isOrderSuccess()) {
+            reply.setError(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "订单操作失败", orderReply.getError()));
+            bus.reply(msg, reply);
+            return;
+        }
+
+        OrderInventory inventory = orderReply.getInventory();
+        vo.setDuration(inventory.getDuration());
+
+        vo.setExpireDate(generateExpireDate(vo.getExpireDate(), inventory.getDuration(), inventory.getProductChargeModel()));
+
+        vo = dbf.updateAndRefresh(vo);
+        reply.setInventory(L3VpnInventory.valueOf(vo));
+        bus.reply(msg, reply);
+    }
+
+    public void handle(APIUpdateL3VpnStateMsg msg) {
+        APIUpdateL3VpnStateEvent evt = new APIUpdateL3VpnStateEvent(msg.getId());
+
+        L3VpnVO vpn = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+
+        changeVpnStateByAPI(vpn, msg.getState(), new Completion(evt) {
+            @Override
+            public void success() {
+                evt.setInventory(L3VpnInventory.valueOf(dbf.reload(vpn)));
+                bus.publish(evt);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setInventory(L3VpnInventory.valueOf(dbf.reload(vpn)));
+                evt.setError(errorCode);
+                bus.publish(evt);
+            }
+        });
+    }
+
+    public void handle(APIDeleteL3VpnMsg msg) {
+        deleteVpnByApiMessage(msg);
+    }
+
+    private void deleteVpnByApiMessage(APIDeleteL3VpnMsg msg) {
+        final APIDeleteL3VpnEvent evt = new APIDeleteL3VpnEvent(msg.getId());
+        L3VpnVO vpn = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+        boolean unsubcribe = vpn.getAccountUuid() != null && vpn.getExpireDate().after(dbf.getCurrentSqlTime());
+        L3VpnInventory vinv = L3VpnInventory.valueOf(vpn);
+        FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
+        chain.setName(String.format("delete-vpn-%s", msg.getUuid()));
+        chain.then(new NoRollbackFlow() {
+            String __name__ = "Unsubcribe-vpn";
+
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                if (unsubcribe) {
+                    APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, vpn.getBandwidthOfferingUuid(), new UnsubcribeVpnCallBack()));
+                    orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+                    orderMsg.setStartTime(vinv.getCreateDate());
+                    orderMsg.setExpiredTime(vinv.getExpireDate());
+                    createOrder(orderMsg, new Completion(trigger) {
+                        @Override
+                        public void success() {
+                            vpn.setAccountUuid(null);
+                            vpn.setState(VpnState.Disabled);
+                            vpn.setExpireDate(dbf.getCurrentSqlTime());
+                            dbf.updateAndRefresh(vpn);
+                            LOGGER.debug(String.format("VPN[UUID:%s] 退订成功", vpn.getUuid()));
+                            trigger.next();
+                        }
+
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            LOGGER.debug(String.format("VPN[UUID:%s] 退订失败", vpn.getUuid()));
+                            trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "退订失败", errorCode));
+                        }
+                    });
+                } else {
+                    vpn.setAccountUuid(null);
+                    vpn.setState(VpnState.Disabled);
+                    dbf.updateAndRefresh(vpn);
+                    LOGGER.debug(String.format("VPN[UUID:%s] 过期退订成功", vpn.getUuid()));
+                    trigger.next();
+                }
+            }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "send-delete-vpn-message";
+
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                LOGGER.debug(String.format("创建VPN[UUID:%s]删除任务", vpn.getUuid()));
+                DeleteVpnJob.executeJob(jobf, vpn.getUuid(), !unsubcribe);
+                trigger.next();
+            }
+        });
+
+        chain.done(new FlowDoneHandler(msg) {
+            @Override
+            public void handle(Map data) {
+                bus.publish(evt);
+
+            }
+        }).error(new FlowErrorHandler(msg) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                evt.setError(errf.instantiateErrorCode(SysErrors.DELETE_RESOURCE_ERROR, errCode));
+                bus.publish(evt);
+            }
+        }).start();
     }
 
     @Override

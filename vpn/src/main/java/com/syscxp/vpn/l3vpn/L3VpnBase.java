@@ -21,6 +21,8 @@ import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.host.HostInterfaceVO;
 import com.syscxp.header.vpn.host.HostInterfaceVO_;
 import com.syscxp.header.vpn.vpn.*;
+import com.syscxp.header.vpn.l3vpn.L3VpnVO;
+import com.syscxp.header.vpn.l3vpn.L3VpnInventory;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.data.SizeUnit;
 import com.syscxp.utils.logging.CLogger;
@@ -70,7 +72,7 @@ public class L3VpnBase extends AbstractL3Vpn {
 
     private static final String RATE_LIMITING = "set";
 
-    protected L3VpnBase(VpnVO self) {
+    protected L3VpnBase(L3VpnVO self) {
         super(self);
 
         vpnConfPath = VpnConstant.VPN_CONF_PATH;
@@ -642,12 +644,12 @@ public class L3VpnBase extends AbstractL3Vpn {
     }
 
     private void handle(final ClientInfoMsg msg) {
-        ClientInfoReply reply = new ClientInfoReply();
+        L3ClientInfoReply reply = new L3ClientInfoReply();
 
         clientInfo(new Completion(msg) {
             @Override
             public void success() {
-                reply.setInventory(VpnInventory.valueOf(dbf.reload(self)));
+                reply.setInventory(L3VpnInventory.valueOf(dbf.reload(self)));
                 bus.reply(msg, reply);
             }
 
@@ -695,7 +697,7 @@ public class L3VpnBase extends AbstractL3Vpn {
 
     private String getInterfaceName() {
         return Q.New(HostInterfaceVO.class)
-                .eq(HostInterfaceVO_.endpointUuid, self.getEndpointUuid())
+                .eq(HostInterfaceVO_.endpointUuid, self.getL3EndpointUuid())
                 .eq(HostInterfaceVO_.hostUuid, self.getHostUuid())
                 .select(HostInterfaceVO_.interfaceName).findValue();
     }

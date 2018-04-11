@@ -4,7 +4,7 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.vpn.vpn.VpnVO;
+import com.syscxp.header.vpn.l3vpn.L3VpnVO;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -27,14 +27,14 @@ public abstract class AbstractL3Vpn {
     @Autowired
     protected ErrorFacade errf;
 
-    protected VpnVO self;
+    protected L3VpnVO self;
     protected final String id;
     private String baseUrl;
     private String scheme = VpnGlobalProperty.AGENT_URL_SCHEME;
     private int port = VpnGlobalProperty.AGENT_PORT;
     private String rootPath = VpnGlobalProperty.AGENT_URL_ROOT_PATH;
 
-    protected AbstractL3Vpn(VpnVO self) {
+    protected AbstractL3Vpn(L3VpnVO self) {
         this.self = self;
         id = "Vpn-" + self.getUuid();
 
@@ -63,7 +63,7 @@ public abstract class AbstractL3Vpn {
         return baseUrl;
     }
 
-    public VpnVO getSelf() {
+    public L3VpnVO getSelf() {
         return self;
     }
 }
