@@ -50,6 +50,7 @@ import com.syscxp.header.vpn.billingCallBack.*;
 import com.syscxp.header.vpn.host.APIDeleteHostInterfaceEvent;
 import com.syscxp.header.vpn.host.VpnHostConstant;
 import com.syscxp.header.vpn.host.VpnHostVO;
+import com.syscxp.header.vpn.l3vpn.L3VpnVO;
 import com.syscxp.header.vpn.vpn.*;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.ShellUtils;
@@ -58,14 +59,15 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
+import com.syscxp.vpn.client.VpnBase;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.job.*;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
-import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
-import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
-import com.syscxp.vpn.vpn.VpnCommands.VpnStatusCmd;
-import com.syscxp.vpn.vpn.VpnCommands.VpnStatusRsp;
+import com.syscxp.vpn.client.VpnCommands.AgentCommand;
+import com.syscxp.vpn.client.VpnCommands.AgentResponse;
+import com.syscxp.vpn.client.VpnCommands.VpnStatusCmd;
+import com.syscxp.vpn.client.VpnCommands.VpnStatusRsp;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,9 +81,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,7 +91,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
-import static com.syscxp.utils.CollectionDSL.e;
 import static com.syscxp.utils.CollectionDSL.list;
 
 /**
@@ -127,15 +126,21 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void passThrough(VpnMessage msg) {
         VpnVO vo = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
-
-        if (vo == null) {
-            String err = "Cannot find vpn: " + msg.getVpnUuid() + ", it may have been deleted";
-            bus.replyErrorByMessageType(msg, err);
+        if (vo != null) {
+            VpnBase base = new VpnBase(vo);
+            base.handleMessage(msg);
+            return;
+        }
+        L3VpnVO l3vo = dbf.findByUuid(msg.getVpnUuid(), L3VpnVO.class);
+        if (l3vo != null) {
+            VpnBase base = new VpnBase(l3vo);
+            base.handleMessage(msg);
             return;
         }
 
-        VpnBase base = new VpnBase(vo);
-        base.handleMessage(msg);
+        String err = "Cannot find vpn: " + msg.getVpnUuid() + ", it may have been deleted";
+        bus.replyErrorByMessageType(msg, err);
+
     }
 
     private void handleApiMessage(APIMessage msg) {
@@ -338,8 +343,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIResetVpnCertKeyMsg msg) {
         final APIResetVpnCertKeyEvent event = new APIResetVpnCertKeyEvent(msg.getId());
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        vpn.setSid(Platform.getUuid());
-        vpn.setCertKey(generateCertKey(vpn.getAccountUuid(), vpn.getSid()));
+        vpn.setSecretId(Platform.getUuid());
+        vpn.setSecretKey(generateCertKey(vpn.getAccountUuid(), vpn.getSecretId()));
         event.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
         bus.publish(event);
     }
@@ -417,8 +422,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vo.setState(VpnState.Disabled);
         vo.setStatus(VpnStatus.Disconnected);
         vo.setMaxModifies(VpnGlobalProperty.VPN_MAX_MOTIFIES);
-        vo.setSid(Platform.getUuid());
-        vo.setCertKey(generateCertKey(msg.getAccountUuid(), vo.getSid()));
+        vo.setSecretId(Platform.getUuid());
+        vo.setSecretKey(generateCertKey(msg.getAccountUuid(), vo.getSecretId()));
         dbf.persistAndRefresh(vo);
         LOGGER.debug(String.format("数据库保存VPN[name:%s, uuid:%s]成功", vo.getName(), vo.getUuid()));
 
@@ -1427,7 +1432,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).find();
 
-        String md5 = DigestUtils.md5Hex(msg.getUuid() + msg.getTimestamp() + vpn.getCertKey());
+        String md5 = DigestUtils.md5Hex(msg.getUuid() + msg.getTimestamp() + vpn.getSecretKey());
         LOGGER.debug(String.format("MD5[%s] && signature[%s]", md5, msg.getSignature()));
         boolean flag = System.currentTimeMillis() - msg.getTimestamp() > CoreGlobalProperty.INNER_MESSAGE_EXPIRE * 1000;
         if (!md5.equals(msg.getSignature()) || flag) {

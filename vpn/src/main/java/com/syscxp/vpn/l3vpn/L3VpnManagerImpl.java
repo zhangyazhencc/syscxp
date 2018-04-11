@@ -46,10 +46,11 @@ import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.vpn.client.VpnBase;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.job.DeleteRenewVOAfterDeleteResourceJob;
-import com.syscxp.vpn.vpn.VpnCommands;
+import com.syscxp.vpn.client.VpnCommands;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,25 +87,13 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-        if (msg instanceof VpnMessage) {
-            passThrough((VpnMessage) msg);
-        } else if (msg instanceof APIMessage) {
+        if (msg instanceof APIMessage) {
             handleApiMessage((APIMessage) msg);
         } else {
             handleLocalMessage(msg);
         }
     }
 
-    private void passThrough(VpnMessage msg) {
-        VpnVO vo = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
-        if (vo == null) {
-            String err = "Cannot find vpn: " + msg.getVpnUuid() + ", it may have been deleted";
-            bus.replyErrorByMessageType(msg, err);
-            return;
-        }
-        L3VpnBase base = new L3VpnBase(vo);
-        base.handleMessage(msg);
-    }
 
     private void handleLocalMessage(Message msg) {
         if (msg instanceof CheckVpnStatusMsg) {

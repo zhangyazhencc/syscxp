@@ -1,15 +1,16 @@
-package com.syscxp.vpn.vpn;
+package com.syscxp.vpn.client;
 
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.vpn.vpn.VpnVO;
+import com.syscxp.header.vpn.VpnAO;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
-import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
+import com.syscxp.vpn.client.VpnCommands.AgentCommand;
+import com.syscxp.vpn.client.VpnCommands.AgentResponse;
+import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -26,14 +27,14 @@ public abstract class AbstractVpn {
     @Autowired
     protected ErrorFacade errf;
 
-    protected VpnVO self;
+    protected VpnAO self;
     protected final String id;
     private String baseUrl;
     private String scheme = VpnGlobalProperty.AGENT_URL_SCHEME;
     private int port = VpnGlobalProperty.AGENT_PORT;
     private String rootPath = VpnGlobalProperty.AGENT_URL_ROOT_PATH;
 
-    protected AbstractVpn(VpnVO self) {
+    protected AbstractVpn(VpnAO self) {
         this.self = self;
         id = "Vpn-" + self.getUuid();
 
@@ -62,7 +63,7 @@ public abstract class AbstractVpn {
         return baseUrl;
     }
 
-    public VpnVO getSelf() {
+    public VpnAO getSelf() {
         return self;
     }
 }

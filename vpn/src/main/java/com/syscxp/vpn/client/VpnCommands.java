@@ -1,4 +1,4 @@
-package com.syscxp.vpn.vpn;
+package com.syscxp.vpn.client;
 
 import com.syscxp.core.validation.ConditionalValidation;
 import com.syscxp.header.vpn.agent.CertInfo;
@@ -74,6 +74,7 @@ public class VpnCommands {
     public static class VpnConfCmd extends AgentCommand {
         public String hostip;
         public String vpnport;
+        public String level;
 
     }
 
