@@ -56,6 +56,16 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private List<InnerVlanSegment> vlanSegment;
     @APIParam(emptyString = false, required = false, maxLength = 32, resourceType = EndpointVO.class)
     private String innerConnectedEndpointUuid;
+    @APIParam
+    private boolean isSaveOnly;
+
+    public boolean isSaveOnly() {
+        return isSaveOnly;
+    }
+
+    public void setSaveOnly(boolean saveOnly) {
+        isSaveOnly = saveOnly;
+    }
 
     public String getAccountUuid() {
         return accountUuid;

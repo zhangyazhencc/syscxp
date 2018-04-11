@@ -1246,6 +1246,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void afterCreateTunnelManual(TunnelVO vo, APICreateTunnelManualMsg msg, ReturnValueCompletion<TunnelInventory> completion) {
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
+        TunnelJobAndTaskBase taskBase = new TunnelJobAndTaskBase();
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
@@ -1266,35 +1267,47 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //支付成功修改状态,记录生效订单
         tunnelBillingBase.saveResourceOrderEffective(inventories.get(0).getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-
         vo.setAccountUuid(vo.getOwnerAccountUuid());
-        vo.setState(TunnelState.Deploying);
-        vo.setStatus(TunnelStatus.Connecting);
-        final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
-        //创建任务
-        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo2, TaskType.Create);
+        if(msg.isSaveOnly()){
+            vo.setState(TunnelState.Enabled);
+            vo.setStatus(TunnelStatus.Connected);
+            vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(), vo.getProductChargeModel(), vo.getDuration()));
+            vo = dbf.updateAndRefresh(vo);
 
-        CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
-        createTunnelMsg.setTunnelUuid(vo2.getUuid());
-        createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
-        bus.send(createTunnelMsg, new CloudBusCallBack(null) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-                    completion.success(TunnelInventory.valueOf(dbf.reload(vo2)));
-                } else {
+            taskBase.taskEnableTunnelZK(vo.getUuid());
 
-                    if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
-                        logger.info("创建专线失败，控制器回滚失败，开始回滚控制器.");
-                        new TunnelJobAndTaskBase().taskRollBackCreateTunnel(vo2.getUuid());
+            completion.success(TunnelInventory.valueOf(vo));
+
+        }else{
+            vo.setState(TunnelState.Deploying);
+            vo.setStatus(TunnelStatus.Connecting);
+            final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+
+            //创建任务
+            TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo2, TaskType.Create);
+
+            CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
+            createTunnelMsg.setTunnelUuid(vo2.getUuid());
+            createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+            bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
+            bus.send(createTunnelMsg, new CloudBusCallBack(null) {
+                @Override
+                public void run(MessageReply reply) {
+                    if (reply.isSuccess()) {
+                        completion.success(TunnelInventory.valueOf(dbf.reload(vo2)));
+                    } else {
+
+                        if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                            logger.info("创建专线失败，控制器回滚失败，开始回滚控制器.");
+                            new TunnelJobAndTaskBase().taskRollBackCreateTunnel(vo2.getUuid());
+                        }
+
+                        completion.success(TunnelInventory.valueOf(dbf.reload(vo2)));
                     }
-
-                    completion.success(TunnelInventory.valueOf(dbf.reload(vo2)));
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
