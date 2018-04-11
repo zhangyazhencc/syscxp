@@ -48,6 +48,10 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private boolean isCrossA;
     @APIParam
     private boolean isCrossZ;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InterfaceVO.class)
+    private String crossInterfaceUuid;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = TunnelVO.class)
+    private String crossTunnelUuid;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegment;
     @APIParam(emptyString = false, required = false, maxLength = 32, resourceType = EndpointVO.class)
@@ -188,6 +192,22 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setCrossZ(boolean crossZ) {
         isCrossZ = crossZ;
+    }
+
+    public String getCrossInterfaceUuid() {
+        return crossInterfaceUuid;
+    }
+
+    public void setCrossInterfaceUuid(String crossInterfaceUuid) {
+        this.crossInterfaceUuid = crossInterfaceUuid;
+    }
+
+    public String getCrossTunnelUuid() {
+        return crossTunnelUuid;
+    }
+
+    public void setCrossTunnelUuid(String crossTunnelUuid) {
+        this.crossTunnelUuid = crossTunnelUuid;
     }
 
     public ApiNotification __notification__() {

@@ -382,10 +382,37 @@ public class TunnelValidateBase {
         SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
         SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
 
-        //验证VSI
+        TunnelVO crossTunnel = new TunnelVO();
+        TunnelSwitchPortVO corssTP = new TunnelSwitchPortVO();
+
+        if(msg.getCrossTunnelUuid() != null){
+            crossTunnel = dbf.findByUuid(msg.getCrossTunnelUuid(),TunnelVO.class);
+            corssTP = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getCrossTunnelUuid())
+                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getCrossInterfaceUuid())
+                    .find();
+        }
+
+        //验证共点
         if(!msg.isCrossA() && !msg.isCrossZ()){
             if(Q.New(TunnelVO.class).eq(TunnelVO_.vsi, msg.getVsi()).isExists()){
                 throw new ApiMessageInterceptionException(argerr("该vsi已经被专线使用！"));
+            }
+        }else{
+            if(!Objects.equals(crossTunnel.getVsi(), msg.getVsi())){
+                throw new ApiMessageInterceptionException(argerr("该专线是共点专线，vsi不一致！"));
+            }
+        }
+
+        if(msg.isCrossA()){
+            if(!Objects.equals(msg.getaVlan(), corssTP.getVlan())){
+                throw new ApiMessageInterceptionException(argerr("该共点接口的VLAN不一致！"));
+            }
+        }
+
+        if(msg.isCrossZ()){
+            if(!Objects.equals(msg.getzVlan(), corssTP.getVlan())){
+                throw new ApiMessageInterceptionException(argerr("该共点接口的VLAN不一致！"));
             }
         }
 
