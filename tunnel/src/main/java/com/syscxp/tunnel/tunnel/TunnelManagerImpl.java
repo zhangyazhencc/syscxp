@@ -928,27 +928,48 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 if (!isIfaceANew && msg.getInterfaceAUuid().equals(msg.getCrossInterfaceUuid())){   //A是共点
                     vlanA = crossVlan;
 
-                    if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA)){
-                        vlanZ = vlanA;
+                    if(tunnelType == TunnelType.CHINA2ABROAD){
+                        if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA, false)){
+                            vlanZ = vlanA;
+                        }else{
+                            vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);
+                            if (vlanZ == 0) {
+                                throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+                            }
+                        }
                     }else{
-                        vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);
-                        if (vlanZ == 0) {
-                            throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+                        if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA, true)){
+                            vlanZ = vlanA;
+                        }else{
+                            vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);
+                            if (vlanZ == 0) {
+                                throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+                            }
                         }
                     }
 
                 }else{
                     vlanZ = crossVlan;
 
-                    if(ts.vlanIsAvailable(switchPortVOA.getSwitchUuid(), peerSwitchUuidA, vlanZ)){
-                        vlanA = vlanZ;
+                    if(tunnelType == TunnelType.CHINA2ABROAD){
+                        if(ts.vlanIsAvailable(switchPortVOA.getSwitchUuid(), peerSwitchUuidA, vlanZ, false)){
+                            vlanA = vlanZ;
+                        }else{
+                            vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
+                            if (vlanA == 0) {
+                                throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员!",switchPortVOA.getUuid()));
+                            }
+                        }
                     }else{
-                        vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
-                        if (vlanA == 0) {
-                            throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
+                        if(ts.vlanIsAvailable(switchPortVOA.getSwitchUuid(), peerSwitchUuidA, vlanZ, true)){
+                            vlanA = vlanZ;
+                        }else{
+                            vlanA = ts.getVlanByStrategy(switchPortVOA.getSwitchUuid(), peerSwitchUuidA);
+                            if (vlanA == 0) {
+                                throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员!",switchPortVOA.getUuid()));
+                            }
                         }
                     }
-
                 }
             }
         }else{
@@ -964,7 +985,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
                 }
 
-                if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA)){
+                if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA, false)){
                     vlanZ = vlanA;
                 }else{
                     vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);
@@ -1039,7 +1060,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,innerSwitchPort)){
                 vlanBC = vlanA;
             }else{
-                if(ts.vlanIsAvailable(innerSwitch.getUuid(), switchPortVOA.getSwitchUuid(), vlanA) && ts.vlanIsAvailable(outerSwitch.getUuid(), switchPortVOZ.getUuid(), vlanA)){
+                if(ts.vlanIsAvailable(innerSwitch.getUuid(), switchPortVOA.getSwitchUuid(), vlanA, false) && ts.vlanIsAvailable(outerSwitch.getUuid(), switchPortVOZ.getUuid(), vlanA, false)){
                     vlanBC = vlanA;
                 }else{
                     vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid(), switchPortVOA.getSwitchUuid());
@@ -1057,7 +1078,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOZ,innerSwitchPort)){
                 vlanBC = vlanZ;
             }else{
-                if(ts.vlanIsAvailable(innerSwitch.getUuid(), switchPortVOZ.getSwitchUuid(), vlanZ) && ts.vlanIsAvailable(outerSwitch.getUuid(), switchPortVOA.getSwitchUuid(), vlanZ)){
+                if(ts.vlanIsAvailable(innerSwitch.getUuid(), switchPortVOZ.getSwitchUuid(), vlanZ, false) && ts.vlanIsAvailable(outerSwitch.getUuid(), switchPortVOA.getSwitchUuid(), vlanZ, false)){
                     vlanBC = vlanZ;
                 }else{
                     vlanBC = ts.getVlanByStrategy(innerSwitch.getUuid(), switchPortVOZ.getSwitchUuid());
@@ -2381,7 +2402,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN",switchPortVOA.getUuid()));
             }
 
-            if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA)){
+            if(ts.vlanIsAvailable(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ, vlanA, false)){
                 vlanZ = vlanA;
             }else{
                 vlanZ = ts.getVlanByStrategy(switchPortVOZ.getSwitchUuid(), peerSwitchUuidZ);

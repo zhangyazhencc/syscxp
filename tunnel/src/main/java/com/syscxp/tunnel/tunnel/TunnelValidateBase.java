@@ -458,35 +458,55 @@ public class TunnelValidateBase {
                 NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
                 if(nvoA.getCountry().equals("CHINA")){
                     if(!msg.isCrossA()){
-                        validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan());
+                        validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan(), false);
                     }
                     if(!msg.isCrossZ()){
-                        validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan());
+                        validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan(), false);
                     }
 
                 }else{
                     if(!msg.isCrossA()){
-                        validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan());
+                        validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan(), false);
                     }
                     if(!msg.isCrossZ()){
-                        validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan());
+                        validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan(), false);
                     }
                 }
 
             }else{
                 if(!msg.isCrossA()){
-                    validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+                    if(msg.isCrossZ()){
+                        validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), true);
+                    }else{
+                        validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), false);
+                    }
+
                 }
                 if(!msg.isCrossZ()){
-                    validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+                    if(msg.isCrossA()){
+                        validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), true);
+                    }else{
+                        validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), false);
+                    }
+
                 }
             }
         }else{
             if(!msg.isCrossA()){
-                validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
+                if(msg.isCrossZ()){
+                    validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), true);
+                }else{
+                    validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), false);
+                }
+
             }
             if(!msg.isCrossZ()){
-                validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+                if(msg.isCrossA()){
+                    validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), true);
+                }else{
+                    validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), false);
+                }
+
             }
         }
 
@@ -964,14 +984,20 @@ public class TunnelValidateBase {
     /**
      * 判断外部VLAN是否可用
      */
-    private void validateVlan(String interfaceUuid, String peerSwitchUuid, Integer vlan) {
+    private void validateVlan(String interfaceUuid, String peerSwitchUuid, Integer vlan, boolean isPeerCross) {
         TunnelStrategy ts = new TunnelStrategy();
         TunnelBase tunnelBase = new TunnelBase();
+
+        List<Integer> allocatedVlans;
         //查询该TUNNEL的物理接口所属的虚拟交换机
         String switchUuid = tunnelBase.findSwitchByInterface(interfaceUuid);
 
         //查询该虚拟交换机所属的物理交换机已经分配的Vlan
-        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
+        if(isPeerCross){
+            allocatedVlans = ts.fingAllocateVlanBySwitchForCross(switchUuid);
+        }else{
+            allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
+        }
 
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
