@@ -1561,23 +1561,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         });
     }
 
-    private void deleteVpn(String uuid, final Completion complete) {
-        DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
-        destroyVpnMsg.setVpnUuid(uuid);
-        bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
-        bus.send(destroyVpnMsg, new CloudBusCallBack(complete) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-                    LOGGER.debug("run command[destroyVpn] success!");
-                    complete.success();
-                } else {
-                    LOGGER.debug("run command[destroyVpn] failed!");
-                    complete.fail(reply.getError());
-                }
-            }
-        });
-    }
 
     private void createOrder(APIMessage orderMsg, final Completion complete) {
 
