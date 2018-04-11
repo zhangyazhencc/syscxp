@@ -383,8 +383,10 @@ public class TunnelValidateBase {
         SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
 
         //验证VSI
-        if(Q.New(TunnelVO.class).eq(TunnelVO_.vsi, msg.getVsi()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("该vsi已经被专线使用！"));
+        if(!msg.isCrossA() && !msg.isCrossZ()){
+            if(Q.New(TunnelVO.class).eq(TunnelVO_.vsi, msg.getVsi()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("该vsi已经被专线使用！"));
+            }
         }
 
         //如果是同一个物理交换机的接入和接出，VLAN必须一样
@@ -474,22 +476,28 @@ public class TunnelValidateBase {
         }
 
         //如果是ACCESS物理接口，判断该物理接口是否已经开通通道
-        if (interfaceVOA.getType() == NetworkType.ACCESS) {
-            boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceAUuid())
-                    .isExists();
-            if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口A是ACCESS口，不可复用"));
+        if(!msg.isCrossA()){
+            if (interfaceVOA.getType() == NetworkType.ACCESS) {
+                boolean exists = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceAUuid())
+                        .isExists();
+                if (exists) {
+                    throw new ApiMessageInterceptionException(argerr("该物理接口A是ACCESS口，不可复用"));
+                }
             }
         }
-        if (interfaceVOZ.getType() == NetworkType.ACCESS) {
-            boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceZUuid())
-                    .isExists();
-            if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口Z是ACCESS口，不可复用"));
+
+        if(!msg.isCrossZ()){
+            if (interfaceVOZ.getType() == NetworkType.ACCESS) {
+                boolean exists = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceZUuid())
+                        .isExists();
+                if (exists) {
+                    throw new ApiMessageInterceptionException(argerr("该物理接口Z是ACCESS口，不可复用"));
+                }
             }
         }
+
 
         //判断同一个switchPort下内部VLAN段是否有重叠
         validateInnerVlan(msg.isQinqA(), interfaceVOA.getSwitchPortUuid(), msg.isQinqZ(), interfaceVOZ.getSwitchPortUuid(), msg.getVlanSegment());

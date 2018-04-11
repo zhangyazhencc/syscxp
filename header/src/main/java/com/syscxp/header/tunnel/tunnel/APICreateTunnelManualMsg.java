@@ -44,6 +44,10 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private boolean isQinqA;
     @APIParam
     private boolean isQinqZ;
+    @APIParam
+    private boolean isCrossA;
+    @APIParam
+    private boolean isCrossZ;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegment;
     @APIParam(emptyString = false, required = false, maxLength = 32, resourceType = EndpointVO.class)
@@ -168,6 +172,22 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
+    }
+
+    public boolean isCrossA() {
+        return isCrossA;
+    }
+
+    public void setCrossA(boolean crossA) {
+        isCrossA = crossA;
+    }
+
+    public boolean isCrossZ() {
+        return isCrossZ;
+    }
+
+    public void setCrossZ(boolean crossZ) {
+        isCrossZ = crossZ;
     }
 
     public ApiNotification __notification__() {
