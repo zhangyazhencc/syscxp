@@ -69,4 +69,20 @@ CREATE TABLE SolutionVpnVO (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `ShareSolutionVO`;
+#分享方案#
+CREATE TABLE  `ShareSolutionVO` (
+    `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+    `accountUuid` varchar(32) NOT NULL,
+    `ownerAccountUuid` varchar(32) NOT NULL,
+    `solutionUuid` varchar(32) NOT NULL,
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`),
+    UNIQUE KEY `ukShareSolutionVO` (`accountUuid`,`ownerAccountUuid`,`solutionUuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `SolutionVO` ADD COLUMN `isShare` tinyint(1) unsigned DEFAULT 0 COMMENT '是否共享';
+
+ALTER TABLE `totalCost` ADD COLUMN `totalCost` decimal(12,4) DEFAULT '0.0000' COMMENT '预估费用';
 
