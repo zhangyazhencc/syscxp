@@ -34,7 +34,11 @@ import com.syscxp.header.vpn.billingCallBack.RenewVpnCallBack;
 import com.syscxp.header.vpn.billingCallBack.UnsubcribeVpnCallBack;
 import com.syscxp.header.vpn.billingCallBack.UpdateVpnBandwidthCallBack;
 import com.syscxp.header.vpn.host.VpnHostVO;
-import com.syscxp.header.vpn.vpn.*;
+import com.syscxp.header.vpn.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnStatus;
+import com.syscxp.header.vpn.vpn.VpnState;
+import com.syscxp.header.vpn.vpn.VpnCertVO;
+import com.syscxp.header.vpn.vpn.Payment;
 import com.syscxp.header.vpn.l3vpn.*;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.URLBuilder;
@@ -199,26 +203,26 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
 
     private void handle(DeleteVpnMsg msg) {
         DeleteVpnReply reply = new DeleteVpnReply();
-        VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
+        L3VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), L3VpnVO.class);
         if (vpn == null) {
             bus.reply(msg, reply);
             return;
         }
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
-        chain.setName(String.format("delete-vpn-%s", msg.getVpnUuid()));
+        chain.setName(String.format("delete-l3vpn-%s", msg.getVpnUuid()));
         chain.then(new NoRollbackFlow() {
-            String __name__ = "detach-vpn-cert";
+            String __name__ = "detach-l3vpn-cert";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
                 if (vpn.getVpnCertUuid() != null) {
                     detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
-                    LOGGER.debug(String.format("VPN[UUID:%s]解绑证书[UUID:%s]成功", vpn.getUuid(), vpn.getVpnCertUuid()));
+                    LOGGER.debug(String.format("L3VPN[UUID:%s]解绑证书[UUID:%s]成功", vpn.getUuid(), vpn.getVpnCertUuid()));
                 }
                 trigger.next();
             }
         }).then(new NoRollbackFlow() {
-            String __name__ = "destroy-vpn";
+            String __name__ = "destroy-l3vpn";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
@@ -246,7 +250,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
                 if (msg.isDeleteRenew()) {
                     DeleteRenewVOAfterDeleteResourceJob.execute(jobf, vpn.getUuid(), vpn.getAccountUuid());
                 }
-                dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
+                dbf.removeByPrimaryKey(vpn.getUuid(), L3VpnVO.class);
                 bus.reply(msg, reply);
             }
         }).error(new FlowErrorHandler(msg) {
@@ -582,7 +586,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
 
         ResourceMotifyRecordVO record = new ResourceMotifyRecordVO();
         record.setResourceUuid(msg.getUuid());
-        record.setResourceType(VpnVO.class.getSimpleName());
+        record.setResourceType(L3VpnVO.class.getSimpleName());
         record.setUuid(Platform.getUuid());
         record.setMotifyType(type);
         record.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -714,7 +718,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), msg.getL3EndpointUuid()));
 
         APIGetProductPriceReply reply = createOrder(priceMsg);
-        bus.reply(msg, new APIGetVpnPriceReply(reply));
+        bus.reply(msg, new APIGetL3VpnPriceReply(reply));
     }
 
     private void handle(APIGetRenewL3VpnPriceMsg msg) {

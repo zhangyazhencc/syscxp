@@ -7,11 +7,10 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.vpn.APIVpnMessage;
 import com.syscxp.header.vpn.vpn.VpnConstant;
-import com.syscxp.header.vpn.vpn.VpnVO;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"})
 public class APIDeleteL3VpnMsg extends APIVpnMessage {
-    @APIParam(resourceType = VpnVO.class, checkAccount = true)
+    @APIParam(resourceType = L3VpnVO.class, checkAccount = true)
     private String uuid;
 
     public String getUuid() {
@@ -27,8 +26,8 @@ public class APIDeleteL3VpnMsg extends APIVpnMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Delete VpnVO")
-                        .resource(uuid, VpnVO.class)
+                ntfy("Delete L3VpnVO")
+                        .resource(uuid, L3VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

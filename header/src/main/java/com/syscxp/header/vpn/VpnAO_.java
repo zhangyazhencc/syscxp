@@ -18,7 +18,7 @@ public class VpnAO_ {
     public static volatile SingularAttribute<VpnAO, Integer> port;
     public static volatile SingularAttribute<VpnAO, Integer> vlan;
     public static volatile SingularAttribute<VpnAO, String> description;
-    public static volatile SingularAttribute<VpnAO, String> sid;
+    public static volatile SingularAttribute<VpnAO, String> secretId;
     public static volatile SingularAttribute<VpnAO, String> bandwidthOfferingUuid;
     public static volatile SingularAttribute<VpnAO, VpnStatus> status;
     public static volatile SingularAttribute<VpnAO, VpnState> state;

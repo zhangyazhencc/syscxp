@@ -18,6 +18,7 @@ import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.vpn.VpnAO;
+import com.syscxp.header.vpn.l3vpn.L3VpnVO;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.host.HostInterfaceVO;
@@ -698,7 +699,7 @@ public class VpnBase extends AbstractVpn {
 
     private String getInterfaceName() {
         return Q.New(HostInterfaceVO.class)
-                .eq(HostInterfaceVO_.endpointUuid, self.getEndpointUuid())
+                .eq(HostInterfaceVO_.endpointUuid, getEndpointUuid())
                 .eq(HostInterfaceVO_.hostUuid, self.getHostUuid())
                 .select(HostInterfaceVO_.interfaceName).findValue();
     }
@@ -717,5 +718,16 @@ public class VpnBase extends AbstractVpn {
 
     private String getLevel() {
         return self instanceof VpnVO ? "2" : "3";
+    }
+
+    private String getEndpointUuid() {
+        if (self instanceof VpnVO) {
+            return ((VpnVO) self).getEndpointUuid();
+        } else if (self instanceof L3VpnVO) {
+            return ((L3VpnVO) self).getL3EndpointUuid();
+        } else {
+            return "";
+
+        }
     }
 }

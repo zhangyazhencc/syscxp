@@ -2,14 +2,10 @@ package com.syscxp.header.vpn.l3vpn;
 
 import com.syscxp.header.search.TriggerIndex;
 import com.syscxp.header.vpn.VpnAO;
-import com.syscxp.header.vpn.host.VpnHostVO;
-import com.syscxp.header.vpn.vpn.Payment;
-import com.syscxp.header.vpn.vpn.VpnCertVO;
-import com.syscxp.header.vpn.vpn.VpnState;
-import com.syscxp.header.vpn.vpn.VpnStatus;
 
-import javax.persistence.*;
-import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
 @Table
