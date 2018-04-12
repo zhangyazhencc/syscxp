@@ -3,6 +3,7 @@ package com.syscxp.idc.solution;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.AbstractService;
@@ -20,6 +21,8 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+
+import static com.syscxp.core.Platform.argerr;
 
 /**
  * Create by DCY on 2018/4/4
@@ -50,6 +53,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APIDeleteSolutionMsg) msg);
         } else if (msg instanceof APICreateSolutionInterfaceMsg){
             handle((APICreateSolutionInterfaceMsg) msg);
+        } else if (msg instanceof APIUpdateSolutionInterfaceMsg){
+            handle((APIUpdateSolutionInterfaceMsg) msg);
         } else if (msg instanceof APIDeleteSolutionInterfaceMsg){
             handle((APIDeleteSolutionInterfaceMsg) msg);
         } else if (msg instanceof APICreateSolutionTunnelMsg){
@@ -160,6 +165,24 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         APICreateSolutionInterfaceEvent event = new APICreateSolutionInterfaceEvent(msg.getId());
         event.setInterfaceInventory(SolutionInterfaceInventory.valueOf(vo));
         bus.publish(event);
+    }
+
+    /**
+     * 重新修改价格--物理接口
+     * */
+    private void handle(APIUpdateSolutionInterfaceMsg msg){
+        SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(), SolutionInterfaceVO.class);
+
+        vo.setCost(msg.getCost());
+        vo.setDiscount(msg.getDiscount());
+        vo.setShareDiscount(msg.getShareDiscount());
+
+        vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateSolutionInterfaceEvent evt = new APIUpdateSolutionInterfaceEvent(msg.getId());
+        evt.setInventory(SolutionInterfaceInventory.valueOf(vo));
+        bus.publish(evt);
+
     }
 
     /**
@@ -335,7 +358,10 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if (msg instanceof APICreateSolutionMsg) {
+        if (msg instanceof APIDeleteSolutionInterfaceMsg) {
+            validate((APIDeleteSolutionInterfaceMsg) msg);
+        }else if(msg instanceof APIDeleteSolutionTunnelMsg){
+            validate((APIDeleteSolutionTunnelMsg) msg);
         }
         return msg;
     }
@@ -374,5 +400,24 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         return CollectionDSL.list(quota);
 
+    }
+
+    private void validate(APIDeleteSolutionInterfaceMsg msg){
+
+        if(Q.New(SolutionTunnelVO.class).eq(SolutionTunnelVO_.interfaceUuidA, msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该接口被方案专线使用，不能删！"));
+        }
+
+        if(Q.New(SolutionTunnelVO.class).eq(SolutionTunnelVO_.interfaceUuidZ, msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该接口被方案专线使用，不能删！"));
+        }
+
+    }
+
+    private void validate(APIDeleteSolutionTunnelMsg msg){
+
+        if(Q.New(SolutionVpnVO.class).eq(SolutionVpnVO_.solutionTunnelUuid, msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该专线被方案VPN使用，不能删！"));
+        }
     }
 }

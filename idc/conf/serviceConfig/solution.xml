@@ -20,6 +20,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.idc.solution.APIUpdateSolutionInterfaceMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.idc.solution.APIDeleteSolutionInterfaceMsg</name>
     </message>
 
