@@ -124,10 +124,16 @@ public class TunnelStrategy  {
     /**
      * 验证VLAN是否可用
      * */
-    public boolean vlanIsAvailable(String switchUuid, String peerSwitchUuid, Integer vlan){
+    public boolean vlanIsAvailable(String switchUuid, String peerSwitchUuid, Integer vlan, boolean isPeerCross){
+
+        List<Integer> allocatedVlans;
 
         //查询该虚拟交换机所属的物理交换机已经分配的Vlan
-        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
+        if(isPeerCross){
+            allocatedVlans = fingAllocateVlanBySwitchForCross(switchUuid);
+        }else{
+            allocatedVlans = fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
+        }
 
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
@@ -135,6 +141,41 @@ public class TunnelStrategy  {
         }else{
             return true;
         }
+    }
+
+    /**
+     * 查询该虚拟交换机所属物理交换机已经分配的Vlan(共点专用)
+     * */
+    public List<Integer> fingAllocateVlanBySwitchForCross(String switchUuid){
+        TunnelBase tunnelBase = new TunnelBase();
+
+        String physicalSwitchUuid = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.uuid,switchUuid)
+                .select(SwitchVO_.physicalSwitchUuid)
+                .findValue();
+
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(physicalSwitchUuid, PhysicalSwitchVO.class);
+
+        PhysicalSwitchVO mplsPhysicalSwitch = tunnelBase.getUplinkMplsSwitchByPhysicalSwitch(physicalSwitchVO);
+
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a " +
+                "where a.ownerMplsSwitchUuid = :mplsPhysicalSwitch " +
+                "or a.peerMplsSwitchUuid = :mplsPhysicalSwitch2";
+
+        TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
+        avq.setParameter("mplsPhysicalSwitch", mplsPhysicalSwitch.getUuid());
+        avq.setParameter("mplsPhysicalSwitch2", mplsPhysicalSwitch.getUuid());
+        List<Integer> list1 = avq.getResultList();
+
+        String sql2 = "select distinct a.vlan from L3EndpointVO a " +
+                "where a.physicalSwitchUuid = :physicalSwitchUuid";
+        TypedQuery<Integer> avq2 = dbf.getEntityManager().createQuery(sql2,Integer.class);
+        avq2.setParameter("physicalSwitchUuid", mplsPhysicalSwitch.getUuid());
+        List<Integer> list2 = avq2.getResultList();
+
+        list1.addAll(list2);
+
+        return list1;
     }
 
     /**

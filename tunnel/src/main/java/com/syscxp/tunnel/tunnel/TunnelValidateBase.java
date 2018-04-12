@@ -382,9 +382,38 @@ public class TunnelValidateBase {
         SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
         SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
 
-        //验证VSI
-        if(Q.New(TunnelVO.class).eq(TunnelVO_.vsi, msg.getVsi()).isExists()){
-            throw new ApiMessageInterceptionException(argerr("该vsi已经被专线使用！"));
+        TunnelVO crossTunnel = new TunnelVO();
+        TunnelSwitchPortVO corssTP = new TunnelSwitchPortVO();
+
+        if(msg.getCrossTunnelUuid() != null){
+            crossTunnel = dbf.findByUuid(msg.getCrossTunnelUuid(),TunnelVO.class);
+            corssTP = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getCrossTunnelUuid())
+                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getCrossInterfaceUuid())
+                    .find();
+        }
+
+        //验证共点
+        if(!msg.isCrossA() && !msg.isCrossZ()){
+            if(Q.New(TunnelVO.class).eq(TunnelVO_.vsi, msg.getVsi()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("该vsi已经被专线使用！"));
+            }
+        }else{
+            if(!Objects.equals(crossTunnel.getVsi(), msg.getVsi())){
+                throw new ApiMessageInterceptionException(argerr("该专线是共点专线，vsi不一致！"));
+            }
+        }
+
+        if(msg.isCrossA()){
+            if(!Objects.equals(msg.getaVlan(), corssTP.getVlan())){
+                throw new ApiMessageInterceptionException(argerr("该共点接口的VLAN不一致！"));
+            }
+        }
+
+        if(msg.isCrossZ()){
+            if(!Objects.equals(msg.getzVlan(), corssTP.getVlan())){
+                throw new ApiMessageInterceptionException(argerr("该共点接口的VLAN不一致！"));
+            }
         }
 
         //如果是同一个物理交换机的接入和接出，VLAN必须一样
@@ -455,41 +484,82 @@ public class TunnelValidateBase {
 
                 NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
                 if(nvoA.getCountry().equals("CHINA")){
-                    validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan());
-                    validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan());
+                    if(!msg.isCrossA()){
+                        validateVlan(msg.getInterfaceAUuid(), innerSwitch.getUuid(), msg.getaVlan(), false);
+                    }
+                    if(!msg.isCrossZ()){
+                        validateVlan(msg.getInterfaceZUuid(), outerSwitch.getUuid(), msg.getzVlan(), false);
+                    }
+
                 }else{
-                    validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan());
-                    validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan());
+                    if(!msg.isCrossA()){
+                        validateVlan(msg.getInterfaceAUuid(), outerSwitch.getUuid(), msg.getaVlan(), false);
+                    }
+                    if(!msg.isCrossZ()){
+                        validateVlan(msg.getInterfaceZUuid(), innerSwitch.getUuid(), msg.getzVlan(), false);
+                    }
                 }
 
             }else{
+                if(!msg.isCrossA()){
+                    if(msg.isCrossZ()){
+                        validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), true);
+                    }else{
+                        validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), false);
+                    }
 
-                validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
-                validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+                }
+                if(!msg.isCrossZ()){
+                    if(msg.isCrossA()){
+                        validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), true);
+                    }else{
+                        validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), false);
+                    }
+
+                }
             }
         }else{
+            if(!msg.isCrossA()){
+                if(msg.isCrossZ()){
+                    validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), true);
+                }else{
+                    validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan(), false);
+                }
 
-            validateVlan(msg.getInterfaceAUuid(), switchUuidZ, msg.getaVlan());
-            validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan());
+            }
+            if(!msg.isCrossZ()){
+                if(msg.isCrossA()){
+                    validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), true);
+                }else{
+                    validateVlan(msg.getInterfaceZUuid(), switchUuidA, msg.getzVlan(), false);
+                }
+
+            }
         }
 
         //如果是ACCESS物理接口，判断该物理接口是否已经开通通道
-        if (interfaceVOA.getType() == NetworkType.ACCESS) {
-            boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceAUuid())
-                    .isExists();
-            if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口A是ACCESS口，不可复用"));
+        if(!msg.isCrossA()){
+            if (interfaceVOA.getType() == NetworkType.ACCESS) {
+                boolean exists = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceAUuid())
+                        .isExists();
+                if (exists) {
+                    throw new ApiMessageInterceptionException(argerr("该物理接口A是ACCESS口，不可复用"));
+                }
             }
         }
-        if (interfaceVOZ.getType() == NetworkType.ACCESS) {
-            boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceZUuid())
-                    .isExists();
-            if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口Z是ACCESS口，不可复用"));
+
+        if(!msg.isCrossZ()){
+            if (interfaceVOZ.getType() == NetworkType.ACCESS) {
+                boolean exists = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceZUuid())
+                        .isExists();
+                if (exists) {
+                    throw new ApiMessageInterceptionException(argerr("该物理接口Z是ACCESS口，不可复用"));
+                }
             }
         }
+
 
         //判断同一个switchPort下内部VLAN段是否有重叠
         validateInnerVlan(msg.isQinqA(), interfaceVOA.getSwitchPortUuid(), msg.isQinqZ(), interfaceVOZ.getSwitchPortUuid(), msg.getVlanSegment());
@@ -941,14 +1011,20 @@ public class TunnelValidateBase {
     /**
      * 判断外部VLAN是否可用
      */
-    private void validateVlan(String interfaceUuid, String peerSwitchUuid, Integer vlan) {
+    private void validateVlan(String interfaceUuid, String peerSwitchUuid, Integer vlan, boolean isPeerCross) {
         TunnelStrategy ts = new TunnelStrategy();
         TunnelBase tunnelBase = new TunnelBase();
+
+        List<Integer> allocatedVlans;
         //查询该TUNNEL的物理接口所属的虚拟交换机
         String switchUuid = tunnelBase.findSwitchByInterface(interfaceUuid);
 
         //查询该虚拟交换机所属的物理交换机已经分配的Vlan
-        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
+        if(isPeerCross){
+            allocatedVlans = ts.fingAllocateVlanBySwitchForCross(switchUuid);
+        }else{
+            allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid, peerSwitchUuid);
+        }
 
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
