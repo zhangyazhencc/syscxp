@@ -39,9 +39,9 @@ public abstract class AbstractVpn {
         id = "Vpn-" + self.getUuid();
 
         if ("".equals(rootPath)) {
-            baseUrl = URLBuilder.buildUrl(scheme, self.getVpnHost().getHostIp(), port);
+            baseUrl = URLBuilder.buildUrl(scheme, getHostIp(), port);
         } else {
-            baseUrl = URLBuilder.buildUrl(scheme, self.getVpnHost().getHostIp(), port, rootPath);
+            baseUrl = URLBuilder.buildUrl(scheme, getHostIp(), port, rootPath);
         }
     }
 
@@ -66,4 +66,9 @@ public abstract class AbstractVpn {
     public VpnAO getSelf() {
         return self;
     }
+
+    private String getHostIp() {
+        return self.getVpnHost().getHostIp();
+    }
+
 }

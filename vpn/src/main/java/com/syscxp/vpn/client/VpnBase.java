@@ -689,9 +689,6 @@ public class VpnBase extends AbstractVpn {
         return String.valueOf(SizeUnit.BYTE.toKiloByte(bandwidth.getBandwidth()));
     }
 
-    private String getHostIp() {
-        return self.getVpnHost().getHostIp();
-    }
 
     private String getPublicIp() {
         return self.getVpnHost().getPublicIp();
@@ -727,7 +724,6 @@ public class VpnBase extends AbstractVpn {
             return ((L3VpnVO) self).getL3EndpointUuid();
         } else {
             return "";
-
         }
     }
 }
