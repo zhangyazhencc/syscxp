@@ -35,4 +35,11 @@
     <message>
         <name>com.syscxp.header.vpn.l3vpn.APIDeleteL3VpnMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIGetL3VpnModifyMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.l3vpn.APIQueryL3VpnMsg</name>
+        <serviceId>query</serviceId>
+    </message>
 </service>

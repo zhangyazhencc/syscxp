@@ -19,7 +19,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.vpn.VpnAO;
 import com.syscxp.header.vpn.l3vpn.L3VpnVO;
-import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.host.HostInterfaceVO;
 import com.syscxp.header.vpn.host.HostInterfaceVO_;

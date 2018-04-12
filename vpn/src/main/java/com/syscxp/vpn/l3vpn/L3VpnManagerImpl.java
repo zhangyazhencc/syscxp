@@ -16,6 +16,7 @@ import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.configuration.MotifyType;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.OperationFailureException;
@@ -104,7 +105,6 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         }
     }
 
-
     private void handleLocalMessage(Message msg) {
         if (msg instanceof CheckVpnStatusMsg) {
             handle((CheckVpnStatusMsg) msg);
@@ -118,40 +118,30 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateL3VpnMsg) {
             handle((APICreateL3VpnMsg) msg);
-        }
-        else if (msg instanceof APIUpdateL3VpnMsg){
+        }else if (msg instanceof APIUpdateL3VpnMsg){
             handle((APIUpdateL3VpnMsg) msg);
-        }
-        else if (msg instanceof APIUpdateL3VpnBandwidthMsg)
+        }else if (msg instanceof APIUpdateL3VpnBandwidthMsg) {
             handle((APIUpdateL3VpnBandwidthMsg) msg);
-
-        else if (msg instanceof APIUpdateL3VpnWorkModeMsg){
+        }else if (msg instanceof APIUpdateL3VpnWorkModeMsg){
             handle((APIUpdateL3VpnWorkModeMsg) msg);
-        }
-        else if (msg instanceof APIAttachL3VpnCertMsg) {
+        }else if (msg instanceof APIAttachL3VpnCertMsg) {
             handle((APIAttachL3VpnCertMsg) msg);
-        }
-        else if (msg instanceof APIDetachL3VpnCertMsg) {
+        }else if (msg instanceof APIDetachL3VpnCertMsg) {
             handle((APIDetachL3VpnCertMsg) msg);
-        }
-        else if (msg instanceof APIGenerateDownloadL3UrlMsg) {
+        }else if (msg instanceof APIGenerateDownloadL3UrlMsg) {
             handle((APIGenerateDownloadL3UrlMsg) msg);
-        }
-        else if (msg instanceof APIGetL3VpnPriceMsg) {
+        }else if (msg instanceof APIGetL3VpnPriceMsg) {
             handle((APIGetL3VpnPriceMsg) msg);
-        }
-        else if (msg instanceof APIGetRenewL3VpnPriceMsg) {
+        }else if (msg instanceof APIGetRenewL3VpnPriceMsg) {
             handle((APIGetRenewL3VpnPriceMsg) msg);
-        }
-        else if (msg instanceof APIRenewL3VpnMsg) {
+        }else if (msg instanceof APIRenewL3VpnMsg) {
             handle((APIRenewL3VpnMsg) msg);
-        }
-        else if (msg instanceof APIUpdateL3VpnStateMsg) {
+        }else if (msg instanceof APIUpdateL3VpnStateMsg) {
             handle((APIUpdateL3VpnStateMsg) msg);
-
-        }
-        else if (msg instanceof APIDeleteL3VpnMsg) {
+        }else if (msg instanceof APIDeleteL3VpnMsg) {
             handle((APIDeleteL3VpnMsg) msg);
+        }else if (msg instanceof APIGetL3VpnModifyMsg) {
+            handle((APIGetL3VpnModifyMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
@@ -862,6 +852,19 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         }).start();
     }
 
+    private void handle(APIGetL3VpnModifyMsg msg) {
+        APIGetL3VpnModifyReply reply = new APIGetL3VpnModifyReply();
+
+        L3VpnVO vpn = dbf.findByUuid(msg.getUuid(), L3VpnVO.class);
+
+        Long modifies = Q.New(ResourceMotifyRecordVO.class)
+                .eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
+                .count();
+        reply.setMaxModifies(vpn.getMaxModifies());
+        reply.setModifies(Math.toIntExact(modifies));
+
+        bus.reply(msg, reply);
+    }
     @Override
     public boolean start() {
         return true;
