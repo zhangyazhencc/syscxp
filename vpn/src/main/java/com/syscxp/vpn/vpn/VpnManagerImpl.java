@@ -126,20 +126,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void passThrough(VpnMessage msg) {
         VpnVO vo = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
-        if (vo != null) {
-            VpnBase base = new VpnBase(vo);
-            base.handleMessage(msg);
-            return;
-        }
-        L3VpnVO l3vo = dbf.findByUuid(msg.getVpnUuid(), L3VpnVO.class);
-        if (l3vo != null) {
-            VpnBase base = new VpnBase(l3vo);
-            base.handleMessage(msg);
+        if (vo == null) {
+            String err = "Cannot find vpn: " + msg.getVpnUuid() + ", it may have been deleted";
+            bus.replyErrorByMessageType(msg, err);
             return;
         }
 
-        String err = "Cannot find vpn: " + msg.getVpnUuid() + ", it may have been deleted";
-        bus.replyErrorByMessageType(msg, err);
+        VpnBase base = new VpnBase(vo);
+        base.handleMessage(msg);
 
     }
 

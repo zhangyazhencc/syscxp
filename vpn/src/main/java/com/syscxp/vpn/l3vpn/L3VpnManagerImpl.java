@@ -97,11 +97,25 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-        if (msg instanceof APIMessage) {
+        if (msg instanceof VpnMessage) {
+            passThrough((VpnMessage) msg);
+        } else if (msg instanceof APIMessage) {
             handleApiMessage((APIMessage) msg);
         } else {
             handleLocalMessage(msg);
         }
+    }
+
+    private void passThrough(VpnMessage msg) {
+        L3VpnVO vo = dbf.findByUuid(msg.getVpnUuid(), L3VpnVO.class);
+        if (vo == null) {
+            String err = "Cannot find l3vpn: " + msg.getVpnUuid() + ", it may have been deleted";
+            bus.replyErrorByMessageType(msg, err);
+            return;
+        }
+
+        VpnBase base = new VpnBase(vo);
+        base.handleMessage(msg);
     }
 
 
@@ -118,42 +132,30 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateL3VpnMsg) {
             handle((APICreateL3VpnMsg) msg);
-        }
-        else if (msg instanceof APIUpdateL3VpnMsg){
+        } else if (msg instanceof APIUpdateL3VpnMsg) {
             handle((APIUpdateL3VpnMsg) msg);
-        }
-        else if (msg instanceof APIUpdateL3VpnBandwidthMsg)
+        } else if (msg instanceof APIUpdateL3VpnBandwidthMsg)
             handle((APIUpdateL3VpnBandwidthMsg) msg);
-
-        else if (msg instanceof APIUpdateL3VpnWorkModeMsg){
+        else if (msg instanceof APIUpdateL3VpnWorkModeMsg) {
             handle((APIUpdateL3VpnWorkModeMsg) msg);
-        }
-        else if (msg instanceof APIAttachL3VpnCertMsg) {
+        } else if (msg instanceof APIAttachL3VpnCertMsg) {
             handle((APIAttachL3VpnCertMsg) msg);
-        }
-        else if (msg instanceof APIDetachL3VpnCertMsg) {
+        } else if (msg instanceof APIDetachL3VpnCertMsg) {
             handle((APIDetachL3VpnCertMsg) msg);
-        }
-        else if (msg instanceof APIGenerateDownloadL3UrlMsg) {
+        } else if (msg instanceof APIGenerateDownloadL3UrlMsg) {
             handle((APIGenerateDownloadL3UrlMsg) msg);
-        }
-        else if (msg instanceof APIGetL3VpnPriceMsg) {
+        } else if (msg instanceof APIGetL3VpnPriceMsg) {
             handle((APIGetL3VpnPriceMsg) msg);
-        }
-        else if (msg instanceof APIGetRenewL3VpnPriceMsg) {
+        } else if (msg instanceof APIGetRenewL3VpnPriceMsg) {
             handle((APIGetRenewL3VpnPriceMsg) msg);
-        }
-        else if (msg instanceof APIRenewL3VpnMsg) {
+        } else if (msg instanceof APIRenewL3VpnMsg) {
             handle((APIRenewL3VpnMsg) msg);
-        }
-        else if (msg instanceof APIUpdateL3VpnStateMsg) {
+        } else if (msg instanceof APIUpdateL3VpnStateMsg) {
             handle((APIUpdateL3VpnStateMsg) msg);
 
-        }
-        else if (msg instanceof APIDeleteL3VpnMsg) {
+        } else if (msg instanceof APIDeleteL3VpnMsg) {
             handle((APIDeleteL3VpnMsg) msg);
-        }
-        else {
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -292,7 +294,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     }
 
 
-    private void doAddVpn(final APICreateL3VpnMsg msg, ReturnValueCompletion<L3VpnInventory>  completion) {
+    private void doAddVpn(final APICreateL3VpnMsg msg, ReturnValueCompletion<L3VpnInventory> completion) {
         VpnHostVO host = dbf.findByUuid(msg.getHostUuid(), VpnHostVO.class);
         checkHostState(host);
 
@@ -405,6 +407,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
                 return Timestamp.valueOf(start.toLocalDateTime().plusMonths(duration));
         }
     }
+
     private ProductInfoForOrder createBuyOrderForVPN(L3VpnVO vo, ProductChargeModel model, NotifyCallBackData callBack) {
         ProductInfoForOrder order = new ProductInfoForOrder();
         order.setProductChargeModel(model);
@@ -419,6 +422,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;
     }
+
     private String getDescriptionForVPN(String bandwidthOfferingUuid) {
         DescriptionData data = new DescriptionData();
         data.add(new DescriptionItem("带宽", bandwidthOfferingUuid));
@@ -443,6 +447,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
             complete.fail(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, String.format("调用billing[url: %s]失败.", url)));
         }
     }
+
     @Deferred
     private Integer generatePort(VpnHostVO host) {
         GLock lock = new GLock("VpnPort", TimeUnit.MINUTES.toSeconds(2));
@@ -454,15 +459,16 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
                 .select(L3VpnVO_.port)
                 .limit(1).findValue();
         if (port == null) {
-            return host.getStartPort()+10000;
+            return host.getStartPort() + 10000;
         }
-        if (port >= host.getEndPort()+10000) {
+        if (port >= host.getEndPort() + 10000) {
             throw new VpnServiceException(
                     argerr("物理机[uuid:%s]没有可用的端口.", host.getUuid()));
 
         }
         return port + 1;
     }
+
     private String generateSecretKey(String accountUuid, String secretId) {
         return DigestUtils.md5Hex(accountUuid + secretId + VpnConstant.URL_GENERATE_KEY);
     }
@@ -478,6 +484,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         dbf.getEntityManager().merge(vpnCert);
         LOGGER.debug(String.format("VPN[uuid:%s]绑定证书[uuid:%s]成功", vpnUuid, vpnCertUuid));
     }
+
     @Override
     public String getId() {
         return bus.makeLocalServiceId(VpnConstant.L3_SERVICE_ID);
@@ -578,6 +585,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         return orderMsg;
     }
+
     @Transactional
     private void motifyRecordVpn(APIUpdateL3VpnBandwidthMsg msg, MotifyType type) {
         L3VpnVO vpn = dbf.getEntityManager().find(L3VpnVO.class, msg.getUuid());
