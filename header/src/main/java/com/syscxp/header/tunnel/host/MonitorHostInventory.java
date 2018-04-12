@@ -18,7 +18,7 @@ import java.util.List;
 @ExpandedQueries({
         @ExpandedQuery(expandedField = "node", inventoryClass = NodeInventory.class,
                 foreignKey = "nodeUuid", expandedInventoryKey = "uuid"),
-        @ExpandedQuery(expandedField = "switch", inventoryClass = HostSwitchMonitorVO.class,
+        @ExpandedQuery(expandedField = "switch", inventoryClass = HostSwitchMonitorInventory.class,
                 foreignKey = "uuid", expandedInventoryKey = "hostUuid")
 
 })
