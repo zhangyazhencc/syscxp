@@ -84,7 +84,7 @@ CREATE VIEW `IdcVO` AS SELECT
     `uuid`, `name`, `description`, `accountName`,`accountUuid`,`company`,
 		`contractNum`,`nodeUuid`,`nodeName`,`productChargeModel`,`totalCost`,
 		`expireDate`, `lastOpDate`, `createDate`
-FROM `TrusteeEO` WHERE deleted IS NULL;
+FROM `IdcEO` WHERE deleted IS NULL;
 
 CREATE TABLE syscxp_idc.IdcDetailVO (
 		`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
@@ -97,7 +97,7 @@ CREATE TABLE syscxp_idc.IdcDetailVO (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
+CREATE TABLE `syscxp_idc`.`ResourceOrderEffectiveVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `resourceUuid` varchar(32) NOT NULL COMMENT '产品UUID',
   `resourceType` varchar(255) NOT NULL COMMENT '产品表名',
