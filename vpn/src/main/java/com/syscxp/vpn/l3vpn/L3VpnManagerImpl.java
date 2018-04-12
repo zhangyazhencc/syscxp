@@ -54,12 +54,12 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.vpn.client.VpnBase;
+import com.syscxp.vpn.client.VpnCommands;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
-import com.syscxp.vpn.job.DeleteRenewVOAfterDeleteResourceJob;
-import com.syscxp.vpn.client.VpnCommands;
-import com.syscxp.vpn.job.DeleteVpnJob;
-import com.syscxp.vpn.job.RenameBillingProductNameJob;
+import com.syscxp.vpn.l3job.DeleteL3RenewVOAfterDeleteL3ResourceJob;
+import com.syscxp.vpn.l3job.DeleteL3VpnJob;
+import com.syscxp.vpn.l3job.RenameBillingL3ProductNameJob;
 import com.syscxp.vpn.vpn.VpnGlobalConfig;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -120,10 +120,10 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     private void handleLocalMessage(Message msg) {
-        if (msg instanceof CheckVpnStatusMsg) {
-            handle((CheckVpnStatusMsg) msg);
+        if (msg instanceof CheckL3VpnStatusMsg) {
+            handle((CheckL3VpnStatusMsg) msg);
         } else if (msg instanceof DeleteVpnMsg) {
-            handle((DeleteVpnMsg) msg);
+            handle((DeleteL3VpnMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -162,8 +162,8 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         }
     }
 
-    private void handle(final CheckVpnStatusMsg msg) {
-        CheckVpnStatusReply reply = new CheckVpnStatusReply();
+    private void handle(final CheckL3VpnStatusMsg msg) {
+        CheckL3VpnStatusReply reply = new CheckL3VpnStatusReply();
 
         VpnHostVO host = dbf.findByUuid(msg.getHostUuid(), VpnHostVO.class);
         if (!msg.isNoStatusCheck() && host.getStatus() != HostStatus.Connected) {
@@ -205,8 +205,8 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         });
     }
 
-    private void handle(DeleteVpnMsg msg) {
-        DeleteVpnReply reply = new DeleteVpnReply();
+    private void handle(DeleteL3VpnMsg msg) {
+        DeleteL3VpnReply reply = new DeleteL3VpnReply();
         L3VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), L3VpnVO.class);
         if (vpn == null) {
             bus.reply(msg, reply);
@@ -238,10 +238,10 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
                     @Override
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
-                            LOGGER.debug(String.format("VPN[UUID:%s]销毁成功", vpn.getUuid()));
+                            LOGGER.debug(String.format("L3VPN[UUID:%s]销毁成功", vpn.getUuid()));
                             trigger.next();
                         } else {
-                            LOGGER.debug(String.format("VPN[UUID:%s]销毁失败", vpn.getUuid()));
+                            LOGGER.debug(String.format("L3VPN[UUID:%s]销毁失败", vpn.getUuid()));
                             trigger.fail(reply.getError());
                         }
                     }
@@ -252,7 +252,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
             @Override
             public void handle(Map data) {
                 if (msg.isDeleteRenew()) {
-                    DeleteRenewVOAfterDeleteResourceJob.execute(jobf, vpn.getUuid(), vpn.getAccountUuid());
+                    DeleteL3RenewVOAfterDeleteL3ResourceJob.execute(jobf, vpn.getUuid(), vpn.getAccountUuid());
                 }
                 dbf.removeByPrimaryKey(vpn.getUuid(), L3VpnVO.class);
                 bus.reply(msg, reply);
@@ -320,17 +320,17 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         vo.setSecretId(Platform.getUuid());
         vo.setSecretKey(generateSecretKey(msg.getAccountUuid(), vo.getSecretId()));
         dbf.persistAndRefresh(vo);
-        LOGGER.debug(String.format("数据库保存VPN[name:%s, uuid:%s]成功", vo.getName(), vo.getUuid()));
+        LOGGER.debug(String.format("数据库保存L3VPN[name:%s, uuid:%s]成功", vo.getName(), vo.getUuid()));
 
         attachVpnCert(vo.getUuid(), msg.getVpnCertUuid());
 
         final L3VpnVO vpn = dbf.findByUuid(vo.getUuid(), L3VpnVO.class);
 
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
-        chain.setName(String.format("add-vpn-%s", vpn.getUuid()));
+        chain.setName(String.format("add-l3vpn-%s", vpn.getUuid()));
 
         chain.then(new NoRollbackFlow() {
-            String __name__ = "pay-before-add-vpn";
+            String __name__ = "pay-before-add-l3vpn";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
@@ -346,24 +346,24 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
                         vpn.setPayment(Payment.PAID);
                         vpn.setExpireDate(generateExpireDate(dbf.getCurrentSqlTime(), msg.getDuration(), msg.getProductChargeModel()));
                         dbf.updateAndRefresh(vpn);
-                        LOGGER.debug(String.format("VPN[name:%s, uuid:%s]付款成功", vo.getName(), vo.getUuid()));
+                        LOGGER.debug(String.format("L3VPN[name:%s, uuid:%s]付款成功", vo.getName(), vo.getUuid()));
                         trigger.next();
                     }
 
                     @Override
                     public void fail(ErrorCode errorCode) {
-                        LOGGER.debug(String.format("VPN[name:%s, uuid:%s]付款失败", vo.getName(), vo.getUuid()));
+                        LOGGER.debug(String.format("L3VPN[name:%s, uuid:%s]付款失败", vo.getName(), vo.getUuid()));
                         trigger.fail(errorCode);
                     }
                 });
             }
 
         }).then(new NoRollbackFlow() {
-            String __name__ = "send-init-vpn-message";
+            String __name__ = "send-init-l3vpn-message";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                LOGGER.debug(String.format("VPN[name:%s, uuid:%s]初始化", vo.getName(), vo.getUuid()));
+                LOGGER.debug(String.format("L3VPN[name:%s, uuid:%s]初始化", vo.getName(), vo.getUuid()));
                 InitVpnMsg initVpnMsg = new InitVpnMsg();
                 initVpnMsg.setVpnUuid(vpn.getUuid());
                 bus.makeLocalServiceId(initVpnMsg, VpnConstant.SERVICE_ID);
@@ -383,13 +383,13 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
             @Override
             public void handle(Map data) {
                 L3VpnInventory inv = L3VpnInventory.valueOf(dbf.reload(vo));
-                LOGGER.debug(String.format("创建VPN[name:%s, uuid:%s]成功", vo.getName(), vo.getUuid()));
+                LOGGER.debug(String.format("创建L3VPN[name:%s, uuid:%s]成功", vo.getName(), vo.getUuid()));
                 completion.success(inv);
             }
         }).error(new FlowErrorHandler(msg) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
-                LOGGER.debug(String.format("创建vpn[name:%s, uuid:%s]失败", vo.getName(), vo.getUuid()));
+                LOGGER.debug(String.format("创建L3VPN[name:%s, uuid:%s]失败", vo.getName(), vo.getUuid()));
                 completion.fail(errCode);
             }
         }).start();
@@ -529,7 +529,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         if (update) {
             vpn = dbf.getEntityManager().merge(vpn);
             if (changeName)
-                RenameBillingProductNameJob.executeJob(jobf, vpn.getUuid(), vpn.getName());
+                RenameBillingL3ProductNameJob.executeJob(jobf, vpn.getUuid(), vpn.getName());
         }
 
         APIUpdateL3VpnEvent evt = new APIUpdateL3VpnEvent(msg.getId());
@@ -649,7 +649,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         L3VpnVO vo = dbf.reload(vpn);
         vo.setState(next);
         dbf.updateAndRefresh(vo);
-        LOGGER.debug(String.format("Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vo.getState()));
+        LOGGER.debug(String.format("L3Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vo.getState()));
     }
 
     private void handle(APIDetachL3VpnCertMsg msg) {
@@ -810,9 +810,9 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         boolean unsubcribe = vpn.getAccountUuid() != null && vpn.getExpireDate().after(dbf.getCurrentSqlTime());
         L3VpnInventory vinv = L3VpnInventory.valueOf(vpn);
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
-        chain.setName(String.format("delete-vpn-%s", msg.getUuid()));
+        chain.setName(String.format("delete-l3vpn-%s", msg.getUuid()));
         chain.then(new NoRollbackFlow() {
-            String __name__ = "Unsubcribe-vpn";
+            String __name__ = "Unsubcribe-l3vpn";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
@@ -828,13 +828,13 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
                             vpn.setState(VpnState.Disabled);
                             vpn.setExpireDate(dbf.getCurrentSqlTime());
                             dbf.updateAndRefresh(vpn);
-                            LOGGER.debug(String.format("VPN[UUID:%s] 退订成功", vpn.getUuid()));
+                            LOGGER.debug(String.format("L3VPN[UUID:%s] 退订成功", vpn.getUuid()));
                             trigger.next();
                         }
 
                         @Override
                         public void fail(ErrorCode errorCode) {
-                            LOGGER.debug(String.format("VPN[UUID:%s] 退订失败", vpn.getUuid()));
+                            LOGGER.debug(String.format("L3VPN[UUID:%s] 退订失败", vpn.getUuid()));
                             trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "退订失败", errorCode));
                         }
                     });
@@ -842,17 +842,17 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
                     vpn.setAccountUuid(null);
                     vpn.setState(VpnState.Disabled);
                     dbf.updateAndRefresh(vpn);
-                    LOGGER.debug(String.format("VPN[UUID:%s] 过期退订成功", vpn.getUuid()));
+                    LOGGER.debug(String.format("L3VPN[UUID:%s] 过期退订成功", vpn.getUuid()));
                     trigger.next();
                 }
             }
         }).then(new NoRollbackFlow() {
-            String __name__ = "send-delete-vpn-message";
+            String __name__ = "send-delete-l3vpn-message";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                LOGGER.debug(String.format("创建VPN[UUID:%s]删除任务", vpn.getUuid()));
-                DeleteVpnJob.executeJob(jobf, vpn.getUuid(), !unsubcribe);
+                LOGGER.debug(String.format("创建L3VPN[UUID:%s]删除任务", vpn.getUuid()));
+                DeleteL3VpnJob.executeJob(jobf, vpn.getUuid(), !unsubcribe);
                 trigger.next();
             }
         });
@@ -914,7 +914,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
         Q q = Q.New(L3VpnVO.class).eq(L3VpnVO_.name, msg.getName()).eq(L3VpnVO_.accountUuid, msg.getAccountUuid());
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(
-                    argerr("VPN[name:%s]已经存在。", msg.getName()));
+                    argerr("L3VPN[name:%s]已经存在。", msg.getName()));
         }
         // 物理机
         List<String> hostUuids = getHostUuid(msg.getL3EndpointUuid(), msg.getVlan());
