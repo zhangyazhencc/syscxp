@@ -205,12 +205,12 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             refVO.setPolicyUuid(msg.getPolicyUuid());
             refVO.setProductType(msg.getType());
             policyVO = dbf.findByUuid(refVO.getPolicyUuid(), PolicyVO.class);
-            policyVO.setBindResources(getCount(policyVO.getUuid()) -1);
+            policyVO.setBindResources(policyVO.getBindResources() -1);
             policyVO = dbf.getEntityManager().merge(policyVO);
             dbf.getEntityManager().merge(refVO);
         }
         policyVO = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
-        policyVO.setBindResources(getCount(policyVO.getUuid()) + 1);
+        policyVO.setBindResources(policyVO.getBindResources() + 1);
         policyVO = dbf.getEntityManager().merge(policyVO);
 
 
@@ -227,7 +227,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         dbf.getEntityManager().remove(refVO);
 
         PolicyVO policyVO = dbf.findByUuid(refVO.getPolicyUuid(), PolicyVO.class);
-        policyVO.setBindResources(getCount(policyVO.getUuid())- 1);
+        policyVO.setBindResources(policyVO.getBindResources()- 1);
         dbf.getEntityManager().merge(policyVO);
 
         updateFalconByResource(msg.getResourceUuid());
