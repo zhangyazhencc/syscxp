@@ -99,7 +99,7 @@ public class L3NetworkMonitorManagerImpl extends AbstractService implements L3Ne
                     monitor.startMonitor(endpointVO, monitorVOS);
                 } else {
                     if (StringUtils.equals(msg.getMonitorIp(), endpointVO.getMonitorIp())) {
-                        // 更新监控ip，仅更新本端出的监控机监控
+                        // 更新本端监控数据
                         monitor.updateSrcMonitor(endpointVO, monitorVOS);
                     } else {
                         // 更新监控ip，更新对端监控机监控
