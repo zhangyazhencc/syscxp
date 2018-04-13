@@ -26,6 +26,7 @@ import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.BillingRESTCaller;
 import com.syscxp.tunnel.tunnel.TunnelValidateBase;
 import com.syscxp.tunnel.tunnel.job.DeleteRenewVOAfterDeleteResourceJob;
+import com.syscxp.tunnel.tunnel.job.UpdateOrderExpiredTimeJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -203,6 +204,15 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
 
             if(interfaceVO.getExpireDate() == null && !switchPortVO.getPortType().equals("SHARE") && !switchPortVO.getPortType().equals("EXTENDPORT")){
                 interfaceVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),interfaceVO.getProductChargeModel(),interfaceVO.getDuration()));
+
+                //开通成功后修改接口billing到期时间
+                logger.info("修改订单到期时间,并创建任务：UpdateOrderExpiredTimeJob");
+                UpdateOrderExpiredTimeJob job = new UpdateOrderExpiredTimeJob();
+                job.setResourceUuid(interfaceVO.getUuid());
+                job.setStartTime(dbf.getCurrentSqlTime());
+                job.setEndTime(interfaceVO.getExpireDate());
+                jobf.execute("修改订单到期时间", Platform.getManagementServerId(), job);
+
             }
 
             dbf.updateAndRefresh(interfaceVO);

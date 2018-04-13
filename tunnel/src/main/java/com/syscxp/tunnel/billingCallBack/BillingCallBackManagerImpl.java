@@ -23,11 +23,13 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineState;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
+import com.syscxp.header.tunnel.switchs.SwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.job.DeleteRenewVOAfterDeleteResourceJob;
 import com.syscxp.tunnel.tunnel.job.UpdateBandwidthJob;
+import com.syscxp.tunnel.tunnel.job.UpdateOrderExpiredTimeJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -207,8 +209,19 @@ public class BillingCallBackManagerImpl extends AbstractService implements Billi
 
         InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
         interfaceVO.setState(InterfaceState.Up);
-        if(interfaceVO.getExpireDate() == null){
+
+        SwitchPortVO switchPortVO = dbf.findByUuid(interfaceVO.getSwitchPortUuid(), SwitchPortVO.class);
+
+        if(interfaceVO.getExpireDate() == null && !switchPortVO.getPortType().equals("SHARE") && !switchPortVO.getPortType().equals("EXTENDPORT")){
             interfaceVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),interfaceVO.getProductChargeModel(),interfaceVO.getDuration()));
+
+            //开通成功后修改接口billing到期时间
+            logger.info("修改订单到期时间，并创建任务:UpdateOrderExpiredTimeJob");
+            UpdateOrderExpiredTimeJob job = new UpdateOrderExpiredTimeJob();
+            job.setResourceUuid(interfaceVO.getUuid());
+            job.setStartTime(dbf.getCurrentSqlTime());
+            job.setEndTime(interfaceVO.getExpireDate());
+            jobf.execute("修改订单到期时间", Platform.getManagementServerId(), job);
         }
         dbf.updateAndRefresh(interfaceVO);
 
