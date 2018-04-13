@@ -224,7 +224,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setType(OrderType.BUY);
             payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, amount, currentTimestamp);
 
-            LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
+            LocalDateTime expiredTime =getExpiredTime(dbf.getCurrentSqlTime(),msg.getProductChargeModel(),msg.getDuration());
             orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
 
@@ -377,7 +377,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
             payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, amount, currentTimestamp);
 
-            LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
+            LocalDateTime expiredTime =getExpiredTime(dbf.getCurrentSqlTime(),msg.getProductChargeModel(),msg.getDuration());
             orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
 
@@ -516,7 +516,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setOriginalPrice(discountPrice);
             orderVo.setPrice(discountPrice);
             orderVo.setProductEffectTimeStart(msg.getExpiredTime());
-            orderVo.setProductEffectTimeEnd(Timestamp.valueOf(getExpiredTime(msg.getProductChargeModel(),msg.getDuration())));
+            orderVo.setProductEffectTimeEnd(Timestamp.valueOf(getExpiredTime(msg.getExpiredTime(),msg.getProductChargeModel(),msg.getDuration())));
             orderVo.setLastPriceOneMonth(renewVO.getPriceOneMonth());
             renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
             renewVO.setProductChargeModel(msg.getProductChargeModel());
@@ -1049,7 +1049,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                     orderVo.setProductStatus(0);
                 }
                 payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
-                LocalDateTime expiredTime =getExpiredTime(msg.getProductChargeModel(),msg.getDuration());
+                LocalDateTime expiredTime =getExpiredTime(dbf.getCurrentSqlTime(),msg.getProductChargeModel(),msg.getDuration());
                 orderVo.setProductEffectTimeStart(currentTimestamp);
                 orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
 
@@ -1277,32 +1277,21 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         bus.reply(msg, reply);
     }
 
-    private static LocalDateTime getExpiredTime(ProductChargeModel productChargeModel,int duration){
-        try {
-            Method m = LocalDateTime.class.getDeclaredMethod(getMethod(productChargeModel),new Class[]{long.class});
-            return  (LocalDateTime) m.invoke(LocalDateTime.now(),new Long[]{Long.valueOf(duration)});
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    private static String getMethod(ProductChargeModel productChargeModel) {
+    private LocalDateTime getExpiredTime(Timestamp exp,ProductChargeModel productChargeModel,int duration){
+
         switch (productChargeModel) {
             case BY_DAY:
-                return "plusDays";
+                return exp.toLocalDateTime().plusDays(duration);
             case BY_WEEK:
-                return "plusWeeks";
+                return exp.toLocalDateTime().plusWeeks(duration);
             case BY_YEAR:
-                return "plusYears";
+                return exp.toLocalDateTime().plusYears(duration);
             case BY_MONTH:
-                return "plusMonths";
+                return exp.toLocalDateTime().plusMonths(duration);
             default:
-                return "plusMonths";
+                return  exp.toLocalDateTime().plusMonths(duration);
         }
+
     }
 
 
