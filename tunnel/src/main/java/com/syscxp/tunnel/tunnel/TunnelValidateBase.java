@@ -538,6 +538,18 @@ public class TunnelValidateBase {
         }
 
         //如果是ACCESS物理接口，判断该物理接口是否已经开通通道
+        if (interfaceVOA.getType() == NetworkType.ACCESS) {
+            if(Q.New(L3EndpointVO.class).eq(L3EndpointVO_.interfaceUuid, msg.getInterfaceAUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("该ACCESS物理接口已经开通3层网络，不可复用！"));
+            }
+        }
+
+        if (interfaceVOZ.getType() == NetworkType.ACCESS) {
+            if(Q.New(L3EndpointVO.class).eq(L3EndpointVO_.interfaceUuid, msg.getInterfaceZUuid()).isExists()){
+                throw new ApiMessageInterceptionException(argerr("该ACCESS物理接口已经开通3层网络，不可复用！"));
+            }
+        }
+
         if(!msg.isCrossA()){
             if (interfaceVOA.getType() == NetworkType.ACCESS) {
                 boolean exists = Q.New(TunnelSwitchPortVO.class)

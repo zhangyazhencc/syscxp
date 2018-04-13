@@ -164,6 +164,29 @@ public class TunnelBillingBase {
                 , innerEndpointUuid);
     }
 
+    public List<ProductPriceUnit> getTunnelPriceUnitCommon(String bandwidthOfferingUuid,
+                                                     String portOfferingUuidA,
+                                                     String portOfferingUuidZ,
+                                                     EndpointVO evoA,
+                                                     EndpointVO evoZ,
+                                                     String innerEndpointUuid) {
+        boolean isShareA = false;
+        boolean isShareZ = false;
+        if(portOfferingUuidA.equals("SHARE")){
+            isShareA = true;
+        }
+        if(portOfferingUuidZ.equals("SHARE")){
+            isShareZ = true;
+        }
+
+        return getTunnelPriceUnit(bandwidthOfferingUuid
+                , isShareA
+                , isShareZ
+                , evoA
+                , evoZ
+                , innerEndpointUuid);
+    }
+
     public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid,
                                                      boolean isShareInterfaceUuidA,
                                                      boolean isShareInterfaceUuidZ,
