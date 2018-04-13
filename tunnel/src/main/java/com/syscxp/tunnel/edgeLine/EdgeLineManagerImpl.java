@@ -20,6 +20,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.EdgeLineConstant;
 import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.tunnel.edgeLine.*;
+import com.syscxp.header.tunnel.switchs.SwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.BillingRESTCaller;
@@ -198,7 +199,9 @@ public class EdgeLineManagerImpl extends AbstractService implements EdgeLineMana
             InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
             interfaceVO.setState(InterfaceState.Up);
 
-            if(interfaceVO.getExpireDate() == null){
+            SwitchPortVO switchPortVO = dbf.findByUuid(interfaceVO.getSwitchPortUuid(), SwitchPortVO.class);
+
+            if(interfaceVO.getExpireDate() == null && !switchPortVO.getPortType().equals("SHARE") && !switchPortVO.getPortType().equals("EXTENDPORT")){
                 interfaceVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),interfaceVO.getProductChargeModel(),interfaceVO.getDuration()));
             }
 
