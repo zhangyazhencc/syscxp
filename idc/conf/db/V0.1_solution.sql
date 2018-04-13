@@ -69,3 +69,4 @@ CREATE TABLE SolutionVpnVO (
   PRIMARY KEY  (`uuid`),
   CONSTRAINT `fkSolutionVpnVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
