@@ -16,19 +16,18 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
 
     @APIParam(maxLength = 32, resourceType = SolutionVO.class)
     private String solutionUuid;
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
-    private ProductChargeModel productChargeModel;
-    @APIParam(maxLength = 32)
-    private int duration;
-
+    @APIParam(maxLength = 255)
+    private String name;
     @APIParam(maxLength = 128, resourceType = SolutionTunnelVO.class)
     private String solutionTunnelUuid;
     @APIParam(maxLength = 128)
     private String endpointUuid;
     @APIParam(maxLength = 128)
     private String bandwidthOfferingUuid;
-    @APIParam(maxLength = 255)
-    private String name;
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
+    private ProductChargeModel productChargeModel;
+    @APIParam(maxLength = 32)
+    private int duration;
     @APIParam
     private BigDecimal cost;
     @APIParam

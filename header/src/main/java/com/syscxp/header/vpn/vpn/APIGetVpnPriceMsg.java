@@ -7,28 +7,28 @@ import com.syscxp.header.message.APISyncCallMessage;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
 public class APIGetVpnPriceMsg extends APISyncCallMessage {
+
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String accountUuid;
+    @APIParam(emptyString = false)
+    private String endpointUuid;
     @APIParam
     private String bandwidthOfferingUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
-
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-
-    @APIParam(emptyString = false)
-    private String endpointUuid;
-
-    @APIParam(required = false)
-    private String accountUuid;
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
     }
 
     public String getAccountUuid() {
-        if (getSession().isAdminSession())
+        if(accountUuid == null){
+            return getSession().getAccountUuid();
+        }else{
             return accountUuid;
-        return getSession().getAccountUuid();
+        }
     }
 
     public String getEndpointUuid() {

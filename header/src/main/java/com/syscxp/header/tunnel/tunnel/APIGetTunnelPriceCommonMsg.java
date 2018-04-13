@@ -2,26 +2,17 @@ package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
-import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import org.springframework.http.HttpMethod;
 
 /**
- * Create by DCY on 2017/11/1
+ * Create by DCY on 2018/4/13
  */
-@RestRequest(
-        path = "tunnel",
-        method = HttpMethod.GET,
-        isAction = true,
-        responseClass = APIGetTunnelPriceReply.class
-)
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
-public class APIGetTunnelPriceMsg extends APISyncCallMessage {
+public class APIGetTunnelPriceCommonMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
@@ -30,10 +21,10 @@ public class APIGetTunnelPriceMsg extends APISyncCallMessage {
     private String endpointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String endpointZUuid;
-    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
-    private String interfaceAUuid;
-    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
-    private String interfaceZUuid;
+    @APIParam(emptyString = false)
+    private String portOfferingUuidA;
+    @APIParam(emptyString = false)
+    private String portOfferingUuidZ;
     @APIParam(emptyString = false,required = false,resourceType = EndpointVO.class)
     private String innerEndpointUuid;
     @APIParam
@@ -77,20 +68,20 @@ public class APIGetTunnelPriceMsg extends APISyncCallMessage {
         this.endpointZUuid = endpointZUuid;
     }
 
-    public String getInterfaceAUuid() {
-        return interfaceAUuid;
+    public String getPortOfferingUuidA() {
+        return portOfferingUuidA;
     }
 
-    public void setInterfaceAUuid(String interfaceAUuid) {
-        this.interfaceAUuid = interfaceAUuid;
+    public void setPortOfferingUuidA(String portOfferingUuidA) {
+        this.portOfferingUuidA = portOfferingUuidA;
     }
 
-    public String getInterfaceZUuid() {
-        return interfaceZUuid;
+    public String getPortOfferingUuidZ() {
+        return portOfferingUuidZ;
     }
 
-    public void setInterfaceZUuid(String interfaceZUuid) {
-        this.interfaceZUuid = interfaceZUuid;
+    public void setPortOfferingUuidZ(String portOfferingUuidZ) {
+        this.portOfferingUuidZ = portOfferingUuidZ;
     }
 
     public String getInnerEndpointUuid() {

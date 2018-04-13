@@ -756,6 +756,7 @@ public class ControllerCommands {
         private String username;
         private String password;
         private Long bandwidth;
+        private String network_type;
         private List<L3RoutesConfig> routes;
 
         public String getUuid() {
@@ -876,6 +877,14 @@ public class ControllerCommands {
 
         public void setRoutes(List<L3RoutesConfig> routes) {
             this.routes = routes;
+        }
+
+        public String getNetwork_type() {
+            return network_type;
+        }
+
+        public void setNetwork_type(String network_type) {
+            this.network_type = network_type;
         }
     }
 

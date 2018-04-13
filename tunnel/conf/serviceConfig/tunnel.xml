@@ -112,6 +112,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetTunnelPriceCommonMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIGetModifyTunnelPriceDiffMsg</name>
     </message>
 

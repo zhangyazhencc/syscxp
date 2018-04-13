@@ -63,6 +63,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.billing.header.order.APIUpdateOrderExpenseMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.order.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>
     </message>
