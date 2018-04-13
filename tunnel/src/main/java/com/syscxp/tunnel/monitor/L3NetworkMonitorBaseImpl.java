@@ -115,7 +115,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                 .list();
         for (L3NetworkMonitorVO dstVO : dstVOS) {
             dbf.remove(dstVO);
-            createMonitorJob(MonitorJobType.AGENT_STOP, l3EndpointVO.getUuid(), dstVO.getUuid(), "L3-关闭监控机监控" + dstVO.getUuid());
+            createMonitorJob(MonitorJobType.AGENT_STOP, dstVO.getSrcL3EndpointUuid(), dstVO.getUuid(), "L3-关闭监控机监控" + dstVO.getUuid());
         }
 
     }
@@ -135,7 +135,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                 .eq(L3NetworkMonitorVO_.dstL3EndpointUuid, l3EndpointVO.getUuid())
                 .list();
         for (L3NetworkMonitorVO dstVO : dstVOS)
-            createMonitorJob(MonitorJobType.AGENT_STOP, l3EndpointVO.getUuid(), dstVO.getUuid(), "L3-关闭监控机监控" + dstVO.getUuid());
+            createMonitorJob(MonitorJobType.AGENT_STOP, dstVO.getSrcL3EndpointUuid(), dstVO.getUuid(), "L3-关闭监控机监控" + dstVO.getUuid());
     }
 
     @Override
