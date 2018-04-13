@@ -23,6 +23,7 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,10 +63,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
             dbf.persist(monitorVO);
 
         // 配置监控机路由job
-        createRouteJob(MonitorJobType.AGENT_ADD_ROUTE, l3EndpointVO, "L3-添加监控机路由");
+        createRouteJob(MonitorJobType.AGENT_ADD_ROUTE, l3EndpointVO.getUuid(), "L3-添加监控机路由");
 
         // 开启控制器监控job
-        createRouteJob(MonitorJobType.CONTROLLER_START, l3EndpointVO, "L3-开启控机制监控");
+        createRouteJob(MonitorJobType.CONTROLLER_START, l3EndpointVO.getUuid(), "L3-开启控机制监控");
     }
 
     /***
@@ -76,10 +77,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     public void startMonitor(L3EndpointVO l3EndpointVO) {
 
         // 配置监控机路由job
-        createRouteJob(MonitorJobType.AGENT_ADD_ROUTE, l3EndpointVO, "L3-添加监控机路由");
+        createRouteJob(MonitorJobType.AGENT_ADD_ROUTE, l3EndpointVO.getUuid(), "L3-添加监控机路由");
 
         // 开启控制器监控job
-        createRouteJob(MonitorJobType.CONTROLLER_START, l3EndpointVO, "L3-开启控机制监控");
+        createRouteJob(MonitorJobType.CONTROLLER_START, l3EndpointVO.getUuid(), "L3-开启控机制监控");
 
         // 开启监控机监控
         // 开启监控机监控添加路由时，已开启监控机本端的监控)
@@ -88,17 +89,17 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                 .eq(L3NetworkMonitorVO_.dstL3EndpointUuid, l3EndpointVO.getEndpointUuid())
                 .list();
         for (L3NetworkMonitorVO dstVO : dstVOS)
-            createMonitorJob(MonitorJobType.AGENT_START, l3EndpointVO, dstVO, "L3-开启监控机监控" + dstVO.getUuid());
+            createMonitorJob(MonitorJobType.AGENT_START, l3EndpointVO.getUuid(), dstVO.getUuid(), "L3-开启监控机监控" + dstVO.getUuid());
 
     }
 
     @Override
     public void stopMonitor(L3EndpointVO l3EndpointVO) {
         // 关闭控制器监控
-        createRouteJob(MonitorJobType.CONTROLLER_STOP, l3EndpointVO, "L3-关闭控机制监控");
+        createRouteJob(MonitorJobType.CONTROLLER_STOP, l3EndpointVO.getUuid(), "L3-关闭控机制监控");
 
         // 删除监控机路由
-        createRouteJob(MonitorJobType.AGENT_DELETE_ROUTE, l3EndpointVO, "L3-删除监控机路由");
+        createRouteJob(MonitorJobType.AGENT_DELETE_ROUTE, l3EndpointVO.getUuid(), "L3-删除监控机路由");
 
         // 关闭监控机监控
         // 仅关闭对端监控，删除路由时，已关闭监控机本端的监控)
@@ -114,7 +115,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                 .list();
         for (L3NetworkMonitorVO dstVO : dstVOS) {
             dbf.remove(dstVO);
-            createMonitorJob(MonitorJobType.AGENT_STOP, l3EndpointVO, dstVO, "L3-关闭监控机监控" + dstVO.getUuid());
+            createMonitorJob(MonitorJobType.AGENT_STOP, dstVO.getSrcL3EndpointUuid(), dstVO.getUuid(), "L3-关闭监控机监控" + dstVO.getUuid());
         }
 
     }
@@ -123,10 +124,10 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
     public void stopMonitorByDisableL3Endpoint(L3EndpointVO l3EndpointVO) {
 
         // 删除监控机路由
-        createRouteJob(MonitorJobType.AGENT_DELETE_ROUTE, l3EndpointVO, "L3-删除监控机路由");
+        createRouteJob(MonitorJobType.AGENT_DELETE_ROUTE, l3EndpointVO.getUuid(), "L3-删除监控机路由");
 
         // 关闭控制器监控
-        createRouteJob(MonitorJobType.CONTROLLER_STOP, l3EndpointVO, "L3-关闭控机制监控");
+        createRouteJob(MonitorJobType.CONTROLLER_STOP, l3EndpointVO.getUuid(), "L3-关闭控机制监控");
 
         // 关闭监控机监控
         // 仅关闭对端监控，删除路由时，已关闭监控机本端的监控)
@@ -134,7 +135,7 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
                 .eq(L3NetworkMonitorVO_.dstL3EndpointUuid, l3EndpointVO.getUuid())
                 .list();
         for (L3NetworkMonitorVO dstVO : dstVOS)
-            createMonitorJob(MonitorJobType.AGENT_STOP, l3EndpointVO, dstVO, "L3-关闭监控机监控" + dstVO.getUuid());
+            createMonitorJob(MonitorJobType.AGENT_STOP, dstVO.getSrcL3EndpointUuid(), dstVO.getUuid(), "L3-关闭监控机监控" + dstVO.getUuid());
     }
 
     @Override
@@ -155,15 +156,13 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
     @Override
     public void updateSrcMonitor(L3EndpointVO l3EndpointVO, List<L3NetworkMonitorVO> srcL3NetworkMonitorVOS) {
-        List<L3NetworkMonitorVO> l3NetworkMonitorVOS = Q.New(L3NetworkMonitorVO.class)
+        List<L3NetworkMonitorVO> existedMonitors = Q.New(L3NetworkMonitorVO.class)
                 .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, l3EndpointVO.getUuid())
                 .list();
-        dbf.removeCollection(l3NetworkMonitorVOS, L3NetworkMonitorVO.class);
-
+        dbf.removeCollection(existedMonitors, L3NetworkMonitorVO.class);
         dbf.persistCollection(srcL3NetworkMonitorVOS);
 
-        for (L3NetworkMonitorVO monitorVO : srcL3NetworkMonitorVOS)
-            createMonitorJob(MonitorJobType.AGENT_MODIFY, l3EndpointVO, monitorVO, "L3-修改监控数据");
+        createMonitorJob(MonitorJobType.AGENT_MODIFY, l3EndpointVO.getUuid(), null, "L3-修改监控数据");
     }
 
     @Override
@@ -180,23 +179,25 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
         for (L3NetworkMonitorVO dstMonitor : dstVOS) {
             L3EndpointVO dstEndpoint = dbf.findByUuid(dstMonitor.getSrcL3EndpointUuid(), l3EndpointVO.getClass());
 
-            createMonitorJob(MonitorJobType.AGENT_MODIFY, dstEndpoint, dstMonitor, "L3-修改监控IP");
+            createMonitorJob(MonitorJobType.AGENT_MODIFY, dstEndpoint.getUuid(), dstMonitor.getUuid(), "L3-修改监控IP");
         }
     }
 
-    private void createMonitorJob(MonitorJobType jobType, L3EndpointVO endpointVO, L3NetworkMonitorVO monitorVO, String queueName) {
+    private void createMonitorJob(MonitorJobType jobType, String l3EndpointUuid, String l3NetworkMonitorUuid, String queueName) {
         L3NetworkMonitorJob monitorJob = new L3NetworkMonitorJob();
 
-        monitorJob.setL3EndpointUuid(endpointVO.getUuid());
-        monitorJob.setL3NetworkMonitorUuid(monitorVO.getUuid());
         monitorJob.setJobType(jobType);
+        monitorJob.setL3EndpointUuid(l3EndpointUuid);
+        if(StringUtils.isNotEmpty(l3NetworkMonitorUuid))
+            monitorJob.setL3NetworkMonitorUuid(l3NetworkMonitorUuid);
+
         jobf.execute(queueName, Platform.getManagementServerId(), monitorJob);
     }
 
-    private void createRouteJob(MonitorJobType jobType, L3EndpointVO endpointVO, String queueName) {
+    private void createRouteJob(MonitorJobType jobType, String l3EndpointUuid, String queueName) {
         L3NetworkMonitorJob monitorJob = new L3NetworkMonitorJob();
 
-        monitorJob.setL3EndpointUuid(endpointVO.getUuid());
+        monitorJob.setL3EndpointUuid(l3EndpointUuid);
         monitorJob.setJobType(jobType);
         jobf.execute(queueName, Platform.getManagementServerId(), monitorJob);
     }
@@ -293,9 +294,15 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
 
         L3EndpointVO endpointVO = dbf.findByUuid(l3EndpointUuid, L3EndpointVO.class);
         if (endpointVO != null) {
-            L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
 
-            MonitorAgentCommands.L3AgentCommand cmd = getL3AgentCommand(endpointVO, monitorVO);
+            MonitorAgentCommands.L3AgentCommand cmd;
+            if (StringUtils.isNotEmpty(L3NetworkMonitorUuid)) {
+                L3NetworkMonitorVO monitorVO = dbf.findByUuid(L3NetworkMonitorUuid, L3NetworkMonitorVO.class);
+                cmd = getL3AgentCommand(endpointVO, monitorVO);
+            } else {
+                cmd = getL3AgentCommand(endpointVO, null);
+            }
+
             String hostIp = getHostIp(endpointVO.getPhysicalSwitchUuid());
 
             MonitorAgentBaseImpl.AgentResponse resp = monitorAgent.httpCall(
@@ -339,9 +346,8 @@ public class L3NetworkMonitorBaseImpl implements L3NetworkMonitorBase, Component
             List<L3NetworkMonitorVO> srcMonitorVOS = Q.New(L3NetworkMonitorVO.class)
                     .eq(L3NetworkMonitorVO_.srcL3EndpointUuid, endpointVO.getUuid())
                     .list();
-            for (L3NetworkMonitorVO srcMonitorVO : srcMonitorVOS) {
+            for (L3NetworkMonitorVO srcMonitorVO : srcMonitorVOS)
                 monitorCommands.add(getMonitorCommand(srcMonitorVO));
-            }
         }
         cmd.setMonitors(monitorCommands);
 
