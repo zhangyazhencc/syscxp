@@ -127,6 +127,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIGetUnscribeInterfacePriceDiffMsg) msg);
         } else if (msg instanceof APIGetTunnelPriceMsg) {
             handle((APIGetTunnelPriceMsg) msg);
+        } else if (msg instanceof APIGetTunnelPriceCommonMsg) {
+            handle((APIGetTunnelPriceCommonMsg) msg);
         } else if (msg instanceof APIGetModifyTunnelPriceDiffMsg) {
             handle((APIGetModifyTunnelPriceDiffMsg) msg);
         } else if (msg instanceof APIGetUnscribeTunnelPriceDiffMsg) {
@@ -2535,6 +2537,22 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
         pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerEndpointUuid()));
+        APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        bus.reply(msg, new APIGetTunnelPriceReply(reply));
+    }
+
+    /**
+     * 查询云专线价格（用于方案）
+     * */
+    private void handle(APIGetTunnelPriceCommonMsg msg){
+        EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(),EndpointVO.class);
+        EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(),EndpointVO.class);
+
+        APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
+        pmsg.setProductChargeModel(msg.getProductChargeModel());
+        pmsg.setDuration(msg.getDuration());
+        pmsg.setAccountUuid(msg.getAccountUuid());
+        pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnitCommon(msg.getBandwidthOfferingUuid(), msg.getPortOfferingUuidA(), msg.getPortOfferingUuidZ(), evoA, evoZ, msg.getInnerEndpointUuid()));
         APIGetProductPriceReply reply = new BillingRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetTunnelPriceReply(reply));
     }
