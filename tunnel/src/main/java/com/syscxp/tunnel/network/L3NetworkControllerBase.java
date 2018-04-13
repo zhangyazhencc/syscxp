@@ -14,6 +14,7 @@ import com.syscxp.header.tunnel.network.*;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchModelVO;
 import com.syscxp.header.tunnel.switchs.SwitchPortVO;
+import com.syscxp.header.tunnel.tunnel.InterfaceVO;
 import com.syscxp.header.tunnel.tunnel.TaskResourceVO;
 import com.syscxp.header.tunnel.tunnel.TaskStatus;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
@@ -318,6 +319,7 @@ public class L3NetworkControllerBase {
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(vo.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
         SwitchModelVO switchModelVO = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(), SwitchModelVO.class);
         SwitchPortVO switchPortVO = dbf.findByUuid(vo.getSwitchPortUuid(), SwitchPortVO.class);
+        InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
 
         ControllerCommands.L3MplsConfig l3MplsConfig = new ControllerCommands.L3MplsConfig();
         l3MplsConfig.setUuid(vo.getPhysicalSwitchUuid());
@@ -334,6 +336,7 @@ public class L3NetworkControllerBase {
         l3MplsConfig.setUsername(physicalSwitchVO.getUsername());
         l3MplsConfig.setPassword(physicalSwitchVO.getPassword());
         l3MplsConfig.setBandwidth(vo.getBandwidth()/1024);
+        l3MplsConfig.setNetwork_type(interfaceVO.getType().toString());
         l3MplsConfig.setRoutes(routes);
         mpls_switches.add(l3MplsConfig);
 
@@ -366,6 +369,7 @@ public class L3NetworkControllerBase {
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(l3EndpointVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
         SwitchModelVO switchModelVO = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(), SwitchModelVO.class);
         SwitchPortVO switchPortVO = dbf.findByUuid(l3EndpointVO.getSwitchPortUuid(), SwitchPortVO.class);
+        InterfaceVO interfaceVO = dbf.findByUuid(l3EndpointVO.getInterfaceUuid(), InterfaceVO.class);
 
         ControllerCommands.L3MplsConfig l3MplsConfig = new ControllerCommands.L3MplsConfig();
         l3MplsConfig.setUuid(l3EndpointVO.getPhysicalSwitchUuid());
@@ -382,6 +386,7 @@ public class L3NetworkControllerBase {
         l3MplsConfig.setUsername(physicalSwitchVO.getUsername());
         l3MplsConfig.setPassword(physicalSwitchVO.getPassword());
         l3MplsConfig.setBandwidth(l3EndpointVO.getBandwidth()/1024);
+        l3MplsConfig.setNetwork_type(interfaceVO.getType().toString());
         l3MplsConfig.setRoutes(routes);
         mpls_switches.add(l3MplsConfig);
 

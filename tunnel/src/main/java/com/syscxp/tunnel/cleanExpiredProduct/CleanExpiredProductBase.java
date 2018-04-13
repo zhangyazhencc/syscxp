@@ -179,7 +179,7 @@ public class CleanExpiredProductBase {
 
             for (InterfaceVO vo : ifaces) {
 
-                if(isNeedExpired(vo.getOwnerAccountUuid())){
+                if(isNeedExpired(vo.getOwnerAccountUuid()) && vo.getExpireDate() != null){
                     if (vo.getExpireDate().before(delete)) {
                         if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists()
                                 && !Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid, vo.getUuid()).isExists()

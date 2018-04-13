@@ -68,7 +68,7 @@ public class RenewJob implements Job {
 
                 try {
                     RenewVO renew = dbf.findByUuid(renewVO.getUuid(), RenewVO.class);
-                    if (renew.getExpiredTime().after(Timestamp.valueOf(LocalDateTime.now()))) {
+                    if (renew.getExpiredTime().after(dbf.getCurrentSqlTime())) {
                         continue;
                     }
                     ProductCaller caller = new ProductCaller(renewVO.getProductType());

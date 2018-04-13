@@ -44,10 +44,28 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private boolean isQinqA;
     @APIParam
     private boolean isQinqZ;
+    @APIParam
+    private boolean isCrossA;
+    @APIParam
+    private boolean isCrossZ;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InterfaceVO.class)
+    private String crossInterfaceUuid;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = TunnelVO.class)
+    private String crossTunnelUuid;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegment;
     @APIParam(emptyString = false, required = false, maxLength = 32, resourceType = EndpointVO.class)
     private String innerConnectedEndpointUuid;
+    @APIParam
+    private boolean isSaveOnly;
+
+    public boolean isSaveOnly() {
+        return isSaveOnly;
+    }
+
+    public void setSaveOnly(boolean saveOnly) {
+        isSaveOnly = saveOnly;
+    }
 
     public String getAccountUuid() {
         return accountUuid;
@@ -168,6 +186,38 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
+    }
+
+    public boolean isCrossA() {
+        return isCrossA;
+    }
+
+    public void setCrossA(boolean crossA) {
+        isCrossA = crossA;
+    }
+
+    public boolean isCrossZ() {
+        return isCrossZ;
+    }
+
+    public void setCrossZ(boolean crossZ) {
+        isCrossZ = crossZ;
+    }
+
+    public String getCrossInterfaceUuid() {
+        return crossInterfaceUuid;
+    }
+
+    public void setCrossInterfaceUuid(String crossInterfaceUuid) {
+        this.crossInterfaceUuid = crossInterfaceUuid;
+    }
+
+    public String getCrossTunnelUuid() {
+        return crossTunnelUuid;
+    }
+
+    public void setCrossTunnelUuid(String crossTunnelUuid) {
+        this.crossTunnelUuid = crossTunnelUuid;
     }
 
     public ApiNotification __notification__() {

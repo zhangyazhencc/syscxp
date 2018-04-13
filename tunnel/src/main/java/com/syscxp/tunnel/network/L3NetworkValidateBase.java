@@ -8,9 +8,7 @@ import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.tunnel.network.*;
-import com.syscxp.header.tunnel.tunnel.InterfaceVO;
-import com.syscxp.header.tunnel.tunnel.OutsideResourceVO;
-import com.syscxp.header.tunnel.tunnel.OutsideResourceVO_;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -93,6 +91,8 @@ public class L3NetworkValidateBase {
                 .isExists()){
             throw new ApiMessageInterceptionException(argerr("该云网络已经添加过该连接点!"));
         }
+
+        validateAccessInterface(msg.getInterfaceUuid());
     }
 
     public void validate(APICreateL3EndpointManualMsg msg){
@@ -106,12 +106,26 @@ public class L3NetworkValidateBase {
             throw new ApiMessageInterceptionException(argerr("该云网络已经添加过该连接点!"));
         }
 
+        validateAccessInterface(msg.getInterfaceUuid());
+
         InterfaceVO interfaceVO = dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class);
         String physicalSwitchUuid = tunnelBase.getPhysicalSwitchBySwitchPortUuid(interfaceVO.getSwitchPortUuid()).getUuid();
         List<Integer> allocatedVlans = l3NetworkBase.findAllocateVlanByPhysicalSwitch(physicalSwitchUuid);
 
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(msg.getVlan())) {
             throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", msg.getVlan()));
+        }
+    }
+
+    public void validateAccessInterface(String interfaceUuid){
+        InterfaceVO interfaceVO = dbf.findByUuid(interfaceUuid, InterfaceVO.class);
+        if(interfaceVO.getType() == NetworkType.ACCESS){
+            if(Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, interfaceUuid).isExists()){
+                throw new ApiMessageInterceptionException(argerr("该ACCESS物理接口已经开通2层专线，不可开3层！"));
+            }
+            if(Q.New(L3EndpointVO.class).eq(L3EndpointVO_.interfaceUuid, interfaceUuid).isExists()){
+                throw new ApiMessageInterceptionException(argerr("该ACCESS物理接口已经开通3层网络，不可复用！"));
+            }
         }
     }
 

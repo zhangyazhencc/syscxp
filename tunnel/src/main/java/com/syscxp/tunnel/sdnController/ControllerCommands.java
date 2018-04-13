@@ -103,6 +103,8 @@ public class ControllerCommands {
         private String m_ip;
         private String username;
         private String password;
+        private RemoteProtocol protocol;
+        private Integer port;
 
         public String getUuid() {
             return uuid;
@@ -167,6 +169,22 @@ public class ControllerCommands {
         public void setPassword(String password) {
             this.password = password;
         }
+
+        public RemoteProtocol getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(RemoteProtocol protocol) {
+            this.protocol = protocol;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
     }
 
     public static class TunnelMonitorMpls extends MplsSwitchBase{
@@ -192,15 +210,15 @@ public class ControllerCommands {
     }
 
     public static class L3MonitorMpls extends MplsSwitchBase{
-        private RemoteProtocol protocal;
+        private RemoteProtocol protocol;
         private Integer port;
 
-        public RemoteProtocol getProtocal() {
-            return protocal;
+        public RemoteProtocol getProtocol() {
+            return protocol;
         }
 
-        public void setProtocal(RemoteProtocol protocal) {
-            this.protocal = protocal;
+        public void setProtocol(RemoteProtocol protocol) {
+            this.protocol = protocol;
         }
 
         public Integer getPort() {
@@ -759,6 +777,7 @@ public class ControllerCommands {
         private String username;
         private String password;
         private Long bandwidth;
+        private String network_type;
         private List<L3RoutesConfig> routes;
 
         public String getUuid() {
@@ -879,6 +898,14 @@ public class ControllerCommands {
 
         public void setRoutes(List<L3RoutesConfig> routes) {
             this.routes = routes;
+        }
+
+        public String getNetwork_type() {
+            return network_type;
+        }
+
+        public void setNetwork_type(String network_type) {
+            this.network_type = network_type;
         }
     }
 
