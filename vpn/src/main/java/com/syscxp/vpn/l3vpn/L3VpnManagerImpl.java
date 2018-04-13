@@ -122,7 +122,7 @@ public class L3VpnManagerImpl extends AbstractService implements ApiMessageInter
     private void handleLocalMessage(Message msg) {
         if (msg instanceof CheckL3VpnStatusMsg) {
             handle((CheckL3VpnStatusMsg) msg);
-        } else if (msg instanceof DeleteVpnMsg) {
+        } else if (msg instanceof DeleteL3VpnMsg) {
             handle((DeleteL3VpnMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);

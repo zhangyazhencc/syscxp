@@ -194,4 +194,13 @@ public class VpnCommands {
         public Map<String, String> states;
     }
 
+    /**
+     * 更新L3VPN路由：/vpn/update_l3_route
+     */
+    public static class UpdateL3RouteCmd extends AgentCommand {
+        public String route;
+    }
+
+    public static class UpdateL3RouteRsp extends VpnStatusResponse {
+    }
 }

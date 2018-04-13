@@ -61,6 +61,7 @@ public class VpnBase extends AbstractVpn {
     private String loginInfoPath;
     private String initVpnPath;
     private String pushCertPath;
+    private String l3RoutePath;
 
     private static final String UP = "UP";
     private static final String DOWN = "DOWN";
@@ -85,7 +86,7 @@ public class VpnBase extends AbstractVpn {
         loginInfoPath = VpnConstant.LOGIN_INFO_PATH;
         initVpnPath = VpnConstant.INIT_VPN_PATH;
         pushCertPath = VpnConstant.PUSH_CERT_PATH;
-
+        l3RoutePath = VpnConstant.L3_ROUTE_PATH;
     }
 
     @MessageSafe
@@ -126,7 +127,9 @@ public class VpnBase extends AbstractVpn {
             handle((VpnStatusMsg) msg);
         } else if (msg instanceof PushCertMsg) {
             handle((PushCertMsg) msg);
-        } else {
+        }  else if (msg instanceof UpdateL3RouteMsg) {
+            handle((UpdateL3RouteMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -683,6 +686,32 @@ public class VpnBase extends AbstractVpn {
         });
     }
 
+
+    private void handle(final UpdateL3RouteMsg msg) {
+        UpdateL3RouteReply reply = new UpdateL3RouteReply();
+
+        UpdateL3RouteCmd cmd = new UpdateL3RouteCmd();
+        cmd.vpnuuid = self.getUuid();
+        cmd.route = getRoute();
+
+        httpCall(l3RoutePath, cmd, UpdateL3RouteRsp.class, new ReturnValueCompletion<UpdateL3RouteRsp>(msg) {
+            @Override
+            public void success(UpdateL3RouteRsp ret) {
+                if (ret.isSuccess()) {
+                } else {
+                    reply.setError(errf.instantiateErrorCode(VpnErrors.L3_ROUTE_ERROR, ret.getError()));
+                }
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
     private String getBandwidth() {
         BandwidthOfferingVO bandwidth = dbf.findByUuid(self.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
         return String.valueOf(SizeUnit.BYTE.toKiloByte(bandwidth.getBandwidth()));
@@ -724,5 +753,8 @@ public class VpnBase extends AbstractVpn {
         } else {
             return "";
         }
+    }
+    private String getRoute(){
+        return "";
     }
 }
