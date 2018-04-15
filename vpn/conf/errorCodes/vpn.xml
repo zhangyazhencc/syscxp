@@ -45,5 +45,9 @@
         <id>1008</id>
         <description>销毁VPN服务出错</description>
     </code>
+    <code>
+        <id>1009</id>
+        <description>更新L3VPN路由出错</description>
+    </code>
 </error>
 

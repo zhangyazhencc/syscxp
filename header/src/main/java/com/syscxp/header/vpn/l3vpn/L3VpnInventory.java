@@ -16,8 +16,8 @@ public class L3VpnInventory {
     private Integer port;
     private Integer vlan;
     private String bandwidth;
-    private String endpointUuid;
-    private String tunnelUuid;
+    private String l3EndpointUuid;
+    private String l3NetworkUuid;
     private String status;
     private String vpnCertUuid;
     private String vpnCertName;
@@ -25,7 +25,7 @@ public class L3VpnInventory {
     private Integer duration;
     private Timestamp expireDate;
     private Integer maxModifies;
-    private String certKey;
+    private String secretKey;
     private String clientConf;
     private String payment;
     private String vpnHostName;
@@ -39,17 +39,17 @@ public class L3VpnInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
-        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setL3EndpointUuid(vo.getL3EndpointUuid());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
-        inv.setTunnelUuid(vo.getTunnelUuid());
+        inv.setL3NetworkUuid(vo.getL3NetworkUuid());
         inv.setDuration(vo.getDuration());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        inv.setCertKey(vo.getCertKey());
+        inv.setSecretKey(vo.getSecretKey());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setVpnCertUuid(vo.getVpnCertUuid());
         inv.setClientConf(vo.getClientConf());
@@ -86,12 +86,12 @@ public class L3VpnInventory {
         this.vpnCertName = vpnCertName;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getL3NetworkUuid() {
+        return l3NetworkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setL3NetworkUuid(String l3NetworkUuid) {
+        this.l3NetworkUuid = l3NetworkUuid;
     }
 
     public String getVpnCertUuid() {
@@ -166,12 +166,12 @@ public class L3VpnInventory {
         this.bandwidth = bandwidth;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
     public String getStatus() {
@@ -214,12 +214,12 @@ public class L3VpnInventory {
         this.maxModifies = maxModifies;
     }
 
-    public String getCertKey() {
-        return certKey;
+    public String getSecretKey() {
+        return secretKey;
     }
 
-    public void setCertKey(String certKey) {
-        this.certKey = certKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public String getPayment() {

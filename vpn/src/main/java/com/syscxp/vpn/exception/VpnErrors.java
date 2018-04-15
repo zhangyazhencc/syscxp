@@ -22,8 +22,9 @@ public enum VpnErrors {
     //证书上传错误
     PUSH_CERT_ERROR(1007),
     //销毁VPN错误
-    VPN_DESTROY_ERROR(1008);
-
+    VPN_DESTROY_ERROR(1008),
+    //更新L3VPN路由错误
+    L3_ROUTE_ERROR(1009);
 
     private String code;
 

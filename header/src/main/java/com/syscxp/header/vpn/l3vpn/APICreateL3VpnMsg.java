@@ -9,9 +9,10 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.vpn.VpnCertVO;
+import com.syscxp.header.vpn.vpn.APIVpnMessage;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"})
-public class APICreateL3VpnMsg extends APIL3VpnMessage {
+public class APICreateL3VpnMsg extends APIVpnMessage {
     @APIParam(emptyString = false, minLength = 6, maxLength = 50)
     private String name;
     @APIParam(required = false, maxLength = 255)
@@ -19,9 +20,11 @@ public class APICreateL3VpnMsg extends APIL3VpnMessage {
     @APIParam(resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
     @APIParam(emptyString = false)
-    private String tunnelUuid;
+    private String l3NetworkUuid;
     @APIParam(emptyString = false)
-    private String endpointUuid;
+    private String l3EndpointUuid;
+    @APIParam(emptyString = false)
+    private String workMode;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
     @APIParam(required = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
@@ -31,12 +34,12 @@ public class APICreateL3VpnMsg extends APIL3VpnMessage {
     @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
     private String vpnCertUuid;
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getL3NetworkUuid() {
+        return l3NetworkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setL3NetworkUuid(String l3NetworkUuid) {
+        this.l3NetworkUuid = l3NetworkUuid;
     }
 
     public String getVpnCertUuid() {
@@ -79,12 +82,20 @@ public class APICreateL3VpnMsg extends APIL3VpnMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
 
     public Integer getDuration() {

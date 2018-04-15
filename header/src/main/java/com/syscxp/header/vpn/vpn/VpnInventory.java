@@ -1,7 +1,6 @@
 package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.vpn.host.VpnHostInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ public class VpnInventory {
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        inv.setCertKey(vo.getCertKey());
+        inv.setCertKey(vo.getSecretKey());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setVpnCertUuid(vo.getVpnCertUuid());
         inv.setClientConf(vo.getClientConf());

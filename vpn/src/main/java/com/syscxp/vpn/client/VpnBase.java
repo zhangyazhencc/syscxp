@@ -1,4 +1,4 @@
-package com.syscxp.vpn.vpn;
+package com.syscxp.vpn.client;
 
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
@@ -17,7 +17,8 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.vpn.vpn.VpnConstant;
+import com.syscxp.header.vpn.VpnAO;
+import com.syscxp.header.vpn.l3vpn.L3VpnVO;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.host.HostInterfaceVO;
 import com.syscxp.header.vpn.host.HostInterfaceVO_;
@@ -26,7 +27,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.data.SizeUnit;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.exception.VpnErrors;
-import com.syscxp.vpn.vpn.VpnCommands.*;
+import com.syscxp.vpn.client.VpnCommands.*;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -60,6 +61,7 @@ public class VpnBase extends AbstractVpn {
     private String loginInfoPath;
     private String initVpnPath;
     private String pushCertPath;
+    private String l3RoutePath;
 
     private static final String UP = "UP";
     private static final String DOWN = "DOWN";
@@ -71,7 +73,7 @@ public class VpnBase extends AbstractVpn {
 
     private static final String RATE_LIMITING = "set";
 
-    protected VpnBase(VpnVO self) {
+    public VpnBase(VpnAO self) {
         super(self);
 
         vpnConfPath = VpnConstant.VPN_CONF_PATH;
@@ -84,7 +86,7 @@ public class VpnBase extends AbstractVpn {
         loginInfoPath = VpnConstant.LOGIN_INFO_PATH;
         initVpnPath = VpnConstant.INIT_VPN_PATH;
         pushCertPath = VpnConstant.PUSH_CERT_PATH;
-
+        l3RoutePath = VpnConstant.L3_ROUTE_PATH;
     }
 
     @MessageSafe
@@ -125,7 +127,9 @@ public class VpnBase extends AbstractVpn {
             handle((VpnStatusMsg) msg);
         } else if (msg instanceof PushCertMsg) {
             handle((PushCertMsg) msg);
-        } else {
+        }  else if (msg instanceof UpdateL3RouteMsg) {
+            handle((UpdateL3RouteMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -571,6 +575,7 @@ public class VpnBase extends AbstractVpn {
         cmd.vpnuuid = self.getUuid();
         cmd.vpnport = getPort();
         cmd.hostip = getPublicIp();
+        cmd.level = getLevel();
 
         httpCall(vpnConfPath, cmd, VpnConfRsp.class, new ReturnValueCompletion<VpnConfRsp>(msg) {
             @Override
@@ -648,7 +653,7 @@ public class VpnBase extends AbstractVpn {
         clientInfo(new Completion(msg) {
             @Override
             public void success() {
-                reply.setInventory(VpnInventory.valueOf(dbf.reload(self)));
+//                reply.setInventory(VpnInventory.valueOf(dbf.reload(self)));
                 bus.reply(msg, reply);
             }
 
@@ -681,14 +686,37 @@ public class VpnBase extends AbstractVpn {
         });
     }
 
+
+    private void handle(final UpdateL3RouteMsg msg) {
+        UpdateL3RouteReply reply = new UpdateL3RouteReply();
+
+        UpdateL3RouteCmd cmd = new UpdateL3RouteCmd();
+        cmd.vpnuuid = self.getUuid();
+        cmd.route = getRoute();
+
+        httpCall(l3RoutePath, cmd, UpdateL3RouteRsp.class, new ReturnValueCompletion<UpdateL3RouteRsp>(msg) {
+            @Override
+            public void success(UpdateL3RouteRsp ret) {
+                if (ret.isSuccess()) {
+                } else {
+                    reply.setError(errf.instantiateErrorCode(VpnErrors.L3_ROUTE_ERROR, ret.getError()));
+                }
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
+    }
+
     private String getBandwidth() {
         BandwidthOfferingVO bandwidth = dbf.findByUuid(self.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
         return String.valueOf(SizeUnit.BYTE.toKiloByte(bandwidth.getBandwidth()));
     }
 
-    private String getHostIp() {
-        return self.getVpnHost().getHostIp();
-    }
 
     private String getPublicIp() {
         return self.getVpnHost().getPublicIp();
@@ -696,7 +724,7 @@ public class VpnBase extends AbstractVpn {
 
     private String getInterfaceName() {
         return Q.New(HostInterfaceVO.class)
-                .eq(HostInterfaceVO_.endpointUuid, self.getEndpointUuid())
+                .eq(HostInterfaceVO_.endpointUuid, getEndpointUuid())
                 .eq(HostInterfaceVO_.hostUuid, self.getHostUuid())
                 .select(HostInterfaceVO_.interfaceName).findValue();
     }
@@ -711,5 +739,22 @@ public class VpnBase extends AbstractVpn {
 
     private CertInfo getCertInfo() {
         return CertInfo.valueOf(self.getVpnCert());
+    }
+
+    private String getLevel() {
+        return self instanceof VpnVO ? "2" : "3";
+    }
+
+    private String getEndpointUuid() {
+        if (self instanceof VpnVO) {
+            return ((VpnVO) self).getEndpointUuid();
+        } else if (self instanceof L3VpnVO) {
+            return ((L3VpnVO) self).getL3EndpointUuid();
+        } else {
+            return "";
+        }
+    }
+    private String getRoute(){
+        return "";
     }
 }
