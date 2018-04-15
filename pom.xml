@@ -24,13 +24,7 @@
         <module>header</module>
         <module>portal</module>
         <module>search</module>
-        <module>account</module>
-        <module>billing</module>
-        <module>tunnel</module>
         <module>sms</module>
-        <module>vpn</module>
-        <module>alarm</module>
-        <module>idc</module>
         <module>sdk</module>
         <module>rest</module>
     </modules>
@@ -459,9 +453,6 @@
                 <module>header</module>
                 <module>portal</module>
                 <module>search</module>
-                <module>account</module>
-                <module>billing</module>
-                <module>tunnel</module>
                 <module>build</module>
             </modules>
         </profile>
@@ -617,6 +608,7 @@
     </profiles>
 
     <!--定义snapshots库和releases库的nexus地址-->
+    <!--
     <distributionManagement>
         <repository>
             <id>nexus-releases</id>
@@ -631,4 +623,5 @@
             </url>
         </snapshotRepository>
     </distributionManagement>
+    -->
 </project>
