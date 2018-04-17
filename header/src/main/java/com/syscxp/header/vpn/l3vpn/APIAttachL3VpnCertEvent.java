@@ -3,7 +3,7 @@ package com.syscxp.header.vpn.l3vpn;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.vpn.l3vpn.L3VpnInventory;
 
-public class APIAttachL3VpnCertEvent extends APIEvent{
+public class APIAttachL3VpnCertEvent extends APIEvent {
     L3VpnInventory inventory;
 
     public APIAttachL3VpnCertEvent() {

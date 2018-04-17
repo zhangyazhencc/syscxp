@@ -25,11 +25,11 @@ public class APICreateL3VpnMsg extends APIVpnMessage {
     private String l3EndpointUuid;
     @APIParam(emptyString = false)
     private String workMode;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private Integer duration;
     @APIParam(required = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private Integer vlan;
     @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
     private String vpnCertUuid;
