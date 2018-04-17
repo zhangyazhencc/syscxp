@@ -12,7 +12,7 @@ public class APIGetRenewL3VpnPriceMsg extends APISyncCallMessage {
     private String uuid;
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private int duration;
 
     public String getUuid() {

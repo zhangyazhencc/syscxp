@@ -10,7 +10,7 @@ import com.syscxp.header.vpn.vpn.VpnConstant;
 public class APIGetL3VpnPriceMsg extends APISyncCallMessage {
     @APIParam
     private String bandwidthOfferingUuid;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private int duration;
 
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
