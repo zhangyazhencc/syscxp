@@ -25,8 +25,8 @@
         <module>portal</module>
         <module>search</module>
         <module>sms</module>
-        <module>sdk</module>
         <module>rest</module>
+        <module>sdk</module>
     </modules>
 
     <dependencyManagement>

@@ -20,6 +20,7 @@ public class APIDeleteL3VpnMsg extends APIVpnMessage {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
+
     public ApiNotification __notification__() {
         final APIMessage that = this;
 
