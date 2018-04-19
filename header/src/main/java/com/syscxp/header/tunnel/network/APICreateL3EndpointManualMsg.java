@@ -27,6 +27,8 @@ public class APICreateL3EndpointManualMsg extends APIMessage {
     private String interfaceUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer vlan;
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer rd;
 
     public String getL3NetworkUuid() {
         return l3NetworkUuid;
@@ -66,6 +68,14 @@ public class APICreateL3EndpointManualMsg extends APIMessage {
 
     public void setVlan(Integer vlan) {
         this.vlan = vlan;
+    }
+
+    public Integer getRd() {
+        return rd;
+    }
+
+    public void setRd(Integer rd) {
+        this.rd = rd;
     }
 
     public ApiNotification __notification__() {
