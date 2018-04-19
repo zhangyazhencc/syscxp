@@ -222,7 +222,8 @@ public class OpenTSDBCommands {
     public static class L3CustomCondition {
         private String l3EndpointUuid;
         private L3Tags trafficTags;
-        private Map<String, L3Tags> icmpTags;
+        private Map<String, L3Tags> srcTags;
+        private Map<String, L3Tags> dstTags;
 
         public String getL3EndpointUuid() {
             return l3EndpointUuid;
@@ -240,12 +241,20 @@ public class OpenTSDBCommands {
             this.trafficTags = trafficTags;
         }
 
-        public Map<String, L3Tags> getIcmpTags() {
-            return icmpTags;
+        public Map<String, L3Tags> getSrcTags() {
+            return srcTags;
         }
 
-        public void setIcmpTags(Map<String, L3Tags> icmpTags) {
-            this.icmpTags = icmpTags;
+        public void setSrcTags(Map<String, L3Tags> srcTags) {
+            this.srcTags = srcTags;
+        }
+
+        public Map<String, L3Tags> getDstTags() {
+            return dstTags;
+        }
+
+        public void setDstTags(Map<String, L3Tags> dstTags) {
+            this.dstTags = dstTags;
         }
     }
 
