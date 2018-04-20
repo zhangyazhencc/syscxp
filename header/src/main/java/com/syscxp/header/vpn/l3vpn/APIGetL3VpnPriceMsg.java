@@ -17,7 +17,7 @@ public class APIGetL3VpnPriceMsg extends APISyncCallMessage {
     private ProductChargeModel productChargeModel;
 
     @APIParam(emptyString = false)
-    private String l3EndpointUuid;
+    private String EndpointUuid;
 
     @APIParam(required = false)
     private String accountUuid;
@@ -32,12 +32,12 @@ public class APIGetL3VpnPriceMsg extends APISyncCallMessage {
         return getSession().getAccountUuid();
     }
 
-    public String getL3EndpointUuid() {
-        return l3EndpointUuid;
+    public String getEndpointUuid() {
+        return EndpointUuid;
     }
 
-    public void setL3EndpointUuid(String l3EndpointUuid) {
-        this.l3EndpointUuid = l3EndpointUuid;
+    public void setEndpointUuid(String EndpointUuid) {
+        this.EndpointUuid = EndpointUuid;
     }
 
     public void setDuration(int duration) {
