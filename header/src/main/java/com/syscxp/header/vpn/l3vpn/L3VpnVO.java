@@ -13,6 +13,8 @@ import javax.persistence.Table;
 public class L3VpnVO extends VpnAO {
 
     @Column
+    private String endpointUuid;
+    @Column
     private String l3EndpointUuid;
     @Column
     private String l3NetworkUuid;
@@ -26,24 +28,34 @@ public class L3VpnVO extends VpnAO {
     private String netmask;
     @Column
     private String gateway;
-
+    @Column
+    private String remoteIp;
+    @Column
+    private String monitorIp;
     public L3VpnVO() {
     }
 
     public L3VpnVO(L3VpnVO other) {
         super(other);
-        this.l3EndpointUuid = other.l3EndpointUuid;
+        this.endpointUuid = other.endpointUuid;
         this.l3NetworkUuid = other.l3NetworkUuid;
         this.workMode = other.workMode;
         this.startIp = other.startIp;
         this.stopIp = other.stopIp;
         this.netmask = other.netmask;
         this.gateway = other.gateway;
+        this.remoteIp = other.remoteIp;
+        this.monitorIp = other.monitorIp;
+    }
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public String getL3EndpointUuid() {
-        return l3EndpointUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
+
+    public String getL3EndpointUuid() { return l3EndpointUuid; }
 
     public void setL3EndpointUuid(String l3EndpointUuid) {
         this.l3EndpointUuid = l3EndpointUuid;
@@ -96,4 +108,12 @@ public class L3VpnVO extends VpnAO {
     public void setGateway(String gateway) {
         this.gateway = gateway;
     }
+
+    public String getRemoteIp() { return remoteIp; }
+
+    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
+
+    public String getMonitorIp() { return monitorIp; }
+
+    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp; }
 }

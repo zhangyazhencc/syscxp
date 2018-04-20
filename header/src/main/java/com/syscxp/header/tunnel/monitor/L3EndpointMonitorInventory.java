@@ -16,19 +16,16 @@ public class L3EndpointMonitorInventory {
     private Map<String, String> dstL3Endpoints;
     private Set<String> monitors;
 
-    public static L3EndpointMonitorInventory valueOf(L3EndpointVO l3Endpoint, List<L3EndpointVO> dstL3Endpoints, List<L3NetworkMonitorVO> monitors) {
+    public static L3EndpointMonitorInventory valueOf(L3EndpointVO l3Endpoint, List<L3EndpointVO> dstL3Endpoints, Set<String> monitors) {
         L3EndpointMonitorInventory inventory = new L3EndpointMonitorInventory();
 
         inventory.setL3Endpoint(L3EndpointInventory.valueOf(l3Endpoint));
         Map<String, String> map = new HashMap<>();
         for (L3EndpointVO dstL3Endpoint : dstL3Endpoints)
             map.put(dstL3Endpoint.getUuid(), dstL3Endpoint.getEndpointEO().getName());
-        inventory.setDstL3Endpoints(map);
 
-        Set<String> set = new HashSet<>();
-        for (L3NetworkMonitorVO monitor : monitors)
-            set.add(monitor.getDstL3EndpointUuid());
-        inventory.setMonitors(set);
+        inventory.setDstL3Endpoints(map);
+        inventory.setMonitors(monitors);
 
         return inventory;
     }

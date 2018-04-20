@@ -16,8 +16,15 @@ public class L3VpnInventory {
     private Integer port;
     private Integer vlan;
     private String bandwidth;
-    private String l3EndpointUuid;
+    private String endpointUuid;
     private String l3NetworkUuid;
+    private String workMode;
+    private String startIp;
+    private String stopIp;
+    private String netmask;
+    private String gateway;
+    private String remoteIp;
+    private String monitorIp;
     private String status;
     private String vpnCertUuid;
     private String vpnCertName;
@@ -39,7 +46,14 @@ public class L3VpnInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
-        inv.setL3EndpointUuid(vo.getL3EndpointUuid());
+        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setWorkMode(vo.getWorkMode());
+        inv.setStartIp(vo.getStartIp());
+        inv.setStopIp(vo.getStopIp());
+        inv.setNetmask(vo.getNetmask());
+        inv.setGateway(vo.getGateway());
+        inv.setRemoteIp(vo.getRemoteIp());
+        inv.setMonitorIp(vo.getMonitorIp());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
@@ -165,14 +179,17 @@ public class L3VpnInventory {
     public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
     }
-
-    public String getL3EndpointUuid() {
-        return l3EndpointUuid;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setL3EndpointUuid(String l3EndpointUuid) {
-        this.l3EndpointUuid = l3EndpointUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
+
+    public String getWorkMode() { return workMode; }
+
+    public void setWorkMode(String workMode) { this.workMode = workMode; }
 
     public String getStatus() {
         return status;
@@ -245,4 +262,28 @@ public class L3VpnInventory {
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
     }
+
+    public String getStartIp() { return startIp; }
+
+    public void setStartIp(String startIp) { this.startIp = startIp; }
+
+    public String getStopIp() { return stopIp; }
+
+    public void setStopIp(String stopIp) { this.stopIp = stopIp; }
+
+    public String getNetmask() { return netmask; }
+
+    public void setNetmask(String netmask) { this.netmask = netmask; }
+
+    public String getGateway() { return gateway; }
+
+    public void setGateway(String gateway) { this.gateway = gateway; }
+
+    public String getRemoteIp() { return remoteIp; }
+
+    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
+
+    public String getMonitorIp() { return monitorIp; }
+
+    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp; }
 }
