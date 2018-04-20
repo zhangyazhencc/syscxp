@@ -19,7 +19,7 @@ GET /v1?
 		"name": "zone1",
 		"description": "test",
 		"state": "Enabled",
-		"type": "zstack",
+		"type": "syscxp",
 		"createDate": "Jan 6, 2017 3:51:16 AM",
 		"lastOpDate": "Jan 6, 2017 3:51:16 AM"
 	}
@@ -50,7 +50,7 @@ Body中包含API结果；503返回码表示API执行失败，Body中包含错误
 
 ## 操作
 
-跟所有的RESTful API类似，绝大多数ZStack API执行的是CRUD(Create, Read, Update, Delete)操作，
+跟所有的RESTful API类似，绝大多数Syscxp API执行的是CRUD(Create, Read, Update, Delete)操作，
 以及类RPC操作。
 
 #### 创建资源
@@ -114,7 +114,7 @@ Authorization： OAuth 0c234e29a2ad4ff4b0d97d4f3b47c6cf
 #### 修改资源与类PRC操作
 
 但由于IaaS本身业务的性质，一部分操作更类似于RPC(远程调用)而非CRUD操作，例如启动虚拟机。
-根据RESTFul API的一些最佳实践，ZStack将这些操作都归为资源的`actions`子资源，例如启动虚拟机、
+根据RESTFul API的一些最佳实践，Syscxp将这些操作都归为资源的`actions`子资源，例如启动虚拟机、
 停止虚拟机都是对虚拟机的`actions`子资源进行操作。举个例子：
 
 启动虚拟机：
@@ -236,7 +236,7 @@ body:
 		"name": "Zone1",
 		"description": "Test",
 		"state": "Enabled",
-		"type": "zstack",
+		"type": "syscxp",
 		"createDate": "Jan 1, 2017 9:31:07 AM",
 		"lastOpDate": "Jan 1, 2017 9:31:07 AM"
 	}
@@ -266,7 +266,7 @@ body:
 		"name": "Zone1",
 		"description": "Test",
 		"state": "Enabled",
-		"type": "zstack",
+		"type": "syscxp",
 		"createDate": "Jan 1, 2017 9:31:07 AM",
 		"lastOpDate": "Jan 1, 2017 9:31:07 AM"
 	}
@@ -283,7 +283,7 @@ status code: 200
 
 ## Web Hook
 
-对于异步API使用轮询的方式查询操作结果是一种低效的方式，为此ZStack提供Web Hook的方式主动推送异步API
+对于异步API使用轮询的方式查询操作结果是一种低效的方式，为此Syscxp提供Web Hook的方式主动推送异步API
 结果给调用者。
 
 要使用Web Hook功能，调用者只需在HTTP headers中指定[X-Job-UUID](#X-Job-UUID)和[X-Web-Hook](#X-Web-Hook)
@@ -326,7 +326,7 @@ body:
 		"name": "Zone1",
 		"description": "Test",
 		"state": "Enabled",
-		"type": "zstack",
+		"type": "syscxp",
 		"createDate": "Jan 1, 2017 9:31:07 AM",
 		"lastOpDate": "Jan 1, 2017 9:31:07 AM"
 	}
@@ -468,8 +468,8 @@ start=0 limit=100 replyWithCount=true
 
 #### 获取资源可查询字段
 
-由于ZStack支持的查询条件数非常巨大，我们无法在文档中枚举所有以查询的条件。用户可以使用我们的命令行工具`zstack-cli`的自动补全功能来查看一个资源可查询的字段以及可跨表查询的字段。
-以查询虚拟机为例，在`zstack-cli`里输入`QueryVmInstance`并按Tab键补全，可以看到提示页面：
+由于ZStack支持的查询条件数非常巨大，我们无法在文档中枚举所有以查询的条件。用户可以使用我们的命令行工具`Syscxp-cli`的自动补全功能来查看一个资源可查询的字段以及可跨表查询的字段。
+以查询虚拟机为例，在`Syscxp-cli`里输入`QueryVmInstance`并按Tab键补全，可以看到提示页面：
 
 ```
 - >>>QueryVmInstance 
