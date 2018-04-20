@@ -16,6 +16,7 @@ public interface BillingConstant {
     public static final String ACTION_CATEGORY_PRICE = "price";
     public static final String ACTION_CATEGORY_SLA = "sla";
     public static final String ACTION_CATEGORY_ORDER = "order";
+    public static final String ACTION_CATEGORY_ORDER_PRICE = "orderPrice";  //订单，续费价格
     public static final String ACTION_CATEGORY_RENEW = "renew";
     public static final String ACTION_CATEGORY_RECEIPT = "receipt";
     public static final String ACTION_CATEGORY_REPORT = "report";
