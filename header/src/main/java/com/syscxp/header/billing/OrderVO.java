@@ -86,6 +86,9 @@ public class OrderVO {
     @Column
     private BigDecimal lastPriceOneMonth;
 
+    @Column
+    private BigDecimal currentPriceOneMonth;
+
     public String getUuid() {
         return uuid;
     }
@@ -268,6 +271,14 @@ public class OrderVO {
 
     public void setLastPriceOneMonth(BigDecimal lastPriceOneMonth) {
         this.lastPriceOneMonth = lastPriceOneMonth;
+    }
+
+    public BigDecimal getCurrentPriceOneMonth() {
+        return currentPriceOneMonth;
+    }
+
+    public void setCurrentPriceOneMonth(BigDecimal currentPriceOneMonth) {
+        this.currentPriceOneMonth = currentPriceOneMonth;
     }
 
     @PreUpdate
