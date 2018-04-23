@@ -2,15 +2,17 @@ package com.syscxp.header.vpn.l3vpn;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APIUpdateL3VpnEvent extends APIEvent {
-    L3VpnInventory inventory;
+public class APIResetL3VpnSecretKeyEvent extends APIEvent {
 
-    public APIUpdateL3VpnEvent() {
+
+    public APIResetL3VpnSecretKeyEvent() {
     }
 
-    public APIUpdateL3VpnEvent(String apiId) {
+    public APIResetL3VpnSecretKeyEvent(String apiId) {
         super(apiId);
     }
+
+    private L3VpnInventory inventory;
 
     public L3VpnInventory getInventory() {
         return inventory;

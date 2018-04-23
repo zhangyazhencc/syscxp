@@ -1,6 +1,11 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.tunnel.network.L3EndpointInventory;
+import com.syscxp.header.tunnel.network.L3NetworkInventory;
+import com.syscxp.header.tunnel.network.L3NetworkVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -12,16 +17,21 @@ import java.util.List;
  * @Cretion Date: 2018-03-22.
  * @Description: .
  */
+
 @Inventory(mappingVOClass = L3NetworkMonitorVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "l3NetworkVO",inventoryClass = L3NetworkInventory.class,
+                foreignKey = "l3NetworkUuid",expandedInventoryKey = "uuid"),
+})
 public class L3NetworkMonitorInventory {
 
     private String uuid;
 
     private String l3NetworkUuid;
 
-    private String srcEndpointUuid;
+    private String srcL3EndpointUuid;
 
-    private String dstEndpointUuid;
+    private String dstL3EndpointUuid;
 
     private Timestamp lastOpDate;
 
@@ -31,8 +41,8 @@ public class L3NetworkMonitorInventory {
         L3NetworkMonitorInventory inventory = new L3NetworkMonitorInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
-        inventory.setSrcEndpointUuid(vo.getSrcL3EndpointUuid());
-        inventory.setDstEndpointUuid(vo.getDstL3EndpointUuid());
+        inventory.setSrcL3EndpointUuid(vo.getSrcL3EndpointUuid());
+        inventory.setDstL3EndpointUuid(vo.getDstL3EndpointUuid());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
         return inventory;
@@ -63,20 +73,20 @@ public class L3NetworkMonitorInventory {
         this.l3NetworkUuid = l3NetworkUuid;
     }
 
-    public String getSrcEndpointUuid() {
-        return srcEndpointUuid;
+    public String getSrcL3EndpointUuid() {
+        return srcL3EndpointUuid;
     }
 
-    public void setSrcEndpointUuid(String srcEndpointUuid) {
-        this.srcEndpointUuid = srcEndpointUuid;
+    public void setSrcL3EndpointUuid(String srcL3EndpointUuid) {
+        this.srcL3EndpointUuid = srcL3EndpointUuid;
     }
 
-    public String getDstEndpointUuid() {
-        return dstEndpointUuid;
+    public String getDstL3EndpointUuid() {
+        return dstL3EndpointUuid;
     }
 
-    public void setDstEndpointUuid(String dstEndpointUuid) {
-        this.dstEndpointUuid = dstEndpointUuid;
+    public void setDstL3EndpointUuid(String dstL3EndpointUuid) {
+        this.dstL3EndpointUuid = dstL3EndpointUuid;
     }
 
     public Timestamp getLastOpDate() {

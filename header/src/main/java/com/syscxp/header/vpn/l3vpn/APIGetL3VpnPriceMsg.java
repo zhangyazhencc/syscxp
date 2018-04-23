@@ -10,14 +10,14 @@ import com.syscxp.header.vpn.vpn.VpnConstant;
 public class APIGetL3VpnPriceMsg extends APISyncCallMessage {
     @APIParam
     private String bandwidthOfferingUuid;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private int duration;
 
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     @APIParam(emptyString = false)
-    private String l3EndpointUuid;
+    private String EndpointUuid;
 
     @APIParam(required = false)
     private String accountUuid;
@@ -32,12 +32,12 @@ public class APIGetL3VpnPriceMsg extends APISyncCallMessage {
         return getSession().getAccountUuid();
     }
 
-    public String getL3EndpointUuid() {
-        return l3EndpointUuid;
+    public String getEndpointUuid() {
+        return EndpointUuid;
     }
 
-    public void setL3EndpointUuid(String l3EndpointUuid) {
-        this.l3EndpointUuid = l3EndpointUuid;
+    public void setEndpointUuid(String EndpointUuid) {
+        this.EndpointUuid = EndpointUuid;
     }
 
     public void setDuration(int duration) {

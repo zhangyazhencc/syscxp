@@ -13,13 +13,15 @@ import java.util.Map;
 public class L3ConditionInventory {
     private String l3EndpointUuid;
     private OpenTSDBCommands.L3Tags trafficTags;
-    private Map<String, OpenTSDBCommands.L3Tags> icmpTags;
+    private Map<String, OpenTSDBCommands.L3Tags> srcTags;
+    private Map<String, OpenTSDBCommands.L3Tags> dstTags;
 
     public static L3ConditionInventory valueOf(OpenTSDBCommands.L3CustomCondition vo){
         L3ConditionInventory inventory = new L3ConditionInventory();
         inventory.setL3EndpointUuid(vo.getL3EndpointUuid());
         inventory.setTrafficTags(vo.getTrafficTags());
-        inventory.setIcmpTags(vo.getIcmpTags());
+        inventory.setSrcTags(vo.getSrcTags());
+        inventory.setDstTags(vo.getDstTags());
 
         return  inventory;
     }
@@ -48,11 +50,19 @@ public class L3ConditionInventory {
         this.trafficTags = trafficTags;
     }
 
-    public Map<String, OpenTSDBCommands.L3Tags> getIcmpTags() {
-        return icmpTags;
+    public Map<String, OpenTSDBCommands.L3Tags> getSrcTags() {
+        return srcTags;
     }
 
-    public void setIcmpTags(Map<String, OpenTSDBCommands.L3Tags> icmpTags) {
-        this.icmpTags = icmpTags;
+    public void setSrcTags(Map<String, OpenTSDBCommands.L3Tags> srcTags) {
+        this.srcTags = srcTags;
+    }
+
+    public Map<String, OpenTSDBCommands.L3Tags> getDstTags() {
+        return dstTags;
+    }
+
+    public void setDstTags(Map<String, OpenTSDBCommands.L3Tags> dstTags) {
+        this.dstTags = dstTags;
     }
 }

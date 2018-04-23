@@ -22,6 +22,8 @@ public class APICreateL3EndpointMsg extends APIMessage {
     private String bandwidthOfferingUuid;
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceUuid;
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer rd;
 
     public String getL3NetworkUuid() {
         return l3NetworkUuid;
@@ -53,6 +55,14 @@ public class APICreateL3EndpointMsg extends APIMessage {
 
     public void setInterfaceUuid(String interfaceUuid) {
         this.interfaceUuid = interfaceUuid;
+    }
+
+    public Integer getRd() {
+        return rd;
+    }
+
+    public void setRd(Integer rd) {
+        this.rd = rd;
     }
 
     public ApiNotification __notification__() {

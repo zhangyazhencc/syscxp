@@ -5,11 +5,10 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.vpn.APIVpnMessage;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"})
-public class APIDeleteL3VpnMsg extends APIVpnMessage {
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
+public class APIResetL3VpnSecretKeyMsg extends APIMessage {
     @APIParam(resourceType = L3VpnVO.class, checkAccount = true)
     private String uuid;
 
@@ -27,7 +26,7 @@ public class APIDeleteL3VpnMsg extends APIVpnMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Delete L3VpnVO")
+                ntfy("Reset VpnCertVO SecretKey")
                         .resource(uuid, L3VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }

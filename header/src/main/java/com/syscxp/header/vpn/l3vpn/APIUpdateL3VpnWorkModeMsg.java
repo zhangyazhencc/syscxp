@@ -8,7 +8,7 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
-public class APIUpdateL3VpnWorkModeMsg extends APIMessage{
+public class APIUpdateL3VpnWorkModeMsg extends APIMessage {
     @APIParam(resourceType = L3VpnVO.class, checkAccount = true)
     private String uuid;
     @APIParam(required = false)

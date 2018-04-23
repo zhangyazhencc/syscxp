@@ -24,12 +24,26 @@ public class APICreateL3VpnMsg extends APIVpnMessage {
     @APIParam(emptyString = false)
     private String l3EndpointUuid;
     @APIParam(emptyString = false)
+    private String endpointUuid;
+    @APIParam(emptyString = false)
     private String workMode;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(emptyString = false)
+    private String startIp;
+    @APIParam(emptyString = false)
+    private String stopIp;
+    @APIParam(emptyString = false)
+    private String netmask;
+    @APIParam(emptyString = false)
+    private String gateway;
+    @APIParam(emptyString = false)
+    private String remoteIp;
+    @APIParam(emptyString = false)
+    private String monitorIp;
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private Integer duration;
     @APIParam(required = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private Integer vlan;
     @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
     private String vpnCertUuid;
@@ -90,12 +104,47 @@ public class APICreateL3VpnMsg extends APIVpnMessage {
         this.l3EndpointUuid = l3EndpointUuid;
     }
 
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
+    }
+
     public String getWorkMode() {
         return workMode;
     }
 
     public void setWorkMode(String workMode) {
         this.workMode = workMode;
+    }
+
+    public String getStartIp() { return startIp; }
+
+    public void setStartIp(String startIp) { this.startIp = startIp; }
+
+    public String getStopIp() { return stopIp; }
+
+    public void setStopIp(String stopIp) { this.stopIp = stopIp; }
+
+    public String getNetmask() { return netmask;
+    }
+
+    public void setNetmask(String netmask) {
+        this.netmask = netmask; }
+
+    public String getGateway() { return gateway; }
+
+    public void setGateway(String gateway) { this.gateway = gateway; }
+
+    public String getRemoteIp() { return remoteIp; }
+
+    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
+
+    public String getMonitorIp() { return monitorIp; }
+
+    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp;
     }
 
     public Integer getDuration() {

@@ -25,7 +25,7 @@ public class VpnInventory {
     private Integer duration;
     private Timestamp expireDate;
     private Integer maxModifies;
-    private String certKey;
+    private String secretKey;
     private String clientConf;
     private String payment;
     private String vpnHostName;
@@ -49,7 +49,7 @@ public class VpnInventory {
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        inv.setCertKey(vo.getSecretKey());
+        inv.setSecretKey(vo.getSecretKey());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setVpnCertUuid(vo.getVpnCertUuid());
         inv.setClientConf(vo.getClientConf());
@@ -68,6 +68,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public String getVpnHostName() {
@@ -214,13 +222,6 @@ public class VpnInventory {
         this.maxModifies = maxModifies;
     }
 
-    public String getCertKey() {
-        return certKey;
-    }
-
-    public void setCertKey(String certKey) {
-        this.certKey = certKey;
-    }
 
     public String getPayment() {
         return payment;
