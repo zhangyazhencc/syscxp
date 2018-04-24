@@ -30,7 +30,7 @@ public class APICreateL3VpnMsg extends APIVpnMessage {
     @APIParam(emptyString = false)
     private String startIp;
     @APIParam(emptyString = false)
-    private String stopIp;
+    private String endIp;
     @APIParam(emptyString = false)
     private String netmask;
     @APIParam(emptyString = false)
@@ -55,6 +55,14 @@ public class APICreateL3VpnMsg extends APIVpnMessage {
     public void setL3NetworkUuid(String l3NetworkUuid) {
         this.l3NetworkUuid = l3NetworkUuid;
     }
+
+    public String getL3EndpointUuid() { return l3EndpointUuid; }
+
+    public void setL3EndpointUuid(String l3EndpointUuid) { this.l3EndpointUuid = l3EndpointUuid; }
+
+    public String getEndpointUuid() { return endpointUuid; }
+
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
 
     public String getVpnCertUuid() {
         return vpnCertUuid;
@@ -96,22 +104,6 @@ public class APICreateL3VpnMsg extends APIVpnMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getL3EndpointUuid() {
-        return l3EndpointUuid;
-    }
-
-    public void setL3EndpointUuid(String l3EndpointUuid) {
-        this.l3EndpointUuid = l3EndpointUuid;
-    }
-
-    public String getEndpointUuid() {
-        return endpointUuid;
-    }
-
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
-    }
-
     public String getWorkMode() {
         return workMode;
     }
@@ -120,31 +112,52 @@ public class APICreateL3VpnMsg extends APIVpnMessage {
         this.workMode = workMode;
     }
 
-    public String getStartIp() { return startIp; }
+    public String getStartIp() {
+        return startIp;
+    }
 
-    public void setStartIp(String startIp) { this.startIp = startIp; }
+    public void setStartIp(String startIp) {
+        this.startIp = startIp;
+    }
 
-    public String getStopIp() { return stopIp; }
+    public String getEndIp() {
+        return endIp;
+    }
 
-    public void setStopIp(String stopIp) { this.stopIp = stopIp; }
+    public void setEndIp(String endIp) {
+        this.endIp = endIp;
+    }
 
-    public String getNetmask() { return netmask;
+    public String getNetmask() {
+        return netmask;
     }
 
     public void setNetmask(String netmask) {
-        this.netmask = netmask; }
+        this.netmask = netmask;
+    }
 
-    public String getGateway() { return gateway; }
+    public String getGateway() {
+        return gateway;
+    }
 
-    public void setGateway(String gateway) { this.gateway = gateway; }
+    public void setGateway(String gateway) {
+        this.gateway = gateway;
+    }
 
-    public String getRemoteIp() { return remoteIp; }
+    public String getRemoteIp() {
+        return remoteIp;
+    }
 
-    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
+    }
 
-    public String getMonitorIp() { return monitorIp; }
+    public String getMonitorIp() {
+        return monitorIp;
+    }
 
-    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp;
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
     }
 
     public Integer getDuration() {
