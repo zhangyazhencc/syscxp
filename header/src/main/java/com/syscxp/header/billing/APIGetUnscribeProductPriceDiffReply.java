@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 
 public class APIGetUnscribeProductPriceDiffReply extends APIReply{
 
-    private BigDecimal cash;  //inventory
+    private BigDecimal cash = BigDecimal.ZERO;  //inventory
 
-    private BigDecimal present; //reFoundMoney;
+    private BigDecimal present = BigDecimal.ZERO; //reFoundMoney;
 
     public BigDecimal getCash() {
         return cash;
