@@ -84,10 +84,10 @@ public class OrderVO {
     private String productPriceDiscountDetail;
 
     @Column
-    private BigDecimal lastPriceOneMonth;
+    private BigDecimal lastPriceOneMonth = BigDecimal.ZERO;
 
     @Column
-    private BigDecimal currentPriceOneMonth;
+    private BigDecimal currentPriceOneMonth = BigDecimal.ZERO;
 
     public String getUuid() {
         return uuid;

@@ -6,30 +6,30 @@ import java.math.BigDecimal;
 
 public class APIGetUnscribeProductPriceDiffReply extends APIReply{
 
-    private BigDecimal inventory;
+    private BigDecimal cash;  //inventory
 
-    private BigDecimal reFoundMoney;
+    private BigDecimal present; //reFoundMoney;
 
-    public BigDecimal getInventory() {
-        return inventory;
+    public BigDecimal getCash() {
+        return cash;
     }
 
-    public void setInventory(BigDecimal inventory) {
-        this.inventory = inventory;
+    public void setCash(BigDecimal cash) {
+        this.cash = cash;
     }
 
-    public BigDecimal getReFoundMoney() {
-        return reFoundMoney;
+    public BigDecimal getPresent() {
+        return present;
     }
 
-    public void setReFoundMoney(BigDecimal reFoundMoney) {
-        this.reFoundMoney = reFoundMoney;
+    public void setPresent(BigDecimal present) {
+        this.present = present;
     }
 
     public APIGetUnscribeProductPriceDiffReply(){}
 
     public APIGetUnscribeProductPriceDiffReply(APIGetUnscribeProductPriceDiffReply reply){
-        this.setInventory(reply.getInventory());
-        this.setReFoundMoney(reply.getReFoundMoney());
+        this.setCash(reply.getCash());
+        this.setPresent(reply.getPresent());
     }
 }
