@@ -16,18 +16,14 @@ public class APIListSuppoetedL3EndpointReply extends APIReply {
     }
 
     public static class SupportedEndpointInventory {
-        private String l3EndpointUuid;
+        private String uuid;
         private String name;
         private Integer vlan;
         private String endpointUuid;
 
-        public String getL3EndpointUuid() {
-            return l3EndpointUuid;
-        }
+        public String getUuid() { return uuid; }
 
-        public void setL3EndpointUuid(String l3EndpointUuid) {
-            this.l3EndpointUuid = l3EndpointUuid;
-        }
+        public void setUuid(String uuid) { this.uuid = uuid; }
 
         public String getEndpointUuid() {
             return endpointUuid;
