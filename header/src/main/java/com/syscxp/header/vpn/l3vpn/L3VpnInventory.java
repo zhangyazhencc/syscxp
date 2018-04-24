@@ -16,11 +16,11 @@ public class L3VpnInventory {
     private Integer port;
     private Integer vlan;
     private String bandwidth;
-    private String endpointUuid;
+    private String l3EndpointUuid;
     private String l3NetworkUuid;
     private String workMode;
     private String startIp;
-    private String stopIp;
+    private String endIp;
     private String netmask;
     private String gateway;
     private String remoteIp;
@@ -46,10 +46,10 @@ public class L3VpnInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
-        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setL3EndpointUuid(vo.getL3EndpointUuid());
         inv.setWorkMode(vo.getWorkMode());
         inv.setStartIp(vo.getStartIp());
-        inv.setStopIp(vo.getStopIp());
+        inv.setEndIp(vo.getEndIp());
         inv.setNetmask(vo.getNetmask());
         inv.setGateway(vo.getGateway());
         inv.setRemoteIp(vo.getRemoteIp());
@@ -179,12 +179,12 @@ public class L3VpnInventory {
     public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
     }
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
     public String getWorkMode() { return workMode; }
@@ -267,9 +267,9 @@ public class L3VpnInventory {
 
     public void setStartIp(String startIp) { this.startIp = startIp; }
 
-    public String getStopIp() { return stopIp; }
+    public String getEndIp() { return endIp; }
 
-    public void setStopIp(String stopIp) { this.stopIp = stopIp; }
+    public void setEndIp(String endIp) { this.endIp = endIp; }
 
     public String getNetmask() { return netmask; }
 

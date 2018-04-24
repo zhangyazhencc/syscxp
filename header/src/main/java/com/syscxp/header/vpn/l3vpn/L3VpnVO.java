@@ -13,17 +13,17 @@ import javax.persistence.Table;
 public class L3VpnVO extends VpnAO {
 
     @Column
-    private String endpointUuid;
+    private String l3NetworkUuid;
     @Column
     private String l3EndpointUuid;
     @Column
-    private String l3NetworkUuid;
+    private String endpointUuid;
     @Column
     private String workMode;
     @Column
     private String startIp;
     @Column
-    private String stopIp;
+    private String endIp;
     @Column
     private String netmask;
     @Column
@@ -37,22 +37,23 @@ public class L3VpnVO extends VpnAO {
 
     public L3VpnVO(L3VpnVO other) {
         super(other);
-        this.endpointUuid = other.endpointUuid;
         this.l3NetworkUuid = other.l3NetworkUuid;
+        this.l3EndpointUuid = other.l3EndpointUuid;
+        this.endpointUuid = other.endpointUuid;
         this.workMode = other.workMode;
         this.startIp = other.startIp;
-        this.stopIp = other.stopIp;
+        this.endIp = other.endIp;
         this.netmask = other.netmask;
         this.gateway = other.gateway;
         this.remoteIp = other.remoteIp;
         this.monitorIp = other.monitorIp;
     }
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getL3NetworkUuid() {
+        return l3NetworkUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setL3NetworkUuid(String l3NetworkUuid) {
+        this.l3NetworkUuid = l3NetworkUuid;
     }
 
     public String getL3EndpointUuid() { return l3EndpointUuid; }
@@ -61,13 +62,9 @@ public class L3VpnVO extends VpnAO {
         this.l3EndpointUuid = l3EndpointUuid;
     }
 
-    public String getL3NetworkUuid() {
-        return l3NetworkUuid;
-    }
+    public String getEndpointUuid() { return endpointUuid; }
 
-    public void setL3NetworkUuid(String l3NetworkUuid) {
-        this.l3NetworkUuid = l3NetworkUuid;
-    }
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
 
     public String getWorkMode() {
         return workMode;
@@ -85,12 +82,12 @@ public class L3VpnVO extends VpnAO {
         this.startIp = startIp;
     }
 
-    public String getStopIp() {
-        return stopIp;
+    public String getEndIp() {
+        return endIp;
     }
 
-    public void setStopIp(String stopIp) {
-        this.stopIp = stopIp;
+    public void setEndIp(String endIp) {
+        this.endIp = endIp;
     }
 
     public String getNetmask() {

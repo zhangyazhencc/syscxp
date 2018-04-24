@@ -4,7 +4,7 @@ import com.syscxp.header.message.APIReply;
 
 import java.util.List;
 
-public class APIL3VpnListSuppoetedEndpointReply extends APIReply {
+public class APIListSuppoetedL3EndpointReply extends APIReply {
     private List<SupportedEndpointInventory> inventories;
 
     public List<SupportedEndpointInventory> getInventories() {
@@ -16,16 +16,25 @@ public class APIL3VpnListSuppoetedEndpointReply extends APIReply {
     }
 
     public static class SupportedEndpointInventory {
-        private String uuid;
+        private String l3EndpointUuid;
         private String name;
         private Integer vlan;
+        private String endpointUuid;
 
-        public String getUuid() {
-            return uuid;
+        public String getL3EndpointUuid() {
+            return l3EndpointUuid;
         }
 
-        public void setUuid(String uuid) {
-            this.uuid = uuid;
+        public void setL3EndpointUuid(String l3EndpointUuid) {
+            this.l3EndpointUuid = l3EndpointUuid;
+        }
+
+        public String getEndpointUuid() {
+            return endpointUuid;
+        }
+
+        public void setEndpointUuid(String endpointUuid) {
+            this.endpointUuid = endpointUuid;
         }
 
         public String getName() {

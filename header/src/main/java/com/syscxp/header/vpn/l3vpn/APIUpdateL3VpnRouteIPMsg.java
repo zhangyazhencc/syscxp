@@ -14,7 +14,7 @@ public class APIUpdateL3VpnRouteIPMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String startIp;
     @APIParam(emptyString = false)
-    private String stopIp;
+    private String endIp;
 
     public String getUuid() {
         return uuid;
@@ -30,11 +30,9 @@ public class APIUpdateL3VpnRouteIPMsg extends APIMessage {
         this.startIp = startIp;
     }
 
-    public String getStopIp() { return stopIp; }
+    public String getEndIp() { return endIp; }
 
-    public void setStopIp(String stopIp) {
-        this.stopIp = stopIp;
-    }
+    public void setEndIp(String endIp) { this.endIp = endIp; }
 
     public ApiNotification __notification__() {
         final APIMessage that = this;
