@@ -29,10 +29,10 @@ public class OrderVO {
     private OrderState state;
 
     @Column
-    private BigDecimal payPresent;
+    private BigDecimal payPresent = BigDecimal.ZERO;
 
     @Column
-    private BigDecimal payCash;
+    private BigDecimal payCash= BigDecimal.ZERO;
 
     @Column
     private String accountUuid;
