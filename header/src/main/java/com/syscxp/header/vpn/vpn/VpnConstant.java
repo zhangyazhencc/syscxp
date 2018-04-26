@@ -36,6 +36,7 @@ public interface VpnConstant {
     String PUSH_CERT_PATH = "/vpn/push_cert";
     String CHECK_VPN_STATUS_PATH = "/vpn/vpn_status";
     String L3_ROUTE_PATH = "/vpn/update_l3_route";
+    String L3_IP_PATH = "/vpn/update_l3_network";
 
     String QUOTA_VPN_NUM = "vpn.num";
     String QUOTA_VPN_CERT_NUM = "vpnCert.num";
