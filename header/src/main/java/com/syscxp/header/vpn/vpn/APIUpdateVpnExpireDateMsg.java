@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 @InnerCredentialCheck
 public class APIUpdateVpnExpireDateMsg extends APISyncCallMessage {
 
-    @APIParam(emptyString = false,resourceType = TunnelVO.class)
+    @APIParam(emptyString = false,resourceType = VpnVO.class)
     private String uuid;
 
     @APIParam
