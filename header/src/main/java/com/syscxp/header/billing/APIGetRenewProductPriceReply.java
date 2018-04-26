@@ -16,7 +16,7 @@ public class APIGetRenewProductPriceReply extends APIReply {
     }
 
     public void setOriginalPrice(BigDecimal originalPrice) {
-        this.originalPrice = originalPrice;
+        this.originalPrice = originalPrice.setScale(2, BigDecimal.ROUND_UP);;
     }
 
     public BigDecimal getDiscountPrice() {
@@ -24,7 +24,7 @@ public class APIGetRenewProductPriceReply extends APIReply {
     }
 
     public void setDiscountPrice(BigDecimal discountPrice) {
-        this.discountPrice = discountPrice;
+        this.discountPrice = discountPrice.setScale(2, BigDecimal.ROUND_UP);;
     }
 
     public BigDecimal getMayPayTotal() {
@@ -32,11 +32,11 @@ public class APIGetRenewProductPriceReply extends APIReply {
     }
 
     public void setMayPayTotal(BigDecimal mayPayTotal) {
-        this.mayPayTotal = mayPayTotal;
+        this.mayPayTotal = mayPayTotal.setScale(2, BigDecimal.ROUND_DOWN);;
     }
 
     public boolean isPayable() {
-        return payable;
+        return discountPrice.compareTo(mayPayTotal) <= 0;
     }
 
     public void setPayable(boolean payable) {
@@ -49,7 +49,6 @@ public class APIGetRenewProductPriceReply extends APIReply {
     public APIGetRenewProductPriceReply(APIGetRenewProductPriceReply reply) {
         this.setDiscountPrice(reply.getDiscountPrice());
         this.setMayPayTotal(reply.getMayPayTotal());
-        this.setPayable(reply.isPayable());
         this.setOriginalPrice(reply.getOriginalPrice());
     }
 }
