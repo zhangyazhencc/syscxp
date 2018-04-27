@@ -10,7 +10,7 @@ public class APIGetModifyProductPriceDiffReply extends APIReply {
     private BigDecimal remainMoney ;//产品还剩的金额
     private BigDecimal needPayMoney;//打折后的
     private BigDecimal needPayOriginMoney ;//原价
-    private BigDecimal subMoney ;
+    private BigDecimal subMoney;
 
     public BigDecimal getRemainMoney() {
         return remainMoney;
@@ -41,7 +41,7 @@ public class APIGetModifyProductPriceDiffReply extends APIReply {
     }
 
     public void setSubMoney(BigDecimal subMoney) {
-        this.subMoney = subMoney;
+        this.subMoney = subMoney.setScale(2, BigDecimal.ROUND_UP);
     }
 
     public APIGetModifyProductPriceDiffReply() {

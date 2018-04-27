@@ -7,35 +7,17 @@ import java.util.List;
 
 public class APIGetProductPriceReply extends APIReply {
 
-//    private List<ProductPriceUnitInventory> productPriceInventories;
-//    private AccountBalanceInventory accountBalanceInventory;
     private BigDecimal originalPrice;
     private BigDecimal discountPrice;
     private BigDecimal mayPayTotal; //账户可用资金总额＝现金＋赠送＋信用额度
     private boolean payable;
-
-//    public List<ProductPriceUnitInventory> getProductPriceInventories() {
-//        return productPriceInventories;
-//    }
-//
-//    public void setProductPriceInventories(List<ProductPriceUnitInventory> productPriceInventories) {
-//        this.productPriceInventories = productPriceInventories;
-//    }
-
-//    public AccountBalanceInventory getAccountBalanceInventory() {
-//        return accountBalanceInventory;
-//    }
-//
-//    public void setAccountBalanceInventory(AccountBalanceInventory accountBalanceInventory) {
-//        this.accountBalanceInventory = accountBalanceInventory;
-//    }
 
     public BigDecimal getOriginalPrice() {
         return originalPrice;
     }
 
     public void setOriginalPrice(BigDecimal originalPrice) {
-        this.originalPrice = originalPrice;
+        this.originalPrice = originalPrice.setScale(2, BigDecimal.ROUND_UP);
     }
 
     public BigDecimal getDiscountPrice() {
@@ -43,7 +25,7 @@ public class APIGetProductPriceReply extends APIReply {
     }
 
     public void setDiscountPrice(BigDecimal discountPrice) {
-        this.discountPrice = discountPrice;
+        this.discountPrice = discountPrice.setScale(2, BigDecimal.ROUND_UP);
     }
 
     public BigDecimal getMayPayTotal() {
@@ -51,10 +33,11 @@ public class APIGetProductPriceReply extends APIReply {
     }
 
     public void setMayPayTotal(BigDecimal mayPayTotal) {
-        this.mayPayTotal = mayPayTotal;
+        this.mayPayTotal = mayPayTotal.setScale(2, BigDecimal.ROUND_DOWN);
     }
 
     public boolean isPayable() {
+        this.payable =discountPrice.compareTo(mayPayTotal) <= 0;
         return payable;
     }
 
@@ -65,7 +48,6 @@ public class APIGetProductPriceReply extends APIReply {
     public APIGetProductPriceReply() {
     }
     public APIGetProductPriceReply(APIGetProductPriceReply reply) {
-//        this.setProductPriceInventories(reply.getProductPriceInventories());
         this.setDiscountPrice(reply.getDiscountPrice());
         this.setMayPayTotal(reply.getMayPayTotal());
         this.setPayable(reply.isPayable());
