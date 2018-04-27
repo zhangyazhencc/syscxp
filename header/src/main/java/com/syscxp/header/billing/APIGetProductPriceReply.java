@@ -37,7 +37,8 @@ public class APIGetProductPriceReply extends APIReply {
     }
 
     public boolean isPayable() {
-        return payable = discountPrice.compareTo(mayPayTotal) <= 0;
+        this.payable =discountPrice.compareTo(mayPayTotal) <= 0;
+        return payable;
     }
 
     public void setPayable(boolean payable) {
