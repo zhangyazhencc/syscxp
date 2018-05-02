@@ -32,6 +32,12 @@ public class VpnAO {
     @Column
     private String description;
     @Column
+    private String endpointUuid;
+    @Column
+    private String resourceUuid;
+    @Column
+    private String resourceType;
+    @Column
     private String bandwidthOfferingUuid;
     @Column
     private Integer port;
@@ -75,6 +81,9 @@ public class VpnAO {
         this.vpnCertUuid = other.vpnCertUuid;
         this.name = other.name;
         this.description = other.description;
+        this.endpointUuid = other.endpointUuid;
+        this.resourceUuid = other.resourceUuid;
+        this.resourceType = other.resourceType;
         this.bandwidthOfferingUuid = other.bandwidthOfferingUuid;
         this.port = other.port;
         this.vlan = other.vlan;
@@ -152,8 +161,8 @@ public class VpnAO {
         return secretKey;
     }
 
-    public void setSecretKey(String secertKey) {
-        this.secretKey = secertKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public Payment getPayment() {
@@ -270,5 +279,21 @@ public class VpnAO {
 
     public void setVlan(Integer vlan) {
         this.vlan = vlan;
+    }
+
+    public String getEndpointUuid() { return endpointUuid; }
+
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
+
+    public String getResourceUuid() { return resourceUuid; }
+
+    public void setResourceUuid(String resourceUuid) { this.resourceUuid = resourceUuid; }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
     }
 }

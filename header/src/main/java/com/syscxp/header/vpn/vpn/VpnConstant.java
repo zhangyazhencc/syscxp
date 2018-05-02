@@ -3,7 +3,6 @@ package com.syscxp.header.vpn.vpn;
 public interface VpnConstant {
 
     String SERVICE_ID = "vpn";
-    String L3_SERVICE_ID = "l3vpn";
     String HOST_TYPE = "VPN";
     String URL_GENERATE_KEY = "asdjhsajfhasowjl234jhfv";
     String ACTION_CATEGORY_VPN = "vpn";
@@ -36,7 +35,7 @@ public interface VpnConstant {
     String PUSH_CERT_PATH = "/vpn/push_cert";
     String CHECK_VPN_STATUS_PATH = "/vpn/vpn_status";
     String L3_ROUTE_PATH = "/vpn/update_l3_route";
-    String L3_IP_PATH = "/vpn/update_l3_network";
+    String L3_IP_PATH = "/vpn/update_l3_route";
 
     String QUOTA_VPN_NUM = "vpn.num";
     String QUOTA_VPN_CERT_NUM = "vpnCert.num";

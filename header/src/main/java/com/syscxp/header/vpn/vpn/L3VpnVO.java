@@ -1,17 +1,16 @@
-package com.syscxp.header.vpn.l3vpn;
+package com.syscxp.header.vpn.vpn;
 
-import com.syscxp.header.search.TriggerIndex;
 import com.syscxp.header.vpn.VpnAO;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 @Entity
 @Table
-@TriggerIndex
-
-public class L3VpnVO extends VpnAO {
+@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")
+public class L3VpnVO extends VpnVO {
 
     @Column
     private String l3EndpointUuid;

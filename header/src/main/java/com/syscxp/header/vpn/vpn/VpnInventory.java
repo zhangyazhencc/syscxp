@@ -17,7 +17,8 @@ public class VpnInventory {
     private Integer vlan;
     private String bandwidth;
     private String endpointUuid;
-    private String tunnelUuid;
+    private String resourceUuid;
+    private String resourceType;
     private String status;
     private String vpnCertUuid;
     private String vpnCertName;
@@ -40,11 +41,11 @@ public class VpnInventory {
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setResourceUuid(vo.getResourceUuid());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
-        inv.setTunnelUuid(vo.getTunnelUuid());
         inv.setDuration(vo.getDuration());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -92,14 +93,6 @@ public class VpnInventory {
 
     public void setVpnCertName(String vpnCertName) {
         this.vpnCertName = vpnCertName;
-    }
-
-    public String getTunnelUuid() {
-        return tunnelUuid;
-    }
-
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
     }
 
     public String getVpnCertUuid() {
@@ -150,6 +143,22 @@ public class VpnInventory {
         this.description = description;
     }
 
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
+    }
+
+    public String getResourceUuid() { return resourceUuid; }
+
+    public void setResourceUuid(String resourceUuid) { this.resourceUuid = resourceUuid; }
+
+    public String getResourceType() { return resourceType; }
+
+    public void setResourceType(String resourceType) { this.resourceType = resourceType; }
+
     public Integer getPort() {
         return port;
     }
@@ -172,14 +181,6 @@ public class VpnInventory {
 
     public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
-    }
-
-    public String getEndpointUuid() {
-        return endpointUuid;
-    }
-
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
     }
 
     public String getStatus() {
@@ -221,7 +222,6 @@ public class VpnInventory {
     public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
     }
-
 
     public String getPayment() {
         return payment;

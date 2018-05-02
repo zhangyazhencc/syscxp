@@ -1,4 +1,4 @@
-package com.syscxp.header.vpn.l3vpn;
+package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.search.Inventory;
 
@@ -16,8 +16,10 @@ public class L3VpnInventory {
     private Integer port;
     private Integer vlan;
     private String bandwidth;
+    private String endpointUuid;
+    private String resourceUuid;
+    private String resourceType;
     private String l3EndpointUuid;
-    private String l3NetworkUuid;
     private String workMode;
     private String startIp;
     private String endIp;
@@ -46,6 +48,9 @@ public class L3VpnInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
+        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setResourceUuid(vo.getResourceUuid());
+        inv.setResourceType(vo.getResourceType());
         inv.setL3EndpointUuid(vo.getL3EndpointUuid());
         inv.setWorkMode(vo.getWorkMode());
         inv.setStartIp(vo.getStartIp());
@@ -58,7 +63,6 @@ public class L3VpnInventory {
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
-
         inv.setDuration(vo.getDuration());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -100,13 +104,17 @@ public class L3VpnInventory {
         this.vpnCertName = vpnCertName;
     }
 
-    public String getL3NetworkUuid() {
-        return l3NetworkUuid;
-    }
+    public String getEndpointUuid() { return endpointUuid; }
 
-    public void setL3NetworkUuid(String l3NetworkUuid) {
-        this.l3NetworkUuid = l3NetworkUuid;
-    }
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
+
+    public String getResourceUuid() { return resourceUuid; }
+
+    public void setResourceUuid(String resourceUuid) { this.resourceUuid = resourceUuid; }
+
+    public String getResourceType() { return resourceType; }
+
+    public void setResourceType(String resourceType) { this.resourceType = resourceType; }
 
     public String getVpnCertUuid() {
         return vpnCertUuid;
