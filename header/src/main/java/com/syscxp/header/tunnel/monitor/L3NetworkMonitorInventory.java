@@ -20,49 +20,41 @@ import java.util.List;
 
 @Inventory(mappingVOClass = L3NetworkMonitorVO.class)
 @ExpandedQueries({
-        @ExpandedQuery(expandedField = "l3NetworkVO",inventoryClass = L3NetworkInventory.class,
-                foreignKey = "l3NetworkUuid",expandedInventoryKey = "uuid"),
+        @ExpandedQuery(expandedField = "l3NetworkVO", inventoryClass = L3NetworkInventory.class,
+                foreignKey = "l3NetworkUuid", expandedInventoryKey = "uuid"),
 })
 public class L3NetworkMonitorInventory {
 
-    private String uuid;
 
     private String l3NetworkUuid;
-
+    private String name;
+    private String ownerAccountUuid;
     private String srcL3EndpointUuid;
-
+    private String srcL3EndpointName;
     private String dstL3EndpointUuid;
+    private String dstL3EndpointName;
+    private String monitorDetailUuid;
 
-    private Timestamp lastOpDate;
 
-    private Timestamp createDate;
-
-    public static L3NetworkMonitorInventory valueOf(L3NetworkMonitorVO vo){
+    public static L3NetworkMonitorInventory valueOf(AlarmCommands.L3NetworkMonitors vo) {
         L3NetworkMonitorInventory inventory = new L3NetworkMonitorInventory();
-        inventory.setUuid(vo.getUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
+        inventory.setName(vo.getName());
         inventory.setSrcL3EndpointUuid(vo.getSrcL3EndpointUuid());
+        inventory.setSrcL3EndpointUuid(vo.getSrcL3EndpointName());
         inventory.setDstL3EndpointUuid(vo.getDstL3EndpointUuid());
-        inventory.setLastOpDate(vo.getLastOpDate());
-        inventory.setCreateDate(vo.getCreateDate());
+        inventory.setDstL3EndpointUuid(vo.getDstL3EndpointName());
+        inventory.setMonitorDetailUuid(vo.getMonitorDetailUuid());
         return inventory;
     }
 
-    public static List<L3NetworkMonitorInventory> valueOf(Collection<L3NetworkMonitorVO> vos){
+    public static List<L3NetworkMonitorInventory> valueOf(Collection<AlarmCommands.L3NetworkMonitors> vos) {
         List<L3NetworkMonitorInventory> lst = new ArrayList<L3NetworkMonitorInventory>(vos.size());
-        for(L3NetworkMonitorVO vo:vos){
+        for (AlarmCommands.L3NetworkMonitors vo : vos) {
             lst.add(L3NetworkMonitorInventory.valueOf(vo));
         }
 
         return lst;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public String getL3NetworkUuid() {
@@ -73,12 +65,36 @@ public class L3NetworkMonitorInventory {
         this.l3NetworkUuid = l3NetworkUuid;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
+    }
+
     public String getSrcL3EndpointUuid() {
         return srcL3EndpointUuid;
     }
 
     public void setSrcL3EndpointUuid(String srcL3EndpointUuid) {
         this.srcL3EndpointUuid = srcL3EndpointUuid;
+    }
+
+    public String getSrcL3EndpointName() {
+        return srcL3EndpointName;
+    }
+
+    public void setSrcL3EndpointName(String srcL3EndpointName) {
+        this.srcL3EndpointName = srcL3EndpointName;
     }
 
     public String getDstL3EndpointUuid() {
@@ -89,20 +105,20 @@ public class L3NetworkMonitorInventory {
         this.dstL3EndpointUuid = dstL3EndpointUuid;
     }
 
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
+    public String getDstL3EndpointName() {
+        return dstL3EndpointName;
     }
 
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
+    public void setDstL3EndpointName(String dstL3EndpointName) {
+        this.dstL3EndpointName = dstL3EndpointName;
     }
 
-    public Timestamp getCreateDate() {
-        return createDate;
+    public String getMonitorDetailUuid() {
+        return monitorDetailUuid;
     }
 
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
+    public void setMonitorDetailUuid(String monitorDetailUuid) {
+        this.monitorDetailUuid = monitorDetailUuid;
     }
 }
 
