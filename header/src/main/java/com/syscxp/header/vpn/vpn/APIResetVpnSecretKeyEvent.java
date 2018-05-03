@@ -2,13 +2,13 @@ package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APIResetVpnCertKeyEvent extends APIEvent {
+public class APIResetVpnSecretKeyEvent extends APIEvent {
 
 
-    public APIResetVpnCertKeyEvent() {
+    public APIResetVpnSecretKeyEvent() {
     }
 
-    public APIResetVpnCertKeyEvent(String apiId) {
+    public APIResetVpnSecretKeyEvent(String apiId) {
         super(apiId);
     }
 
