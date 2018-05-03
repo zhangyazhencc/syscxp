@@ -11,20 +11,22 @@ import java.util.List;
  */
 public class L3NetworkMonitorDetailInventory {
     private String l3NetworkUuid;
-    private String name;
+    private String l3NetworkName;
     private String ownerAccountUuid;
     private String interfaceNameA;
     private String interfaceNameZ;
     private String endpointAIp;
     private String endpointZIp;
-    private String endpointAVid;
-    private String endpointZVid;
+    private Integer endpointAVid;
+    private Integer endpointZVid;
+    private long endpointABandwidth;
+    private long endpointZBandwidth;
     private String monitorDetailUuid;
 
     public static L3NetworkMonitorDetailInventory valueOf(AlarmCommands.L3NetworkMonitorCommand vo) {
         L3NetworkMonitorDetailInventory inventory = new L3NetworkMonitorDetailInventory();
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
-        inventory.setName(vo.getName());
+        inventory.setL3NetworkName(vo.getL3NetworkName());
         inventory.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inventory.setInterfaceNameA(vo.getInterfaceNameA());
         inventory.setInterfaceNameZ(vo.getInterfaceNameZ());
@@ -32,6 +34,8 @@ public class L3NetworkMonitorDetailInventory {
         inventory.setEndpointZIp(vo.getEndpointZIp());
         inventory.setEndpointAVid(vo.getEndpointAVid());
         inventory.setEndpointZVid(vo.getEndpointZVid());
+        inventory.setEndpointABandwidth(vo.getEndpointABandwidth());
+        inventory.setEndpointZBandwidth(vo.getEndpointZBandwidth());
 
         return inventory;
     }
@@ -52,12 +56,36 @@ public class L3NetworkMonitorDetailInventory {
         this.l3NetworkUuid = l3NetworkUuid;
     }
 
-    public String getName() {
-        return name;
+    public String getL3NetworkName() {
+        return l3NetworkName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setL3NetworkName(String l3NetworkName) {
+        this.l3NetworkName = l3NetworkName;
+    }
+
+    public void setEndpointAVid(Integer endpointAVid) {
+        this.endpointAVid = endpointAVid;
+    }
+
+    public void setEndpointZVid(Integer endpointZVid) {
+        this.endpointZVid = endpointZVid;
+    }
+
+    public long getEndpointABandwidth() {
+        return endpointABandwidth;
+    }
+
+    public void setEndpointABandwidth(long endpointABandwidth) {
+        this.endpointABandwidth = endpointABandwidth;
+    }
+
+    public long getEndpointZBandwidth() {
+        return endpointZBandwidth;
+    }
+
+    public void setEndpointZBandwidth(long endpointZBandwidth) {
+        this.endpointZBandwidth = endpointZBandwidth;
     }
 
     public String getOwnerAccountUuid() {
@@ -100,20 +128,12 @@ public class L3NetworkMonitorDetailInventory {
         this.endpointZIp = endpointZIp;
     }
 
-    public String getEndpointAVid() {
+    public Integer getEndpointAVid() {
         return endpointAVid;
     }
 
-    public void setEndpointAVid(String endpointAVid) {
-        this.endpointAVid = endpointAVid;
-    }
-
-    public String getEndpointZVid() {
+    public Integer getEndpointZVid() {
         return endpointZVid;
-    }
-
-    public void setEndpointZVid(String endpointZVid) {
-        this.endpointZVid = endpointZVid;
     }
 
     public String getMonitorDetailUuid() {
