@@ -15,13 +15,13 @@ import java.util.List;
 public class APIQueryL3NetworkMonitorDetailMsg extends APISyncCallMessage {
 
     @APIParam
-    private List<String> l3NetworkMonitorUuids;
+    private List<String> monitorDetailUuids;
 
-    public List<String> getL3NetworkMonitorUuids() {
-        return l3NetworkMonitorUuids;
+    public List<String> getMonitorDetailUuids() {
+        return monitorDetailUuids;
     }
 
-    public void setL3NetworkMonitorUuids(List<String> l3NetworkMonitorUuids) {
-        this.l3NetworkMonitorUuids = l3NetworkMonitorUuids;
+    public void setMonitorDetailUuids(List<String> monitorDetailUuids) {
+        this.monitorDetailUuids = monitorDetailUuids;
     }
 }

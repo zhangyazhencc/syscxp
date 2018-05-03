@@ -1,6 +1,9 @@
 package com.syscxp.header.tunnel.monitor;
 
 
+import com.syscxp.header.tunnel.network.L3EndpointVO;
+import com.syscxp.header.tunnel.network.L3NetworkVO;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -29,6 +32,18 @@ public class L3NetworkMonitorVO {
 
     @Column
     private Timestamp createDate;
+
+    @OneToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="l3NetworkUuid", insertable=false, updatable=false)
+    private L3NetworkVO l3NetworkVO;
+
+    @OneToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="srcL3EndpointUuid", insertable=false, updatable=false)
+    private L3EndpointVO srcEndpointVO;
+
+    @OneToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="dstL3EndpointUuid", insertable=false, updatable=false)
+    private L3EndpointVO dstEndpointVO;
 
     @PreUpdate
     private void preUpdate() {
@@ -81,5 +96,29 @@ public class L3NetworkMonitorVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public L3NetworkVO getL3NetworkVO() {
+        return l3NetworkVO;
+    }
+
+    public void setL3NetworkVO(L3NetworkVO l3NetworkVO) {
+        this.l3NetworkVO = l3NetworkVO;
+    }
+
+    public L3EndpointVO getSrcEndpointVO() {
+        return srcEndpointVO;
+    }
+
+    public void setSrcEndpointVO(L3EndpointVO srcEndpointVO) {
+        this.srcEndpointVO = srcEndpointVO;
+    }
+
+    public L3EndpointVO getDstEndpointVO() {
+        return dstEndpointVO;
+    }
+
+    public void setDstEndpointVO(L3EndpointVO dstEndpointVO) {
+        this.dstEndpointVO = dstEndpointVO;
     }
 }

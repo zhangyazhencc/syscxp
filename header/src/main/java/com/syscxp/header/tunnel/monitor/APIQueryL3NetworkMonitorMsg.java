@@ -1,7 +1,6 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.identity.Action;
-import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.query.APIQueryMessage;
@@ -16,27 +15,8 @@ import com.syscxp.header.tunnel.network.L3EndpointVO;
  * @Description: 3层网络监控查询.
  */
 
-@InnerCredentialCheck
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"read"})
+@AutoQuery(replyClass = APIQueryL3NetworkMonitorReply.class,inventoryClass = L3NetworkMonitorInventory.class)
 public class APIQueryL3NetworkMonitorMsg extends APIQueryMessage {
-    @APIParam
-    private String name;
 
-    @APIParam
-    private String ownerAccountUuid;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getOwnerAccountUuid() {
-        return ownerAccountUuid;
-    }
-
-    public void setOwnerAccountUuid(String ownerAccountUuid) {
-        this.ownerAccountUuid = ownerAccountUuid;
-    }
 }
