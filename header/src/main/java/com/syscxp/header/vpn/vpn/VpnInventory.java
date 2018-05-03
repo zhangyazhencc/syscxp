@@ -42,6 +42,7 @@ public class VpnInventory {
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setResourceUuid(vo.getResourceUuid());
+        inv.setResourceType(vo.getResourceType());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
