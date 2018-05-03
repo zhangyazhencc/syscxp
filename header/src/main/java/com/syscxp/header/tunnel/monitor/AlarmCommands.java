@@ -23,7 +23,7 @@ public class AlarmCommands {
         private Integer endpointZVid;
         private long endpointABandwidth;
         private long endpointZBandwidth;
-        private String monitorDetailUuid;
+        private String monitorUuid;
 
         public String getL3NetworkUuid() {
             return l3NetworkUuid;
@@ -97,12 +97,12 @@ public class AlarmCommands {
             this.endpointZVid = endpointZVid;
         }
 
-        public String getMonitorDetailUuid() {
-            return monitorDetailUuid;
+        public String getMonitorUuid() {
+            return monitorUuid;
         }
 
-        public void setMonitorDetailUuid(String monitorDetailUuid) {
-            this.monitorDetailUuid = monitorDetailUuid;
+        public void setMonitorUuid(String monitorUuid) {
+            this.monitorUuid = monitorUuid;
         }
 
         public long getEndpointABandwidth() {

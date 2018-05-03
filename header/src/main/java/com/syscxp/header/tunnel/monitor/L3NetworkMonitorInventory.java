@@ -3,12 +3,8 @@ package com.syscxp.header.tunnel.monitor;
 import com.syscxp.header.query.ExpandedQueries;
 import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.tunnel.network.L3EndpointInventory;
-import com.syscxp.header.tunnel.network.L3EndpointVO;
 import com.syscxp.header.tunnel.network.L3NetworkInventory;
-import com.syscxp.header.tunnel.network.L3NetworkVO;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,11 +27,11 @@ public class L3NetworkMonitorInventory {
     private String ownerAccountUuid;
     private String srcEndpointName;
     private String dstEndpointName;
-    private String monitorDetailUuid;
+    private String monitorUuid;
 
     public static L3NetworkMonitorInventory valueOf(L3NetworkMonitorVO vo) {
         L3NetworkMonitorInventory inventory = new L3NetworkMonitorInventory();
-        inventory.setMonitorDetailUuid(vo.getUuid());
+        inventory.setMonitorUuid(vo.getUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
         inventory.setL3NetworkName(vo.getL3NetworkVO().getName());
         inventory.setOwnerAccountUuid(vo.getL3NetworkVO().getOwnerAccountUuid());
@@ -53,12 +49,12 @@ public class L3NetworkMonitorInventory {
         return lst;
     }
 
-    public String getMonitorDetailUuid() {
-        return monitorDetailUuid;
+    public String getMonitorUuid() {
+        return monitorUuid;
     }
 
-    public void setMonitorDetailUuid(String monitorDetailUuid) {
-        this.monitorDetailUuid = monitorDetailUuid;
+    public void setMonitorUuid(String monitorUuid) {
+        this.monitorUuid = monitorUuid;
     }
 
     public String getL3NetworkUuid() {
