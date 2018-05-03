@@ -14,6 +14,8 @@ public class AlarmCommands {
     public static class L3NetworkMonitorCommand {
         private String l3NetworkUuid;
         private String l3NetworkName;
+        private String srcL3EndpointUuid;
+        private String dstL3EndpointUuid;
         private String ownerAccountUuid;
         private String interfaceNameA;
         private String interfaceNameZ;
@@ -119,6 +121,22 @@ public class AlarmCommands {
 
         public void setEndpointZBandwidth(long endpointZBandwidth) {
             this.endpointZBandwidth = endpointZBandwidth;
+        }
+
+        public String getSrcL3EndpointUuid() {
+            return srcL3EndpointUuid;
+        }
+
+        public void setSrcL3EndpointUuid(String srcL3EndpointUuid) {
+            this.srcL3EndpointUuid = srcL3EndpointUuid;
+        }
+
+        public String getDstL3EndpointUuid() {
+            return dstL3EndpointUuid;
+        }
+
+        public void setDstL3EndpointUuid(String dstL3EndpointUuid) {
+            this.dstL3EndpointUuid = dstL3EndpointUuid;
         }
     }
 }
