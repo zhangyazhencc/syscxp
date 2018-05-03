@@ -11,7 +11,7 @@ public class AlarmCommands {
      * @Cretion Date: 2018-05-02.
      * @Description: 三层网络监控.
      */
-    public static class L3NetworkMonitorDetail {
+    public static class L3NetworkMonitorCommand {
         private String l3NetworkUuid;
         private String l3NetworkName;
         private String ownerAccountUuid;

@@ -21,7 +21,7 @@ public class L3NetworkMonitorDetailInventory {
     private String endpointZVid;
     private String monitorDetailUuid;
 
-    public static L3NetworkMonitorDetailInventory valueOf(AlarmCommands.L3NetworkMonitorDetail vo) {
+    public static L3NetworkMonitorDetailInventory valueOf(AlarmCommands.L3NetworkMonitorCommand vo) {
         L3NetworkMonitorDetailInventory inventory = new L3NetworkMonitorDetailInventory();
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
         inventory.setName(vo.getName());
@@ -36,9 +36,9 @@ public class L3NetworkMonitorDetailInventory {
         return inventory;
     }
 
-    public static List<L3NetworkMonitorDetailInventory> valueOf(Collection<AlarmCommands.L3NetworkMonitorDetail> vos) {
+    public static List<L3NetworkMonitorDetailInventory> valueOf(Collection<AlarmCommands.L3NetworkMonitorCommand> vos) {
         List<L3NetworkMonitorDetailInventory> lst = new ArrayList<L3NetworkMonitorDetailInventory>(vos.size());
-        for (AlarmCommands.L3NetworkMonitorDetail vo : vos) {
+        for (AlarmCommands.L3NetworkMonitorCommand vo : vos) {
             lst.add(L3NetworkMonitorDetailInventory.valueOf(vo));
         }
         return lst;
