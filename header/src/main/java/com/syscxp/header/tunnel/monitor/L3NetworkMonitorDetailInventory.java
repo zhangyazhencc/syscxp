@@ -10,6 +10,7 @@ import java.util.List;
  * @Description: 网络工具返回集合.
  */
 public class L3NetworkMonitorDetailInventory {
+    private String monitorUuid;
     private String l3NetworkUuid;
     private String l3NetworkName;
     private String ownerAccountUuid;
@@ -21,10 +22,11 @@ public class L3NetworkMonitorDetailInventory {
     private Integer endpointZVid;
     private long endpointABandwidth;
     private long endpointZBandwidth;
-    private String monitorDetailUuid;
 
     public static L3NetworkMonitorDetailInventory valueOf(AlarmCommands.L3NetworkMonitorCommand vo) {
         L3NetworkMonitorDetailInventory inventory = new L3NetworkMonitorDetailInventory();
+
+        inventory.setMonitorUuid(vo.getMonitorUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
         inventory.setL3NetworkName(vo.getL3NetworkName());
         inventory.setOwnerAccountUuid(vo.getOwnerAccountUuid());
@@ -136,11 +138,11 @@ public class L3NetworkMonitorDetailInventory {
         return endpointZVid;
     }
 
-    public String getMonitorDetailUuid() {
-        return monitorDetailUuid;
+    public String getMonitorUuid() {
+        return monitorUuid;
     }
 
-    public void setMonitorDetailUuid(String monitorDetailUuid) {
-        this.monitorDetailUuid = monitorDetailUuid;
+    public void setMonitorUuid(String monitorUuid) {
+        this.monitorUuid = monitorUuid;
     }
 }
