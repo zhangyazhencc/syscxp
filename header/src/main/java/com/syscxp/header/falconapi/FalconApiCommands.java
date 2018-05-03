@@ -10,14 +10,122 @@ import java.util.List;
  * @Description: Falcon API 通信对象集合.
  */
 public class FalconApiCommands {
-    private String tunnel_id;
 
-    public String getTunnel_id() {
-        return tunnel_id;
-    }
 
-    public void setTunnel_id(String tunnel_id) {
-        this.tunnel_id = tunnel_id;
+    /**
+     * @Author: zhangqiuyu.
+     * @Cretion Date: 2018-05-03.
+     * @Description: tL3Network信息.
+     */
+    public static class L3Network extends FalconApiCommands{
+        private String monitor_id;
+        private String l3Network_id;
+        private String user_id;
+        private String srcL3Endpoint_id;
+        private String dstL3Endpoint_id;
+        private String endpointA_ip;
+        private String endpointB_ip;
+        private Integer endpointA_vid;
+        private Integer endpointB_vid;
+        private Long bandwidthA;
+        private Long bandwidthB;
+        private List<Rule> rules;
+
+        public String getMonitor_id() {
+            return monitor_id;
+        }
+
+        public void setMonitor_id(String monitor_id) {
+            this.monitor_id = monitor_id;
+        }
+
+        public String getL3Network_id() {
+            return l3Network_id;
+        }
+
+        public void setL3Network_id(String l3Network_id) {
+            this.l3Network_id = l3Network_id;
+        }
+
+        public String getUser_id() {
+            return user_id;
+        }
+
+        public void setUser_id(String user_id) {
+            this.user_id = user_id;
+        }
+
+        public String getSrcL3Endpoint_id() {
+            return srcL3Endpoint_id;
+        }
+
+        public void setSrcL3Endpoint_id(String srcL3Endpoint_id) {
+            this.srcL3Endpoint_id = srcL3Endpoint_id;
+        }
+
+        public String getDstL3Endpoint_id() {
+            return dstL3Endpoint_id;
+        }
+
+        public void setDstL3Endpoint_id(String dstL3Endpoint_id) {
+            this.dstL3Endpoint_id = dstL3Endpoint_id;
+        }
+
+        public String getEndpointA_ip() {
+            return endpointA_ip;
+        }
+
+        public void setEndpointA_ip(String endpointA_ip) {
+            this.endpointA_ip = endpointA_ip;
+        }
+
+        public String getEndpointB_ip() {
+            return endpointB_ip;
+        }
+
+        public void setEndpointB_ip(String endpointB_ip) {
+            this.endpointB_ip = endpointB_ip;
+        }
+
+        public Integer getEndpointA_vid() {
+            return endpointA_vid;
+        }
+
+        public void setEndpointA_vid(Integer endpointA_vid) {
+            this.endpointA_vid = endpointA_vid;
+        }
+
+        public Integer getEndpointB_vid() {
+            return endpointB_vid;
+        }
+
+        public void setEndpointB_vid(Integer endpointB_vid) {
+            this.endpointB_vid = endpointB_vid;
+        }
+
+        public Long getBandwidthA() {
+            return bandwidthA;
+        }
+
+        public void setBandwidthA(Long bandwidthA) {
+            this.bandwidthA = bandwidthA;
+        }
+
+        public Long getBandwidthB() {
+            return bandwidthB;
+        }
+
+        public void setBandwidthB(Long bandwidthB) {
+            this.bandwidthB = bandwidthB;
+        }
+
+        public List<Rule> getRules() {
+            return rules;
+        }
+
+        public void setRules(List<Rule> rules) {
+            this.rules = rules;
+        }
     }
 
     /**
@@ -26,6 +134,7 @@ public class FalconApiCommands {
      * @Description: tunnel信息.
      */
     public static class Tunnel extends FalconApiCommands{
+        private String tunnel_id;
         private String user_id;
         private String endpointA_ip;
         private String endpointB_ip;
@@ -33,6 +142,13 @@ public class FalconApiCommands {
         private Integer endpointB_vid;
         private Long bandwidth;
         private List<Rule> rules;
+        public String getTunnel_id() {
+            return tunnel_id;
+        }
+
+        public void setTunnel_id(String tunnel_id) {
+            this.tunnel_id = tunnel_id;
+        }
 
         public String getUser_id() {
             return user_id;
