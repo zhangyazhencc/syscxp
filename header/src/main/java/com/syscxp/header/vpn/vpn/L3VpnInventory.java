@@ -104,17 +104,29 @@ public class L3VpnInventory {
         this.vpnCertName = vpnCertName;
     }
 
-    public String getEndpointUuid() { return endpointUuid; }
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
 
-    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
+    }
 
-    public String getResourceUuid() { return resourceUuid; }
+    public String getResourceUuid() {
+        return resourceUuid;
+    }
 
-    public void setResourceUuid(String resourceUuid) { this.resourceUuid = resourceUuid; }
+    public void setResourceUuid(String resourceUuid) {
+        this.resourceUuid = resourceUuid;
+    }
 
-    public String getResourceType() { return resourceType; }
+    public String getResourceType() {
+        return resourceType;
+    }
 
-    public void setResourceType(String resourceType) { this.resourceType = resourceType; }
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
 
     public String getVpnCertUuid() {
         return vpnCertUuid;
@@ -187,6 +199,7 @@ public class L3VpnInventory {
     public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
     }
+
     public String getL3EndpointUuid() {
         return l3EndpointUuid;
     }
@@ -195,9 +208,13 @@ public class L3VpnInventory {
         this.l3EndpointUuid = l3EndpointUuid;
     }
 
-    public String getWorkMode() { return workMode; }
+    public String getWorkMode() {
+        return workMode;
+    }
 
-    public void setWorkMode(String workMode) { this.workMode = workMode; }
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
+    }
 
     public String getStatus() {
         return status;
@@ -271,27 +288,51 @@ public class L3VpnInventory {
         this.createDate = createDate;
     }
 
-    public String getStartIp() { return startIp; }
+    public String getStartIp() {
+        return startIp;
+    }
 
-    public void setStartIp(String startIp) { this.startIp = startIp; }
+    public void setStartIp(String startIp) {
+        this.startIp = startIp;
+    }
 
-    public String getEndIp() { return endIp; }
+    public String getEndIp() {
+        return endIp;
+    }
 
-    public void setEndIp(String endIp) { this.endIp = endIp; }
+    public void setEndIp(String endIp) {
+        this.endIp = endIp;
+    }
 
-    public String getNetmask() { return netmask; }
+    public String getNetmask() {
+        return netmask;
+    }
 
-    public void setNetmask(String netmask) { this.netmask = netmask; }
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
+    }
 
-    public String getGateway() { return gateway; }
+    public String getGateway() {
+        return gateway;
+    }
 
-    public void setGateway(String gateway) { this.gateway = gateway; }
+    public void setGateway(String gateway) {
+        this.gateway = gateway;
+    }
 
-    public String getRemoteIp() { return remoteIp; }
+    public String getRemoteIp() {
+        return remoteIp;
+    }
 
-    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
+    }
 
-    public String getMonitorIp() { return monitorIp; }
+    public String getMonitorIp() {
+        return monitorIp;
+    }
 
-    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp; }
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
+    }
 }
