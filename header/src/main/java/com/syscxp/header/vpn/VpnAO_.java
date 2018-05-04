@@ -19,13 +19,16 @@ public class VpnAO_ {
     public static volatile SingularAttribute<VpnAO, Integer> vlan;
     public static volatile SingularAttribute<VpnAO, String> description;
     public static volatile SingularAttribute<VpnAO, String> secretId;
+    public static volatile SingularAttribute<VpnAO, String> endpointUuid;
+    public static volatile SingularAttribute<VpnAO, String> resourceUuid;
+    public static volatile SingularAttribute<VpnAO, String> resourceType;
     public static volatile SingularAttribute<VpnAO, String> bandwidthOfferingUuid;
     public static volatile SingularAttribute<VpnAO, VpnStatus> status;
     public static volatile SingularAttribute<VpnAO, VpnState> state;
     public static volatile SingularAttribute<VpnAO, Integer> duration;
     public static volatile SingularAttribute<VpnAO, Timestamp> expireDate;
     public static volatile SingularAttribute<VpnAO, Integer> maxModifies;
-    public static volatile SingularAttribute<VpnAO, String> certKey;
+    public static volatile SingularAttribute<VpnAO, String> secretKey;
     public static volatile SingularAttribute<VpnAO, String> clientConf;
     public static volatile SingularAttribute<VpnAO, Payment> payment;
     public static volatile SingularAttribute<VpnAO, Timestamp> lastOpDate;

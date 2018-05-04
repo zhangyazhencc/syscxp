@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = VpnVO.class)
-public class VpnInventory {
+@Inventory(mappingVOClass = L3VpnVO.class)
+public class L3VpnInventory {
     private String uuid;
     private String accountUuid;
     private String name;
@@ -19,6 +19,14 @@ public class VpnInventory {
     private String endpointUuid;
     private String resourceUuid;
     private String resourceType;
+    private String l3EndpointUuid;
+    private String workMode;
+    private String startIp;
+    private String endIp;
+    private String netmask;
+    private String gateway;
+    private String remoteIp;
+    private String monitorIp;
     private String status;
     private String vpnCertUuid;
     private String vpnCertName;
@@ -33,8 +41,8 @@ public class VpnInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static VpnInventory valueOf(VpnVO vo) {
-        VpnInventory inv = new VpnInventory();
+    public static L3VpnInventory valueOf(L3VpnVO vo) {
+        L3VpnInventory inv = new L3VpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
@@ -43,6 +51,14 @@ public class VpnInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setResourceUuid(vo.getResourceUuid());
         inv.setResourceType(vo.getResourceType());
+        inv.setL3EndpointUuid(vo.getL3EndpointUuid());
+        inv.setWorkMode(vo.getWorkMode());
+        inv.setStartIp(vo.getStartIp());
+        inv.setEndIp(vo.getEndIp());
+        inv.setNetmask(vo.getNetmask());
+        inv.setGateway(vo.getGateway());
+        inv.setRemoteIp(vo.getRemoteIp());
+        inv.setMonitorIp(vo.getMonitorIp());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
@@ -63,21 +79,13 @@ public class VpnInventory {
         return inv;
     }
 
-    public static List<VpnInventory> valueOf(Collection<VpnVO> vos) {
-        List<VpnInventory> invs = new ArrayList<>();
-        for (VpnVO vo : vos) {
-            invs.add(VpnInventory.valueOf(vo));
+    public static List<L3VpnInventory> valueOf(Collection<L3VpnVO> vos) {
+        List<L3VpnInventory> invs = new ArrayList<>();
+        for (L3VpnVO vo : vos) {
+            invs.add(L3VpnInventory.valueOf(vo));
         }
 
         return invs;
-    }
-
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
     }
 
     public String getVpnHostName() {
@@ -95,6 +103,18 @@ public class VpnInventory {
     public void setVpnCertName(String vpnCertName) {
         this.vpnCertName = vpnCertName;
     }
+
+    public String getEndpointUuid() { return endpointUuid; }
+
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
+
+    public String getResourceUuid() { return resourceUuid; }
+
+    public void setResourceUuid(String resourceUuid) { this.resourceUuid = resourceUuid; }
+
+    public String getResourceType() { return resourceType; }
+
+    public void setResourceType(String resourceType) { this.resourceType = resourceType; }
 
     public String getVpnCertUuid() {
         return vpnCertUuid;
@@ -144,22 +164,6 @@ public class VpnInventory {
         this.description = description;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
-    }
-
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
-    }
-
-    public String getResourceUuid() { return resourceUuid; }
-
-    public void setResourceUuid(String resourceUuid) { this.resourceUuid = resourceUuid; }
-
-    public String getResourceType() { return resourceType; }
-
-    public void setResourceType(String resourceType) { this.resourceType = resourceType; }
-
     public Integer getPort() {
         return port;
     }
@@ -183,6 +187,17 @@ public class VpnInventory {
     public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
     }
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
+    }
+
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
+    }
+
+    public String getWorkMode() { return workMode; }
+
+    public void setWorkMode(String workMode) { this.workMode = workMode; }
 
     public String getStatus() {
         return status;
@@ -224,6 +239,14 @@ public class VpnInventory {
         this.maxModifies = maxModifies;
     }
 
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
     public String getPayment() {
         return payment;
     }
@@ -247,4 +270,28 @@ public class VpnInventory {
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
     }
+
+    public String getStartIp() { return startIp; }
+
+    public void setStartIp(String startIp) { this.startIp = startIp; }
+
+    public String getEndIp() { return endIp; }
+
+    public void setEndIp(String endIp) { this.endIp = endIp; }
+
+    public String getNetmask() { return netmask; }
+
+    public void setNetmask(String netmask) { this.netmask = netmask; }
+
+    public String getGateway() { return gateway; }
+
+    public void setGateway(String gateway) { this.gateway = gateway; }
+
+    public String getRemoteIp() { return remoteIp; }
+
+    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
+
+    public String getMonitorIp() { return monitorIp; }
+
+    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp; }
 }

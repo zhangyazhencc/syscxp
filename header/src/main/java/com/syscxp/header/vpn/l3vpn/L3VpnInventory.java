@@ -58,7 +58,7 @@ public class L3VpnInventory {
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
-        inv.setL3NetworkUuid(vo.getL3NetworkUuid());
+
         inv.setDuration(vo.getDuration());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());

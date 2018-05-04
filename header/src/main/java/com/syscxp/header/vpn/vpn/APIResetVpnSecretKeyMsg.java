@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
-public class APIResetVpnCertKeyMsg extends APIMessage {
+public class APIResetVpnSecretKeyMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
 
@@ -25,7 +25,7 @@ public class APIResetVpnCertKeyMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Reset VpnCertVO certKey")
+                ntfy("Reset VpnCertVO SecretKey")
                         .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
