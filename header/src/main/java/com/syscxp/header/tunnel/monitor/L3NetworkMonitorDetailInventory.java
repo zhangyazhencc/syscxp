@@ -10,8 +10,11 @@ import java.util.List;
  * @Description: 网络工具返回集合.
  */
 public class L3NetworkMonitorDetailInventory {
+    private String monitorUuid;
     private String l3NetworkUuid;
     private String l3NetworkName;
+    private String srcL3EndpointUuid;
+    private String dstL3EndpointUuid;
     private String ownerAccountUuid;
     private String interfaceNameA;
     private String interfaceNameZ;
@@ -21,12 +24,15 @@ public class L3NetworkMonitorDetailInventory {
     private Integer endpointZVid;
     private long endpointABandwidth;
     private long endpointZBandwidth;
-    private String monitorDetailUuid;
 
     public static L3NetworkMonitorDetailInventory valueOf(AlarmCommands.L3NetworkMonitorCommand vo) {
         L3NetworkMonitorDetailInventory inventory = new L3NetworkMonitorDetailInventory();
+
+        inventory.setMonitorUuid(vo.getMonitorUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
         inventory.setL3NetworkName(vo.getL3NetworkName());
+        inventory.setSrcL3EndpointUuid(vo.getSrcL3EndpointUuid());
+        inventory.setDstL3EndpointUuid(vo.getDstL3EndpointUuid());
         inventory.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inventory.setInterfaceNameA(vo.getInterfaceNameA());
         inventory.setInterfaceNameZ(vo.getInterfaceNameZ());
@@ -136,11 +142,27 @@ public class L3NetworkMonitorDetailInventory {
         return endpointZVid;
     }
 
-    public String getMonitorDetailUuid() {
-        return monitorDetailUuid;
+    public String getMonitorUuid() {
+        return monitorUuid;
     }
 
-    public void setMonitorDetailUuid(String monitorDetailUuid) {
-        this.monitorDetailUuid = monitorDetailUuid;
+    public void setMonitorUuid(String monitorUuid) {
+        this.monitorUuid = monitorUuid;
+    }
+
+    public String getSrcL3EndpointUuid() {
+        return srcL3EndpointUuid;
+    }
+
+    public void setSrcL3EndpointUuid(String srcL3EndpointUuid) {
+        this.srcL3EndpointUuid = srcL3EndpointUuid;
+    }
+
+    public String getDstL3EndpointUuid() {
+        return dstL3EndpointUuid;
+    }
+
+    public void setDstL3EndpointUuid(String dstL3EndpointUuid) {
+        this.dstL3EndpointUuid = dstL3EndpointUuid;
     }
 }
