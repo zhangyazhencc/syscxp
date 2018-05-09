@@ -1,5 +1,7 @@
 package com.syscxp.header.falconapi;
 
+import com.syscxp.header.billing.ProductType;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,6 +13,25 @@ import java.util.List;
  */
 public class FalconApiCommands {
 
+    private String resource_id;
+
+    private ProductType resource_type;
+
+    public String getResource_id() {
+        return resource_id;
+    }
+
+    public void setResource_id(String resource_id) {
+        this.resource_id = resource_id;
+    }
+
+    public ProductType getResource_type() {
+        return resource_type;
+    }
+
+    public void setResource_type(ProductType resource_type) {
+        this.resource_type = resource_type;
+    }
 
     /**
      * @Author: zhangqiuyu.
@@ -19,7 +40,7 @@ public class FalconApiCommands {
      */
     public static class L3Network extends FalconApiCommands{
         private String monitor_id;
-        private String l3Network_id;
+//        private String l3Network_id;
         private String user_id;
         private String srcL3Endpoint_id;
         private String dstL3Endpoint_id;
@@ -37,14 +58,6 @@ public class FalconApiCommands {
 
         public void setMonitor_id(String monitor_id) {
             this.monitor_id = monitor_id;
-        }
-
-        public String getL3Network_id() {
-            return l3Network_id;
-        }
-
-        public void setL3Network_id(String l3Network_id) {
-            this.l3Network_id = l3Network_id;
         }
 
         public String getUser_id() {
@@ -134,7 +147,7 @@ public class FalconApiCommands {
      * @Description: tunnel信息.
      */
     public static class Tunnel extends FalconApiCommands{
-        private String tunnel_id;
+//        private String tunnel_id;
         private String user_id;
         private String endpointA_ip;
         private String endpointB_ip;
@@ -142,13 +155,6 @@ public class FalconApiCommands {
         private Integer endpointB_vid;
         private Long bandwidth;
         private List<Rule> rules;
-        public String getTunnel_id() {
-            return tunnel_id;
-        }
-
-        public void setTunnel_id(String tunnel_id) {
-            this.tunnel_id = tunnel_id;
-        }
 
         public String getUser_id() {
             return user_id;
@@ -304,7 +310,8 @@ public class FalconApiCommands {
     }
 
     public static class FalconTunnelInventory {
-        private String tunnel_id;
+        private String resource_id;
+        private ProductType resource_type;
         private String user_id;
         private String endpointA_ip;
         private String endpointB_ip;
@@ -314,13 +321,14 @@ public class FalconApiCommands {
 
         public static FalconTunnelInventory valueOf(Tunnel vo){
             FalconTunnelInventory inv = new FalconTunnelInventory();
-            inv.setTunnel_id(vo.getTunnel_id());
+            inv.setResource_id(vo.getResource_id());
             inv.setUser_id(vo.getUser_id());
             inv.setEndpointA_ip(vo.getEndpointA_ip());
             inv.setEndpointA_vlan(vo.getEndpointA_vid());
             inv.setEndpointB_ip(vo.getEndpointB_ip());
             inv.setEndpointB_vlan(vo.getEndpointB_vid());
             inv.setBandwidth(vo.getBandwidth());
+            inv.setResource_type(vo.getResource_type());
             return inv;
         }
 
@@ -332,12 +340,20 @@ public class FalconApiCommands {
             return lst;
         }
 
-        public String getTunnel_id() {
-            return tunnel_id;
+        public String getResource_id() {
+            return resource_id;
         }
 
-        public void setTunnel_id(String tunnel_id) {
-            this.tunnel_id = tunnel_id;
+        public void setResource_id(String resource_id) {
+            this.resource_id = resource_id;
+        }
+
+        public ProductType getResource_type() {
+            return resource_type;
+        }
+
+        public void setResource_type(ProductType resource_type) {
+            this.resource_type = resource_type;
         }
 
         public String getUser_id() {
@@ -386,6 +402,143 @@ public class FalconApiCommands {
 
         public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
+        }
+    }
+
+    public static class FalconL3NetworkInventory {
+        private String monitor_id;
+        private String user_id;
+        private String srcL3Endpoint_id;
+        private String dstL3Endpoint_id;
+        private String endpointA_ip;
+        private String endpointB_ip;
+        private Integer endpointA_vid;
+        private Integer endpointB_vid;
+        private Long bandwidthA;
+        private Long bandwidthB;
+        private String resource_id;
+        private ProductType resource_type;
+
+        public static FalconL3NetworkInventory valueOf(L3Network vo){
+            FalconL3NetworkInventory inv = new FalconL3NetworkInventory();
+            inv.setMonitor_id(vo.getMonitor_id());
+            inv.setUser_id(vo.getUser_id());
+            inv.setSrcL3Endpoint_id(vo.getSrcL3Endpoint_id());
+            inv.setDstL3Endpoint_id(vo.getDstL3Endpoint_id());
+            inv.setEndpointA_ip(vo.getEndpointA_ip());
+            inv.setEndpointB_ip(vo.getEndpointB_ip());
+            inv.setEndpointA_vid(vo.getEndpointA_vid());
+            inv.setEndpointB_vid(vo.getEndpointB_vid());
+            inv.setBandwidthA(vo.getBandwidthA());
+            inv.setBandwidthB(vo.getBandwidthB());
+            inv.setResource_id(vo.getResource_id());
+            inv.setResource_type(vo.getResource_type());
+
+            return inv;
+        }
+
+        public static List<FalconL3NetworkInventory> valueOf(Collection<L3Network> vos) {
+            List<FalconL3NetworkInventory> lst = new ArrayList<FalconL3NetworkInventory>(vos.size());
+            for (L3Network vo : vos) {
+                lst.add(FalconL3NetworkInventory.valueOf(vo));
+            }
+            return lst;
+        }
+
+        public String getResource_id() {
+            return resource_id;
+        }
+
+        public void setResource_id(String resource_id) {
+            this.resource_id = resource_id;
+        }
+
+        public ProductType getResource_type() {
+            return resource_type;
+        }
+
+        public void setResource_type(ProductType resource_type) {
+            this.resource_type = resource_type;
+        }
+
+        public String getMonitor_id() {
+            return monitor_id;
+        }
+
+        public void setMonitor_id(String monitor_id) {
+            this.monitor_id = monitor_id;
+        }
+
+        public String getUser_id() {
+            return user_id;
+        }
+
+        public void setUser_id(String user_id) {
+            this.user_id = user_id;
+        }
+
+        public String getSrcL3Endpoint_id() {
+            return srcL3Endpoint_id;
+        }
+
+        public void setSrcL3Endpoint_id(String srcL3Endpoint_id) {
+            this.srcL3Endpoint_id = srcL3Endpoint_id;
+        }
+
+        public String getDstL3Endpoint_id() {
+            return dstL3Endpoint_id;
+        }
+
+        public void setDstL3Endpoint_id(String dstL3Endpoint_id) {
+            this.dstL3Endpoint_id = dstL3Endpoint_id;
+        }
+
+        public String getEndpointA_ip() {
+            return endpointA_ip;
+        }
+
+        public void setEndpointA_ip(String endpointA_ip) {
+            this.endpointA_ip = endpointA_ip;
+        }
+
+        public String getEndpointB_ip() {
+            return endpointB_ip;
+        }
+
+        public void setEndpointB_ip(String endpointB_ip) {
+            this.endpointB_ip = endpointB_ip;
+        }
+
+        public Integer getEndpointA_vid() {
+            return endpointA_vid;
+        }
+
+        public void setEndpointA_vid(Integer endpointA_vid) {
+            this.endpointA_vid = endpointA_vid;
+        }
+
+        public Integer getEndpointB_vid() {
+            return endpointB_vid;
+        }
+
+        public void setEndpointB_vid(Integer endpointB_vid) {
+            this.endpointB_vid = endpointB_vid;
+        }
+
+        public Long getBandwidthA() {
+            return bandwidthA;
+        }
+
+        public void setBandwidthA(Long bandwidthA) {
+            this.bandwidthA = bandwidthA;
+        }
+
+        public Long getBandwidthB() {
+            return bandwidthB;
+        }
+
+        public void setBandwidthB(Long bandwidthB) {
+            this.bandwidthB = bandwidthB;
         }
     }
 }
