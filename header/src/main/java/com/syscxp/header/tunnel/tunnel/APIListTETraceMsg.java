@@ -6,24 +6,16 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
- * Create by DCY on 2017/11/28
+ * Create by DCY on 2018/5/9
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
-public class APIListTraceRouteMsg extends APISyncCallMessage {
+public class APIListTETraceMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false, resourceType = TunnelVO.class)
     private String tunnelUuid;
 
-    @APIParam
-    private boolean traceAgain;
-
-    public boolean isTraceAgain() {
-        return traceAgain;
-    }
-
-    public void setTraceAgain(boolean traceAgain) {
-        this.traceAgain = traceAgain;
-    }
+    @APIParam(emptyString = false,validValues = {"MAIN", "SPARE"})
+    private TETraceType traceType;
 
     public String getTunnelUuid() {
         return tunnelUuid;
@@ -31,5 +23,13 @@ public class APIListTraceRouteMsg extends APISyncCallMessage {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    public TETraceType getTraceType() {
+        return traceType;
+    }
+
+    public void setTraceType(TETraceType traceType) {
+        this.traceType = traceType;
     }
 }
