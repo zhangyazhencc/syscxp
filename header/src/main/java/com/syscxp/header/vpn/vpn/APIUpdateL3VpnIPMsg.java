@@ -18,6 +18,10 @@ public class APIUpdateL3VpnIPMsg extends APIMessage {
     private String netmask;
     @APIParam(emptyString = false)
     private String gateway;
+    @APIParam(emptyString = false)
+    private String remoteIp;
+    @APIParam(emptyString = false)
+    private String monitorIp;
 
     public String getUuid() {
         return uuid;
@@ -44,6 +48,22 @@ public class APIUpdateL3VpnIPMsg extends APIMessage {
     public String getGateway() { return gateway; }
 
     public void setGateway(String gateway) { this.gateway = gateway; }
+
+    public String getRemoteIp() {
+        return remoteIp;
+    }
+
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
+    }
 
     public ApiNotification __notification__() {
         final APIMessage that = this;
