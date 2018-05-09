@@ -4,13 +4,13 @@ import com.syscxp.header.message.APIReply;
 
 public class APIDeleteExpiredRenewReply extends APIReply {
 
-    private boolean inventory;
+    private boolean deleted;
 
-    public boolean isInventory() {
-        return inventory;
+    public boolean isDeleted() {
+        return deleted;
     }
 
-    public void setInventory(boolean inventory) {
-        this.inventory = inventory;
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

@@ -8,6 +8,16 @@ import com.syscxp.header.message.APIReply;
 public class APIRenewAutoTunnelReply extends APIReply {
     private TunnelInventory inventory;
 
+    private boolean temporaryRenew;
+
+    public boolean isTemporaryRenew() {
+        return temporaryRenew;
+    }
+
+    public void setTemporaryRenew(boolean temporaryRenew) {
+        this.temporaryRenew = temporaryRenew;
+    }
+
     public TunnelInventory getInventory() {
         return inventory;
     }

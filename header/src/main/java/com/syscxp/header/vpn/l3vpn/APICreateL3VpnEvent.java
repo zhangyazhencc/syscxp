@@ -1,10 +1,9 @@
 package com.syscxp.header.vpn.l3vpn;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.vpn.vpn.VpnInventory;
 
-public class APICreateL3VpnEvent extends APIEvent{
-    private VpnInventory inventory;
+public class APICreateL3VpnEvent extends APIEvent {
+    private L3VpnInventory inventory;
 
     public APICreateL3VpnEvent() {
     }
@@ -13,11 +12,11 @@ public class APICreateL3VpnEvent extends APIEvent{
         super(apiId);
     }
 
-    public VpnInventory getInventory() {
+    public L3VpnInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(VpnInventory inventory) {
+    public void setInventory(L3VpnInventory inventory) {
         this.inventory = inventory;
     }
 }

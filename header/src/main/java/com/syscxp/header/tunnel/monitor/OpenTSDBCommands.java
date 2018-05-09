@@ -1,4 +1,5 @@
 package com.syscxp.header.tunnel.monitor;
+
 import java.util.List;
 import java.util.Map;
 
@@ -18,19 +19,19 @@ public class OpenTSDBCommands {
      * @Description: 查询参数.
      */
 
-    public interface restMethod{
+    public interface restMethod {
         public static final String OPEN_TSDB_QUERY = "/api/query";
     }
 
-    public static class QueryCondition{
+    public static class TunnelQueryCondition {
         private Long start;
         private Long end;
-        private List<Query> queries;
+        private List<TunnelQuery> queries;
 
-        public QueryCondition() {
+        public TunnelQueryCondition() {
         }
 
-        public QueryCondition(Long start, Long end, List<Query> queries) {
+        public TunnelQueryCondition(Long start, Long end, List<TunnelQuery> queries) {
             this.start = start;
             this.end = end;
             this.queries = queries;
@@ -52,27 +53,27 @@ public class OpenTSDBCommands {
             this.end = end;
         }
 
-        public List<Query> getQueries() {
+        public List<TunnelQuery> getQueries() {
             return queries;
         }
 
-        public void setQueries(List<Query> queries) {
+        public void setQueries(List<TunnelQuery> queries) {
             this.queries = queries;
         }
     }
 
-    public static class Query{
+    public static class TunnelQuery {
         private String aggregator;
         private String metric;
-        private Tags tags;
+        private TunnelTags tags;
 
-        public Query(String aggregator, String metric, Tags tags) {
+        public TunnelQuery(String aggregator, String metric, TunnelTags tags) {
             this.aggregator = aggregator;
             this.metric = metric;
             this.tags = tags;
         }
 
-        public Query() {
+        public TunnelQuery() {
         }
 
         public String getAggregator() {
@@ -91,32 +92,32 @@ public class OpenTSDBCommands {
             this.metric = metric;
         }
 
-        public Tags getTags() {
+        public TunnelTags getTags() {
             return tags;
         }
 
-        public void setTags(Tags tags) {
+        public void setTags(TunnelTags tags) {
             this.tags = tags;
         }
     }
 
-    public static class Tags {
+    public static class TunnelTags {
         private String endpoint;
         private String ifname;
         private String tunnelid;
 
-        public Tags(String endpoint, String ifname, String tunnelid) {
+        public TunnelTags(String endpoint, String ifname, String tunnelid) {
             this.endpoint = endpoint;
             this.ifname = ifname;
             this.tunnelid = tunnelid;
         }
 
-        public Tags(String endpoint, String ifname) {
+        public TunnelTags(String endpoint, String ifname) {
             this.endpoint = endpoint;
             this.ifname = ifname;
         }
 
-        public Tags() {
+        public TunnelTags() {
         }
 
         public String getEndpoint() {
@@ -144,10 +145,10 @@ public class OpenTSDBCommands {
         }
     }
 
-    public static class CustomCondition {
+    public static class TunnelCustomCondition {
         private String nodeUuid;
         private String endpointUuid;
-        private Map<String,Tags> tags;
+        private Map<String, TunnelTags> tags;
 
         public String getEndpointUuid() {
             return endpointUuid;
@@ -157,11 +158,11 @@ public class OpenTSDBCommands {
             this.endpointUuid = endpointUuid;
         }
 
-        public Map<String, Tags> getTags() {
+        public Map<String, TunnelTags> getTags() {
             return tags;
         }
 
-        public void setTags(Map<String, Tags> tags) {
+        public void setTags(Map<String, TunnelTags> tags) {
             this.tags = tags;
         }
 
@@ -171,6 +172,89 @@ public class OpenTSDBCommands {
 
         public void setNodeUuid(String nodeUuid) {
             this.nodeUuid = nodeUuid;
+        }
+    }
+
+    public static class L3Tags {
+        private String endpoint;
+        private String ifname;
+        private String dstendpointid;
+
+        public L3Tags(String endpoint, String ifname, String dstendpointid) {
+            this.endpoint = endpoint;
+            this.ifname = ifname;
+            this.dstendpointid = dstendpointid;
+        }
+
+        public L3Tags(String endpoint, String ifname) {
+            this.endpoint = endpoint;
+            this.ifname = ifname;
+        }
+
+        public L3Tags() {
+        }
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public String getIfname() {
+            return ifname;
+        }
+
+        public void setIfname(String ifname) {
+            this.ifname = ifname;
+        }
+
+        public String getDstendpointid() {
+            return dstendpointid;
+        }
+
+        public void setDstendpointid(String dstendpointid) {
+            this.dstendpointid = dstendpointid;
+        }
+    }
+
+    public static class L3CustomCondition {
+        private String l3EndpointUuid;
+        private L3Tags trafficTags;
+        private Map<String, L3Tags> srcTags;
+        private Map<String, L3Tags> dstTags;
+
+        public String getL3EndpointUuid() {
+            return l3EndpointUuid;
+        }
+
+        public void setL3EndpointUuid(String l3EndpointUuid) {
+            this.l3EndpointUuid = l3EndpointUuid;
+        }
+
+        public L3Tags getTrafficTags() {
+            return trafficTags;
+        }
+
+        public void setTrafficTags(L3Tags trafficTags) {
+            this.trafficTags = trafficTags;
+        }
+
+        public Map<String, L3Tags> getSrcTags() {
+            return srcTags;
+        }
+
+        public void setSrcTags(Map<String, L3Tags> srcTags) {
+            this.srcTags = srcTags;
+        }
+
+        public Map<String, L3Tags> getDstTags() {
+            return dstTags;
+        }
+
+        public void setDstTags(Map<String, L3Tags> dstTags) {
+            this.dstTags = dstTags;
         }
     }
 
@@ -191,10 +275,10 @@ public class OpenTSDBCommands {
         }
     }
 
-    public static class QueryResult{
+    public static class QueryResult {
         private String nodeUuid;
         private String metric;
-        private Tags tags;
+        private TunnelTags tags;
         private List aggregateTags;
         private Map<Long, Double> dps;
 
@@ -209,11 +293,11 @@ public class OpenTSDBCommands {
             this.metric = metric;
         }
 
-        public Tags getTags() {
+        public TunnelTags getTags() {
             return tags;
         }
 
-        public void setTags(Tags tags) {
+        public void setTags(TunnelTags tags) {
             this.tags = tags;
         }
 

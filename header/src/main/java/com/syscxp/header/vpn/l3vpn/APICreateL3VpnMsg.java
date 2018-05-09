@@ -9,9 +9,10 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.vpn.VpnCertVO;
+import com.syscxp.header.vpn.vpn.APIVpnMessage;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"})
-public class APICreateL3VpnMsg extends APIL3VpnMessage {
+public class APICreateL3VpnMsg extends APIVpnMessage {
     @APIParam(emptyString = false, minLength = 6, maxLength = 50)
     private String name;
     @APIParam(required = false, maxLength = 255)
@@ -19,25 +20,49 @@ public class APICreateL3VpnMsg extends APIL3VpnMessage {
     @APIParam(resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
     @APIParam(emptyString = false)
-    private String tunnelUuid;
+    private String l3NetworkUuid;
+    @APIParam(emptyString = false)
+    private String l3EndpointUuid;
     @APIParam(emptyString = false)
     private String endpointUuid;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(emptyString = false)
+    private String workMode;
+    @APIParam(emptyString = false)
+    private String startIp;
+    @APIParam(emptyString = false)
+    private String endIp;
+    @APIParam(emptyString = false)
+    private String netmask;
+    @APIParam(emptyString = false)
+    private String gateway;
+    @APIParam(emptyString = false)
+    private String remoteIp;
+    @APIParam(emptyString = false)
+    private String monitorIp;
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private Integer duration;
     @APIParam(required = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1, Integer.MAX_VALUE})
     private Integer vlan;
     @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
     private String vpnCertUuid;
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getL3NetworkUuid() {
+        return l3NetworkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setL3NetworkUuid(String l3NetworkUuid) {
+        this.l3NetworkUuid = l3NetworkUuid;
     }
+
+    public String getL3EndpointUuid() { return l3EndpointUuid; }
+
+    public void setL3EndpointUuid(String l3EndpointUuid) { this.l3EndpointUuid = l3EndpointUuid; }
+
+    public String getEndpointUuid() { return endpointUuid; }
+
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
 
     public String getVpnCertUuid() {
         return vpnCertUuid;
@@ -79,12 +104,60 @@ public class APICreateL3VpnMsg extends APIL3VpnMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getWorkMode() {
+        return workMode;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
+    }
+
+    public String getStartIp() {
+        return startIp;
+    }
+
+    public void setStartIp(String startIp) {
+        this.startIp = startIp;
+    }
+
+    public String getEndIp() {
+        return endIp;
+    }
+
+    public void setEndIp(String endIp) {
+        this.endIp = endIp;
+    }
+
+    public String getNetmask() {
+        return netmask;
+    }
+
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
+    }
+
+    public String getGateway() {
+        return gateway;
+    }
+
+    public void setGateway(String gateway) {
+        this.gateway = gateway;
+    }
+
+    public String getRemoteIp() {
+        return remoteIp;
+    }
+
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
     }
 
     public Integer getDuration() {

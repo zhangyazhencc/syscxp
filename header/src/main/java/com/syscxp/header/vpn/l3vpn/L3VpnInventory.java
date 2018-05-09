@@ -16,8 +16,15 @@ public class L3VpnInventory {
     private Integer port;
     private Integer vlan;
     private String bandwidth;
-    private String endpointUuid;
-    private String tunnelUuid;
+    private String l3EndpointUuid;
+    private String l3NetworkUuid;
+    private String workMode;
+    private String startIp;
+    private String endIp;
+    private String netmask;
+    private String gateway;
+    private String remoteIp;
+    private String monitorIp;
     private String status;
     private String vpnCertUuid;
     private String vpnCertName;
@@ -25,7 +32,7 @@ public class L3VpnInventory {
     private Integer duration;
     private Timestamp expireDate;
     private Integer maxModifies;
-    private String certKey;
+    private String secretKey;
     private String clientConf;
     private String payment;
     private String vpnHostName;
@@ -39,17 +46,24 @@ public class L3VpnInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
-        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setL3EndpointUuid(vo.getL3EndpointUuid());
+        inv.setWorkMode(vo.getWorkMode());
+        inv.setStartIp(vo.getStartIp());
+        inv.setEndIp(vo.getEndIp());
+        inv.setNetmask(vo.getNetmask());
+        inv.setGateway(vo.getGateway());
+        inv.setRemoteIp(vo.getRemoteIp());
+        inv.setMonitorIp(vo.getMonitorIp());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
-        inv.setTunnelUuid(vo.getTunnelUuid());
+        inv.setL3NetworkUuid(vo.getL3NetworkUuid());
         inv.setDuration(vo.getDuration());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        inv.setCertKey(vo.getCertKey());
+        inv.setSecretKey(vo.getSecretKey());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setVpnCertUuid(vo.getVpnCertUuid());
         inv.setClientConf(vo.getClientConf());
@@ -86,12 +100,12 @@ public class L3VpnInventory {
         this.vpnCertName = vpnCertName;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getL3NetworkUuid() {
+        return l3NetworkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setL3NetworkUuid(String l3NetworkUuid) {
+        this.l3NetworkUuid = l3NetworkUuid;
     }
 
     public String getVpnCertUuid() {
@@ -165,14 +179,17 @@ public class L3VpnInventory {
     public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
     }
-
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getL3EndpointUuid() {
+        return l3EndpointUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
+
+    public String getWorkMode() { return workMode; }
+
+    public void setWorkMode(String workMode) { this.workMode = workMode; }
 
     public String getStatus() {
         return status;
@@ -214,12 +231,12 @@ public class L3VpnInventory {
         this.maxModifies = maxModifies;
     }
 
-    public String getCertKey() {
-        return certKey;
+    public String getSecretKey() {
+        return secretKey;
     }
 
-    public void setCertKey(String certKey) {
-        this.certKey = certKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public String getPayment() {
@@ -245,4 +262,28 @@ public class L3VpnInventory {
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
     }
+
+    public String getStartIp() { return startIp; }
+
+    public void setStartIp(String startIp) { this.startIp = startIp; }
+
+    public String getEndIp() { return endIp; }
+
+    public void setEndIp(String endIp) { this.endIp = endIp; }
+
+    public String getNetmask() { return netmask; }
+
+    public void setNetmask(String netmask) { this.netmask = netmask; }
+
+    public String getGateway() { return gateway; }
+
+    public void setGateway(String gateway) { this.gateway = gateway; }
+
+    public String getRemoteIp() { return remoteIp; }
+
+    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
+
+    public String getMonitorIp() { return monitorIp; }
+
+    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp; }
 }

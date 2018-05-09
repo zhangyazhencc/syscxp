@@ -42,10 +42,10 @@ public class APIGetTunnelPriceMsg extends APISyncCallMessage {
     private ProductChargeModel productChargeModel;
 
     public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
-            return accountUuid;
-        }else{
+        if(accountUuid == null){
             return getSession().getAccountUuid();
+        }else{
+            return accountUuid;
         }
     }
 

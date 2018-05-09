@@ -29,10 +29,10 @@ public class OrderVO {
     private OrderState state;
 
     @Column
-    private BigDecimal payPresent;
+    private BigDecimal payPresent = BigDecimal.ZERO;
 
     @Column
-    private BigDecimal payCash;
+    private BigDecimal payCash= BigDecimal.ZERO;
 
     @Column
     private String accountUuid;
@@ -84,7 +84,10 @@ public class OrderVO {
     private String productPriceDiscountDetail;
 
     @Column
-    private BigDecimal lastPriceOneMonth;
+    private BigDecimal lastPriceOneMonth = BigDecimal.ZERO;
+
+    @Column
+    private BigDecimal currentPriceOneMonth = BigDecimal.ZERO;
 
     public String getUuid() {
         return uuid;
@@ -268,6 +271,14 @@ public class OrderVO {
 
     public void setLastPriceOneMonth(BigDecimal lastPriceOneMonth) {
         this.lastPriceOneMonth = lastPriceOneMonth;
+    }
+
+    public BigDecimal getCurrentPriceOneMonth() {
+        return currentPriceOneMonth;
+    }
+
+    public void setCurrentPriceOneMonth(BigDecimal currentPriceOneMonth) {
+        this.currentPriceOneMonth = currentPriceOneMonth;
     }
 
     @PreUpdate

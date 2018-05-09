@@ -1,269 +1,116 @@
 package com.syscxp.header.vpn.l3vpn;
 
 import com.syscxp.header.search.TriggerIndex;
-import com.syscxp.header.vpn.host.VpnHostVO;
-import com.syscxp.header.vpn.vpn.Payment;
-import com.syscxp.header.vpn.vpn.VpnCertVO;
-import com.syscxp.header.vpn.vpn.VpnState;
-import com.syscxp.header.vpn.vpn.VpnStatus;
+import com.syscxp.header.vpn.VpnAO;
 
-import javax.persistence.*;
-import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
 @Table
 @TriggerIndex
-public class L3VpnVO {
+public class L3VpnVO extends VpnAO {
 
-    @Id
     @Column
-    private String uuid;
+    private String l3NetworkUuid;
     @Column
-    private String accountUuid;
-    @Column
-    private String hostUuid;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
-    private VpnHostVO vpnHost;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "vpnCertUuid", insertable = false, updatable = false)
-    private VpnCertVO vpnCert;
-    @Column
-    private String vpnCertUuid;
-    @Column
-    private String name;
-    @Column
-    private String description;
-    @Column
-    private String bandwidthOfferingUuid;
+    private String l3EndpointUuid;
     @Column
     private String endpointUuid;
     @Column
-    private String tunnelUuid;
+    private String workMode;
     @Column
-    private Integer port;
+    private String startIp;
     @Column
-    private Integer vlan;
+    private String endIp;
     @Column
-    @Enumerated(EnumType.STRING)
-    private VpnState state;
+    private String netmask;
     @Column
-    @Enumerated(EnumType.STRING)
-    private VpnStatus status;
+    private String gateway;
     @Column
-    private Integer duration;
+    private String remoteIp;
     @Column
-    private String clientConf;
-    @Column
-    private String certKey;
-    @Column
-    private String sid;
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Payment payment;
-    @Column
-    private Integer maxModifies;
-    @Column
-    private Timestamp expireDate;
-    @Column
-    private Timestamp lastOpDate;
-    @Column
-    private Timestamp createDate;
-
-    @PreUpdate
-    private void preUpdate() {
-        lastOpDate = null;
+    private String monitorIp;
+    public L3VpnVO() {
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public L3VpnVO(L3VpnVO other) {
+        super(other);
+        this.l3NetworkUuid = other.l3NetworkUuid;
+        this.l3EndpointUuid = other.l3EndpointUuid;
+        this.endpointUuid = other.endpointUuid;
+        this.workMode = other.workMode;
+        this.startIp = other.startIp;
+        this.endIp = other.endIp;
+        this.netmask = other.netmask;
+        this.gateway = other.gateway;
+        this.remoteIp = other.remoteIp;
+        this.monitorIp = other.monitorIp;
+    }
+    public String getL3NetworkUuid() {
+        return l3NetworkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setL3NetworkUuid(String l3NetworkUuid) {
+        this.l3NetworkUuid = l3NetworkUuid;
     }
 
-    public String getSid() {
-        return sid;
+    public String getL3EndpointUuid() { return l3EndpointUuid; }
+
+    public void setL3EndpointUuid(String l3EndpointUuid) {
+        this.l3EndpointUuid = l3EndpointUuid;
     }
 
-    public void setSid(String sid) {
-        this.sid = sid;
+    public String getEndpointUuid() { return endpointUuid; }
+
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
+
+    public String getWorkMode() {
+        return workMode;
     }
 
-    public String getClientConf() {
-        return clientConf;
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
 
-    public void setClientConf(String clientConf) {
-        this.clientConf = clientConf;
+    public String getStartIp() {
+        return startIp;
     }
 
-    public VpnCertVO getVpnCert() {
-        return vpnCert;
+    public void setStartIp(String startIp) {
+        this.startIp = startIp;
     }
 
-    public void setVpnCert(VpnCertVO vpnCert) {
-        this.vpnCert = vpnCert;
+    public String getEndIp() {
+        return endIp;
     }
 
-    public String getVpnCertUuid() {
-        return vpnCertUuid;
+    public void setEndIp(String endIp) {
+        this.endIp = endIp;
     }
 
-    public void setVpnCertUuid(String vpnCertUuid) {
-        this.vpnCertUuid = vpnCertUuid;
+    public String getNetmask() {
+        return netmask;
     }
 
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
     }
 
-    public VpnHostVO getVpnHost() {
-        return vpnHost;
+    public String getGateway() {
+        return gateway;
     }
 
-    public void setVpnHost(VpnHostVO vpnHost) {
-        this.vpnHost = vpnHost;
+    public void setGateway(String gateway) {
+        this.gateway = gateway;
     }
 
-    public Integer getMaxModifies() {
-        return maxModifies;
-    }
+    public String getRemoteIp() { return remoteIp; }
 
-    public void setMaxModifies(Integer maxModifies) {
-        this.maxModifies = maxModifies;
-    }
+    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
 
-    public String getCertKey() {
-        return certKey;
-    }
+    public String getMonitorIp() { return monitorIp; }
 
-    public void setCertKey(String certKey) {
-        this.certKey = certKey;
-    }
-
-    public Payment getPayment() {
-        return payment;
-    }
-
-    public void setPayment(Payment payment) {
-        this.payment = payment;
-    }
-
-    public String getHostUuid() {
-        return hostUuid;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
-    }
-
-    public VpnState getState() {
-        return state;
-    }
-
-    public void setState(VpnState state) {
-        this.state = state;
-    }
-
-    public void setStatus(VpnStatus status) {
-        this.status = status;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getBandwidthOfferingUuid() {
-        return bandwidthOfferingUuid;
-    }
-
-    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
-        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
-    }
-
-    public String getEndpointUuid() {
-        return endpointUuid;
-    }
-
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
-    }
-
-    public VpnStatus getStatus() {
-        return status;
-    }
-
-    public Integer getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Integer duration) {
-        this.duration = duration;
-    }
-
-    public Timestamp getExpireDate() {
-        return expireDate;
-    }
-
-    public void setExpireDate(Timestamp expireDate) {
-        this.expireDate = expireDate;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
-    public Integer getVlan() {
-        return vlan;
-    }
-
-    public void setVlan(Integer vlan) {
-        this.vlan = vlan;
-    }
+    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp; }
 }

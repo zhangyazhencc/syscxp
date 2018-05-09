@@ -1,10 +1,15 @@
 package com.syscxp.header.tunnel.host;
 
+import com.syscxp.header.host.APIAddHostEvent;
 import com.syscxp.header.host.APIAddHostMsg;
 import com.syscxp.header.host.HostConstant;
+import com.syscxp.header.host.HostVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.PasswordNoSee;
+import com.syscxp.header.message.APIEvent;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
 
@@ -63,4 +68,21 @@ public class APICreateMonitorHostMsg extends APIAddHostMsg {
         this.sshPort = sshPort;
     }
 
+    @Override
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APIAddHostEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create MonitorHostVO")
+                        .resource(uuid, MonitorHostVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
 }

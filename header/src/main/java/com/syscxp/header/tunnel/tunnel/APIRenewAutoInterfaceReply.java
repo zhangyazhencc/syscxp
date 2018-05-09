@@ -7,6 +7,16 @@ public class APIRenewAutoInterfaceReply extends APIReply {
 
     private InterfaceInventory inventory;
 
+    private boolean temporaryRenew;
+
+    public boolean isTemporaryRenew() {
+        return temporaryRenew;
+    }
+
+    public void setTemporaryRenew(boolean temporaryRenew) {
+        this.temporaryRenew = temporaryRenew;
+    }
+
     public InterfaceInventory getInventory() {
         return inventory;
     }

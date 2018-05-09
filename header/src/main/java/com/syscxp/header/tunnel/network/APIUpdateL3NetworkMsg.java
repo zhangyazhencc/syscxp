@@ -17,7 +17,7 @@ public class APIUpdateL3NetworkMsg extends APIMessage {
     private String uuid;
     @APIParam(emptyString = false, required = false, maxLength = 128)
     private String name;
-    @APIParam(emptyString = false, required = false)
+    @APIParam(required = false)
     private String description;
 
     public String getUuid() {

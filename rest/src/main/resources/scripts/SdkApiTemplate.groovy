@@ -173,7 +173,7 @@ class SdkApiTemplate implements SdkTemplate {
         ms.add("""\
     private Result makeResult(ApiResult res) {
         Result ret = new Result();
-        if (res.code != null) {
+        if (!Constants.RESULT_CODE.equals(res.code)) {
             ret.code = res.code;
             ret.message = res.message;
             return ret;
