@@ -445,55 +445,26 @@ public class RESTFacadeImpl implements RESTFacade {
     }
 
     public <T> T syncTextPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes){
-        body = body == null ? "" : body;
-
-        HttpHeaders requestHeaders = new HttpHeaders();
-        if (headers != null) {
-            requestHeaders.setAll(headers);
-        }
-        requestHeaders.setContentType(MediaType.TEXT_PLAIN);
-        requestHeaders.setContentLength(body.length());
-        HttpEntity<String> req = new HttpEntity<>(body, requestHeaders);
-        if (logger.isTraceEnabled()) {
-            logger.trace(String.format("text post[%s], %s", url, req.toString()));
-        }
-
-        ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
-            @Override
-            @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
-            protected ResponseEntity<String> call() {
-                return template.exchange(url, HttpMethod.POST, req, String.class);
-            }
-        }.setRetryTimes(retryTimes).run();
-
-        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
-            throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
-        }
-
-        if (rsp.getBody() != null && returnClass != Void.class) {
-
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
-            }
-            return JSONObjectUtil.toObject(rsp.getBody(), returnClass);
-        } else {
-            return null;
-        }
+        return syncPost(url, body, headers, returnClass, retryTimes, MediaType.TEXT_PLAIN);
     }
 
     @Override
     public <T> T syncJsonPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes) {
+        return syncPost(url, body, headers, returnClass, retryTimes, MediaType.APPLICATION_JSON);
+    }
+
+    public <T> T syncPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes, MediaType mediaType) {
         body = body == null ? "" : body;
 
         HttpHeaders requestHeaders = new HttpHeaders();
         if (headers != null) {
             requestHeaders.setAll(headers);
         }
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentType(mediaType);
         requestHeaders.setContentLength(body.length());
         HttpEntity<String> req = new HttpEntity<>(body, requestHeaders);
         if (logger.isTraceEnabled()) {
-            logger.trace(String.format("json post[%s], %s", url, req.toString()));
+            logger.trace(String.format("post[%s], %s", url, req.toString()));
         }
 
         ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
@@ -504,7 +475,7 @@ public class RESTFacadeImpl implements RESTFacade {
             }
         }.setRetryTimes(retryTimes).run();
 
-        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
+        if (rsp.getStatusCode() != HttpStatus.OK && rsp.getStatusCode() != HttpStatus.CREATED) {
             throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
         }
 
