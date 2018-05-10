@@ -74,7 +74,7 @@ public class RESTApiController {
     public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpEntity<String> entity = restf.httpServletRequestToHttpEntity(request);
         try {
-            String ret = handleByMessageType(entity.getBody(), getRemortIP(request), request.getHeader("referer-url"));
+            String ret = handleByMessageType(entity.getBody(), getRemortIP(request), request.getHeader("Referer") + request.getHeader("referer-url"));
             response.setStatus(HttpServletResponse.SC_OK);
             response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
