@@ -66,7 +66,7 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "controllerManagerUrl", defaultValue = "http://192.168.211.224:8080")
     public static String CONTROLLER_MANAGER_URL;
 
-    @GlobalProperty(name = "teTraceUrl", defaultValue = "http://192.168.211.162:5000/api/v1.0")
+    @GlobalProperty(name = "teTraceUrl", defaultValue = "http://192.168.211.224:5000/api/v1.0")
     public static String TE_TRACE_URL;
 
     @GlobalProperty(name = "ecpServerUrl", defaultValue = "http://192.168.211.5:8080/zstack/asyncrest/sendcommand")
