@@ -49,7 +49,7 @@ public class RESTApiController {
     }
 
     private String handleByMessageType(String body, String ip, String referer) {
-        logger.info(String.format("Received request body[referer-url:%s]: %s", referer, body));
+        logger.info(String.format("Received request body[referer: %s]: %s", referer, body));
         APIMessage amsg = null;
         try {
             amsg = (APIMessage) RESTApiDecoder.loads(body);
