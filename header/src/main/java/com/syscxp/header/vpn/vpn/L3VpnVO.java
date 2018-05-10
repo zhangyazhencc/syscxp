@@ -20,14 +20,6 @@ public class L3VpnVO extends VpnVO {
     private String startIp;
     @Column
     private String endIp;
-    @Column
-    private String netmask;
-    @Column
-    private String gateway;
-    @Column
-    private String remoteIp;
-    @Column
-    private String monitorIp;
     public L3VpnVO() {
     }
 
@@ -37,10 +29,6 @@ public class L3VpnVO extends VpnVO {
         this.workMode = other.workMode;
         this.startIp = other.startIp;
         this.endIp = other.endIp;
-        this.netmask = other.netmask;
-        this.gateway = other.gateway;
-        this.remoteIp = other.remoteIp;
-        this.monitorIp = other.monitorIp;
     }
     public String getL3EndpointUuid() { return l3EndpointUuid; }
 
@@ -72,27 +60,5 @@ public class L3VpnVO extends VpnVO {
         this.endIp = endIp;
     }
 
-    public String getNetmask() {
-        return netmask;
-    }
 
-    public void setNetmask(String netmask) {
-        this.netmask = netmask;
-    }
-
-    public String getGateway() {
-        return gateway;
-    }
-
-    public void setGateway(String gateway) {
-        this.gateway = gateway;
-    }
-
-    public String getRemoteIp() { return remoteIp; }
-
-    public void setRemoteIp(String remoteIp) { this.remoteIp = remoteIp; }
-
-    public String getMonitorIp() { return monitorIp; }
-
-    public void setMonitorIp(String monitorIp) { this.monitorIp = monitorIp; }
 }
