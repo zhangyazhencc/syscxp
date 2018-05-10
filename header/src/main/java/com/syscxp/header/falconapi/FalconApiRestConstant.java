@@ -3,7 +3,7 @@ package com.syscxp.header.falconapi;
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-11-02.
- * @Description: FALCON API方法.
+ *
  */
 public interface FalconApiRestConstant {
     // 同步监控通道ICMP数据
