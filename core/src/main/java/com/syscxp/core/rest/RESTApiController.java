@@ -48,8 +48,8 @@ public class RESTApiController {
         }
     }
 
-    private String handleByMessageType(String body, String ip) {
-        logger.info(String.format("Received request body: %s", body));
+    private String handleByMessageType(String body, String ip, String referer) {
+        logger.info(String.format("Received request body[referer: %s]: %s", referer, body));
         APIMessage amsg = null;
         try {
             amsg = (APIMessage) RESTApiDecoder.loads(body);
@@ -74,7 +74,7 @@ public class RESTApiController {
     public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpEntity<String> entity = restf.httpServletRequestToHttpEntity(request);
         try {
-            String ret = handleByMessageType(entity.getBody(), getRemortIP(request));
+            String ret = handleByMessageType(entity.getBody(), getRemortIP(request), request.getHeader("Referer") + request.getHeader("referer-url"));
             response.setStatus(HttpServletResponse.SC_OK);
             response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();

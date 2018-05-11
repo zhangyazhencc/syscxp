@@ -23,10 +23,6 @@ public class L3VpnInventory {
     private String workMode;
     private String startIp;
     private String endIp;
-    private String netmask;
-    private String gateway;
-    private String remoteIp;
-    private String monitorIp;
     private String status;
     private String vpnCertUuid;
     private String vpnCertName;
@@ -55,10 +51,6 @@ public class L3VpnInventory {
         inv.setWorkMode(vo.getWorkMode());
         inv.setStartIp(vo.getStartIp());
         inv.setEndIp(vo.getEndIp());
-        inv.setNetmask(vo.getNetmask());
-        inv.setGateway(vo.getGateway());
-        inv.setRemoteIp(vo.getRemoteIp());
-        inv.setMonitorIp(vo.getMonitorIp());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
@@ -304,35 +296,4 @@ public class L3VpnInventory {
         this.endIp = endIp;
     }
 
-    public String getNetmask() {
-        return netmask;
-    }
-
-    public void setNetmask(String netmask) {
-        this.netmask = netmask;
-    }
-
-    public String getGateway() {
-        return gateway;
-    }
-
-    public void setGateway(String gateway) {
-        this.gateway = gateway;
-    }
-
-    public String getRemoteIp() {
-        return remoteIp;
-    }
-
-    public void setRemoteIp(String remoteIp) {
-        this.remoteIp = remoteIp;
-    }
-
-    public String getMonitorIp() {
-        return monitorIp;
-    }
-
-    public void setMonitorIp(String monitorIp) {
-        this.monitorIp = monitorIp;
-    }
 }
