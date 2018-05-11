@@ -11,6 +11,7 @@ import java.util.List;
 public class L3VpnInventory {
     private String uuid;
     private String accountUuid;
+    private String hostUuid;
     private String name;
     private String description;
     private Integer port;
@@ -41,6 +42,7 @@ public class L3VpnInventory {
         L3VpnInventory inv = new L3VpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setHostUuid(vo.getHostUuid());
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
@@ -78,6 +80,14 @@ public class L3VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getHostUuid() {
+        return hostUuid;
+    }
+
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
     }
 
     public String getVpnHostName() {
@@ -208,6 +218,22 @@ public class L3VpnInventory {
         this.workMode = workMode;
     }
 
+    public String getStartIp() {
+        return startIp;
+    }
+
+    public void setStartIp(String startIp) {
+        this.startIp = startIp;
+    }
+
+    public String getEndIp() {
+        return endIp;
+    }
+
+    public void setEndIp(String endIp) {
+        this.endIp = endIp;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -278,22 +304,6 @@ public class L3VpnInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public String getStartIp() {
-        return startIp;
-    }
-
-    public void setStartIp(String startIp) {
-        this.startIp = startIp;
-    }
-
-    public String getEndIp() {
-        return endIp;
-    }
-
-    public void setEndIp(String endIp) {
-        this.endIp = endIp;
     }
 
 }
