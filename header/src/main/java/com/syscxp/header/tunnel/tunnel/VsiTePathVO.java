@@ -2,14 +2,16 @@ package com.syscxp.header.tunnel.tunnel;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Create by DCY on 2017/11/28
+ * Create by DCY on 2018/5/14
  */
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class LSPTraceVO {
+public class VsiTePathVO {
     @Id
     @Column
     private String uuid;
@@ -18,13 +20,7 @@ public class LSPTraceVO {
     private String tunnelUuid;
 
     @Column
-    private Integer traceSort;
-
-    @Column
-    private String switchName;
-
-    @Column
-    private String switchIP;
+    private String name;
 
     @Column
     private String source;
@@ -36,10 +32,20 @@ public class LSPTraceVO {
     private String direction;
 
     @Column
+    private String tnlPolicyName;
+
+    @Column
+    private String tnlPolicydestination;
+
+    @Column
     private Timestamp createDate;
 
     @Column
     private Timestamp lastOpDate;
+
+    @OneToMany(fetch= FetchType.EAGER)
+    @JoinColumn(name = "vsiTePathUuid", insertable = false, updatable = false)
+    private List<ExplicitPathVO> explicitPathVOS = new ArrayList<ExplicitPathVO>();
 
     @PreUpdate
     private void preUpdate() {
@@ -62,20 +68,12 @@ public class LSPTraceVO {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public Integer getTraceSort() {
-        return traceSort;
+    public String getName() {
+        return name;
     }
 
-    public void setTraceSort(Integer traceSort) {
-        this.traceSort = traceSort;
-    }
-
-    public String getSwitchIP() {
-        return switchIP;
-    }
-
-    public void setSwitchIP(String switchIP) {
-        this.switchIP = switchIP;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getSource() {
@@ -102,6 +100,22 @@ public class LSPTraceVO {
         this.direction = direction;
     }
 
+    public String getTnlPolicyName() {
+        return tnlPolicyName;
+    }
+
+    public void setTnlPolicyName(String tnlPolicyName) {
+        this.tnlPolicyName = tnlPolicyName;
+    }
+
+    public String getTnlPolicydestination() {
+        return tnlPolicydestination;
+    }
+
+    public void setTnlPolicydestination(String tnlPolicydestination) {
+        this.tnlPolicydestination = tnlPolicydestination;
+    }
+
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -118,11 +132,11 @@ public class LSPTraceVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public String getSwitchName() {
-        return switchName;
+    public List<ExplicitPathVO> getExplicitPathVOS() {
+        return explicitPathVOS;
     }
 
-    public void setSwitchName(String switchName) {
-        this.switchName = switchName;
+    public void setExplicitPathVOS(List<ExplicitPathVO> explicitPathVOS) {
+        this.explicitPathVOS = explicitPathVOS;
     }
 }
