@@ -10,12 +10,13 @@ import java.util.List;
 /**
  * Create by DCY on 2017/11/28
  */
-@Inventory(mappingVOClass = TraceRouteVO.class)
-public class TraceRouteInventory {
+@Inventory(mappingVOClass = LSPTraceVO.class)
+public class LSPTraceInventory {
 
     private String uuid;
     private String tunnelUuid;
     private Integer traceSort;
+    private String switchName;
     private String routeIP;
     private String timesFirst;
     private String timesSecond;
@@ -23,11 +24,12 @@ public class TraceRouteInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static TraceRouteInventory valueOf(TraceRouteVO vo){
-        TraceRouteInventory inv = new TraceRouteInventory();
+    public static LSPTraceInventory valueOf(LSPTraceVO vo){
+        LSPTraceInventory inv = new LSPTraceInventory();
         inv.setUuid(vo.getUuid());
         inv.setTunnelUuid(vo.getTunnelUuid());
         inv.setTraceSort(vo.getTraceSort());
+        inv.setSwitchName(vo.getSwitchName());
         inv.setRouteIP(vo.getRouteIP());
         inv.setTimesFirst(vo.getTimesFirst());
         inv.setTimesSecond(vo.getTimesSecond());
@@ -37,10 +39,10 @@ public class TraceRouteInventory {
         return inv;
     }
 
-    public static List<TraceRouteInventory> valueOf(Collection<TraceRouteVO> vos) {
-        List<TraceRouteInventory> lst = new ArrayList<TraceRouteInventory>(vos.size());
-        for (TraceRouteVO vo : vos) {
-            lst.add(TraceRouteInventory.valueOf(vo));
+    public static List<LSPTraceInventory> valueOf(Collection<LSPTraceVO> vos) {
+        List<LSPTraceInventory> lst = new ArrayList<LSPTraceInventory>(vos.size());
+        for (LSPTraceVO vo : vos) {
+            lst.add(LSPTraceInventory.valueOf(vo));
         }
         return lst;
     }
@@ -115,5 +117,13 @@ public class TraceRouteInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getSwitchName() {
+        return switchName;
+    }
+
+    public void setSwitchName(String switchName) {
+        this.switchName = switchName;
     }
 }

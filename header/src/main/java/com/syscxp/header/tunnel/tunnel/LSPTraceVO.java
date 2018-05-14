@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class TraceRouteVO {
+public class LSPTraceVO {
     @Id
     @Column
     private String uuid;
@@ -19,6 +19,9 @@ public class TraceRouteVO {
 
     @Column
     private Integer traceSort;
+
+    @Column
+    private String switchName;
 
     @Column
     private String routeIP;
@@ -113,5 +116,13 @@ public class TraceRouteVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getSwitchName() {
+        return switchName;
+    }
+
+    public void setSwitchName(String switchName) {
+        this.switchName = switchName;
     }
 }

@@ -440,18 +440,31 @@ public class RESTFacadeImpl implements RESTFacade {
     }
 
     @Override
+    public <T> T syncTextPost(String url, String body, Class<T> returnClass){
+        return syncTextPost(url, body, null, returnClass,0);
+    }
+
+    public <T> T syncTextPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes){
+        return syncPost(url, body, headers, returnClass, retryTimes, MediaType.TEXT_PLAIN);
+    }
+
+    @Override
     public <T> T syncJsonPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes) {
+        return syncPost(url, body, headers, returnClass, retryTimes, MediaType.APPLICATION_JSON);
+    }
+
+    public <T> T syncPost(String url, String body, Map<String, String> headers, Class<T> returnClass, int retryTimes, MediaType mediaType) {
         body = body == null ? "" : body;
 
         HttpHeaders requestHeaders = new HttpHeaders();
         if (headers != null) {
             requestHeaders.setAll(headers);
         }
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentType(mediaType);
         requestHeaders.setContentLength(body.length());
         HttpEntity<String> req = new HttpEntity<>(body, requestHeaders);
         if (logger.isTraceEnabled()) {
-            logger.trace(String.format("json post[%s], %s", url, req.toString()));
+            logger.trace(String.format("post[%s], %s", url, req.toString()));
         }
 
         ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
@@ -462,7 +475,7 @@ public class RESTFacadeImpl implements RESTFacade {
             }
         }.setRetryTimes(retryTimes).run();
 
-        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
+        if (rsp.getStatusCode() != HttpStatus.OK && rsp.getStatusCode() != HttpStatus.CREATED) {
             throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
         }
 

@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Create by DCY on 2017/11/28
  */
-public class ListTraceRouteReply extends MessageReply {
+public class ListLSPTraceReply extends MessageReply {
 
     private List<List<String>> msg;
 
