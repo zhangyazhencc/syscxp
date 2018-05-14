@@ -14,8 +14,7 @@ public class PreviewTETraceMsg extends NeedReplyMessage {
     private List<String> exNodes;
     private List<String> blurryInNodes;
     private List<String> blurryExNodes;
-    private List<String> connInNodes;
-    private List<String> connExNodes;
+    private List<String> optimizationEdges;
 
     public String getSource() {
         return source;
@@ -65,19 +64,11 @@ public class PreviewTETraceMsg extends NeedReplyMessage {
         this.blurryExNodes = blurryExNodes;
     }
 
-    public List<String> getConnInNodes() {
-        return connInNodes;
+    public List<String> getOptimizationEdges() {
+        return optimizationEdges;
     }
 
-    public void setConnInNodes(List<String> connInNodes) {
-        this.connInNodes = connInNodes;
-    }
-
-    public List<String> getConnExNodes() {
-        return connExNodes;
-    }
-
-    public void setConnExNodes(List<String> connExNodes) {
-        this.connExNodes = connExNodes;
+    public void setOptimizationEdges(List<String> optimizationEdges) {
+        this.optimizationEdges = optimizationEdges;
     }
 }
