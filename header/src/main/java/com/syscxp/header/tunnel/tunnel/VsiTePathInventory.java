@@ -8,41 +8,43 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Create by DCY on 2017/11/28
+ * Create by DCY on 2018/5/14
  */
-@Inventory(mappingVOClass = LSPTraceVO.class)
-public class LSPTraceInventory {
+@Inventory(mappingVOClass = VsiTePathVO.class)
+public class VsiTePathInventory {
 
     private String uuid;
     private String tunnelUuid;
-    private Integer traceSort;
-    private String switchName;
-    private String switchIP;
+    private String name;
     private String source;
     private String destination;
     private String direction;
+    private String tnlPolicyName;
+    private String tnlPolicydestination;
     private Timestamp createDate;
     private Timestamp lastOpDate;
+    private List<ExplicitPathInventory> explicitPath = new ArrayList<ExplicitPathInventory>();
 
-    public static LSPTraceInventory valueOf(LSPTraceVO vo){
-        LSPTraceInventory inv = new LSPTraceInventory();
+    public static VsiTePathInventory valueOf(VsiTePathVO vo){
+        VsiTePathInventory inv = new VsiTePathInventory();
         inv.setUuid(vo.getUuid());
         inv.setTunnelUuid(vo.getTunnelUuid());
-        inv.setTraceSort(vo.getTraceSort());
-        inv.setSwitchName(vo.getSwitchName());
-        inv.setSwitchIP(vo.getSwitchIP());
+        inv.setName(vo.getName());
         inv.setSource(vo.getSource());
         inv.setDestination(vo.getDestination());
         inv.setDirection(vo.getDirection());
+        inv.setTnlPolicyName(vo.getTnlPolicyName());
+        inv.setTnlPolicydestination(vo.getTnlPolicydestination());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setExplicitPath(ExplicitPathInventory.valueOf(vo.getExplicitPathVOS()));
         return inv;
     }
 
-    public static List<LSPTraceInventory> valueOf(Collection<LSPTraceVO> vos) {
-        List<LSPTraceInventory> lst = new ArrayList<LSPTraceInventory>(vos.size());
-        for (LSPTraceVO vo : vos) {
-            lst.add(LSPTraceInventory.valueOf(vo));
+    public static List<VsiTePathInventory> valueOf(Collection<VsiTePathVO> vos) {
+        List<VsiTePathInventory> lst = new ArrayList<VsiTePathInventory>(vos.size());
+        for (VsiTePathVO vo : vos) {
+            lst.add(VsiTePathInventory.valueOf(vo));
         }
         return lst;
     }
@@ -63,20 +65,12 @@ public class LSPTraceInventory {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public Integer getTraceSort() {
-        return traceSort;
+    public String getName() {
+        return name;
     }
 
-    public void setTraceSort(Integer traceSort) {
-        this.traceSort = traceSort;
-    }
-
-    public String getSwitchIP() {
-        return switchIP;
-    }
-
-    public void setSwitchIP(String switchIP) {
-        this.switchIP = switchIP;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getSource() {
@@ -103,6 +97,22 @@ public class LSPTraceInventory {
         this.direction = direction;
     }
 
+    public String getTnlPolicyName() {
+        return tnlPolicyName;
+    }
+
+    public void setTnlPolicyName(String tnlPolicyName) {
+        this.tnlPolicyName = tnlPolicyName;
+    }
+
+    public String getTnlPolicydestination() {
+        return tnlPolicydestination;
+    }
+
+    public void setTnlPolicydestination(String tnlPolicydestination) {
+        this.tnlPolicydestination = tnlPolicydestination;
+    }
+
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -119,11 +129,11 @@ public class LSPTraceInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public String getSwitchName() {
-        return switchName;
+    public List<ExplicitPathInventory> getExplicitPath() {
+        return explicitPath;
     }
 
-    public void setSwitchName(String switchName) {
-        this.switchName = switchName;
+    public void setExplicitPath(List<ExplicitPathInventory> explicitPath) {
+        this.explicitPath = explicitPath;
     }
 }
