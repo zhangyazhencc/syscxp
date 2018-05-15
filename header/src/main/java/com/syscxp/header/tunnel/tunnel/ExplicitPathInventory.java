@@ -8,41 +8,39 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Create by DCY on 2017/11/28
+ * Create by DCY on 2018/5/14
  */
-@Inventory(mappingVOClass = LSPTraceVO.class)
-public class LSPTraceInventory {
+@Inventory(mappingVOClass = ExplicitPathVO.class)
+public class ExplicitPathInventory {
 
     private String uuid;
-    private String tunnelUuid;
     private Integer traceSort;
     private String switchName;
     private String switchIP;
-    private String source;
-    private String destination;
-    private String direction;
+    private String vsiTePathUuid;
+    private String tunnelsName;
+    private String explicitName;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static LSPTraceInventory valueOf(LSPTraceVO vo){
-        LSPTraceInventory inv = new LSPTraceInventory();
+    public static ExplicitPathInventory valueOf(ExplicitPathVO vo){
+        ExplicitPathInventory inv = new ExplicitPathInventory();
         inv.setUuid(vo.getUuid());
-        inv.setTunnelUuid(vo.getTunnelUuid());
+        inv.setVsiTePathUuid(vo.getVsiTePathUuid());
         inv.setTraceSort(vo.getTraceSort());
         inv.setSwitchName(vo.getSwitchName());
         inv.setSwitchIP(vo.getSwitchIP());
-        inv.setSource(vo.getSource());
-        inv.setDestination(vo.getDestination());
-        inv.setDirection(vo.getDirection());
+        inv.setTunnelsName(vo.getTunnelsName());
+        inv.setExplicitName(vo.getExplicitName());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
     }
 
-    public static List<LSPTraceInventory> valueOf(Collection<LSPTraceVO> vos) {
-        List<LSPTraceInventory> lst = new ArrayList<LSPTraceInventory>(vos.size());
-        for (LSPTraceVO vo : vos) {
-            lst.add(LSPTraceInventory.valueOf(vo));
+    public static List<ExplicitPathInventory> valueOf(Collection<ExplicitPathVO> vos) {
+        List<ExplicitPathInventory> lst = new ArrayList<ExplicitPathInventory>(vos.size());
+        for (ExplicitPathVO vo : vos) {
+            lst.add(ExplicitPathInventory.valueOf(vo));
         }
         return lst;
     }
@@ -55,20 +53,20 @@ public class LSPTraceInventory {
         this.uuid = uuid;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
-    }
-
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
-    }
-
     public Integer getTraceSort() {
         return traceSort;
     }
 
     public void setTraceSort(Integer traceSort) {
         this.traceSort = traceSort;
+    }
+
+    public String getSwitchName() {
+        return switchName;
+    }
+
+    public void setSwitchName(String switchName) {
+        this.switchName = switchName;
     }
 
     public String getSwitchIP() {
@@ -79,28 +77,28 @@ public class LSPTraceInventory {
         this.switchIP = switchIP;
     }
 
-    public String getSource() {
-        return source;
+    public String getVsiTePathUuid() {
+        return vsiTePathUuid;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setVsiTePathUuid(String vsiTePathUuid) {
+        this.vsiTePathUuid = vsiTePathUuid;
     }
 
-    public String getDestination() {
-        return destination;
+    public String getTunnelsName() {
+        return tunnelsName;
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
+    public void setTunnelsName(String tunnelsName) {
+        this.tunnelsName = tunnelsName;
     }
 
-    public String getDirection() {
-        return direction;
+    public String getExplicitName() {
+        return explicitName;
     }
 
-    public void setDirection(String direction) {
-        this.direction = direction;
+    public void setExplicitName(String explicitName) {
+        this.explicitName = explicitName;
     }
 
     public Timestamp getCreateDate() {
@@ -117,13 +115,5 @@ public class LSPTraceInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public String getSwitchName() {
-        return switchName;
-    }
-
-    public void setSwitchName(String switchName) {
-        this.switchName = switchName;
     }
 }

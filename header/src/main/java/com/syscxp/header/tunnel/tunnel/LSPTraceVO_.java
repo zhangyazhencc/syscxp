@@ -13,10 +13,10 @@ public class LSPTraceVO_ {
     public static volatile SingularAttribute<LSPTraceVO, String> tunnelUuid;
     public static volatile SingularAttribute<LSPTraceVO, Integer> traceSort;
     public static volatile SingularAttribute<LSPTraceVO, String> switchName;
-    public static volatile SingularAttribute<LSPTraceVO, String> routeIP;
-    public static volatile SingularAttribute<LSPTraceVO, String> timesFirst;
-    public static volatile SingularAttribute<LSPTraceVO, String> timesSecond;
-    public static volatile SingularAttribute<LSPTraceVO, String> timesThird;
+    public static volatile SingularAttribute<LSPTraceVO, String> switchIP;
+    public static volatile SingularAttribute<LSPTraceVO, String> source;
+    public static volatile SingularAttribute<LSPTraceVO, String> destination;
+    public static volatile SingularAttribute<LSPTraceVO, String> direction;
     public static volatile SingularAttribute<LSPTraceVO, Timestamp> createDate;
     public static volatile SingularAttribute<LSPTraceVO, Timestamp> lastOpDate;
 }

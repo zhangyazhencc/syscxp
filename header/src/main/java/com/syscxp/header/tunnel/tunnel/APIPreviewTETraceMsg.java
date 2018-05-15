@@ -24,9 +24,7 @@ public class APIPreviewTETraceMsg extends APISyncCallMessage {
     @APIParam(required = false)
     private String blurryExNodes;
     @APIParam(required = false)
-    private String connInNodes;
-    @APIParam(required = false)
-    private String connExNodes;
+    private String optimizationEdges;
 
     public String getSource() {
         return source;
@@ -76,19 +74,11 @@ public class APIPreviewTETraceMsg extends APISyncCallMessage {
         this.blurryExNodes = blurryExNodes;
     }
 
-    public String getConnInNodes() {
-        return connInNodes;
+    public String getOptimizationEdges() {
+        return optimizationEdges;
     }
 
-    public void setConnInNodes(String connInNodes) {
-        this.connInNodes = connInNodes;
-    }
-
-    public String getConnExNodes() {
-        return connExNodes;
-    }
-
-    public void setConnExNodes(String connExNodes) {
-        this.connExNodes = connExNodes;
+    public void setOptimizationEdges(String optimizationEdges) {
+        this.optimizationEdges = optimizationEdges;
     }
 }

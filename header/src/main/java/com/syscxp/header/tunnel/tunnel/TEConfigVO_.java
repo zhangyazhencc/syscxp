@@ -19,8 +19,7 @@ public class TEConfigVO_ {
     public static volatile SingularAttribute<TEConfigVO, String> exNodes;
     public static volatile SingularAttribute<TEConfigVO, String> blurryInNodes;
     public static volatile SingularAttribute<TEConfigVO, String> blurryExNodes;
-    public static volatile SingularAttribute<TEConfigVO, String> connInNodes;
-    public static volatile SingularAttribute<TEConfigVO, String> connExNodes;
+    public static volatile SingularAttribute<TEConfigVO, String> optimizationEdges;
     public static volatile SingularAttribute<TEConfigVO, String> command;
     public static volatile SingularAttribute<TEConfigVO, TETraceStatus> status;
     public static volatile SingularAttribute<TEConfigVO, Integer> isConnected;

@@ -22,8 +22,7 @@ public class TEConfigInventory {
     private String exNodes;
     private String blurryInNodes;
     private String blurryExNodes;
-    private String connInNodes;
-    private String connExNodes;
+    private String optimizationEdges;
     private String command;
     private String status;
     private Integer isConnected;
@@ -43,8 +42,7 @@ public class TEConfigInventory {
         inv.setExNodes(vo.getExNodes());
         inv.setBlurryInNodes(vo.getBlurryInNodes());
         inv.setBlurryExNodes(vo.getBlurryExNodes());
-        inv.setConnInNodes(vo.getConnInNodes());
-        inv.setConnExNodes(vo.getConnExNodes());
+        inv.setOptimizationEdges(vo.getOptimizationEdges());
         inv.setCommand(vo.getCommand());
         inv.setStatus(vo.getStatus().toString());
         inv.setIsConnected(vo.getIsConnected());
@@ -134,20 +132,12 @@ public class TEConfigInventory {
         this.blurryExNodes = blurryExNodes;
     }
 
-    public String getConnInNodes() {
-        return connInNodes;
+    public String getOptimizationEdges() {
+        return optimizationEdges;
     }
 
-    public void setConnInNodes(String connInNodes) {
-        this.connInNodes = connInNodes;
-    }
-
-    public String getConnExNodes() {
-        return connExNodes;
-    }
-
-    public void setConnExNodes(String connExNodes) {
-        this.connExNodes = connExNodes;
+    public void setOptimizationEdges(String optimizationEdges) {
+        this.optimizationEdges = optimizationEdges;
     }
 
     public String getCommand() {

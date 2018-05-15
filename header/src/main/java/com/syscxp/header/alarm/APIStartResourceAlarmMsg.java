@@ -11,7 +11,7 @@ public class APIStartResourceAlarmMsg extends APISyncCallMessage{
     @APIParam
     private String resourceUuid;
 
-    private ProductType type;
+    private ProductType productType;
 
     private String monitorUuid;
 
@@ -23,12 +23,12 @@ public class APIStartResourceAlarmMsg extends APISyncCallMessage{
         this.resourceUuid = resourceUuid;
     }
 
-    public ProductType getType() {
-        return type;
+    public ProductType getProductType() {
+        return productType;
     }
 
-    public void setType(ProductType type) {
-        this.type = type;
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
     }
 
     public String getMonitorUuid() {
