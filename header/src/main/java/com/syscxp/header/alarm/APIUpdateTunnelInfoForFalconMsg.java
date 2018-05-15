@@ -8,7 +8,6 @@ import com.syscxp.header.message.APISyncCallMessage;
  * Created by wangwg on 2017/11/02
  */
 @InnerCredentialCheck
-//@SuppressCredentialCheck
 public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,maxLength = 32)

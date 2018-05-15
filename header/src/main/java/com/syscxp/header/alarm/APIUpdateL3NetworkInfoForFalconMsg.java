@@ -5,7 +5,6 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
 @InnerCredentialCheck
-//@SuppressCredentialCheck
 public class APIUpdateL3NetworkInfoForFalconMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
