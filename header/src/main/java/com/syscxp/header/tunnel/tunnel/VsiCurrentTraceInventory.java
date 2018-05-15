@@ -8,12 +8,13 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Create by DCY on 2017/11/28
+ * Create by DCY on 2018/5/14
  */
-@Inventory(mappingVOClass = LSPTraceVO.class)
-public class LSPTraceInventory {
+@Inventory(mappingVOClass = VsiCurrentTraceVO.class)
+public class VsiCurrentTraceInventory {
 
     private String uuid;
+    private String name;
     private String tunnelUuid;
     private Integer traceSort;
     private String switchName;
@@ -24,9 +25,10 @@ public class LSPTraceInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static LSPTraceInventory valueOf(LSPTraceVO vo){
-        LSPTraceInventory inv = new LSPTraceInventory();
+    public static VsiCurrentTraceInventory valueOf(VsiCurrentTraceVO vo){
+        VsiCurrentTraceInventory inv = new VsiCurrentTraceInventory();
         inv.setUuid(vo.getUuid());
+        inv.setName(vo.getName());
         inv.setTunnelUuid(vo.getTunnelUuid());
         inv.setTraceSort(vo.getTraceSort());
         inv.setSwitchName(vo.getSwitchName());
@@ -39,10 +41,10 @@ public class LSPTraceInventory {
         return inv;
     }
 
-    public static List<LSPTraceInventory> valueOf(Collection<LSPTraceVO> vos) {
-        List<LSPTraceInventory> lst = new ArrayList<LSPTraceInventory>(vos.size());
-        for (LSPTraceVO vo : vos) {
-            lst.add(LSPTraceInventory.valueOf(vo));
+    public static List<VsiCurrentTraceInventory> valueOf(Collection<VsiCurrentTraceVO> vos) {
+        List<VsiCurrentTraceInventory> lst = new ArrayList<VsiCurrentTraceInventory>(vos.size());
+        for (VsiCurrentTraceVO vo : vos) {
+            lst.add(VsiCurrentTraceInventory.valueOf(vo));
         }
         return lst;
     }
@@ -53,6 +55,14 @@ public class LSPTraceInventory {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getTunnelUuid() {
@@ -69,6 +79,14 @@ public class LSPTraceInventory {
 
     public void setTraceSort(Integer traceSort) {
         this.traceSort = traceSort;
+    }
+
+    public String getSwitchName() {
+        return switchName;
+    }
+
+    public void setSwitchName(String switchName) {
+        this.switchName = switchName;
     }
 
     public String getSwitchIP() {
@@ -117,13 +135,5 @@ public class LSPTraceInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public String getSwitchName() {
-        return switchName;
-    }
-
-    public void setSwitchName(String switchName) {
-        this.switchName = switchName;
     }
 }

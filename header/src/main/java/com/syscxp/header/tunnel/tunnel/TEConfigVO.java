@@ -42,10 +42,7 @@ public class TEConfigVO {
     private String blurryExNodes;
 
     @Column
-    private String connInNodes;
-
-    @Column
-    private String connExNodes;
+    private String optimizationEdges;
 
     @Column
     private String command;
@@ -144,20 +141,12 @@ public class TEConfigVO {
         this.blurryExNodes = blurryExNodes;
     }
 
-    public String getConnInNodes() {
-        return connInNodes;
+    public String getOptimizationEdges() {
+        return optimizationEdges;
     }
 
-    public void setConnInNodes(String connInNodes) {
-        this.connInNodes = connInNodes;
-    }
-
-    public String getConnExNodes() {
-        return connExNodes;
-    }
-
-    public void setConnExNodes(String connExNodes) {
-        this.connExNodes = connExNodes;
+    public void setOptimizationEdges(String optimizationEdges) {
+        this.optimizationEdges = optimizationEdges;
     }
 
     public String getCommand() {

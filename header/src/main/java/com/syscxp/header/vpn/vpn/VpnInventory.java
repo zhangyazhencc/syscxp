@@ -11,6 +11,7 @@ import java.util.List;
 public class VpnInventory {
     private String uuid;
     private String accountUuid;
+    private String hostUuid;
     private String name;
     private String description;
     private Integer port;
@@ -37,6 +38,7 @@ public class VpnInventory {
         VpnInventory inv = new VpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setHostUuid(vo.getHostUuid());
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
@@ -72,13 +74,13 @@ public class VpnInventory {
         return invs;
     }
 
-    public String getSecretKey() {
-        return secretKey;
-    }
+    public String getHostUuid() { return hostUuid; }
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
+    public void setHostUuid(String hostUuid) { this.hostUuid = hostUuid; }
+
+    public String getSecretKey() { return secretKey; }
+
+    public void setSecretKey(String secretKey) { this.secretKey = secretKey; }
 
     public String getVpnHostName() {
         return vpnHostName;
@@ -124,9 +126,7 @@ public class VpnInventory {
         return accountUuid;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
+    public void setAccountUuid(String accountUuid) { this.accountUuid = accountUuid; }
 
     public String getName() {
         return name;

@@ -4,18 +4,15 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
- * Create by DCY on 2017/11/28
+ * Create by DCY on 2018/5/14
  */
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class LSPTraceVO {
+public class ExplicitPathVO {
     @Id
     @Column
     private String uuid;
-
-    @Column
-    private String tunnelUuid;
 
     @Column
     private Integer traceSort;
@@ -27,13 +24,13 @@ public class LSPTraceVO {
     private String switchIP;
 
     @Column
-    private String source;
+    private String vsiTePathUuid;
 
     @Column
-    private String destination;
+    private String tunnelsName;
 
     @Column
-    private String direction;
+    private String explicitName;
 
     @Column
     private Timestamp createDate;
@@ -54,20 +51,20 @@ public class LSPTraceVO {
         this.uuid = uuid;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
-    }
-
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
-    }
-
     public Integer getTraceSort() {
         return traceSort;
     }
 
     public void setTraceSort(Integer traceSort) {
         this.traceSort = traceSort;
+    }
+
+    public String getSwitchName() {
+        return switchName;
+    }
+
+    public void setSwitchName(String switchName) {
+        this.switchName = switchName;
     }
 
     public String getSwitchIP() {
@@ -78,28 +75,28 @@ public class LSPTraceVO {
         this.switchIP = switchIP;
     }
 
-    public String getSource() {
-        return source;
+    public String getVsiTePathUuid() {
+        return vsiTePathUuid;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setVsiTePathUuid(String vsiTePathUuid) {
+        this.vsiTePathUuid = vsiTePathUuid;
     }
 
-    public String getDestination() {
-        return destination;
+    public String getTunnelsName() {
+        return tunnelsName;
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
+    public void setTunnelsName(String tunnelsName) {
+        this.tunnelsName = tunnelsName;
     }
 
-    public String getDirection() {
-        return direction;
+    public String getExplicitName() {
+        return explicitName;
     }
 
-    public void setDirection(String direction) {
-        this.direction = direction;
+    public void setExplicitName(String explicitName) {
+        this.explicitName = explicitName;
     }
 
     public Timestamp getCreateDate() {
@@ -116,13 +113,5 @@ public class LSPTraceVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public String getSwitchName() {
-        return switchName;
-    }
-
-    public void setSwitchName(String switchName) {
-        this.switchName = switchName;
     }
 }
