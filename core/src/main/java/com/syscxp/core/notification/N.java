@@ -28,27 +28,14 @@ public class N {
     @Autowired
     private CloudBus bus;
 
-    public static N New(String resourceType, String resourceUuid) {
-        return new N(resourceType, resourceUuid);
-    }
-
     public static N New(Class resourceClass, String resourceUuid) {
         DebugUtils.Assert(resourceClass != null, "resourceClass cannot be null");
         return new N(resourceClass, resourceUuid);
     }
 
-    private N(String resourceType, String resourceUuid) {
-        builder = new NotificationBuilder();
-        builder.type(resourceUuid, resourceType);
-    }
-
     private N(Class resourceClass, String resourceUuid) {
         builder = new NotificationBuilder();
         builder.type(resourceUuid, resourceClass.getSimpleName());
-    }
-
-    private void send() {
-        mgr.send(builder);
     }
 
     public void warn(String content, NeedReplyMessage msg, MessageReply reply) {
@@ -72,7 +59,7 @@ public class N {
                 .action(msg.getIp(), reply.isSuccess())
                 .type(type);
 
-        send();
+        mgr.send(builder);
     }
 
     public N opaque(Map o) {
