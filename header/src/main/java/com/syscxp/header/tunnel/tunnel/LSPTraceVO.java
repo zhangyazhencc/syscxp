@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class TraceRouteVO {
+public class LSPTraceVO {
     @Id
     @Column
     private String uuid;
@@ -21,16 +21,19 @@ public class TraceRouteVO {
     private Integer traceSort;
 
     @Column
-    private String routeIP;
+    private String switchName;
 
     @Column
-    private String timesFirst;
+    private String switchIP;
 
     @Column
-    private String timesSecond;
+    private String source;
 
     @Column
-    private String timesThird;
+    private String destination;
+
+    @Column
+    private String direction;
 
     @Column
     private Timestamp createDate;
@@ -67,36 +70,36 @@ public class TraceRouteVO {
         this.traceSort = traceSort;
     }
 
-    public String getRouteIP() {
-        return routeIP;
+    public String getSwitchIP() {
+        return switchIP;
     }
 
-    public void setRouteIP(String routeIP) {
-        this.routeIP = routeIP;
+    public void setSwitchIP(String switchIP) {
+        this.switchIP = switchIP;
     }
 
-    public String getTimesFirst() {
-        return timesFirst;
+    public String getSource() {
+        return source;
     }
 
-    public void setTimesFirst(String timesFirst) {
-        this.timesFirst = timesFirst;
+    public void setSource(String source) {
+        this.source = source;
     }
 
-    public String getTimesSecond() {
-        return timesSecond;
+    public String getDestination() {
+        return destination;
     }
 
-    public void setTimesSecond(String timesSecond) {
-        this.timesSecond = timesSecond;
+    public void setDestination(String destination) {
+        this.destination = destination;
     }
 
-    public String getTimesThird() {
-        return timesThird;
+    public String getDirection() {
+        return direction;
     }
 
-    public void setTimesThird(String timesThird) {
-        this.timesThird = timesThird;
+    public void setDirection(String direction) {
+        this.direction = direction;
     }
 
     public Timestamp getCreateDate() {
@@ -113,5 +116,13 @@ public class TraceRouteVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getSwitchName() {
+        return switchName;
+    }
+
+    public void setSwitchName(String switchName) {
+        this.switchName = switchName;
     }
 }
