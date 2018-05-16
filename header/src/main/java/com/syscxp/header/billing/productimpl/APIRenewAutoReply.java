@@ -1,17 +1,27 @@
 package com.syscxp.header.billing.productimpl;
 
+import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.message.APIReply;
-import com.syscxp.header.vpn.vpn.VpnInventory;
 
 public class APIRenewAutoReply extends APIReply {
 
-    private VpnInventory inventory;
+    private ProductType productType;
 
-    public VpnInventory getInventory() {
-        return inventory;
+    private String productUuid;
+
+    public ProductType getProductType() {
+        return productType;
     }
 
-    public void setInventory(VpnInventory inventory) {
-        this.inventory = inventory;
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
+    }
+
+    public String getProductUuid() {
+        return productUuid;
+    }
+
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
     }
 }

@@ -4,7 +4,6 @@ import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.header.vpn.vpn.VpnVO;
 
 import java.sql.Timestamp;
 
@@ -17,7 +16,7 @@ import java.sql.Timestamp;
 @InnerCredentialCheck
 public class APIUpdateExpireDateMsg extends APISyncCallMessage {
 
-    @APIParam(emptyString = false,resourceType = VpnVO.class)
+    @APIParam(emptyString = false)
     private String uuid;
 
     @APIParam
