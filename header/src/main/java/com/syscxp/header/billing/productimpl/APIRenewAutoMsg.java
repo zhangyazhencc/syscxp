@@ -1,12 +1,10 @@
 package com.syscxp.header.billing.productimpl;
 
-import com.syscxp.header.billing.ProductCategory;
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.header.vpn.vpn.VpnVO;
 
 @InnerCredentialCheck
 public class APIRenewAutoMsg extends APISyncCallMessage {
