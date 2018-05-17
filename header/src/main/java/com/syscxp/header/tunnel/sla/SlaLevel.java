@@ -6,18 +6,18 @@ package com.syscxp.header.tunnel.sla;
  * @Description: SLA等级.
  */
 public enum SlaLevel {
-    A(1, 30),
-    B(5, 20),
-    C(10, 10),
-    D(30, 5);
+    A(1, 1800),
+    B(5, 1200),
+    C(10, 600),
+    D(30, 300);
 
     /**
-     * 带宽占用率
+     * 带宽占用率(%)
      */
     private long rate;
 
     /***
-     * 持续时间
+     * 持续时间(s:秒)
      */
     private long duration;
 
