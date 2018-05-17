@@ -1,12 +1,14 @@
-package com.syscxp.header.billing.productimpl;
+package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.billing.ProductType;
-import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.MessageReply;
 
 import java.sql.Timestamp;
 
-public class APIRenewAutoReply extends APIReply {
-
+/**
+ * Create by DCY on 2018/5/17
+ */
+public class RenewAutoReply extends MessageReply {
     private ProductType productType;
 
     private String productUuid;
@@ -14,14 +16,6 @@ public class APIRenewAutoReply extends APIReply {
     private Timestamp expireDate;
 
     private boolean temporaryRenew;
-
-    public boolean isTemporaryRenew() {
-        return temporaryRenew;
-    }
-
-    public void setTemporaryRenew(boolean temporaryRenew) {
-        this.temporaryRenew = temporaryRenew;
-    }
 
     public ProductType getProductType() {
         return productType;
@@ -45,5 +39,13 @@ public class APIRenewAutoReply extends APIReply {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public boolean isTemporaryRenew() {
+        return temporaryRenew;
+    }
+
+    public void setTemporaryRenew(boolean temporaryRenew) {
+        this.temporaryRenew = temporaryRenew;
     }
 }

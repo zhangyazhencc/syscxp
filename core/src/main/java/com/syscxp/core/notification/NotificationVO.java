@@ -57,21 +57,12 @@ public class NotificationVO {
     @Column
     private Timestamp lastOpDate;
 
-    // this column is for DB partitions, don't use it for application
-    @Column
-    private Timestamp dateTime;
-
     public String getOpAccountUuid() {
         return opAccountUuid;
     }
 
     public void setOpAccountUuid(String opAccountUuid) {
         this.opAccountUuid = opAccountUuid;
-    }
-
-    @PrePersist
-    private void prePersist() {
-        dateTime = new Timestamp(System.currentTimeMillis());
     }
 
     public String getCategory() {
@@ -112,14 +103,6 @@ public class NotificationVO {
 
     public void setSuccess(boolean success) {
         this.success = success;
-    }
-
-    public Timestamp getDateTime() {
-        return dateTime;
-    }
-
-    public void setDateTime(Timestamp dateTime) {
-        this.dateTime = dateTime;
     }
 
     public Map getOpaque() {

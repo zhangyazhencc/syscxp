@@ -1,22 +1,17 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.identity.InnerCredentialCheck;
-import com.syscxp.header.message.APIParam;
-import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.message.NeedReplyMessage;
 
 import java.sql.Timestamp;
 
 /**
- * Create by DCY on 2018/4/26
+ * Create by DCY on 2018/5/17
  */
-@InnerCredentialCheck
-public class APIUpdateTunnelExpireDateMsg extends APISyncCallMessage {
-
-    @APIParam(emptyString = false,resourceType = TunnelVO.class)
+public class UpdateExpireDateMsg extends NeedReplyMessage implements LocalTunnelBillingMessage{
     private String uuid;
-
-    @APIParam
     private Timestamp expireDate;
+    private ProductType productType;
 
     public String getUuid() {
         return uuid;
@@ -32,5 +27,13 @@ public class APIUpdateTunnelExpireDateMsg extends APISyncCallMessage {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
     }
 }
