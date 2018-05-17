@@ -5,7 +5,7 @@ import com.syscxp.header.message.NeedReplyMessage;
 /**
  * Create by DCY on 2017/11/28
  */
-public class ListTunnelTraceMsg extends NeedReplyMessage {
+public class ListTunnelTraceMsg extends NeedReplyMessage implements LocalTunnelControlMessage {
 
     private String vsiId;
 
