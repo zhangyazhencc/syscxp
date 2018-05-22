@@ -11,8 +11,10 @@ public class APIStartResourceAlarmMsg extends APISyncCallMessage{
     @APIParam
     private String resourceUuid;
 
+    @APIParam
     private ProductType productType;
 
+    @APIParam
     private String monitorUuid;
 
     public String getResourceUuid() {

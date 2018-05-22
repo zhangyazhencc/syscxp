@@ -10,7 +10,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.edgeLine.APICreateEdgeLineEvent;
 import com.syscxp.header.tunnel.edgeLine.EdgeLineVO;
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(maxLength = 64)
     private String aliRegionId;

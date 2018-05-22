@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
@@ -80,5 +82,18 @@ public class APIUpdateTEConfigMsg extends APIMessage {
 
     public void setOptimizationEdges(String optimizationEdges) {
         this.optimizationEdges = optimizationEdges;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update TEConfig")
+                        .resource(tunnelUuid, TunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
