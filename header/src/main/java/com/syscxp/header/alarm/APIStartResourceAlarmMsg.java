@@ -10,7 +10,7 @@ import java.util.List;
 @InnerCredentialCheck
 public class APIStartResourceAlarmMsg extends APISyncCallMessage{
 
-    @APIParam
+    @APIParam(required = false)
     private String resourceUuid;
 
     @APIParam
