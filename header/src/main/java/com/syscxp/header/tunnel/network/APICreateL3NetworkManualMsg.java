@@ -87,7 +87,7 @@ public class APICreateL3NetworkManualMsg extends APIMessage {
                 if (evt.isSuccess()) {
                     uuid = ((APICreateL3NetworkManualEvent) evt).getInventory().getUuid();
                 }
-                ntfy("Create MPLS L3NetworkVO")
+                ntfy("Create MANUAL L3NetworkVO")
                         .resource(uuid, L3NetworkVO.class)
                         .messageAndEvent(that, evt).done();
             }

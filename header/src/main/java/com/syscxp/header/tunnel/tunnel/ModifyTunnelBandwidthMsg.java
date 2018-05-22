@@ -5,7 +5,7 @@ import com.syscxp.header.message.NeedReplyMessage;
 /**
  * Create by DCY on 2017/10/26
  */
-public class ModifyTunnelBandwidthMsg extends NeedReplyMessage {
+public class ModifyTunnelBandwidthMsg extends NeedReplyMessage implements LocalTunnelControlMessage {
     private String tunnelUuid;
 
     private String taskUuid;

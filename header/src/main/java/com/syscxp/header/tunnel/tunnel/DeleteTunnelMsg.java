@@ -5,7 +5,7 @@ import com.syscxp.header.message.NeedReplyMessage;
 /**
  * Create by DCY on 2017/10/26
  */
-public class DeleteTunnelMsg extends NeedReplyMessage {
+public class DeleteTunnelMsg extends NeedReplyMessage implements LocalTunnelControlMessage {
     private String tunnelUuid;
 
     private String taskUuid;

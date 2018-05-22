@@ -6,12 +6,10 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.vpn.vpn.VpnConstant;
 
 import static com.syscxp.header.message.APIDeleteMessage.DeletionMode.Permissive;
 
-@Action(services = {TunnelConstant.ACTION_SERVICE, VpnConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {HostConstant.TUNNEL_ACTION_SERVICE, HostConstant.VPN_ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIDeleteHostMsg extends APIDeleteMessage implements HostMessage {
     /**
      * @desc host uuid

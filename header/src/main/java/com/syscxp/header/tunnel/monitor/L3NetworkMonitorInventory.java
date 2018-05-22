@@ -22,6 +22,7 @@ import java.util.List;
 })
 public class L3NetworkMonitorInventory {
 
+    private String uuid;
     private String l3NetworkUuid;
     private String l3NetworkName;
     private String ownerAccountUuid;
@@ -31,6 +32,7 @@ public class L3NetworkMonitorInventory {
 
     public static L3NetworkMonitorInventory valueOf(L3NetworkMonitorVO vo) {
         L3NetworkMonitorInventory inventory = new L3NetworkMonitorInventory();
+        inventory.setUuid(vo.getUuid());
         inventory.setMonitorUuid(vo.getUuid());
         inventory.setL3NetworkUuid(vo.getL3NetworkUuid());
         inventory.setL3NetworkName(vo.getL3NetworkVO().getName());
@@ -95,6 +97,14 @@ public class L3NetworkMonitorInventory {
 
     public void setOwnerAccountUuid(String ownerAccountUuid) {
         this.ownerAccountUuid = ownerAccountUuid;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }
 
