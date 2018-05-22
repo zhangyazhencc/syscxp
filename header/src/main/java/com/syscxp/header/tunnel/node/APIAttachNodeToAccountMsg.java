@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.node;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -32,5 +34,23 @@ public class APIAttachNodeToAccountMsg extends APIMessage {
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APIAttachNodeToAccountEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Attach Node To Account")
+                        .resource(uuid, AccountNodeRefVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }
