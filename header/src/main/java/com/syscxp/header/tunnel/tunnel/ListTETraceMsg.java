@@ -5,7 +5,7 @@ import com.syscxp.header.message.NeedReplyMessage;
 /**
  * Create by DCY on 2018/5/9
  */
-public class ListTETraceMsg extends NeedReplyMessage {
+public class ListTETraceMsg extends NeedReplyMessage implements LocalTunnelControlMessage {
 
     private String tunnelUuid;
 

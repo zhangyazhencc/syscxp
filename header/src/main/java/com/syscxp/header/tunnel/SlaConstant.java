@@ -13,6 +13,6 @@ public interface SlaConstant {
     String SERVICE_ID = "sla";
     String ACTION_CATEGORY = "sla";
 
-    long interval = 300;
-    String tunnelMetric = "tunnel.packets.lost.NEW.5m";
+    long INTERVAL = 300;
+    String TUNNEL_METRIC = "tunnel.packets.lost.NEW.5m";
 }

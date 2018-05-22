@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Create by DCY on 2018/5/9
  */
-public class PreviewTETraceMsg extends NeedReplyMessage {
+public class PreviewTETraceMsg extends NeedReplyMessage implements LocalTunnelControlMessage {
     private String source;
     private String target;
     private List<String> inNodes;

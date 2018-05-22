@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.host.HostConstant;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -9,7 +10,6 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.vpn.vpn.VpnVO;
 import org.springframework.http.HttpMethod;
 
 @RestRequest(
@@ -18,7 +18,7 @@ import org.springframework.http.HttpMethod;
         isAction = true,
         responseClass = APIRenewInterfaceReply.class
 )
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
+@Action(services = {HostConstant.TUNNEL_ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewInterfaceMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
