@@ -7,8 +7,9 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
+import java.util.List;
+
 @InnerCredentialCheck
-//@SuppressCredentialCheck
 public class APIDeleteResourcePolicyRefMsg extends APISyncCallMessage{
 
     @APIParam
@@ -17,8 +18,8 @@ public class APIDeleteResourcePolicyRefMsg extends APISyncCallMessage{
     @APIParam
     private ProductType productType;
 
-    @APIParam
-    private String monitorUuid;
+    @APIParam(required = false)
+    private List<String> monitorUuids;
 
     public String getResourceUuid() {
         return resourceUuid;
@@ -36,11 +37,11 @@ public class APIDeleteResourcePolicyRefMsg extends APISyncCallMessage{
         this.productType = productType;
     }
 
-    public String getMonitorUuid() {
-        return monitorUuid;
+    public List<String> getMonitorUuids() {
+        return monitorUuids;
     }
 
-    public void setMonitorUuid(String monitorUuid) {
-        this.monitorUuid = monitorUuid;
+    public void setMonitorUuids(List<String> monitorUuids) {
+        this.monitorUuids = monitorUuids;
     }
 }
