@@ -5,6 +5,8 @@ import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
+import java.util.List;
+
 @InnerCredentialCheck
 public class APIStartResourceAlarmMsg extends APISyncCallMessage{
 
@@ -15,7 +17,7 @@ public class APIStartResourceAlarmMsg extends APISyncCallMessage{
     private ProductType productType;
 
     @APIParam
-    private String monitorUuid;
+    private List<String> monitorUuids;
 
     public String getResourceUuid() {
         return resourceUuid;
@@ -33,11 +35,11 @@ public class APIStartResourceAlarmMsg extends APISyncCallMessage{
         this.productType = productType;
     }
 
-    public String getMonitorUuid() {
-        return monitorUuid;
+    public List<String> getMonitorUuids() {
+        return monitorUuids;
     }
 
-    public void setMonitorUuid(String monitorUuid) {
-        this.monitorUuid = monitorUuid;
+    public void setMonitorUuids(List<String> monitorUuids) {
+        this.monitorUuids = monitorUuids;
     }
 }
