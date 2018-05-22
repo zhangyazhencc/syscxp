@@ -10,8 +10,8 @@ import javax.persistence.metamodel.StaticMetamodel;
  */
 @StaticMetamodel(L3NetworkMonitorVO.class)
 public class L3NetworkMonitorVO_ {
-    public static volatile SingularAttribute<TunnelMonitorVO,String> uuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> l3NetworkUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> srcL3EndpointUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> dstL3EndpointUuid;
+    public static volatile SingularAttribute<L3NetworkMonitorVO,String> uuid;
+    public static volatile SingularAttribute<L3NetworkMonitorVO, String> l3NetworkUuid;
+    public static volatile SingularAttribute<L3NetworkMonitorVO, String> srcL3EndpointUuid;
+    public static volatile SingularAttribute<L3NetworkMonitorVO, String> dstL3EndpointUuid;
 }
