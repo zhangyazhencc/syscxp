@@ -56,12 +56,12 @@ X-Job-UUID: d825b1a26f4e474b8c59306081920ff2
 返回。通过使用回调URL的方法，调用者可以避免使用轮询去查询一个异步API的执行结果。举例：
 
 ```$xslt
-X-Web-Hook: http://localhost:5000/api-callback
+X-Web-Hook: http://localhost:5000/syscxp/asyncrest/callback
 ```
 
 **X-Job-Success**
 
-当使用了`X-Web-Hook`回调的方式获取异步API结果时，ZStack推送给回调URL的HTTP Post请求中会
+当使用了`X-Web-Hook`回调的方式获取异步API结果时，Syscxp推送给回调URL的HTTP Post请求中会
 包含`X-Job-Success` HTTP Header指明该异步API的执行结果是成功还是失败。例如：
 
 ```$xslt
