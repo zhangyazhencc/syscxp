@@ -4,14 +4,17 @@ public enum ProductType {
     PORT,
     EDGELINE,
     TUNNEL,
-    VPN,
-    IDCTrustee,
     L3NETWORK,
+    CloudHub,
 
     HOST,
     DISK,
     BANDWIDTH,
     RESOURCEPOOL,
     POOLNETWORK,
-    IP
+    IP,
+
+    VPN,
+
+    IDCTrustee
 }

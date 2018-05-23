@@ -8,7 +8,6 @@ import com.syscxp.header.message.APISyncCallMessage;
 import java.math.BigDecimal;
 
 @InnerCredentialCheck
-@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateFixedCostProductOrderMsg extends APISyncCallMessage {
 
     @APIParam(numberRange = {0,Integer.MAX_VALUE})

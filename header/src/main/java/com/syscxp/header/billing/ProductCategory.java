@@ -16,5 +16,7 @@ public enum ProductCategory {
     BANDWIDTH,
     RESOURCEPOOL,
     POOLNETWORK,
-    IP
+    IP,
+
+    CloudHub
 }

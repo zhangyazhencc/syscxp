@@ -63,6 +63,10 @@ public class TunnelAO {
     private TunnelMonitorState monitorState;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private TunnelSourceGroup sourceGroup;
+
+    @Column
     private Integer duration;
 
     @Column
@@ -263,5 +267,13 @@ public class TunnelAO {
 
     public void setNumber(long number) {
         this.number = number;
+    }
+
+    public TunnelSourceGroup getSourceGroup() {
+        return sourceGroup;
+    }
+
+    public void setSourceGroup(TunnelSourceGroup sourceGroup) {
+        this.sourceGroup = sourceGroup;
     }
 }
