@@ -15,8 +15,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 public class SlaAnalyzeVO_ {
     public static volatile SingularAttribute<SlaAnalyzeVO,String> uuid;
     public static volatile SingularAttribute<SlaAnalyzeVO, Integer> batchNum;
-    public static volatile SingularAttribute<SlaAnalyzeVO, String> productUuid;
-    public static volatile SingularAttribute<SlaAnalyzeVO, String> productType;
+    public static volatile SingularAttribute<SlaAnalyzeVO, String> summaryUuid;
     public static volatile SingularAttribute<SlaAnalyzeVO, String> endpoint;
     public static volatile SingularAttribute<SlaAnalyzeVO, String> level;
     public static volatile SingularAttribute<SlaAnalyzeVO, Long> start;
