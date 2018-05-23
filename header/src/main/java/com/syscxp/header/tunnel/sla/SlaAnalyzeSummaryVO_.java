@@ -1,7 +1,5 @@
 package com.syscxp.header.tunnel.sla;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
