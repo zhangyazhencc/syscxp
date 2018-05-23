@@ -19,10 +19,10 @@ import org.springframework.http.HttpMethod;
         path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
-        responseClass = APIRenewTunnelReply.class
+        responseClass = APIRenewTunnelEvent.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIRenewTunnelMsg extends APISyncCallMessage {
+public class APIRenewTunnelMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
     @APIParam
