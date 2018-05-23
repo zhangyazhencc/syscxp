@@ -13,7 +13,7 @@ public class CloudHubOfferingVO_ {
     public static volatile SingularAttribute<CloudHubOfferingVO, String> uuid;
     public static volatile SingularAttribute<CloudHubOfferingVO, String> name;
     public static volatile SingularAttribute<CloudHubOfferingVO, TunnelType> area;
-    public static volatile SingularAttribute<CloudHubOfferingVO, Long> number;
+    public static volatile SingularAttribute<CloudHubOfferingVO, Integer> number;
     public static volatile SingularAttribute<CloudHubOfferingVO, Long> bandwidth;
     public static volatile SingularAttribute<CloudHubOfferingVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<CloudHubOfferingVO, Timestamp> createDate;

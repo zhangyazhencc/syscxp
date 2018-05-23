@@ -15,7 +15,7 @@ public class APIUpdateCloudHubMsg extends APIMessage {
     @APIParam(resourceType = CloudHubVO.class, checkAccount = true)
     private String uuid;
 
-    @APIParam(emptyString = false)
+    @APIParam(required = false)
     private String name;
 
     @APIParam(required = false)
@@ -51,11 +51,6 @@ public class APIUpdateCloudHubMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                String uuid = null;
-                if (evt.isSuccess()) {
-                    uuid = ((APIUpdateCloudHubEvent) evt).getInventory().getUuid();
-                }
-
                 ntfy("Update CloudHub")
                         .resource(uuid, CloudHubVO.class)
                         .messageAndEvent(that, evt).done();

@@ -13,35 +13,51 @@ public class CloudHubVO {
     @Id
     @Column
     private String uuid;
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    private Long number;
+    private long number;
+
     @Column
     private String name;
+
     @Column
     private String description;
+
     @Column
     private String accountUuid;
+
     @Column
     private String interfaceUuid;
+
     @Column
     private String endpointUuid;
+
     @Column
     private String cloudHubOfferingUuid;
+
     @Column
     private Long bandwidth;
+
     @Column
-    private Long tunnelNumber;
+    private Integer tunnelNumber;
+
     @Column
-    private Long duration;
+    private Integer duration;
+
     @Column
     @Enumerated(EnumType.STRING)
     private ProductChargeModel productChargeModel;
+
     @Column
-    private Long maxModifies;
+    private Integer maxModifies;
+
     @Column
     private Timestamp expireDate;
+
     @Column
     private Timestamp createDate;
+
     @Column
     private Timestamp lastOpDate;
 
@@ -123,22 +139,6 @@ public class CloudHubVO {
         this.bandwidth = bandwidth;
     }
 
-    public Long getTunnelNumber() {
-        return tunnelNumber;
-    }
-
-    public void setTunnelNumber(Long tunnelNumber) {
-        this.tunnelNumber = tunnelNumber;
-    }
-
-    public Long getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Long duration) {
-        this.duration = duration;
-    }
-
     public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
@@ -147,11 +147,31 @@ public class CloudHubVO {
         this.productChargeModel = productChargeModel;
     }
 
-    public Long getMaxModifies() {
+    public void setNumber(long number) {
+        this.number = number;
+    }
+
+    public Integer getTunnelNumber() {
+        return tunnelNumber;
+    }
+
+    public void setTunnelNumber(Integer tunnelNumber) {
+        this.tunnelNumber = tunnelNumber;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public Integer getMaxModifies() {
         return maxModifies;
     }
 
-    public void setMaxModifies(Long maxModifies) {
+    public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
     }
 

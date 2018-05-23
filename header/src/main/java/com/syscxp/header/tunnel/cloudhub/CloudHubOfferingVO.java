@@ -22,7 +22,7 @@ public class CloudHubOfferingVO {
     private TunnelType area;
 
     @Column
-    private Long number;
+    private Integer number;
 
     @Column
     private Long bandwidth;
@@ -32,6 +32,11 @@ public class CloudHubOfferingVO {
 
     @Column
     private Timestamp lastOpDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     public String getUuid() {
         return uuid;
@@ -57,11 +62,11 @@ public class CloudHubOfferingVO {
         this.area = area;
     }
 
-    public Long getNumber() {
+    public Integer getNumber() {
         return number;
     }
 
-    public void setNumber(Long number) {
+    public void setNumber(Integer number) {
         this.number = number;
     }
 

@@ -1,9 +1,8 @@
 package com.syscxp.header.tunnel.cloudhub;
 
-
-import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.search.Inventory;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,13 +18,14 @@ public class CloudHubInventory {
     private String endpointUuid;
     private String cloudHubOfferingUuid;
     private Long bandwidth;
-    private Long tunnelNumber;
-    private Long duration;
-    private ProductChargeModel productChargeModel;
-    private Long maxModifies;
+    private Integer tunnelNumber;
+    private Integer duration;
+    private String productChargeModel;
+    private Integer maxModifies;
     private Timestamp expireDate;
     private Timestamp createDate;
     private Timestamp lastOpDate;
+    private boolean expired;
 
 
     public static CloudHubInventory valueOf(CloudHubVO vo) {
@@ -40,7 +40,7 @@ public class CloudHubInventory {
         inv.setCloudHubOfferingUuid(vo.getCloudHubOfferingUuid());
         inv.setTunnelNumber(vo.getTunnelNumber());
         inv.setDuration(vo.getDuration());
-        inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setProductChargeModel(vo.getProductChargeModel().toString());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setExpireDate(vo.getExpireDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -122,36 +122,36 @@ public class CloudHubInventory {
         this.bandwidth = bandwidth;
     }
 
-    public Long getTunnelNumber() {
+    public Integer getTunnelNumber() {
         return tunnelNumber;
     }
 
-    public void setTunnelNumber(Long tunnelNumber) {
+    public void setTunnelNumber(Integer tunnelNumber) {
         this.tunnelNumber = tunnelNumber;
     }
 
-    public Long getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
-    public ProductChargeModel getProductChargeModel() {
-        return productChargeModel;
-    }
-
-    public void setProductChargeModel(ProductChargeModel productChargeModel) {
-        this.productChargeModel = productChargeModel;
-    }
-
-    public Long getMaxModifies() {
+    public Integer getMaxModifies() {
         return maxModifies;
     }
 
-    public void setMaxModifies(Long maxModifies) {
+    public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
+    }
+
+    public String getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(String productChargeModel) {
+        this.productChargeModel = productChargeModel;
     }
 
     public Timestamp getExpireDate() {
@@ -160,6 +160,12 @@ public class CloudHubInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+
+        if (expireDate != null){
+            if (expireDate.before(Timestamp.valueOf(LocalDateTime.now()))){
+                this.expired = true;
+            }
+        }
     }
 
     public Timestamp getCreateDate() {
@@ -176,5 +182,13 @@ public class CloudHubInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
     }
 }

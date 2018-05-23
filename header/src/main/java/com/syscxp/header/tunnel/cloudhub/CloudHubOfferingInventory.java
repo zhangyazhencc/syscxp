@@ -14,8 +14,8 @@ public class CloudHubOfferingInventory {
 
     private String uuid;
     private String name;
-    private TunnelType area;
-    private Long number;
+    private String area;
+    private Integer number;
     private Long bandwidth;
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -24,7 +24,7 @@ public class CloudHubOfferingInventory {
         CloudHubOfferingInventory inv = new CloudHubOfferingInventory();
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
-        inv.setArea(vo.getArea());
+        inv.setArea(vo.getArea().toString());
         inv.setNumber(vo.getNumber());
         inv.setBandwidth(vo.getBandwidth());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -56,19 +56,19 @@ public class CloudHubOfferingInventory {
         this.name = name;
     }
 
-    public TunnelType getArea() {
+    public String getArea() {
         return area;
     }
 
-    public void setArea(TunnelType area) {
+    public void setArea(String area) {
         this.area = area;
     }
 
-    public Long getNumber() {
+    public Integer getNumber() {
         return number;
     }
 
-    public void setNumber(Long number) {
+    public void setNumber(Integer number) {
         this.number = number;
     }
 

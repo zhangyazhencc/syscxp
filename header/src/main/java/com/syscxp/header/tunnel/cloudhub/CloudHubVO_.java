@@ -19,10 +19,10 @@ public class CloudHubVO_ {
     public static volatile SingularAttribute<CloudHubVO, String> endpointUuid;
     public static volatile SingularAttribute<CloudHubVO, String> cloudHubOfferingUuid;
     public static volatile SingularAttribute<CloudHubVO, Long> bandwidth;
-    public static volatile SingularAttribute<CloudHubVO, Long> tunnelNumber;
-    public static volatile SingularAttribute<CloudHubVO, Long> duration;
+    public static volatile SingularAttribute<CloudHubVO, Integer> tunnelNumber;
+    public static volatile SingularAttribute<CloudHubVO, Integer> duration;
     public static volatile SingularAttribute<CloudHubVO, ProductChargeModel> productChargeModel;
-    public static volatile SingularAttribute<CloudHubVO, Long> maxModifies;
+    public static volatile SingularAttribute<CloudHubVO, Integer> maxModifies;
     public static volatile SingularAttribute<CloudHubVO, Timestamp> expireDate;
     public static volatile SingularAttribute<CloudHubVO, Timestamp> createDate;
     public static volatile SingularAttribute<CloudHubVO, Timestamp> lastOpDate;

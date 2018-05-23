@@ -28,13 +28,13 @@ public class APICreateCloudHubMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 32,resourceType = CloudHubOfferingVO.class)
     private String cloudHubOfferingUuid;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String description;
 
-    @APIParam(emptyString = false)
-    private Long duration;
+    @APIParam
+    private Integer duration;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getName() {
@@ -85,11 +85,11 @@ public class APICreateCloudHubMsg extends APIMessage {
         this.description = description;
     }
 
-    public Long getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class APIQueryCloudHubReply extends APIQueryReply {
 
-    List<CloudHubInventory> inventories;
+    private List<CloudHubInventory> inventories;
 
     public List<CloudHubInventory> getInventories() {
         return inventories;

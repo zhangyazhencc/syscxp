@@ -16,15 +16,14 @@ public class APIUpdateCloudHubOfferingMsg extends APIMessage {
     private String uuid;
 
     @APIParam(resourceType = CloudHubOfferingVO.class)
-    private String CloudHubOfferUuid;
-
+    private String cloudHubOfferUuid;
 
     public String getCloudHubOfferUuid() {
-        return CloudHubOfferUuid;
+        return cloudHubOfferUuid;
     }
 
     public void setCloudHubOfferUuid(String cloudHubOfferUuid) {
-        CloudHubOfferUuid = cloudHubOfferUuid;
+        this.cloudHubOfferUuid = cloudHubOfferUuid;
     }
 
     public String getUuid() {
@@ -41,12 +40,7 @@ public class APIUpdateCloudHubOfferingMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                String uuid = null;
-                if (evt.isSuccess()) {
-                    uuid = ((APIUpdateCloudHubEvent) evt).getInventory().getUuid();
-                }
-
-                ntfy("Update CloudHubOffering")
+                ntfy("Update CloudHub Offering")
                         .resource(uuid, CloudHubVO.class)
                         .messageAndEvent(that, evt).done();
             }

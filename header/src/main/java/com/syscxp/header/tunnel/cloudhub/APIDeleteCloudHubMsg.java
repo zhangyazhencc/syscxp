@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"delete"})
-public class APIDeleteCloudHubMsg extends APIDeleteMessage {
+public class APIDeleteCloudHubMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = CloudHubVO.class, checkAccount = true)
     private String uuid;

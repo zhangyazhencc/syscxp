@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.cloudhub;
 
+import com.syscxp.header.tunnel.tunnel.TunnelEO;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.header.vo.ForeignKey;
 
@@ -20,7 +21,7 @@ public class CloudHubTunnelRefVO {
     private String cloudHubUuid;
 
     @Column
-    @ForeignKey(parentEntityClass = TunnelVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
+    @ForeignKey(parentEntityClass = TunnelEO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
     private String tunnelUuid;
 
     @Column

@@ -5,26 +5,24 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.CloudHubConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 import java.math.BigDecimal;
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"renew"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewCloudHubMsg extends APIMessage {
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,resourceType = CloudHubVO.class, checkAccount = true)
     private String uuid;
 
-    @APIParam(emptyString = false)
+    @APIParam
+    private Integer duration;
+
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_WEEK", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-
-    @APIParam(emptyString = false)
-    private int duration;
-
-    @APIParam(emptyString = false)
-    private BigDecimal cost;
 
     public String getUuid() {
         return uuid;
@@ -32,6 +30,14 @@ public class APIRenewCloudHubMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
     }
 
     public ProductChargeModel getProductChargeModel() {
@@ -42,29 +48,13 @@ public class APIRenewCloudHubMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
-    public BigDecimal getCost() {
-        return cost;
-    }
-
-    public void setCost(BigDecimal cost) {
-        this.cost = cost;
-    }
-
     public ApiNotification _notification__() {
         final APIMessage that = this;
 
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Renewal Idc")
+                ntfy("Renew CloudHub")
                         .resource(uuid, CloudHubVO.class)
                         .messageAndEvent(that, evt).done();
             }

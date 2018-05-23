@@ -1,6 +1,5 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.query.ExpandedQueries;
 import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
@@ -36,6 +35,7 @@ public class TunnelInventory {
     private String type;
     private String innerEndpointUuid;
     private String monitorState;
+    private String sourceGroup;
     private Integer duration;
     private String productChargeModel;
     private Integer maxModifies;
@@ -63,6 +63,7 @@ public class TunnelInventory {
         inv.setType(vo.getType().toString());
         inv.setInnerEndpointUuid(vo.getInnerEndpointUuid());
         inv.setMonitorState(vo.getMonitorState().toString());
+        inv.setSourceGroup(vo.getSourceGroup().toString());
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel().toString());
         inv.setMaxModifies(vo.getMaxModifies());
@@ -277,5 +278,13 @@ public class TunnelInventory {
 
     public void setNumber(Long number) {
         this.number = number;
+    }
+
+    public String getSourceGroup() {
+        return sourceGroup;
+    }
+
+    public void setSourceGroup(String sourceGroup) {
+        this.sourceGroup = sourceGroup;
     }
 }
