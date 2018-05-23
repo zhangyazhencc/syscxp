@@ -8,7 +8,6 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.edgeLine.APIRenewEdgeLineReply;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import org.springframework.http.HttpMethod;
 
