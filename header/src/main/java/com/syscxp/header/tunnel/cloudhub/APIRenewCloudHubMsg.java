@@ -7,10 +7,11 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.CloudHubConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 import java.math.BigDecimal;
 
-@Action(services = {CloudHubConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"renew"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"renew"})
 public class APIRenewCloudHubMsg extends APIMessage {
 
     @APIParam(emptyString = false)

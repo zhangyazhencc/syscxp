@@ -4,8 +4,9 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 import com.syscxp.header.tunnel.CloudHubConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(services = {CloudHubConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"read"})
 @AutoQuery(replyClass = APIQueryCloudHubReply.class, inventoryClass = CloudHubInventory.class)
 public class APIQueryCloudHubMsg extends APIQueryMessage {
 

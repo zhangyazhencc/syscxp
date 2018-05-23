@@ -7,9 +7,10 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.CloudHubConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 
-@Action(services = {CloudHubConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"delete"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"delete"})
 public class APIDeleteCloudHubMsg extends APIDeleteMessage {
 
     @APIParam(emptyString = false,resourceType = CloudHubVO.class, checkAccount = true)

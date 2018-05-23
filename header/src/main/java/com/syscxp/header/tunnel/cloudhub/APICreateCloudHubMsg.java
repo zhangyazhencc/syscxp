@@ -7,9 +7,10 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.CloudHubConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 
-@Action(services = {CloudHubConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"create"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = CloudHubConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateCloudHubMsg extends APIMessage {
 
     @APIParam(emptyString = false)
