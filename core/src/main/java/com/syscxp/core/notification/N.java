@@ -1,5 +1,9 @@
 package com.syscxp.core.notification;
 
+import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.header.message.MessageReply;
+import com.syscxp.header.message.NeedReplyMessage;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -21,59 +25,41 @@ public class N {
     @Autowired
     private NotificationManager mgr;
 
-    public static N New() {
-        return new N();
-    }
-
-    public static N New(String resourceType, String resourceUuid) {
-        return new N(resourceType, resourceUuid);
-    }
+    @Autowired
+    private CloudBus bus;
 
     public static N New(Class resourceClass, String resourceUuid) {
         DebugUtils.Assert(resourceClass != null, "resourceClass cannot be null");
         return new N(resourceClass, resourceUuid);
     }
 
-    private N() {
-        builder = new NotificationBuilder();
-        builder.name(NotificationConstant.SYSTEM_SENDER).sender(NotificationConstant.SYSTEM_SENDER);
-    }
-
-    private N(String resourceType, String resourceUuid) {
-        this();
-        builder.type(resourceUuid, resourceType);
-    }
-
     private N(Class resourceClass, String resourceUuid) {
-        this();
+        builder = new NotificationBuilder();
         builder.type(resourceUuid, resourceClass.getSimpleName());
     }
 
-    private void send() {
+    public void warn(String content, NeedReplyMessage msg, MessageReply reply) {
+        log(content, msg, reply, NotificationType.Warning);
+    }
+
+    public void info(String content, NeedReplyMessage msg, MessageReply reply) {
+        log(content, msg, reply, NotificationType.Info);
+    }
+
+    public void error(String content, NeedReplyMessage msg, MessageReply reply) {
+        log(content, msg, reply, NotificationType.Error);
+    }
+
+    private void log(String content, NeedReplyMessage msg, MessageReply reply, NotificationType type) {
+        builder.content(content)
+                .msgfields(JSONObjectUtil.toJsonString(msg.getDeclaredFieldAndValues()))
+                .category(NotificationConstant.SYSTEM_SENDER)
+                .name(msg.getClass().getSimpleName())
+                .sender(bus.getBusProjectId())
+                .action(msg.getIp(), reply.isSuccess())
+                .type(type);
+
         mgr.send(builder);
-    }
-
-    public N sender(String sender) {
-        builder.name(sender).sender(sender);
-        return this;
-    }
-
-    public void warn_(String fmt, Object...args) {
-        builder.content(fmt).arguments(args).type(NotificationType.Warning);
-        send();
-        logger.warn(String.format(fmt, args));
-    }
-
-    public void info_(String fmt, Object...args) {
-        builder.content(fmt).arguments(args).type(NotificationType.Info);
-        send();
-        logger.info(String.format(fmt, args));
-    }
-
-    public void error_(String fmt, Object...args) {
-        builder.content(fmt).arguments(args).type(NotificationType.Error);
-        send();
-        logger.error(String.format(fmt, args));
     }
 
     public N opaque(Map o) {

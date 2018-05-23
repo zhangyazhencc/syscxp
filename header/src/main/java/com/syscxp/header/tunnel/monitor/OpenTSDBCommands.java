@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.monitor;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -280,7 +281,7 @@ public class OpenTSDBCommands {
         private String metric;
         private TunnelTags tags;
         private List aggregateTags;
-        private Map<Long, Double> dps;
+        private LinkedHashMap<Long, Double> dps;
 
         public QueryResult() {
         }
@@ -309,11 +310,11 @@ public class OpenTSDBCommands {
             this.aggregateTags = aggregateTags;
         }
 
-        public Map<Long, Double> getDps() {
+        public LinkedHashMap<Long, Double> getDps() {
             return dps;
         }
 
-        public void setDps(Map<Long, Double> dps) {
+        public void setDps(LinkedHashMap<Long, Double> dps) {
             this.dps = dps;
         }
 

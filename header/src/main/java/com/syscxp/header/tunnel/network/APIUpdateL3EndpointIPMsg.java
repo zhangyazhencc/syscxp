@@ -74,7 +74,7 @@ public class APIUpdateL3EndpointIPMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update L3EndpointVO")
+                ntfy("Update L3EndpointIP")
                         .resource(uuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }

@@ -88,7 +88,7 @@ public class APICreateL3EndpointManualMsg extends APIMessage {
                 if (evt.isSuccess()) {
                     uuid = ((APICreateL3EndpointManualEvent) evt).getInventory().getUuid();
                 }
-                ntfy("Create L3EndpointVO")
+                ntfy("Create MANUAL L3EndpointVO")
                         .resource(uuid, L3EndpointVO.class)
                         .messageAndEvent(that, evt).done();
             }

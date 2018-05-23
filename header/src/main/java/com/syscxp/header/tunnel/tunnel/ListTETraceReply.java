@@ -3,6 +3,7 @@ package com.syscxp.header.tunnel.tunnel;
 import com.syscxp.header.message.MessageReply;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Create by DCY on 2018/5/9
@@ -14,8 +15,8 @@ public class ListTETraceReply extends MessageReply {
     private Double length;
     private List<String> ipsaz;
     private List<String> ipsza;
-    private List<String> nisaz;
-    private List<String> nisza;
+    private Map<String, String> nisaz;
+    private Map<String, String> nisza;
 
     public String getSource() {
         return source;
@@ -57,19 +58,19 @@ public class ListTETraceReply extends MessageReply {
         this.ipsza = ipsza;
     }
 
-    public List<String> getNisaz() {
+    public Map<String, String> getNisaz() {
         return nisaz;
     }
 
-    public void setNisaz(List<String> nisaz) {
+    public void setNisaz(Map<String, String> nisaz) {
         this.nisaz = nisaz;
     }
 
-    public List<String> getNisza() {
+    public Map<String, String> getNisza() {
         return nisza;
     }
 
-    public void setNisza(List<String> nisza) {
+    public void setNisza(Map<String, String> nisza) {
         this.nisza = nisza;
     }
 }

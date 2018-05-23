@@ -19,37 +19,12 @@ public abstract class APIMessage extends NeedReplyMessage {
     @APINoSee
     private SessionInventory session;
 
-    @APINoSee
-    private String ip = "127.0.0.1";
-
     public SessionInventory getSession() {
         return session;
     }
 
     public void setSession(SessionInventory session) {
         this.session = session;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-
-    public Map<String, Object> getDeclaredFieldAndValues() {
-        Field[] fields = this.getClass().getDeclaredFields();
-        Map<String, Object> msgFields = new HashMap<>();
-
-        for (Field field: fields) {
-            if (field.isAnnotationPresent(PasswordNoSee.class))
-                continue;
-            Object value = FieldUtils.getFieldValue(field.getName(), this);
-            msgFields.put(field.getName(), value);
-        }
-        return msgFields;
     }
 
     private String signature;
