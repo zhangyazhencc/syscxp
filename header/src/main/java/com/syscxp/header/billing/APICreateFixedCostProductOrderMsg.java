@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @InnerCredentialCheck
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER)
-public class APICreateBuyEdgeLineOrderMsg extends APISyncCallMessage {
+public class APICreateFixedCostProductOrderMsg extends APISyncCallMessage {
 
     @APIParam(numberRange = {0,Integer.MAX_VALUE})
     private int price;
@@ -43,6 +43,9 @@ public class APICreateBuyEdgeLineOrderMsg extends APISyncCallMessage {
 
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
+
+    @APIParam(emptyString = false,validValues = {"EDGELINE","IDCTrustee"})
+    private ProductType productType;
 
     public int getPrice() {
         return price;
@@ -130,5 +133,13 @@ public class APICreateBuyEdgeLineOrderMsg extends APISyncCallMessage {
 
     public void setFixedCost(int fixedCost) {
         this.fixedCost = fixedCost;
+    }
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
     }
 }

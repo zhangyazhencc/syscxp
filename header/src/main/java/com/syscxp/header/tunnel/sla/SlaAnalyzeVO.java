@@ -1,7 +1,5 @@
 package com.syscxp.header.tunnel.sla;
 
-import com.syscxp.header.billing.ProductType;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -20,11 +18,7 @@ public class SlaAnalyzeVO {
     private Integer batchNum;
 
     @Column
-    private String productUuid;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private ProductType productType;
+    private String summaryUuid;
 
     @Column
     private String endpoint;
@@ -67,28 +61,12 @@ public class SlaAnalyzeVO {
         this.uuid = uuid;
     }
 
-    public Integer getBatchNum() {
-        return batchNum;
+    public String getSummaryUuid() {
+        return summaryUuid;
     }
 
-    public void setBatchNum(Integer batchNum) {
-        this.batchNum = batchNum;
-    }
-
-    public String getProductUuid() {
-        return productUuid;
-    }
-
-    public void setProductUuid(String productUuid) {
-        this.productUuid = productUuid;
-    }
-
-    public ProductType getProductType() {
-        return productType;
-    }
-
-    public void setProductType(ProductType productType) {
-        this.productType = productType;
+    public void setSummaryUuid(String summaryUuid) {
+        this.summaryUuid = summaryUuid;
     }
 
     public String getEndpoint() {
@@ -161,5 +139,13 @@ public class SlaAnalyzeVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public Integer getBatchNum() {
+        return batchNum;
+    }
+
+    public void setBatchNum(Integer batchNum) {
+        this.batchNum = batchNum;
     }
 }
