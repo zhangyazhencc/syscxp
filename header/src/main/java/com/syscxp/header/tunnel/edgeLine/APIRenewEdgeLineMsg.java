@@ -10,7 +10,6 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.rest.RestRequest;
 import com.syscxp.header.tunnel.EdgeLineConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsReply;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -20,10 +19,10 @@ import org.springframework.http.HttpMethod;
         path = "tunnel",
         method = HttpMethod.GET,
         isAction = true,
-        responseClass = APIRenewEdgeLineReply.class
+        responseClass = APIRenewEdgeLineEvent.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = EdgeLineConstant.ACTION_CATEGORY, names = {"update"})
-public class APIRenewEdgeLineMsg extends APISyncCallMessage {
+public class APIRenewEdgeLineMsg extends APIMessage {
 
     @APIParam(emptyString = false, resourceType = EdgeLineVO.class, checkAccount = true)
     private String uuid;
