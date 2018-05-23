@@ -20,7 +20,7 @@ import org.springframework.http.HttpMethod;
         responseClass = APIDisableTunnelEvent.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIDisableTunnelMsg extends APIMessage {
+public class APIDisableTunnelMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
@@ -41,6 +41,11 @@ public class APIDisableTunnelMsg extends APIMessage {
 
     public void setSaveOnly(boolean saveOnly) {
         this.saveOnly = saveOnly;
+    }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {

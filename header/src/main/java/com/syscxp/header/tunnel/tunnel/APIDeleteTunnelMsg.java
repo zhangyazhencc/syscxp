@@ -20,7 +20,7 @@ import org.springframework.http.HttpMethod;
         responseClass = APIDeleteTunnelEvent.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"delete"})
-public class APIDeleteTunnelMsg extends APIMessage {
+public class APIDeleteTunnelMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
@@ -30,6 +30,11 @@ public class APIDeleteTunnelMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {

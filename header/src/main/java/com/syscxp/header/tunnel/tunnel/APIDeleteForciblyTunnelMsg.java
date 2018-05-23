@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Create by DCY on 2017/10/11
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
-public class APIDeleteForciblyTunnelMsg extends APIMessage {
+public class APIDeleteForciblyTunnelMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
@@ -21,6 +21,11 @@ public class APIDeleteForciblyTunnelMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {

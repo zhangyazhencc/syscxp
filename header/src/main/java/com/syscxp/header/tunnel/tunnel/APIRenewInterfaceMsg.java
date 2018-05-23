@@ -18,7 +18,7 @@ import org.springframework.http.HttpMethod;
         responseClass = APIRenewInterfaceEvent.class
 )
 @Action(services = {HostConstant.TUNNEL_ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIRenewInterfaceMsg extends APIMessage {
+public class APIRenewInterfaceMsg extends APIMessage implements InterfaceMessage {
 
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
@@ -51,6 +51,11 @@ public class APIRenewInterfaceMsg extends APIMessage {
 
     public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
+    }
+
+    @Override
+    public String getInterfaceUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {

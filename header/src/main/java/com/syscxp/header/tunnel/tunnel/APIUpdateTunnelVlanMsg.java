@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Create by DCY on 2017/11/6
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
-public class APIUpdateTunnelVlanMsg extends APIMessage {
+public class APIUpdateTunnelVlanMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
@@ -103,6 +103,11 @@ public class APIUpdateTunnelVlanMsg extends APIMessage {
 
     public void setOldZVlan(Integer oldZVlan) {
         this.oldZVlan = oldZVlan;
+    }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {
