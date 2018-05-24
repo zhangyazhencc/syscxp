@@ -27,6 +27,7 @@ public class TunnelAO_ {
     public static volatile SingularAttribute<TunnelAO, TunnelType> type;
     public static volatile SingularAttribute<TunnelAO, String> innerEndpointUuid;
     public static volatile SingularAttribute<TunnelAO, TunnelMonitorState> monitorState;
+    public static volatile SingularAttribute<TunnelAO, TunnelSourceGroup> sourceGroup;
     public static volatile SingularAttribute<TunnelAO, Integer> duration;
     public static volatile SingularAttribute<TunnelAO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<TunnelAO, Integer> maxModifies;

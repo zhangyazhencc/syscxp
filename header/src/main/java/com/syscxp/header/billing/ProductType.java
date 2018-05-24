@@ -13,5 +13,7 @@ public enum ProductType {
     BANDWIDTH,
     RESOURCEPOOL,
     POOLNETWORK,
-    IP
+    IP,
+
+    CloudHub
 }
