@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Create by DCY on 2017/10/31
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
-public class APIOpenTunnelMsg extends APIMessage {
+public class APIOpenTunnelMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
     @APIParam
@@ -31,6 +31,11 @@ public class APIOpenTunnelMsg extends APIMessage {
 
     public void setSaveOnly(boolean saveOnly) {
         this.saveOnly = saveOnly;
+    }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {

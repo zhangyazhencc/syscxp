@@ -14,7 +14,7 @@ import java.util.List;
  * Create by DCY on 2017/9/28
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
-public class APIUpdateInterfacePortMsg extends APIMessage {
+public class APIUpdateInterfacePortMsg extends APIMessage implements InterfaceMessage {
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = SwitchPortVO.class)
@@ -44,6 +44,11 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
 
     public void setNetworkType(NetworkType networkType) {
         this.networkType = networkType;
+    }
+
+    @Override
+    public String getInterfaceUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {

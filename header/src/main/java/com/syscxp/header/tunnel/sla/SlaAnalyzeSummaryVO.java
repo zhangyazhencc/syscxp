@@ -41,6 +41,15 @@ public class SlaAnalyzeSummaryVO {
     private Double unnormalRate;
 
     @Column
+    private Boolean isSuccess;
+
+    @Column
+    private long start;
+
+    @Column
+    private long end;
+
+    @Column
     private Timestamp lastOpDate;
 
     @Column
@@ -141,5 +150,29 @@ public class SlaAnalyzeSummaryVO {
 
     public void setSlaAnalyzeVOS(List<SlaAnalyzeVO> slaAnalyzeVOS) {
         this.slaAnalyzeVOS = slaAnalyzeVOS;
+    }
+
+    public Boolean getSuccess() {
+        return isSuccess;
+    }
+
+    public void setSuccess(Boolean success) {
+        isSuccess = success;
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public void setStart(long start) {
+        this.start = start;
+    }
+
+    public long getEnd() {
+        return end;
+    }
+
+    public void setEnd(long end) {
+        this.end = end;
     }
 }

@@ -2,7 +2,7 @@ package com.syscxp.header.billing;
 
 import com.syscxp.header.message.APIReply;
 
-public class APICreateBuyIDCOrderReply extends APIReply {
+public class APICreateFixedCostProductOrderReply extends APIReply {
 
     private OrderInventory inventory;
 

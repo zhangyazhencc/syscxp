@@ -10,11 +10,8 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 
-@Configurable(preConstruction = true, dependencyCheck = true, autowire = Autowire.BY_TYPE)
 public class EcpSyncCall {
     private static final CLogger LOGGER = Utils.getLogger(EcpSyncCall.class);
 

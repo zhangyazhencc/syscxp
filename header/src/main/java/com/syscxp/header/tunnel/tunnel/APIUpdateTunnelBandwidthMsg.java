@@ -22,7 +22,7 @@ import org.springframework.http.HttpMethod;
         responseClass = APIUpdateTunnelBandwidthEvent.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIUpdateTunnelBandwidthMsg extends APIMessage {
+public class APIUpdateTunnelBandwidthMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
@@ -42,6 +42,11 @@ public class APIUpdateTunnelBandwidthMsg extends APIMessage {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {
