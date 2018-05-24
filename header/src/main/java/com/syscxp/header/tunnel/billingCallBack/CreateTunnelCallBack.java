@@ -6,4 +6,14 @@ import com.syscxp.header.billing.NotifyCallBackData;
  * Create by DCY on 2017/11/16
  */
 public class CreateTunnelCallBack extends NotifyCallBackData {
+
+    private boolean isSaveOnly;
+
+    public boolean isSaveOnly() {
+        return isSaveOnly;
+    }
+
+    public void setSaveOnly(boolean saveOnly) {
+        isSaveOnly = saveOnly;
+    }
 }
