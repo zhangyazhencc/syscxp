@@ -5,7 +5,7 @@ import com.syscxp.header.billing.NotifyCallBackData;
 /**
  * Create by DCY on 2017/11/16
  */
-public class DeleteTunnelCallBack extends NotifyCallBackData{
+public class UnsubcribeTunnelCallBack extends NotifyCallBackData {
 
     private String description;
 

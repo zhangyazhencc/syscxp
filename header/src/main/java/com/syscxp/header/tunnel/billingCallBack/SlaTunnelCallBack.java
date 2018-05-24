@@ -5,5 +5,5 @@ import com.syscxp.header.billing.NotifyCallBackData;
 /**
  * Create by DCY on 2017/11/16
  */
-public class SalTunnelCallBack extends NotifyCallBackData {
+public class SlaTunnelCallBack extends NotifyCallBackData {
 }
