@@ -20,7 +20,7 @@ import org.springframework.http.HttpMethod;
         responseClass = APIUpdateTunnelEvent.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIUpdateTunnelMsg extends APIMessage {
+public class APIUpdateTunnelMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
     @APIParam(emptyString = false, required = false, maxLength = 128)
@@ -50,6 +50,11 @@ public class APIUpdateTunnelMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
     }
 
     public ApiNotification __notification__() {

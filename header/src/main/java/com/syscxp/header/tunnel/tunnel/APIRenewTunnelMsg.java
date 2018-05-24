@@ -22,7 +22,7 @@ import org.springframework.http.HttpMethod;
         responseClass = APIRenewTunnelEvent.class
 )
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APIRenewTunnelMsg extends APIMessage {
+public class APIRenewTunnelMsg extends APIMessage implements TunnelMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
     @APIParam
@@ -53,6 +53,12 @@ public class APIRenewTunnelMsg extends APIMessage {
     public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
+
+    @Override
+    public String getTunnelUuid(){
+        return uuid;
+    }
+
     public ApiNotification __notification__() {
         final APIMessage that = this;
 
