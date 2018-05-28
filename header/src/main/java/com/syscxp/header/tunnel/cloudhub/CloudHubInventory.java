@@ -18,6 +18,7 @@ public class CloudHubInventory {
     private String endpointUuid;
     private String cloudHubOfferingUuid;
     private Long bandwidth;
+    private String bandwidthDesc;
     private Integer tunnelNumber;
     private Integer duration;
     private String productChargeModel;
@@ -120,6 +121,11 @@ public class CloudHubInventory {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+        if(bandwidth < 1073741824){
+            this.bandwidthDesc = Long.toString(bandwidth/1048576)+"M";
+        }else{
+            this.bandwidthDesc = Long.toString(bandwidth/1073741824)+"G";
+        }
     }
 
     public Integer getTunnelNumber() {
@@ -190,5 +196,13 @@ public class CloudHubInventory {
 
     public void setExpired(boolean expired) {
         this.expired = expired;
+    }
+
+    public String getBandwidthDesc() {
+        return bandwidthDesc;
+    }
+
+    public void setBandwidthDesc(String bandwidthDesc) {
+        this.bandwidthDesc = bandwidthDesc;
     }
 }
