@@ -17,7 +17,13 @@ public class RedisSession {
 
     public void put(String sessionUuid, SessionInventory session) {
         if (sessionUuid != null && session != null){
-            redisTemplate.opsForValue().set(sessionUuid, JSONObjectUtil.toJsonString(session), CoreGlobalProperty.SESSION_CLEANUP_INTERVAL, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(sessionUuid, JSONObjectUtil.toJsonString(session), 7200, TimeUnit.SECONDS);
+        }
+    }
+
+    public void put(String sessionUuid, SessionInventory session, int interval, TimeUnit unit) {
+        if (sessionUuid != null && session != null){
+            redisTemplate.opsForValue().set(sessionUuid, JSONObjectUtil.toJsonString(session), interval, unit);
         }
     }
 

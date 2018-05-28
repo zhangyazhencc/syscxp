@@ -108,7 +108,7 @@ public abstract class MemorySessionAbstractIdentityInterceptor implements Global
 
     private void startExpiredSessionCollector() {
         logger.debug("startExpiredSessionCollector");
-        final int interval = CoreGlobalProperty.SESSION_CLEANUP_INTERVAL;
+        final int interval = 3600;
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
 
             @Transactional
@@ -158,7 +158,7 @@ public abstract class MemorySessionAbstractIdentityInterceptor implements Global
 
             @Override
             public long getInterval() {
-                return interval;
+                return 3600;
             }
 
             @Override
