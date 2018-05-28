@@ -75,7 +75,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         try {
             buildResourceTypes();
             buildActions();
-            preInit();
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }
@@ -93,7 +92,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             logger.debug(String.format("build resource type %s", resrouceTypeName));
         }
     }
-    public abstract void preInit();
 
     public abstract void removeExpiredSession(List<String> sessionUuids);
 

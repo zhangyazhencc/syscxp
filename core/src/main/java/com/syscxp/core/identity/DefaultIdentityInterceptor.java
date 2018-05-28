@@ -25,10 +25,6 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    public void preInit(){
-    }
-
-    @Override
     public SessionInventory getSessionInventory(String sessionUuid) {
         SessionInventory session = sessions.get(sessionUuid);
         if (session == null) {
