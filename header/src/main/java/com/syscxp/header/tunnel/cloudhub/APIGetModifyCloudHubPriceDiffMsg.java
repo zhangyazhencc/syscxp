@@ -15,7 +15,7 @@ public class APIGetModifyCloudHubPriceDiffMsg extends APISyncCallMessage {
     private String uuid;
 
     @APIParam(resourceType = CloudHubOfferingVO.class)
-    private String cloudHubOfferUuid;
+    private String cloudHubOfferingUuid;
 
     public String getUuid() {
         return uuid;
@@ -25,11 +25,11 @@ public class APIGetModifyCloudHubPriceDiffMsg extends APISyncCallMessage {
         this.uuid = uuid;
     }
 
-    public String getCloudHubOfferUuid() {
-        return cloudHubOfferUuid;
+    public String getCloudHubOfferingUuid() {
+        return cloudHubOfferingUuid;
     }
 
-    public void setCloudHubOfferUuid(String cloudHubOfferUuid) {
-        this.cloudHubOfferUuid = cloudHubOfferUuid;
+    public void setCloudHubOfferingUuid(String cloudHubOfferingUuid) {
+        this.cloudHubOfferingUuid = cloudHubOfferingUuid;
     }
 }
