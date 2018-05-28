@@ -58,6 +58,26 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private String innerConnectedEndpointUuid;
     @APIParam
     private boolean isSaveOnly;
+    @APIParam(required = false)
+    private TunnelSourceGroup sourceGroup;
+    @APIParam(required = false)
+    private String sourceGroupUuid;
+
+    public String getSourceGroupUuid() {
+        return sourceGroupUuid;
+    }
+
+    public void setSourceGroupUuid(String sourceGroupUuid) {
+        this.sourceGroupUuid = sourceGroupUuid;
+    }
+
+    public TunnelSourceGroup getSourceGroup() {
+        return sourceGroup;
+    }
+
+    public void setSourceGroup(TunnelSourceGroup sourceGroup) {
+        this.sourceGroup = sourceGroup;
+    }
 
     public boolean isSaveOnly() {
         return isSaveOnly;

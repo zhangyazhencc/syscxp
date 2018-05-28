@@ -52,6 +52,26 @@ public class APICreateTunnelMsg extends APIMessage {
     private String crossInterfaceUuid;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = TunnelVO.class)
     private String crossTunnelUuid;
+    @APIParam(required = false)
+    private TunnelSourceGroup sourceGroup;
+    @APIParam(required = false)
+    private String sourceGroupUuid;
+
+    public String getSourceGroupUuid() {
+        return sourceGroupUuid;
+    }
+
+    public void setSourceGroupUuid(String sourceGroupUuid) {
+        this.sourceGroupUuid = sourceGroupUuid;
+    }
+
+    public TunnelSourceGroup getSourceGroup() {
+        return sourceGroup;
+    }
+
+    public void setSourceGroup(TunnelSourceGroup sourceGroup) {
+        this.sourceGroup = sourceGroup;
+    }
 
     public String getAccountUuid() {
         if(getSession().getType() == AccountType.SystemAdmin){
