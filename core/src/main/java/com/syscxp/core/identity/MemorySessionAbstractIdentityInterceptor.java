@@ -1,30 +1,30 @@
 package com.syscxp.core.identity;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SQL;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
-import com.syscxp.header.apimediator.ResourceHavingAccountReference;
-import com.syscxp.header.identity.*;
-import com.syscxp.utils.*;
-import com.syscxp.utils.gson.JSONObjectUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.GlobalApiMessageInterceptor;
+import com.syscxp.header.apimediator.ResourceHavingAccountReference;
 import com.syscxp.header.exception.CloudRuntimeException;
+import com.syscxp.header.identity.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.utils.*;
 import com.syscxp.utils.function.ForEachFunction;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.persistence.Tuple;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -33,8 +33,8 @@ import java.util.regex.Pattern;
 /**
  * Created by zxhread on 17/8/3.
  */
-public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInterceptor, ResourceHavingAccountReference {
-    protected static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
+public abstract class MemorySessionAbstractIdentityInterceptor implements GlobalApiMessageInterceptor, ResourceHavingAccountReference {
+    protected static final CLogger logger = Utils.getLogger(MemorySessionAbstractIdentityInterceptor.class);
 
     @Autowired
     protected DatabaseFacade dbf;
@@ -46,10 +46,11 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     protected PluginRegistry pluginRgty;
 
     private List<String> resourceTypeForAccountRef;
-
     private List<Class> resourceTypes;
 
-    public RedisSession sessions = new RedisSession();
+    protected Map<String, SessionInventory> sessions = new ConcurrentHashMap<>();
+    protected Map<String, SessionInventory> apiSessions = new ConcurrentHashMap<>();
+
 
     class AccountCheckField {
         Field field;
@@ -110,9 +111,44 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         final int interval = CoreGlobalProperty.SESSION_CLEANUP_INTERVAL;
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
 
+            @Transactional
+            private List<String> deleteExpiredSessions() {
+                logger.debug("clear expired session");
+                List<String> uuids = new ArrayList<String>();
+                Timestamp curr = getCurrentSqlDate();
+                for (Map.Entry<String, SessionInventory> entry : sessions.entrySet()) {
+                    SessionInventory sp = entry.getValue();
+                    if (curr.after(sp.getExpiredDate())) {
+                        uuids.add(sp.getUuid());
+                    }
+                }
+
+                removeExpiredSession(uuids);
+
+                return uuids;
+            }
+
+            private void deleteExpiredApiSessions() {
+                logger.debug("clear expired api session");
+                Timestamp curr = getCurrentSqlDate();
+
+                Iterator<Map.Entry<String, SessionInventory>> it = apiSessions.entrySet().iterator();
+                while(it.hasNext()){
+                    Map.Entry<String, SessionInventory> entry=it.next();
+                    SessionInventory sp = entry.getValue();
+                    if (curr.after(sp.getExpiredDate())) {
+                        it.remove();
+                    }
+                }
+            }
+
             @Override
             public void run() {
-                removeExpiredSession(null);
+                List<String> uuids = deleteExpiredSessions();
+                for (String uuid : uuids) {
+                    sessions.remove(uuid);
+                }
+                deleteExpiredApiSessions();
             }
 
             @Override
@@ -454,6 +490,10 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
 
     public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
         this.resourceTypeForAccountRef = resourceTypeForAccountRef;
+    }
+
+    public Map<String, SessionInventory> getSessions() {
+        return sessions;
     }
 
     public SessionInventory getSession(String sessionUuid) {

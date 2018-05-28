@@ -5,17 +5,21 @@ import com.syscxp.header.account.APIGetSecretKeyMsg;
 import com.syscxp.header.account.APIGetSecretKeyReply;
 import com.syscxp.header.account.APILogInBySecretIdMsg;
 import com.syscxp.header.account.APILogInBySecretIdReply;
-import com.syscxp.header.message.APIReply;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.identity.APIGetSessionPolicyMsg;
+import com.syscxp.header.identity.APIGetSessionPolicyReply;
 import com.syscxp.header.identity.IdentityErrors;
 import com.syscxp.header.identity.SessionInventory;
+import com.syscxp.header.message.APIReply;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.rest.RestAPIState;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 
-public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
+public class MemorySessionDefaultIdentityInterceptor extends MemorySessionAbstractIdentityInterceptor {
 
     @Autowired
     private RESTFacade restf;
@@ -27,7 +31,20 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
 
     @Override
     public SessionInventory getSessionInventory(String sessionUuid) {
-        SessionInventory session = sessions.get(sessionUuid);
+
+        APIGetSessionPolicyMsg aMsg = new APIGetSessionPolicyMsg();
+        aMsg.setSessionUuid(sessionUuid);
+        InnerMessageHelper.setMD5(aMsg);
+        String gstr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+        SessionInventory session = null;
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIGetSessionPolicyReply replay = (APIGetSessionPolicyReply) RESTApiDecoder.loads(rsp.getResult());
+            if (replay.isValidSession()) {
+                session = replay.getSessionInventory();
+            }
+        }
+
         if (session == null) {
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
         }
@@ -65,7 +82,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
 
     @Override
     public SessionInventory getSessionUuid(String secretId, String secretKey) throws Exception {
-        SessionInventory session = sessions.get(secretId);
+        SessionInventory session = apiSessions.get(secretId);
         if (session != null) {
             return session;
         }
@@ -78,7 +95,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
         APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
         if (replay.isSuccess()) {
             session = ((APILogInBySecretIdReply) replay).getSession();
-            sessions.put(secretId, session);
+            apiSessions.put(secretId, session);
             return session;
         } else {
             logger.debug(replay.getError().toString());
