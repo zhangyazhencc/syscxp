@@ -4,6 +4,8 @@ package com.syscxp.header.tunnel.endpoint;
  * Created by DCY on 2017-08-23
  */
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
 import com.syscxp.header.tunnel.node.NodeInventory;
 
@@ -13,6 +15,11 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = EndpointVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "node", inventoryClass = NodeInventory.class,
+                foreignKey = "nodeUuid", expandedInventoryKey = "uuid"),
+
+})
 public class EndpointInventory {
     private String uuid;
     private String nodeUuid;
