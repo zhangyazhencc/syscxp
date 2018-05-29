@@ -6,7 +6,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.rest.APINoSee;
-import com.syscxp.header.tunnel.host.MonitorHostVO;
 
 
 public abstract class APIAddHostMsg extends APICreateMessage implements AddHostMessage {
