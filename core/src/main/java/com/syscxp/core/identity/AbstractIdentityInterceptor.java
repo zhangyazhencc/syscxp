@@ -1,17 +1,13 @@
 package com.syscxp.core.identity;
 
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SQL;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.apimediator.ResourceHavingAccountReference;
 import com.syscxp.header.identity.*;
 import com.syscxp.utils.*;
-import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -25,7 +21,6 @@ import javax.persistence.Tuple;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +44,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
 
     private List<Class> resourceTypes;
 
-    public RedisSession sessions = new RedisSession();
+    protected RedisSession sessions = new RedisSession();
 
     class AccountCheckField {
         Field field;
@@ -66,7 +61,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     }
 
     private Map<Class, MessageAction> actions = new HashMap<>();
-    private Future<Void> expiredSessionCollector;
 
     public void checkApiMessagePermission(APIMessage msg) {
         new Auth().check(msg);
@@ -81,7 +75,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         try {
             buildResourceTypes();
             buildActions();
-            startExpiredSessionCollector();
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }
@@ -89,9 +82,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
 
     public void destroy() {
         logger.debug("IdentiyInterceptor destroy.");
-        if (expiredSessionCollector != null) {
-            expiredSessionCollector.cancel(true);
-        }
     }
 
     private void buildResourceTypes() throws ClassNotFoundException {
@@ -104,34 +94,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     }
 
     public abstract void removeExpiredSession(List<String> sessionUuids);
-
-    private void startExpiredSessionCollector() {
-        logger.debug("startExpiredSessionCollector");
-        final int interval = CoreGlobalProperty.SESSION_CLEANUP_INTERVAL;
-        expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
-
-            @Override
-            public void run() {
-                removeExpiredSession(null);
-            }
-
-            @Override
-            public TimeUnit getTimeUnit() {
-                return TimeUnit.SECONDS;
-            }
-
-            @Override
-            public long getInterval() {
-                return interval;
-            }
-
-            @Override
-            public String getName() {
-                return "ExpiredSessionCleanupThread";
-            }
-
-        }, 100);
-    }
 
     private void buildActions() {
         List<Class> apiMsgClasses = BeanUtils.scanClassByType("com.syscxp", APIMessage.class);
@@ -399,7 +361,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             session = sessions.get(msg.getSession().getUuid());
             if (session == null) {
                 session = getSessionInventory(msg.getSession().getUuid());
-                sessions.put(session.getUuid(), session);
             }
 
             Timestamp curr = getCurrentSqlDate();

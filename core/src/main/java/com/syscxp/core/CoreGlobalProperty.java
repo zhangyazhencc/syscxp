@@ -46,8 +46,6 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "innerMessageExpire", defaultValue = "600")
     public static long INNER_MESSAGE_EXPIRE;
 
-    public static int SESSION_CLEANUP_INTERVAL = 3600;
-
     @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082/billing")
     public static String BILLING_SERVER_URL;
 

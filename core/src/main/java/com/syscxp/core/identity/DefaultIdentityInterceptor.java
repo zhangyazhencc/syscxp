@@ -22,7 +22,6 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
 
     @Override
     public void removeExpiredSession(List<String> sessionUuids) {
-
     }
 
     @Override
@@ -78,7 +77,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
         APIReply replay = (APIReply) RESTApiDecoder.loads(rsp.getResult());
         if (replay.isSuccess()) {
             session = ((APILogInBySecretIdReply) replay).getSession();
-            sessions.put(secretId, session);
+
             return session;
         } else {
             logger.debug(replay.getError().toString());
