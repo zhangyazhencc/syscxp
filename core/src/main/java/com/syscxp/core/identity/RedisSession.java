@@ -34,7 +34,7 @@ public class RedisSession {
     public SessionInventory get(String sessionUuid){
         SessionInventory  session = JSONObjectUtil.toObject((String)redisTemplate.opsForValue().get(sessionUuid), SessionInventory.class);
 
-        //logger.trace("redis session: " + JSONObjectUtil.toJsonString(session));
+        logger.trace("redis session: " + JSONObjectUtil.toJsonString(session));
 
         return session;
     }

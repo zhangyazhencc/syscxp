@@ -7,6 +7,7 @@ import com.syscxp.core.config.GlobalConfigVO_;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.header.Component;
 import com.syscxp.header.exception.CloudRuntimeException;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.quota.*;
 import com.syscxp.utils.DebugUtils;
 import com.syscxp.utils.Utils;
@@ -52,7 +53,7 @@ public class QuotaChecker implements GlobalApiMessageInterceptor, Component {
         }
 
         // skip admin. if needed, another quota check will be issued in AccountManagerImpl
-        if (msg.getSession().isAdminSession()) {
+        if (msg.getSession().getType() == AccountType.SystemAdmin) {
             return msg;
         }
 

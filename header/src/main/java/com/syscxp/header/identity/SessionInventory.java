@@ -15,6 +15,10 @@ public class SessionInventory implements Serializable {
     @APINoSession
     private String userUuid;
     @APINoSession
+    private String supportAccountUuid;      //proxy or admin account uuid
+    @APINoSession
+    private String supportUserUuid;         //proxy or admin user uuid
+    @APINoSession
     private Timestamp expiredDate;
     @APINoSession
     private Timestamp createDate;
@@ -32,26 +36,57 @@ public class SessionInventory implements Serializable {
     }
 
     public boolean isAccountSession() {
-        return accountUuid.equals(userUuid);
+        return accountUuid.equals(userUuid)
+                && (supportAccountUuid == null || supportAccountUuid.equals(supportUserUuid));
     }
 
     public boolean isUserSession() {
-        return !accountUuid.equals(userUuid);
-    }
-
-    public boolean isAdminSession() {
-        return this.type == AccountType.SystemAdmin;
+        return !accountUuid.equals(userUuid)
+                || ( supportAccountUuid != null && ! supportAccountUuid.equals(supportUserUuid) );
     }
 
     public boolean isAdminAccountSession() {
-        return isAdminSession() && isAccountSession();
+        return type == AccountType.SystemAdmin
+                && (accountUuid.equals(userUuid)
+                && (supportAccountUuid == null || supportAccountUuid.equals(supportUserUuid)));
     }
 
     public boolean isAdminUserSession() {
-        return isAdminSession() && isUserSession();
+        return type == AccountType.SystemAdmin
+                && ( !accountUuid.equals(userUuid)
+                || ( supportAccountUuid != null && ! supportAccountUuid.equals(supportUserUuid) )
+        );
     }
 
-    public boolean isProxySession(){return this.type==AccountType.Proxy;}
+    public boolean isProxyAccountSession(){
+        return this.type==AccountType.Proxy
+                && (accountUuid.equals(userUuid)
+                && (supportAccountUuid == null || supportAccountUuid.equals(supportUserUuid)));
+    }
+
+    public boolean isProxyUserSession(){
+        return this.type==AccountType.Proxy
+                && ( !accountUuid.equals(userUuid)
+                || ( supportAccountUuid != null && ! supportAccountUuid.equals(supportUserUuid)));
+    }
+
+    public void resetAccountUuidAndUserUuid(String toAccountUuid){
+        if (toAccountUuid == null) {
+            if (this.getSupportAccountUuid() != null){
+                this.setAccountUuid(this.getSupportAccountUuid());
+                this.setUserUuid(this.getSupportUserUuid());
+            }
+            this.setSupportAccountUuid(null);
+            this.setSupportUserUuid(null);
+        }else{
+            if (this.supportAccountUuid == null){
+                this.setSupportAccountUuid(this.accountUuid);
+                this.setSupportUserUuid(this.userUuid);
+            }
+            this.setAccountUuid(toAccountUuid);
+            this.setUserUuid(toAccountUuid);
+        }
+    }
 
     public String getUuid() {
         return uuid;
@@ -98,5 +133,21 @@ public class SessionInventory implements Serializable {
 
     public void setType(AccountType type) {
         this.type = type;
+    }
+
+    public String getSupportAccountUuid() {
+        return supportAccountUuid;
+    }
+
+    public void setSupportAccountUuid(String supportAccountUuid) {
+        this.supportAccountUuid = supportAccountUuid;
+    }
+
+    public String getSupportUserUuid() {
+        return supportUserUuid;
+    }
+
+    public void setSupportUserUuid(String supportUserUuid) {
+        this.supportUserUuid = supportUserUuid;
     }
 }
