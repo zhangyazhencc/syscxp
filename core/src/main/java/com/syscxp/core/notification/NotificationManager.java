@@ -275,8 +275,13 @@ public class NotificationManager extends AbstractService {
                 APICreateNotificationMsg msg = new APICreateNotificationMsg();
                 try {
                     if (session != null) {
-                        msg.setOpAccountUuid(session.getAccountUuid());
-                        msg.setOpUserUuid(session.getUserUuid());
+                        if(session.getSupportAccountUuid() != null){
+                            msg.setOpAccountUuid(session.getSupportAccountUuid());
+                            msg.setOpUserUuid(session.getSupportUserUuid());
+                        }else{
+                            msg.setOpAccountUuid(session.getAccountUuid());
+                            msg.setOpUserUuid(session.getUserUuid());
+                        }
                     }
 
                     msg.setName(builder.notificationName);
