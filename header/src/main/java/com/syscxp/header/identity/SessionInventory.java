@@ -82,6 +82,7 @@ public class SessionInventory implements Serializable {
             }
             this.setSupportAccountUuid(null);
             this.setSupportUserUuid(null);
+            this.setSupportStrategy(null);
         }else{
             if (this.supportAccountUuid == null){
                 this.setSupportAccountUuid(this.accountUuid);
