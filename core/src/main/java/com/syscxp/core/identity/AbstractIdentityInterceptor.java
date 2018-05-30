@@ -390,15 +390,10 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
 
     protected abstract SessionInventory getSessionInventory(String sessionUuid);
 
-    protected abstract SessionInventory logOutSessionRemove(String sessionUuid);
+    protected abstract void logOutSessionRemove(String sessionUuid);
 
     public void logOutSession(String sessionUuid) {
-
         SessionInventory session = sessions.get(sessionUuid);
-        if (session == null) {
-            session = logOutSessionRemove(sessionUuid);
-        }
-
         if (session == null) {
             return;
         }
@@ -412,6 +407,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                     }
                 });
 
+        logOutSessionRemove(sessionUuid);
         sessions.remove(sessionUuid);
     }
 

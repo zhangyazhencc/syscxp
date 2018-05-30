@@ -41,8 +41,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    protected SessionInventory logOutSessionRemove(String sessionUuid) {
-        return null;
+    protected void logOutSessionRemove(String sessionUuid) {
     }
 
     @Override
