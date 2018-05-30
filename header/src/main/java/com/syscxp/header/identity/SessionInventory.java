@@ -15,15 +15,19 @@ public class SessionInventory implements Serializable {
     @APINoSession
     private String userUuid;
     @APINoSession
-    private String supportAccountUuid;      //proxy or admin account uuid
-    @APINoSession
-    private String supportUserUuid;         //proxy or admin user uuid
+    private AccountType type;
     @APINoSession
     private Timestamp expiredDate;
     @APINoSession
     private Timestamp createDate;
+
     @APINoSession
-    private AccountType type;
+    private String supportAccountUuid;      //proxy or admin account uuid
+    @APINoSession
+    private String supportUserUuid;         //proxy or admin user uuid
+    @APINoSession
+    private ProxySupportStrategy supportStrategy; //proxy support strategy
+
     @APINoSession
     private List<PolicyStatement> policyStatements;
 
@@ -149,5 +153,13 @@ public class SessionInventory implements Serializable {
 
     public void setSupportUserUuid(String supportUserUuid) {
         this.supportUserUuid = supportUserUuid;
+    }
+
+    public ProxySupportStrategy getSupportStrategy() {
+        return supportStrategy;
+    }
+
+    public void setSupportStrategy(ProxySupportStrategy supportStrategy) {
+        this.supportStrategy = supportStrategy;
     }
 }

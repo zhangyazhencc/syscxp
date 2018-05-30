@@ -280,6 +280,21 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                     }
                 }
 
+                if(session.getSupportAccountUuid()!=null){
+                    if(ProxySupportStrategy.OnlyAccess == session.getSupportStrategy()){
+                        for (String a : action.actions) {
+                            Pattern pattern = Pattern.compile(".*:.*:read");
+                            Matcher m = pattern.matcher(a);
+                            boolean ret = m.matches();
+                            if (ret) {
+                                return;
+                            }
+                        }
+
+                        throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED, String.format("API[%s] is denied, proxy support strategy denied[strategy: %s, proxy uuid: %s]", msg.getClass().getSimpleName(), session.getSupportStrategy(), session.getSupportAccountUuid())));
+                    }
+                }
+
                 if (session.isAccountSession()) {
                     return;
                 }
