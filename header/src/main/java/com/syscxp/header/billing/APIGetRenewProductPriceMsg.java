@@ -4,6 +4,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -48,7 +49,11 @@ public class APIGetRenewProductPriceMsg extends APISyncCallMessage {
     }
 
     public String getAccountUuid() {
-        return accountUuid;
+        if (StringUtils.isEmpty(accountUuid)){
+            return this.getSession().getAccountUuid();
+        }else {
+            return accountUuid;
+        }
     }
 
     public void setAccountUuid(String accountUuid) {

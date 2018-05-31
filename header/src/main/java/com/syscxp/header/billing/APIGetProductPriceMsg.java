@@ -8,7 +8,6 @@ import com.syscxp.header.message.APISyncCallMessage;
 import java.util.List;
 
 @InnerCredentialCheck
-@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"read"})
 public class APIGetProductPriceMsg extends APISyncCallMessage {
     @APIParam(nonempty = true)
     private List<ProductPriceUnit> units;
