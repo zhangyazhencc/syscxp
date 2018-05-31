@@ -49,7 +49,7 @@ public class APIGetRenewProductPriceMsg extends APISyncCallMessage {
     }
 
     public String getAccountUuid() {
-        if (StringUtils.isEmpty(accountUuid)){
+        if (this.getSession() != null && StringUtils.isEmpty(accountUuid)){
             return this.getSession().getAccountUuid();
         }else {
             return accountUuid;

@@ -7,7 +7,6 @@ import com.syscxp.header.message.APISyncCallMessage;
 import org.springframework.util.StringUtils;
 
 @InnerCredentialCheck
-@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RENEW)
 public class APIDeleteExpiredRenewMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)
@@ -17,11 +16,7 @@ public class APIDeleteExpiredRenewMsg extends APISyncCallMessage {
     private String productUuid;
 
     public String getAccountUuid() {
-        if (StringUtils.isEmpty(accountUuid)){
-            return this.getSession().getAccountUuid();
-        }else {
-            return accountUuid;
-        }
+        return accountUuid;
     }
 
     public void setAccountUuid(String accountUuid) {
