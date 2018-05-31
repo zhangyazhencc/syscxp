@@ -1,6 +1,5 @@
 package com.syscxp.core.identity;
 
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -14,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class RedisSession {
 
-    protected static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
+    protected static final CLogger logger = Utils.getLogger(RedisSession.class);
 
     @Autowired
     protected RedisTemplate redisTemplate;
