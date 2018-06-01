@@ -21,23 +21,17 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     private RESTFacade restf;
 
     @Override
-    public void removeExpiredSession(List<String> sessionUuids) {
-    }
-
-    @Override
     public SessionInventory getSessionInventory(String sessionUuid) {
         SessionInventory session = sessions.get(sessionUuid);
         if (session == null) {
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
         }
 
-        afterGetSessionInventory(session);
-
         return session;
     }
 
-    protected void afterGetSessionInventory(SessionInventory session) {
-
+    @Override
+    protected void localFirstLogin(SessionInventory session) {
     }
 
     @Override

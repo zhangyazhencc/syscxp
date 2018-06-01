@@ -3,6 +3,7 @@ package com.syscxp.core.identity;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SQL;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.apimediator.ResourceHavingAccountReference;
 import com.syscxp.header.identity.*;
@@ -20,7 +21,10 @@ import com.syscxp.utils.logging.CLogger;
 import javax.persistence.Tuple;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,6 +49,8 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     private List<Class> resourceTypes;
 
     protected RedisSession sessions = new RedisSession();
+    protected Map<String, Timestamp> loginAccounts = new ConcurrentHashMap<>();
+    private Future<Void> expiredLoginAccountsCollector;
 
     class AccountCheckField {
         Field field;
@@ -70,11 +76,53 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         return session.isAdminAccountSession();
     }
 
+    private void startExpiredLoginAccountsCollector() {
+        logger.debug("start expiredLoginAccountsCollector");
+        expiredLoginAccountsCollector = thdf.submitPeriodicTask(new PeriodicTask() {
+
+            private void deleteExpiredLoginAccounts() {
+                logger.debug("clear login account set");
+                List<String> uuids = new ArrayList<String>();
+                Timestamp curr = getCurrentSqlDate();
+                for (Map.Entry<String, Timestamp> entry : loginAccounts.entrySet()) {
+                    Timestamp sp = entry.getValue();
+                    if (curr.after(sp)) {
+                        uuids.add(entry.getKey());
+                    }
+                }
+                for (String uuid : uuids) {
+                    loginAccounts.remove(uuid);
+                }
+            }
+
+            @Override
+            public void run() {
+                deleteExpiredLoginAccounts();
+            }
+
+            @Override
+            public TimeUnit getTimeUnit() {
+                return TimeUnit.SECONDS;
+            }
+
+            @Override
+            public long getInterval() {
+                return 3600;
+            }
+
+            @Override
+            public String getName() {
+                return "ExpiredLoginAccountsCleanupThread";
+            }
+
+        }, 2000);
+    }
     public void init() {
         logger.debug("IdentiyInterceptor init.");
         try {
             buildResourceTypes();
             buildActions();
+            startExpiredLoginAccountsCollector();
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }
@@ -82,6 +130,9 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
 
     public void destroy() {
         logger.debug("IdentiyInterceptor destroy.");
+        if (expiredLoginAccountsCollector != null) {
+            expiredLoginAccountsCollector.cancel(true);
+        }
     }
 
     private void buildResourceTypes() throws ClassNotFoundException {
@@ -92,8 +143,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             logger.debug(String.format("build resource type %s", resrouceTypeName));
         }
     }
-
-    public abstract void removeExpiredSession(List<String> sessionUuids);
 
     private void buildActions() {
         List<Class> apiMsgClasses = BeanUtils.scanClassByType("com.syscxp", APIMessage.class);
@@ -385,12 +434,12 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 logOutSession(session.getUuid());
                 throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
             }
+            if (loginAccounts.get(session.getAccountUuid()) == null) {
+                localFirstLogin(session);
+                loginAccounts.put(session.getAccountUuid(), Timestamp.valueOf(LocalDateTime.now().plusHours(2)));
+            }
         }
     }
-
-    protected abstract SessionInventory getSessionInventory(String sessionUuid);
-
-    protected abstract void logOutSessionRemove(String sessionUuid);
 
     public void logOutSession(String sessionUuid) {
         SessionInventory session = sessions.get(sessionUuid);
@@ -427,6 +476,12 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
         this.resourceTypeForAccountRef = resourceTypeForAccountRef;
     }
+
+    protected abstract void localFirstLogin(SessionInventory session);
+
+    protected abstract void logOutSessionRemove(String sessionUuid);
+
+    public abstract SessionInventory getSessionInventory(String sessionUuid);
 
     public SessionInventory getSession(String sessionUuid) {
         return sessions.get(sessionUuid);
