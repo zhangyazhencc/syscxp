@@ -6,6 +6,8 @@ import com.syscxp.header.message.APIReply;
 public class APICreateUsedIpReply extends APIReply {
     private UsedIpInventory inventory;
 
+    private String networkType;
+
     private boolean isPublic;
 
     private int vlan;
@@ -32,5 +34,13 @@ public class APICreateUsedIpReply extends APIReply {
 
     public void setVlan(int vlan) {
         this.vlan = vlan;
+    }
+
+    public String getNetworkType() {
+        return networkType;
+    }
+
+    public void setNetworkType(String networkType) {
+        this.networkType = networkType;
     }
 }
