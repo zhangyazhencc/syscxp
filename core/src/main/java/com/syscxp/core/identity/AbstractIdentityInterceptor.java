@@ -330,7 +330,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 }
 
                 if(session.getSupportAccountUuid()!=null){
-                    if(ProxySupportStrategy.OnlyAccess == session.getSupportStrategy()){
+                    if(ProxySupportStrategy.ReadOnlyAccess == session.getSupportStrategy()){
                         for (String a : action.actions) {
                             Pattern pattern = Pattern.compile(".*:.*:read");
                             Matcher m = pattern.matcher(a);
