@@ -387,7 +387,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                         }
 
                         if (logger.isTraceEnabled()) {
-                            logger.trace(String.format("API[name: %s, action: %s] is not matched by policy[name: %s, uuid: %s" + ", statement[action: %s, effect: %s]", msg.getClass().getSimpleName(), a, s.getName(), s.getUuid(), ac, s.getEffect()));
+                            //logger.trace(String.format("API[name: %s, action: %s] is not matched by policy[name: %s, uuid: %s" + ", statement[action: %s, effect: %s]", msg.getClass().getSimpleName(), a, s.getName(), s.getUuid(), ac, s.getEffect()));
                         }
                     }
                 }
