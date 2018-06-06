@@ -25,6 +25,7 @@ import com.syscxp.header.notification.ApiNotificationFactoryExtensionPoint;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.utils.ObjectUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -137,7 +138,9 @@ public class NotificationManager extends AbstractService {
             List<NotificationBuilder> lst = new ArrayList<>();
             for (ApiNotification.Inner inner : b.notification.getInners()) {
                 Map<String, Object> opaque = new HashMap<>();
-                opaque.put("session", b.message.getSession());
+                SessionInventory session = ObjectUtils.newAndCopy(b.message.getSession(), SessionInventory.class);
+                session.setPolicyStatements(null);
+                opaque.put("session", session);
                 opaque.put("success", aevt.isSuccess());
 
                 if (!aevt.isSuccess()) {
