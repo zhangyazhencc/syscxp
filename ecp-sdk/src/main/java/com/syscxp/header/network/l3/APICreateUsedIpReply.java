@@ -8,6 +8,8 @@ public class APICreateUsedIpReply extends APIReply {
 
     private String networkType;
 
+    private String l3NetworkName;
+
     private boolean isPublic;
 
     private int vlan;
@@ -42,5 +44,13 @@ public class APICreateUsedIpReply extends APIReply {
 
     public void setNetworkType(String networkType) {
         this.networkType = networkType;
+    }
+
+    public String getL3NetworkName() {
+        return l3NetworkName;
+    }
+
+    public void setL3NetworkName(String l3NetworkName) {
+        this.l3NetworkName = l3NetworkName;
     }
 }
