@@ -7,7 +7,6 @@ import com.syscxp.header.identity.Action;
 import java.sql.Timestamp;
 
 @InnerCredentialCheck
-@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
 
     @APIParam

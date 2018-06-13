@@ -6,5 +6,5 @@ package com.syscxp.header.products;
 public enum ProductPurpose {
     TEST,
     NORMAL,
-    PERSONAL
+    Syscloud
 }
