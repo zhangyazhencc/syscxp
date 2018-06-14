@@ -1,6 +1,7 @@
 package com.syscxp.sms;
 
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.identity.RedisSession;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -27,28 +28,19 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
 
     @Autowired
     private CloudBus bus;
+
     @Autowired
-    private ThreadFacade thdf;
-
-    private Map<String, String> sessions = new ConcurrentHashMap<>();
-
-    private Future<Void> expiredSessionCollector;
+    private VerificationCode verificationCode;
 
     public boolean start() {
-        try {
-            startExpiredSessionCollector();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
+        verificationCode.start();
 
         return true;
     }
 
     public boolean stop() {
         logger.debug("imageCode service destroy.");
-        if (expiredSessionCollector != null) {
-            expiredSessionCollector.cancel(true);
-        }
+        verificationCode.stop();
         return true;
     }
 
@@ -65,7 +57,8 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     private void handle(APIValidateImageCodeMsg msg) {
         APIValidateImageCodeReply reply = new APIValidateImageCodeReply();
 
-        if(sessions.get(msg.getUuid()) != null && sessions.get(msg.getUuid()).equalsIgnoreCase(msg.getCode())){
+        String code = verificationCode.get(msg.getUuid());
+        if(code != null && code.equalsIgnoreCase(msg.getCode())){
             reply.setValid(true);
         }else {
             reply.setValid(false);
@@ -81,7 +74,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
 
         reply.setImageUuid(map.get("uuid"));
         reply.setImageCode(map.get("base64Code"));
-        sessions.put(map.get("uuid"),map.get("randomString"));
+        verificationCode.put(map.get("uuid"), map.get("randomString"));
         bus.reply(msg, reply);
 
     }
@@ -89,44 +82,12 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     @Override
     public boolean ValidateImageCode(String imageUuid, String imageCode) {
 
-        if(imageUuid.equalsIgnoreCase("testUuid")
-                && imageCode.equalsIgnoreCase("testCode")){
+        String code = verificationCode.get(imageUuid);
+        if(code != null && code.equalsIgnoreCase(imageCode)){
             return true;
+        }else{
+            return false;
         }
-
-        if(sessions.get(imageUuid) != null
-                && sessions.get(imageUuid).equalsIgnoreCase(imageCode)){
-            return true;
-        }
-
-        return false;
-    }
-
-    private void startExpiredSessionCollector() {
-        logger.debug("start imageCode session expired session collector");
-        expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
-
-            @Override
-            public void run() {
-                sessions.clear();
-            }
-
-            @Override
-            public TimeUnit getTimeUnit() {
-                return TimeUnit.SECONDS;
-            }
-
-            @Override
-            public long getInterval() {
-                return 60 * 30; // 30 minute
-            }
-
-            @Override
-            public String getName() {
-                return "ImageCodeExpiredSessionCleanupThread";
-            }
-
-        }, 40);
     }
 
     public String getId() {
@@ -138,7 +99,5 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         return msg;
     }
-
-
 
 }

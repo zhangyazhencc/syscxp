@@ -39,33 +39,18 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
+
     @Autowired
-    private ThreadFacade thdf;
-
-
-    class VerificationCode {
-        String code;
-        Timestamp expiredDate;
-        boolean isValidate;
-    }
-
-    private Map<String, VerificationCode> sessions = new ConcurrentHashMap<>();
-    private Future<Void> expiredSessionCollector;
+    private VerificationCode verificationCode;
 
     public boolean start() {
-        try {
-            startExpiredSessionCollector();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
+        verificationCode.start();
         return true;
     }
 
     public boolean stop() {
         logger.debug("sms service destroy.");
-        if (expiredSessionCollector != null) {
-            expiredSessionCollector.cancel(true);
-        }
+        verificationCode.stop();
         return true;
     }
 
@@ -84,32 +69,20 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
 
     @Override
     public boolean validateVerificationCode(String phone, String code) {
-        VerificationCode verificationCode = sessions.get(phone);
-        if (verificationCode == null){
-            return false;
+        String vcode = verificationCode.get(phone);
+        if (vcode != null && vcode.equalsIgnoreCase(code)){
+            return true;
         }else{
-            Timestamp curr = new Timestamp(System.currentTimeMillis());
-            if (curr.before(verificationCode.expiredDate) && code.equals(verificationCode.code)) {
-                return true;
-            }else{
-                return false;
-            }
+            return false;
         }
     }
 
     public boolean msgValidateCode(String phone, String code) {
-        VerificationCode verificationCode = sessions.get(phone);
-        if (verificationCode == null){
-            return false;
+        String vcode = verificationCode.get(phone);
+        if (vcode != null && vcode.equalsIgnoreCase(code)){
+            return true;
         }else{
-            Timestamp curr = new Timestamp(System.currentTimeMillis());
-            if (!verificationCode.isValidate && curr.before(verificationCode.expiredDate)
-                    && code.equals(verificationCode.code)) {
-                verificationCode.isValidate = true;
-                return true;
-            }else{
-                return false;
-            }
+            return false;
         }
     }
 
@@ -127,18 +100,8 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
 
         logger.debug("发送验证码：" + sms.getStatusCode()+sms.getStatusMsg() +
                 "[手机号码:"+msg.getPhone()+",验证码:"+code+"]");
-        VerificationCode verificationCode = sessions.get(msg.getPhone());
-        long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
-        if (verificationCode == null){
-            VerificationCode vcode = new VerificationCode();
-            vcode.code = code;
-            vcode.expiredDate = new Timestamp(expiredTime);
-            sessions.put(msg.getPhone(), vcode);
-        }else{
-            verificationCode.code = code;
-            verificationCode.expiredDate = new Timestamp(expiredTime);
-            verificationCode.isValidate = false;
-        }
+
+        verificationCode.put(msg.getPhone(), code);
 
         APIGetVerificationCodeReply reply = new APIGetVerificationCodeReply();
         bus.reply(msg, reply);
@@ -225,38 +188,6 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         return sms;
     }
 
-    private void startExpiredSessionCollector() {
-        logger.debug("start sms session expired session collector");
-        expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
-
-            @Override
-            public void run() {
-                Timestamp curr = new Timestamp(System.currentTimeMillis());
-                for (Map.Entry<String, VerificationCode> entry : sessions.entrySet()) {
-                    VerificationCode v = entry.getValue();
-                    if (curr.after(v.expiredDate)) {
-                        sessions.remove(entry.getKey());
-                    }
-                }
-            }
-
-            @Override
-            public TimeUnit getTimeUnit() {
-                return TimeUnit.SECONDS;
-            }
-
-            @Override
-            public long getInterval() {
-                return 60 * 30; // 30 minute
-            }
-
-            @Override
-            public String getName() {
-                return "SmsExpiredSessionCleanupThread";
-            }
-
-        }, 30);
-    }
 
     public String getId() {
         return bus.makeLocalServiceId(SmsConstant.SERVICE_ID);

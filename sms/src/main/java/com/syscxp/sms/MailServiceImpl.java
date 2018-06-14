@@ -37,35 +37,18 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     @Autowired
     private CloudBus bus;
+
     @Autowired
-    private DatabaseFacade dbf;
-    @Autowired
-    private ThreadFacade thdf;
-
-
-    class VerificationCode {
-        String code;
-        Timestamp expiredDate;
-        boolean isValidate;
-    }
-
-    private Map<String, VerificationCode> sessions = new ConcurrentHashMap<>();
-    private Future<Void> expiredSessionCollector;
+    private VerificationCode verificationCode;
 
     public boolean start() {
-        try {
-            startExpiredSessionCollector();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
+        verificationCode.start();
         return true;
     }
 
     public boolean stop() {
         logger.debug("mail service destroy.");
-        if (expiredSessionCollector != null) {
-            expiredSessionCollector.cancel(true);
-        }
+        verificationCode.stop();
         return true;
     }
 
@@ -96,37 +79,24 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
     private void  handle(APIValidateMailCodeMsg msg){
         APIValidateMailCodeReply reply = new APIValidateMailCodeReply();
 
-        boolean valid = false;
-        VerificationCode verificationCode = sessions.get(msg.getMail());
-        if (verificationCode == null){
+        String vcode = verificationCode.get(msg.getMail());
+
+        if (vcode != null && vcode.equalsIgnoreCase(msg.getCode())){
+            reply.setValid(true);
         }else{
-            Timestamp curr = new Timestamp(System.currentTimeMillis());
-            if (!verificationCode.isValidate && curr.before(verificationCode.expiredDate)
-                    && msg.getCode().equals(verificationCode.code)) {
-                valid = true;
-            }else{
-            }
+            reply.setValid(false);
         }
-        reply.setValid(valid);
-        if(valid){
-            verificationCode.isValidate = true;
-        }
-        sessions.put(msg.getMail(),verificationCode);
+
         bus.reply(msg, reply);
     }
 
     public boolean ValidateMailCode(String mail, String code) {
-        VerificationCode verificationCode = sessions.get(mail);
-
-        Timestamp curr = new Timestamp(System.currentTimeMillis());
-        if(verificationCode != null
-                && curr.before(verificationCode.expiredDate)
-                && code.equals(verificationCode.code)){
+        String vcode = verificationCode.get(mail);
+        if (vcode != null && vcode.equalsIgnoreCase(code)){
             return true;
         }else{
             return false;
         }
-
     }
 
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
@@ -135,19 +105,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         String context = String.format("【犀思云】尊敬的用户：您的校验码：%s，工作人员不会索取，请勿泄漏。", code);
         boolean result = mailSend(msg.getMail(),"犀思云验证码", context);
         if(result){
-            VerificationCode verificationCode = sessions.get(msg.getMail());
-            long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
-            if (verificationCode == null){
-                VerificationCode vcode = new VerificationCode();
-                vcode.code = code;
-                vcode.expiredDate = new Timestamp(expiredTime);
-                vcode.isValidate = false;
-                sessions.put(msg.getMail(), vcode);
-            }else{
-                verificationCode.code = code;
-                verificationCode.isValidate = false;
-                verificationCode.expiredDate = new Timestamp(expiredTime);
-            }
+            verificationCode.put(msg.getMail(), code);
         }
 
         APIMailCodeSendReply reply = new APIMailCodeSendReply();
@@ -184,39 +142,6 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         logger.debug(">>>>>>>>>>>>>>>>>>发送成功<<<<<<<<<<<<<<<<<<<<<<");
 
         return true;
-    }
-
-    private void startExpiredSessionCollector() {
-        logger.debug("start mail session expired session collector");
-        expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
-
-            @Override
-            public void run() {
-                Timestamp curr = new Timestamp(System.currentTimeMillis());
-                for (Map.Entry<String, VerificationCode> entry : sessions.entrySet()) {
-                    VerificationCode v = entry.getValue();
-                    if (curr.after(v.expiredDate)) {
-                        sessions.remove(entry.getKey());
-                    }
-                }
-            }
-
-            @Override
-            public TimeUnit getTimeUnit() {
-                return TimeUnit.SECONDS;
-            }
-
-            @Override
-            public long getInterval() {
-                return 60 * 30; // 30 minute
-            }
-
-            @Override
-            public String getName() {
-                return "MailExpiredSessionCleanupThread";
-            }
-
-        }, 50);
     }
 
     public String getId() {
