@@ -73,8 +73,12 @@ public class RESTApiController {
     @RequestMapping(value = RESTConstant.REST_API_CALL, method = {RequestMethod.POST, RequestMethod.PUT})
     public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpEntity<String> entity = restf.httpServletRequestToHttpEntity(request);
+        String referer = "";
+        if (request.getHeader("Referer") != null) {
+            referer = request.getHeader("Referer") + "#" + request.getHeader("referer-url");
+        }
         try {
-            String ret = handleByMessageType(entity.getBody(), getRemortIP(request), request.getHeader("Referer") + request.getHeader("referer-url"));
+            String ret = handleByMessageType(entity.getBody(), getRemortIP(request), referer);
             response.setStatus(HttpServletResponse.SC_OK);
             response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
