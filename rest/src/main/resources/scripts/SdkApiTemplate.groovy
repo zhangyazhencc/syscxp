@@ -179,7 +179,7 @@ class SdkApiTemplate implements SdkTemplate {
             return ret;
         }
         
-        ${resultClassName} value = res.getResult(${resultClassName}.class);
+        ${resultClassName} value = res.getResult(${resultClassName}.class, new SourceClassMap());
         ret.value = value == null ? new ${resultClassName}() : value; 
 
         return ret;

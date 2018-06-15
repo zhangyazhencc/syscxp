@@ -30,6 +30,8 @@ class SdkDataStructureGenerator implements SdkTemplate {
 
     Reflections reflections = Platform.reflections
 
+    String contentPath
+
     SdkDataStructureGenerator() {
         Reflections reflections = Platform.getReflections()
         responseClasses = reflections.getTypesAnnotatedWith(RestResponse.class)
@@ -37,6 +39,7 @@ class SdkDataStructureGenerator implements SdkTemplate {
 
     @Override
     List<SdkFile> generate(String contentPath) {
+        this.contentPath = contentPath
         responseClasses.each { c ->
             try {
                 generateResponseClass(c)
@@ -67,11 +70,13 @@ class SdkDataStructureGenerator implements SdkTemplate {
 
         SdkFile f = new SdkFile()
         f.fileName = "SourceClassMap.java"
-        f.content = """package com.syscxp.sdk;
+        f.content = """package com.syscxp.sdk.${contentPath};
 
 import java.util.HashMap;
+import java.util.HashMap;
+import com.syscxp.sdk.common.SourceClassInterface;
 
-public class SourceClassMap {
+public class SourceClassMap implements SourceClassInterface {
     final static HashMap<String, String> srcToDstMapping = new HashMap() {
         {
 ${srcToDst.join("\n")}
@@ -83,6 +88,16 @@ ${srcToDst.join("\n")}
 ${dstToSrc.join("\n")}
         }
     };
+
+    @Override
+    public HashMap<String, String> getSrcToDstMapping() {
+        return srcToDstMapping;
+    }
+    
+    @Override
+    public HashMap<String, String> getDstToSrcMapping() {
+        return dstToSrcMapping;
+    }
 }
 """
         return f
@@ -145,7 +160,9 @@ ${dstToSrc.join("\n")}
         SdkFile file = new SdkFile()
         file.fileName = "${getTargetClassName(clz)}.java"
         if (!Enum.class.isAssignableFrom(clz)) {
-            file.content = """package com.syscxp.sdk;
+            file.content = """package com.syscxp.sdk.${contentPath};
+
+import com.syscxp.sdk.common.*;
 
 public class ${getTargetClassName(clz)} ${Object.class == clz.superclass ? "" : "extends " + clz.superclass.simpleName} {
 
@@ -153,7 +170,7 @@ ${output.join("\n")}
 }
 """
         } else {
-            file.content = """package com.syscxp.sdk;
+            file.content = """package com.syscxp.sdk.${contentPath};
 
 public enum ${getTargetClassName(clz)} {
 ${output.join("\n")}
@@ -161,7 +178,7 @@ ${output.join("\n")}
 """
         }
 
-        sourceClassMap[clz.name] = "com.syscxp.sdk.${getTargetClassName(clz)}"
+        sourceClassMap[clz.name] = "com.syscxp.sdk.${contentPath}.${getTargetClassName(clz)}"
         sdkFileMap.put(clz, file)
     }
 
@@ -273,7 +290,7 @@ ${output.join("\n")}
 
         SdkFile file = new SdkFile()
         file.fileName = "${className}.java"
-        file.content = """package com.syscxp.sdk;
+        file.content = """package com.syscxp.sdk.${contentPath};
 
 public class ${className} {
 ${output.join("\n")}
