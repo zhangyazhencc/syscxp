@@ -26,7 +26,6 @@
         <module>search</module>
         <module>sms</module>
         <module>rest</module>
-        <module>sdk</module>
         <module>ecp-sdk</module>
     </modules>
 
