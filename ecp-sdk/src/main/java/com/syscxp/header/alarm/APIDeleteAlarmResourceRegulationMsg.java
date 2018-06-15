@@ -1,4 +1,4 @@
-package com.syscxp.sdk.vhost;
+package com.syscxp.header.alarm;
 
 
 import com.syscxp.header.message.APISyncCallMessage;

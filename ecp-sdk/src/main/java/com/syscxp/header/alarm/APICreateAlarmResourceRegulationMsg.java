@@ -1,11 +1,13 @@
-package com.syscxp.sdk.vhost;
-
+package com.syscxp.header.alarm;
 
 import com.syscxp.header.message.APISyncCallMessage;
 
-public class APIUpdateAlarmResourceRegulationMsg extends APISyncCallMessage {
+public class APICreateAlarmResourceRegulationMsg extends APISyncCallMessage {
 
     private String uuid;
+    private String resourceUuid;
+    private String regulationUuid;
+    private String productType;
     private String targetValue;
     private String targetUnit;
     private String comparisonValue;
@@ -19,6 +21,30 @@ public class APIUpdateAlarmResourceRegulationMsg extends APISyncCallMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getResourceUuid() {
+        return resourceUuid;
+    }
+
+    public void setResourceUuid(String resourceUuid) {
+        this.resourceUuid = resourceUuid;
+    }
+
+    public String getRegulationUuid() {
+        return regulationUuid;
+    }
+
+    public void setRegulationUuid(String regulationUuid) {
+        this.regulationUuid = regulationUuid;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 
     public String getTargetValue() {
