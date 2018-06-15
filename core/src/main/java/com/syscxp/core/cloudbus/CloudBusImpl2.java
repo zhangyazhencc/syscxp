@@ -116,7 +116,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         this.DEFAULT_MESSAGE_TIMEOUT = timeout;
     }
 
-    private String makeExchange(BusExchange exchange){
+    private String makeExchange(BusExchange exchange) {
         return exchange.toString() + CloudBusImpl2.busProjectId;
     }
 
@@ -220,7 +220,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         Channel acquire() {
             try {
                 final Channel chan = pool.poll(10, TimeUnit.MINUTES);
-                DebugUtils.Assert(chan!=null, String.format("cannot get a channel after 10 minutes"));
+                DebugUtils.Assert(chan != null, String.format("cannot get a channel after 10 minutes"));
                 return chan;
             } catch (InterruptedException e) {
                 throw new CloudRuntimeException(e);
@@ -270,6 +270,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     private class NoRouteEndPoint extends AbstractConsumer {
         Channel nrouteChan;
         private final String nrouteName = makeMessageQueueName(makeLocalServiceId("NoRouteEndPoint"));
+
         public void construct() {
             try {
                 nrouteChan = conn.createChannel();
@@ -349,7 +350,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         private void handle(Message msg) {
             setThreadLoggingContext(msg);
 
-            if (logger.isTraceEnabled() && wire.logMessage(msg))  {
+            if (logger.isTraceEnabled() && wire.logMessage(msg)) {
                 logger.trace(String.format("[msg receive]: %s", wire.dumpMessage(msg)));
             }
 
@@ -462,7 +463,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                 RecoveryAwareAMQConnection delegate = FieldUtils.getFieldValue("delegate", conn);
                 DebugUtils.Assert(delegate != null, "cannot get RecoveryAwareAMQConnection");
                 Field _missedHeartbeats = FieldUtils.getField("_missedHeartbeats", RecoveryAwareAMQConnection.class);
-                DebugUtils.Assert(_missedHeartbeats!=null, "cannot find _missedHeartbeats");
+                DebugUtils.Assert(_missedHeartbeats != null, "cannot find _missedHeartbeats");
                 _missedHeartbeats.setAccessible(true);
                 try {
                     _missedHeartbeats.set(delegate, 100);
@@ -483,8 +484,8 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                         return true;
                     } catch (ShutdownSignalException e) {
                         logger.warn(String.format("recoverable send fails %s times, will continue to retry %s times; %s",
-                                count, CloudBusGlobalProperty.RABBITMQ_RECOVERABLE_SEND_TIMES-count, e.getMessage()));
-                        count ++;
+                                count, CloudBusGlobalProperty.RABBITMQ_RECOVERABLE_SEND_TIMES - count, e.getMessage()));
+                        count++;
                     }
                 }
 
@@ -906,7 +907,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                 // don't track services not using management node id in service id
                 return;
             }
-            pairs[pairs.length-1] = "*";
+            pairs[pairs.length - 1] = "*";
             String bindingKey = makeMessageQueueName(StringUtils.join(pairs, "."));
 
             bindingKeys.add(bindingKey);
@@ -1027,7 +1028,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
                 LongString metaData = (LongString) headers.get(MESSAGE_META_DATA);
                 Map m = JSONObjectUtil.toObject(new String(metaData.getBytes()), LinkedHashMap.class);
-                
+
                 trackMessage((MessageMetaData) JSONObjectUtil.rehashObject(m, metaDataClassCache.get(m.get("className"))));
             } catch (Throwable t) {
                 logger.warn("unhandled throwable", t);
@@ -1080,7 +1081,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                     return;
                 }
 
-                final String mgmtNodeId = srvIds[srvIds.length-1];
+                final String mgmtNodeId = srvIds[srvIds.length - 1];
 
                 MessageTrackerEnvelope e = new MessageTrackerEnvelope() {
                     Timestamp timeout = new Timestamp(new Date().getTime() + rmeta.timeout);
@@ -1149,7 +1150,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             } else {
                 ResponseMessageMetaData remeta = (ResponseMessageMetaData) metaData;
                 MessageTrackerEnvelope e = messages.get(remeta.correlationId);
-                if (e!=null) {
+                if (e != null) {
                     e.dismiss();
                 }
             }
@@ -1206,7 +1207,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             conn = connFactory.newConnection(addresses.toArray(new Address[]{}));
             logger.debug(String.format("rabbitmq connection is established on %s", conn.getAddress()));
 
-            ((Recoverable)conn).addRecoveryListener(new RecoveryListener() {
+            ((Recoverable) conn).addRecoveryListener(new RecoveryListener() {
                 @Override
                 public void handleRecovery(Recoverable recoverable) {
                     logger.info(String.format("rabbitmq connection is recovering on %s", conn.getAddress().toString()));
@@ -1268,7 +1269,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     }
 
     private void buildRequestMessageMetaData(Message msg) {
-        if (msg instanceof APIMessage || (msg instanceof NeedReplyMessage && !Boolean.valueOf((String)msg.getHeaderEntry(NO_NEED_REPLY_MSG)))) {
+        if (msg instanceof APIMessage || (msg instanceof NeedReplyMessage && !Boolean.valueOf((String) msg.getHeaderEntry(NO_NEED_REPLY_MSG)))) {
             RequestMessageMetaData metaData;
             if (msg instanceof LockResourceMessage) {
                 LockResourceMessage lmsg = (LockResourceMessage) msg;
@@ -1696,7 +1697,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         metaData.messageName = msg.getClass().getName();
         metaData.serviceId = metaData.isApiEvent ? null : msg.getServiceId();
         metaData.className = metaData.getClass().getName();
-        metaData.correlationId = metaData.isApiEvent ? ((APIEvent)msg).getApiId() : (String) msg.getHeaderEntry(CORRELATION_ID);
+        metaData.correlationId = metaData.isApiEvent ? ((APIEvent) msg).getApiId() : (String) msg.getHeaderEntry(CORRELATION_ID);
         msg.getAMQPHeaders().put(MESSAGE_META_DATA, JSONObjectUtil.toJsonString(metaData));
     }
 
@@ -1755,7 +1756,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                 }
             }
 
-            for (BeforePublishEventInterceptor i : beforeEventPublishInterceptorsForAll)  {
+            for (BeforePublishEventInterceptor i : beforeEventPublishInterceptorsForAll) {
                 c = i;
                 i.beforePublishEvent(event);
             }
@@ -2033,33 +2034,16 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                             for (BeforeDeliveryMessageInterceptor i : is) {
                                                 i.intercept(msg);
 
-                                                /*
-                                                if (logger.isTraceEnabled()) {
-                                                    logger.trace(String.format("called BeforeDeliveryMessageInterceptor[%s] for message[%s]", i.getClass(), msg.getClass()));
-                                                }
-                                                */
                                             }
                                         }
 
                                         for (BeforeDeliveryMessageInterceptor i : beforeDeliveryMessageInterceptorsForAll) {
                                             i.intercept(msg);
 
-                                            /*
-                                            if (logger.isTraceEnabled()) {
-                                                logger.trace(String.format("called BeforeDeliveryMessageInterceptor[%s] for message[%s]", i.getClass(), msg.getClass()));
-                                            }
-                                            */
                                         }
-
-//                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
-//                                            logger.trace(String.format("[handle message]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
-//                                        }
 
                                         serv.handleMessage(msg);
 
-//                                        if (logger.isTraceEnabled() && wire.logMessage(msg)) {
-//                                            logger.trace(String.format("[handle message over]: %s, time:%s", msg.getId(), System.currentTimeMillis()));
-//                                        }
                                     } catch (Throwable t) {
                                         logExceptionWithMessageDump(msg, t);
 
@@ -2073,8 +2057,6 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                     return null;
                                 }
                             };
-
-                            logger.trace(String.format("[syncLevel]: %s [%s]", syncLevel, baseName));
 
                             if (syncLevel == 0) {
                                 thdf.submit(task);
@@ -2110,7 +2092,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             public void inactive() {
                 try {
                     echan.queueUnbind(baseName, makeExchange(BusExchange.P2P), baseName);
-                    for (String aliasName: aliasNames) {
+                    for (String aliasName : aliasNames) {
                         echan.queueUnbind(aliasName, makeExchange(BusExchange.P2P), aliasName);
                     }
                     echan.close();
@@ -2311,8 +2293,8 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
     @Override
     public String makeTargetServiceIdByResourceUuid(String serviceId, String resourceUuid) {
-        DebugUtils.Assert(serviceId!=null, "serviceId cannot be null");
-        DebugUtils.Assert(resourceUuid!=null, "resourceUuid cannot be null");
+        DebugUtils.Assert(serviceId != null, "serviceId cannot be null");
+        DebugUtils.Assert(resourceUuid != null, "resourceUuid cannot be null");
         String mgmtUuid = destMaker.makeDestination(resourceUuid);
         return serviceId + "." + mgmtUuid;
     }
@@ -2588,7 +2570,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             }
 
             Integer count = countMap.get(s.getMessageName());
-            count = count == null ? 1 : count ++;
+            count = count == null ? 1 : count++;
             countMap.put(s.getMessageName(), count);
             if (count > most) {
                 most = count;

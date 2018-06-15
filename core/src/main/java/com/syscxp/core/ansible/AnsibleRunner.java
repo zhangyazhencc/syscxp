@@ -236,6 +236,8 @@ public class AnsibleRunner {
                 final File tempKeyFile = File.createTempFile("syscxp", "tmp");
                 FileUtils.writeStringToFile(tempKeyFile, privateKey);
 
+                ShellUtils.run(String.format("chmod 600 %s", tempKeyFile.getAbsolutePath()));
+
                 Defer.defer(new Runnable() {
                     @Override
                     public void run() {

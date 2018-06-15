@@ -31,4 +31,4 @@ test/syscxp-integration-test-result/
 */container_settings.json
 rebel.xml
 syscxp_local.properties
-
+sdk/src/main/java/com/syscxp/sdk/*

@@ -7,6 +7,7 @@ public class AlarmConstant {
 
     public static final String ACTION_SERVICE = "alarm";
     public static final String ACTION_CATEGORY_ALARM = "alarm";
+    public static final String ACTION_CATEGORY_CONTACT = "contact";
 
     public static final String QUOTA_ALARM_POLICY_NUM = "alarmPolicy.num";
     public static final String QUOTA_POLICY_RULE_NUM = "policyRule.num";
