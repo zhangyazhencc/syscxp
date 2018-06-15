@@ -207,17 +207,17 @@ class SdkApiTemplate implements SdkTemplate {
 """)
 
         ms.add("""\
-    Map<String, Parameter> getParameterMap() {
+    public Map<String, Parameter> getParameterMap() {
         return parameterMap;
     }
     
-    protected Map<String, Parameter> getNonAPIParameterMap() {
+    public Map<String, Parameter> getNonAPIParameterMap() {
         return nonAPIParameterMap;
     }
 """)
 
         ms.add("""\
-    RestInfo getRestInfo() {
+    public RestInfo getRestInfo() {
         RestInfo info = new RestInfo();
         info.setHttpMethod("${requestAnnotation.method().name()}");
         info.setPath("${path}");
