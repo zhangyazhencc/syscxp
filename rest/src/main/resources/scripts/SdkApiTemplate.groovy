@@ -31,6 +31,8 @@ class SdkApiTemplate implements SdkTemplate {
     String resultClassName
     boolean isQueryApi
 
+    String contentPath
+
     SdkApiTemplate(Class apiMessageClass) {
         try {
             this.apiMessageClass = apiMessageClass
@@ -127,7 +129,7 @@ class SdkApiTemplate implements SdkTemplate {
             def fieldTypeName = f.getType().getName()
 
             if (Enum.class.isAssignableFrom(f.getType())) {
-                fieldTypeName = String.format("com.syscxp.sdk.%s", f.getType().getSimpleName())
+                fieldTypeName = String.format("%s", f.getType().getSimpleName())
                 if (!enumClasses.contains(f.getType())) {
                     enumClasses.add(f.getType())
                 }
@@ -217,13 +219,14 @@ class SdkApiTemplate implements SdkTemplate {
         ms.add("""\
     RestInfo getRestInfo() {
         RestInfo info = new RestInfo();
-        info.httpMethod = "${requestAnnotation.method().name()}";
-        info.path = "${path}";
-        info.needSession = ${!apiMessageClass.isAnnotationPresent(SuppressCredentialCheck.class)};
-        info.needPoll = ${!APISyncCallMessage.class.isAssignableFrom(apiMessageClass)};
-        info.parameterName = "${
+        info.setHttpMethod("${requestAnnotation.method().name()}");
+        info.setPath("${path}");
+        info.setNeedSession(${!apiMessageClass.isAnnotationPresent(SuppressCredentialCheck.class)});
+        info.setNeedPoll(${!APISyncCallMessage.class.isAssignableFrom(apiMessageClass)});
+        info.setParameterName("${
             requestAnnotation.isAction() ? StringUtils.uncapitalize(normalizeApiName()) : requestAnnotation.parameterName()
-        }";
+        }");
+        
         return info;
     }
 """)
@@ -234,10 +237,11 @@ class SdkApiTemplate implements SdkTemplate {
     def generateAction(String clzName, String path) {
         def f = new SdkFile()
         f.fileName = "${clzName}.java"
-        f.content = """package com.syscxp.sdk;
+        f.content = """package com.syscxp.sdk.${contentPath};
 
 import java.util.HashMap;
 import java.util.Map;
+import com.syscxp.sdk.common.*;
 
 public class ${clzName} extends ${isQueryApi ? "QueryAction" : "AbstractAction"} {
 
@@ -282,7 +286,7 @@ ${generateMethods(path)}
 
                 SdkFile file = new SdkFile()
                 file.fileName = "${clz.getSimpleName()}.java"
-                file.content = """package com.syscxp.sdk;
+                file.content = """package com.syscxp.sdk.${contentPath};
 
 public enum ${clz.getSimpleName()} {
 ${output.join("\n")}
@@ -341,6 +345,7 @@ ${output.join("\n")}
 
     @Override
     List<SdkFile> generate(String contentPath) {
+        this.contentPath = contentPath
         def ret = []
         try {
             ret.addAll(generateAction(contentPath))
