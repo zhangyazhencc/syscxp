@@ -567,7 +567,7 @@ public class RestServer implements Component, CloudBusEventListener {
         Api api = apis.get(action);
 
         if (api == null) {
-            response.setCode(RestConstants.NOT_FOUND);
+            response.setCode(RestConstants.ACTION_NOT_FOUND);
             response.setMessage(String.format("no api mapping to Action[name: %s]", action));
             sendResponse(response, rsp);
             return;
@@ -609,7 +609,7 @@ public class RestServer implements Component, CloudBusEventListener {
         AsyncRestQueryResult ret = asyncStore.query(uuid);
 
         if (ret.getState() == AsyncRestState.expired) {
-            response.setCode(RestConstants.NOT_FOUND);
+            response.setCode(RestConstants.ACTION_NOT_FOUND);
             response.setMessage("the job has been expired");
             sendResponse(response, rsp);
             return;
