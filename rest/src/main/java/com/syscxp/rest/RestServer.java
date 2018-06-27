@@ -368,7 +368,7 @@ public class RestServer implements Component, CloudBusEventListener {
             }
 
             if (m.containsKey(key)) {
-                throw new RestException(RestConstants.BAD_REQUEST,
+                throw new RestException(RestConstants.INVALID_PARAMETER,
                         String.format("duplicate map query parameter[%s], there has been a parameter with the same map key", name));
             }
 
@@ -376,7 +376,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 m.put(key, asList(vals));
             } else {
                 if (vals.length > 1) {
-                    throw new RestException(RestConstants.BAD_REQUEST,
+                    throw new RestException(RestConstants.INVALID_PARAMETER,
                             String.format("Invalid query parameter[%s], only one value is allowed for the parameter but" +
                                     " multiple values found", name));
                 }
@@ -401,7 +401,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 return lst;
             } else {
                 if (vals.length > 1) {
-                    throw new RestException(RestConstants.BAD_REQUEST,
+                    throw new RestException(RestConstants.INVALID_PARAMETER,
                             String.format("Invalid query parameter[%s], only one value is allowed for the parameter but" +
                                     " multiple values found", name));
                 }
@@ -584,7 +584,7 @@ public class RestServer implements Component, CloudBusEventListener {
         try {
             handleApi(api, req, rsp);
         } catch (RestException e) {
-            response.setCode(RestConstants.BAD_REQUEST);
+            response.setCode(RestConstants.INVALID_PARAMETER);
             response.setMessage(e.error);
             sendResponse(response, rsp);
         } catch (Throwable e) {
@@ -696,7 +696,7 @@ public class RestServer implements Component, CloudBusEventListener {
                     String booleanValue = booleanObject.toString();
                     if (!(booleanValue.equalsIgnoreCase("true") ||
                             booleanValue.equalsIgnoreCase("false"))) {
-                        throw new RestException(RestConstants.BAD_REQUEST,
+                        throw new RestException(RestConstants.INVALID_PARAMETER,
                                 String.format("Invalid value for boolean field [%s]," +
                                                 " [%s] is not a valid boolean string[true, false].",
                                         f.getName(), booleanValue));
@@ -710,7 +710,7 @@ public class RestServer implements Component, CloudBusEventListener {
         if (requestInfo.get().headers.containsKey(RestConstants.HEADER_JOB_UUID)) {
             String jobUuid = requestInfo.get().headers.get(RestConstants.HEADER_JOB_UUID).get(0);
             if (jobUuid.length() != 32) {
-                throw new RestException(RestConstants.BAD_REQUEST, String.format("Invalid header[%s], it" +
+                throw new RestException(RestConstants.INVALID_PARAMETER, String.format("Invalid header[%s], it" +
                         " must be a UUID with '-' stripped", RestConstants.HEADER_JOB_UUID));
             }
 
@@ -790,13 +790,13 @@ public class RestServer implements Component, CloudBusEventListener {
                 try {
                     msg.setLimit(Integer.valueOf(varvalue));
                 } catch (NumberFormatException ex) {
-                    throw new RestException(RestConstants.BAD_REQUEST, "Invalid query parameter. 'limit' must be an integer");
+                    throw new RestException(RestConstants.INVALID_PARAMETER, "Invalid query parameter. 'limit' must be an integer");
                 }
             } else if ("start".equals(varname)) {
                 try {
                     msg.setStart(Integer.valueOf(varvalue));
                 } catch (NumberFormatException ex) {
-                    throw new RestException(RestConstants.BAD_REQUEST, "Invalid query parameter. 'start' must be an integer");
+                    throw new RestException(RestConstants.INVALID_PARAMETER, "Invalid query parameter. 'start' must be an integer");
                 }
             } else if ("count".equals(varname)) {
                 msg.setCount(Boolean.valueOf(varvalue));
@@ -831,7 +831,7 @@ public class RestServer implements Component, CloudBusEventListener {
                     }
 
                     if (OP == null) {
-                        throw new RestException(RestConstants.BAD_REQUEST, String.format("Invalid query parameter." +
+                        throw new RestException(RestConstants.INVALID_PARAMETER, String.format("Invalid query parameter." +
                                 " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
                                 " %s", cond, asList(QUERY_OP_MAPPING.keySet())));
                     }
@@ -844,7 +844,7 @@ public class RestServer implements Component, CloudBusEventListener {
                         qc.setOp(OP);
                     } else {
                         if (ks.length != 2) {
-                            throw new RestException(RestConstants.BAD_REQUEST, String.format("Invalid query parameter." +
+                            throw new RestException(RestConstants.INVALID_PARAMETER, String.format("Invalid query parameter." +
                                     " The '%s' in parameter[q] is not a key-value pair split by %s", cond, OP));
                         }
 
@@ -864,7 +864,7 @@ public class RestServer implements Component, CloudBusEventListener {
                 }
 
                 if (fs.isEmpty()) {
-                    throw new RestException(RestConstants.BAD_REQUEST, "Invalid query parameter. 'fields'" +
+                    throw new RestException(RestConstants.INVALID_PARAMETER, "Invalid query parameter. 'fields'" +
                             " contains zero field");
                 }
                 msg.setFields(fs);

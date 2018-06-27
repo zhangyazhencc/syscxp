@@ -29,8 +29,7 @@ public interface RestConstants {
     String HTTP_METHOD_NOT_ALLOWED = "1003";
     String NOT_FOUND = "1004";
     String PROCESSING = "1005";
-    String BAD_REQUEST = "1006";
     String INVALID_PARAMETER = "1007";
-    String VALIDATION_ERROR = "1008";
+    String IDENTITY_ERROR = "1008";
 
 }

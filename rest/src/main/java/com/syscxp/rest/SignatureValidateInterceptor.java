@@ -1,7 +1,6 @@
 package com.syscxp.rest;
 
 import com.syscxp.core.identity.AbstractIdentityInterceptor;
-import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.HMAC;
@@ -11,7 +10,6 @@ import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -77,7 +75,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         try {
             secretKey = identityInterceptor.getSecretKey(secretId, ip);
         } catch (Exception e) {
-            throw new RestServletRequestInterceptorException(RestConstants.VALIDATION_ERROR, e.getMessage());
+            throw new RestServletRequestInterceptorException(RestConstants.IDENTITY_ERROR, e.getMessage());
         }
         return secretKey;
     }
@@ -87,7 +85,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         try {
             session = identityInterceptor.getSessionUuid(secretId, secretKey);
         } catch (Exception e) {
-            throw new RestServletRequestInterceptorException(RestConstants.VALIDATION_ERROR, e.getMessage());
+            throw new RestServletRequestInterceptorException(RestConstants.IDENTITY_ERROR, e.getMessage());
         }
 
         return session.getUuid();
